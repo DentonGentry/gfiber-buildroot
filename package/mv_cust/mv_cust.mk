@@ -9,7 +9,7 @@ endef
 
 define MV_CUST_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/lib/modules/mv_cust
-	$(INSTALL) -D -m 0755 $(@D)/lib/mvcust.ko $(TARGET_DIR)/lib/modules/mv_cust/mvcust.ko
+	$(INSTALL) -D -m 0555 $(@D)/lib/mvcust.ko $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/extras/mvcust.ko
 endef
 
 $(eval $(call GENTARGETS,package,mv_cust))
