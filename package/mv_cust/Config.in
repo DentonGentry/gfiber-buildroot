@@ -1,0 +1,4 @@
+config BR2_PACKAGE_MV_CUST
+	bool "mv_cust"
+	help
+	  Builds mv_cust for Marvell boards

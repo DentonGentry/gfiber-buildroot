@@ -531,4 +531,8 @@ source "package/vim/Config.in"
 endif
 endmenu
 
+menu "Marvell custom build"
+source "package/mv_cust/Config.in"
+endmenu
+
 endmenu
