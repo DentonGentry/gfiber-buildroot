@@ -1,0 +1,4 @@
+config BR2_PACKAGE_BCM_NEXUS
+	bool "bcm_nexus"
+	help
+	  Builds bcm_nexus for Broadcom boards

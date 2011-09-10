@@ -535,4 +535,9 @@ menu "Marvell custom build"
 source "package/mv_cust/Config.in"
 endmenu
 
+menu "Broadcom custom build"
+source "package/bcm_bseav/Config.in"
+source "package/bcm_nexus/Config.in"
+endmenu
+
 endmenu
