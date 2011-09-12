@@ -11,6 +11,7 @@ patchdir=${2-../kernel-patches}
 shift 2
 patchpattern=${@-*}
 
+patched=0
 if [ ! -d "${targetdir}" ] ; then
     echo "Aborting.  '${targetdir}' is not a directory."
     exit 1
@@ -19,8 +20,8 @@ if [ ! -d "${patchdir}" ] ; then
     echo "Aborting.  '${patchdir}' is not a directory."
     exit 1
 fi
-    
-for i in `cd ${patchdir}; ls -d ${patchpattern} 2> /dev/null` ; do 
+
+for i in `cd ${patchdir}; ls -d ${patchpattern} 2> /dev/null` ; do
     apply="patch -p1 -E -d"
     uncomp_parm=""
     if [ -d "${patchdir}/$i" ] ; then
@@ -30,30 +31,31 @@ for i in `cd ${patchdir}; ls -d ${patchpattern} 2> /dev/null` ; do
 	apply="tar xvf - -C"
     else case "$i" in
 	*.gz)
-	type="gzip"; uncomp="gunzip -dc"; ;; 
+	type="gzip"; uncomp="gunzip -dc"; ;;
 	*.bz)
-	type="bzip"; uncomp="bunzip -dc"; ;; 
+	type="bzip"; uncomp="bunzip -dc"; ;;
 	*.bz2)
-	type="bzip2"; uncomp="bunzip2 -dc"; ;; 
+	type="bzip2"; uncomp="bunzip2 -dc"; ;;
 	*.zip)
-	type="zip"; uncomp="unzip -d"; ;; 
+	type="zip"; uncomp="unzip -d"; ;;
 	*.Z)
-	type="compress"; uncomp="uncompress -c"; ;; 
+	type="compress"; uncomp="uncompress -c"; ;;
 	*.tgz)
-	type="tar gzip"; uncomp="gunzip -dc"; apply="tar xvf - -C"; ;; 
+	type="tar gzip"; uncomp="gunzip -dc"; apply="tar xvf - -C"; ;;
 	*.tar)
-	type="tar"; uncomp="cat"; apply="tar xvf - -C"; ;; 
+	type="tar"; uncomp="cat"; apply="tar xvf - -C"; ;;
 	*)
-	type="plaintext"; uncomp="cat"; ;; 
+	type="plaintext"; uncomp="cat"; ;;
     esac fi
     echo ""
-    echo "Applying ${i} using ${type}: " 
+    echo "Applying ${i} using ${type}: "
 	echo ${i} | cat >> ${targetdir}/.applied_patches_list
-    ${uncomp} ${patchdir}/${i} ${uncomp_parm} | ${apply} ${targetdir} 
+    ${uncomp} ${patchdir}/${i} ${uncomp_parm} | ${apply} ${targetdir}
     if [ $? != 0 ] ; then
         echo "Patch failed!  Please fix $i!"
 	exit 1
     fi
+    patched=1
 done
 
 # Check for rejects...
@@ -62,5 +64,6 @@ if [ "`find $targetdir/ '(' -name '*.rej' -o -name '.*.rej' ')' -print`" ] ; the
     exit 1
 fi
 
-# Remove backup files
-find $targetdir/ '(' -name '*.orig' -o -name '.*.orig' ')' -exec rm -f {} \;
+# Remove backup files if patched
+[ ${patched} == 1 ] && find $targetdir/ '(' -name '*.orig' -o -name '.*.orig' ')' -exec rm -f {} \;
+exit 0
