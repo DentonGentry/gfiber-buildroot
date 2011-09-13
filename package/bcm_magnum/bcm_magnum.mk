@@ -1,4 +1,3 @@
-BCM_MAGNUM_VERSION=master
 BCM_MAGNUM_SITE=repo://vendor/broadcom/magnum
 BCM_MAGNUM_DEPENDENCIES=linux
 BCM_MAGNUM_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/magnum
