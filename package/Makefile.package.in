@@ -385,6 +385,10 @@ ifndef $(2)_VERSION
  else
   $(2)_VERSION = undefined
   $(2)_DL_VERSION = undefined
+  ifeq ($(firstword $(subst ://, ,$(call qstrip,$($(2)_SITE)))),repo)
+    $(2)_VERSION=HEAD
+    $(2)_DL_VERSION=HEAD
+  endif
  endif
 else
   $(2)_DL_VERSION = $($(2)_VERSION)
