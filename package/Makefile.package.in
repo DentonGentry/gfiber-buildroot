@@ -107,6 +107,7 @@ define DOWNLOAD_REPO
 	(pushd $(DL_DIR) > /dev/null && \
 	$(GIT) clone --bare $(DL_DIR)/../../$($(PKG)_REPO_PATH) $($(PKG)_BASE_NAME) && \
 	pushd $($(PKG)_BASE_NAME) > /dev/null && \
+	echo "$($(PKG)_REPO_PATH) $$($(GIT) show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
 	$(GIT) archive --format=tar --prefix=$($(PKG)_BASE_NAME)/ $($(PKG)_DL_VERSION) | \
 		gzip -c > $(DL_DIR)/$($(PKG)_SOURCE) && \
 	popd > /dev/null && \
