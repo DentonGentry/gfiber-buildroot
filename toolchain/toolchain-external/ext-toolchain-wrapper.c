@@ -18,8 +18,14 @@
 #include <stdlib.h>
 
 static char path[PATH_MAX] = BR_CROSS_PATH;
+#ifdef BR_CCACHE
+static char ccache_path[PATH_MAX] = BR_CCACHE;
+#endif
 
 static char *predef_args[] = {
+#ifdef BR_CCACHE
+	ccache_path,
+#endif
 	path,
 	"--sysroot", BR_SYSROOT,
 #ifdef BR_ARCH
@@ -75,8 +81,13 @@ int main(int argc, char **argv)
 
 	strcat(path, get_basename(argv[0]));
 
+#ifdef BR_CCACHE
+	if (execv(ccache_path, args))
+		perror(ccache_path);
+#else
 	if (execv(path, args))
 		perror(path);
+#endif
 
 	free(args);
 
