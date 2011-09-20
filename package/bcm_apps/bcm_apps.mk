@@ -42,11 +42,12 @@ BCM_OBJS-$(BR2_PACKAGE_BCM_APP_JPEG)        += jpeg
 include package/bcm_common/bcm_common.mk
 
 define BCM_APPS_BUILD_CMDS
-	$(MAKE) $(BCM_MAKEFLAGS)  -C $(@D)/common $(BCM_APPS_APPLIB_TARGETS)
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common $(BCM_APPS_APPLIB_TARGETS) bundle
 endef
 
+
 define BCM_APPS_INSTALL_TARGET_CMDS
-	$(TAR) -xf $(@D)/97425*.mipsel-linux-uclibc.release.*tgz -C $(TARGET_DIR)
+	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*release.*tgz -C $(TARGET_DIR)
 endef
 
 $(eval $(call GENTARGETS,package,bcm_apps))
