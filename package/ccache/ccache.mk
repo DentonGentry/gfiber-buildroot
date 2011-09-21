@@ -25,7 +25,7 @@ HOST_CCACHE_POST_CONFIGURE_HOOKS += \
 
 # optimizations for ccache
 export CCACHE_COMPILERCHECK=none
-export CCACHE_BASEDIR=/tmp/gerrit-tmp/brunobuild/build
+export CCACHE_BASEDIR=$(BUILD_DIR)
 export CCACHE_SLOPPINESS=time_macros
 
 $(eval $(call AUTOTARGETS,package,ccache))
