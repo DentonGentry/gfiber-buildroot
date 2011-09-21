@@ -23,8 +23,10 @@ endef
 HOST_CCACHE_POST_CONFIGURE_HOOKS += \
 	HOST_CCACHE_FIX_CCACHE_DIR
 
+# optimizations for ccache
 export CCACHE_COMPILERCHECK=none
 export CCACHE_BASEDIR=/tmp/gerrit-tmp/brunobuild/build
+export CCACHE_SLOPPINESS=time_macros
 
 $(eval $(call AUTOTARGETS,package,ccache))
 $(eval $(call AUTOTARGETS,package,ccache,host))
