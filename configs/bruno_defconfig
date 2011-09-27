@@ -1,4 +1,5 @@
 BR2_mips=y
+BR2_DL_DIR="${TOPDIR}/../vendor/opensource/tarballs"
 BR2_CCACHE=y
 BR2_TOOLCHAIN_EXTERNAL=y
 BR2_TOOLCHAIN_EXTERNAL_CUSTOM=y
