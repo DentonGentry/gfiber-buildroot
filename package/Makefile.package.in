@@ -105,8 +105,8 @@ endif
 define DOWNLOAD_REPO
 	test -e $(DL_DIR)/$($(PKG)_SOURCE) || \
 	(pushd $(DL_DIR) > /dev/null && \
-	echo "$($(PKG)_REPO_PATH) $$($(GIT) show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
-	$(GIT) archive --remote=$(DL_DIR)/../../$($(PKG)_REPO_PATH) --format=tar --prefix=$($(PKG)_BASE_NAME)/ $($(PKG)_DL_VERSION) | \
+	echo "$($(PKG)_REPO_PATH) $$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
+	$(GIT) archive --remote=$(TOPDIR)/../$($(PKG)_REPO_PATH) --format=tar --prefix=$($(PKG)_BASE_NAME)/ $($(PKG)_DL_VERSION) | \
 		gzip -c > $(DL_DIR)/$($(PKG)_SOURCE) && \
 	popd > /dev/null)
 endef
