@@ -1,0 +1,2 @@
+include package/sagetv/*/*.mk
+

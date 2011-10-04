@@ -1,0 +1,5 @@
+menu "SageTV libraries and applications"
+source "package/sagetv/miniclient/Config.in"
+source "package/sagetv/pullreader/Config.in"
+source "package/sagetv/ffmpeg/Config.in"
+endmenu
