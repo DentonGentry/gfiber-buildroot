@@ -1,4 +1,2 @@
 config BR2_PACKAGE_BCM_MAGNUM
-	bool "bcm_magnum"
-	help
-	  Builds bcm_magnum for Broadcom boards
+	bool "Builds Magnum for Broadcom boards"
