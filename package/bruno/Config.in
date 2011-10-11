@@ -1,0 +1,18 @@
+config BR2_PACKAGE_BRUNO
+	bool "Enable Bruno Board"
+	default y
+	help
+	  Customization for Bruno boards.
+
+choice
+	prompt "Board selection"
+	depends on BR2_PACKAGE_BRUNO
+	help
+	  Select the Bruno board you are building for.
+
+config BR2_PACKAGE_BRUNO_GFHD100
+	bool "Bruno GFHD100 Board"
+	help
+	  Builds for Bruno GFHD100 board.
+
+endchoice

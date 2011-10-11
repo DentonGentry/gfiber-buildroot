@@ -56,3 +56,7 @@ BCM_MAKEFLAGS += PATH=${HOST_DIR}/usr/bin:${PATH}
 #export DTCP_IP_HARDWARE_ENCRYPTION=y
 #export DTCP_IP_HARDWARE_DECRYPTION=y
 #RAP_AC3_SUPPORT=y
+
+# :TODO: (by kedong, once we have code specific for bruno, we need to move it
+#         out and put it in pkg-config file.)
+include package/bruno/bruno.mk
