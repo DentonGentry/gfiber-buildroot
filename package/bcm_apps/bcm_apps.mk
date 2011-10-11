@@ -1,5 +1,5 @@
 BCM_APPS_SITE=repo://vendor/broadcom/AppLibs
-BCM_APPS_DEPENDENCIES=linux bcm_bseav
+BCM_APPS_DEPENDENCIES=linux bcm_bseav bcm_nexus
 BCM_APPS_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/AppLibs
 BCM_APPS_POST_EXTRACT_HOOKS=BCM_REMOVE_PATCH_REJECTS
 
@@ -18,7 +18,7 @@ BCM_OBJS-$(BR2_PACKAGE_BCM_APP_DVB)         += dvb
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_DIRECTFB)    += directfb
 
 ifeq ($(BR2_PACKAGE_BCM_APP_DIRECTFB),y)
-BCM_APPS_DEPENDENCIES += bcm_rockford
+BCM_APPS_DEPENDENCIES += bcm_rockford libpng jpeg zlib freetype
 endif
 
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_STAGECRAFT)  += stagecraft
