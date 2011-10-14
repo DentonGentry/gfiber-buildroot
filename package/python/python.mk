@@ -22,13 +22,11 @@ HOST_PYTHON_CONF_OPT += 	\
 	--disable-curses	\
 	--disable-codecs-cjk	\
 	--disable-nis		\
-	--disable-unicodedata	\
 	--disable-dbm		\
 	--disable-gdbm		\
 	--disable-bsddb		\
 	--disable-test-modules	\
 	--disable-bz2		\
-	--disable-zlib		\
 	--disable-ssl
 
 HOST_PYTHON_MAKE_ENV = \
@@ -158,6 +156,7 @@ endef
 PYTHON_POST_INSTALL_TARGET_HOOKS += PYTHON_REMOVE_USELESS_FILES
 
 PYTHON_AUTORECONF = YES
+TARGET_PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
 
 $(eval $(call AUTOTARGETS,package,python))
 $(eval $(call AUTOTARGETS,package,python,host))
