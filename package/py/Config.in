@@ -1,0 +1,27 @@
+menu "other python modules"
+
+config BR2_PACKAGE_PY_GOOGLE_API
+	bool "Google API"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PY_OAUTH2
+	select BR2_PACKAGE_PY_URI_TEMPLATES
+	select BR2_PACKAGE_PY_GFLAGS
+	select BR2_PACKAGE_PY_HTTPLIB2
+
+config BR2_PACKAGE_PY_OAUTH2
+	bool "OAuth 2"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+
+config BR2_PACKAGE_PY_URI_TEMPLATES
+	bool "URI Templates"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+
+config BR2_PACKAGE_PY_GFLAGS
+	bool "Google Flags"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+
+config BR2_PACKAGE_PY_HTTPLIB2
+	bool "HTTPLib2"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+
+endmenu
