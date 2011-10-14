@@ -344,7 +344,9 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 # Remove package sources
 $(BUILD_DIR)/%/.stamp_dircleaned:
 	rm -Rf $(@D)
-	rm $(DL_DIR)/$($(PKG)_SOURCE)
+ifeq ($($(PKG)_SITE_METHOD),repo)
+	rm $(DL_DIR)/$($(PKG)_SOURCE);
+endif
 
 ################################################################################
 # GENTARGETS_INNER -- generates the make targets needed to build a

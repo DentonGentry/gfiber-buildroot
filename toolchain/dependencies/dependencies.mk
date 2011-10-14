@@ -14,6 +14,7 @@ endif
 DL_TOOLS = \
 	$(findstring svn,$(DL_TOOLS_DEPENDENCIES)) \
 	$(findstring git,$(DL_TOOLS_DEPENDENCIES)) \
+	$(findstring repo,$(DL_TOOLS_DEPENDENCIES)) \
 	$(findstring bzr,$(DL_TOOLS_DEPENDENCIES))
 
 dependencies: $(DEPENDENCIES_HOST_PREREQ)
