@@ -685,4 +685,3 @@ release:
 	git archive --format=tar --prefix=$(OUT)/ master|gzip -9 >$(OUT).tar.gz
 
 .PHONY: $(noconfig_targets)
-

@@ -1,0 +1,12 @@
+HUMAX_MISC_SITE=repo://vendor/humax/misc
+HUMAX_MISC_INSTALL_STAGING=YES
+HUMAX_MISC_INSTALL_TARGET=YES
+
+HUMAX_MISC_STAGING_PATH=usr/lib/humax
+
+define HUMAX_MISC_INSTALL_STAGING_CMDS
+	mkdir -p $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH) && \
+	$(INSTALL) -m 0755 $(@D)/makehdf $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH)
+endef
+
+$(eval $(call GENTARGETS,package,humax_misc))

@@ -12,6 +12,9 @@ choice
 
 config BR2_PACKAGE_BRUNO_GFHD100
 	bool "Bruno GFHD100 Board"
+	select BR2_PACKAGE_BRCM_DRIVER_MOCA
+	select BR2_PACKAGE_BRCM_DRIVER_WIFI
+	select BR2_PACKAGE_BRCM_DRIVER_BLUETOOTH
 	help
 	  Builds for Bruno GFHD100 board.
 
