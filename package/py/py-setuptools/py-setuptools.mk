@@ -15,7 +15,7 @@ define PY_SETUPTOOLS_EXTRACT_CMDS
 endef
 
 define PY_SETUPTOOLS_INSTALL_TARGET_CMDS
-  PYTHONPATH=$(TARGET_PYTHONPATH) PATH=$(HOST_DIR)/usr/bin:$(PATH) bash $(PY_SETUPTOOLS_SOURCE) --prefix=$(TARGET_DIR)/usr
+  PYTHONPATH=$(TARGET_PYTHONPATH) PATH=$(HOST_DIR)/usr/bin:$(PATH) bash $(DL_DIR)/$(PY_SETUPTOOLS_SOURCE) --prefix=$(TARGET_DIR)/usr
 endef
 
 $(eval $(call GENTARGETS,package/py,py-setuptools))
