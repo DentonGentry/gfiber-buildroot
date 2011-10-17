@@ -9,7 +9,7 @@ define SAGETV_MINICLIENT_BUILD_CMDS
 endef
 
 define SAGETV_MINICLIENT_INSTALL_TARGET_CMDS
-        $(INSTALL) -D -m 0755 $(@D)/miniclient $(TARGET_DIR)/app/client
+        $(INSTALL) -D -m 0755 $(@D)/miniclient $(TARGET_DIR)/app/client/miniclient
 endef
 
 $(eval $(call GENTARGETS,package/sagetv,sagetv_miniclient))

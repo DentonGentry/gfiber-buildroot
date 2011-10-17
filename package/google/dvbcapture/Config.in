@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_DVBCAPTURE
+        bool "google_dvbcapture"
+        help
+          Builds the DVB Capture interface library
