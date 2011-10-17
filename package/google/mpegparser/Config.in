@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_MPEGPARSER
+        bool "google_mpegparser"
+        help
+          Builds the MPEG Parser interface library

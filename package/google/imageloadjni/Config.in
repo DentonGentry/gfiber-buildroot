@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_IMAGELOADJNI
+        bool "google_imageloadjni"
+        help
+          Builds the image loading interface library

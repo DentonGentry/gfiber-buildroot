@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_TVSTREAMPARSER
+        bool "google_tvstreamparser"
+        help
+          Builds the tv stream parser library

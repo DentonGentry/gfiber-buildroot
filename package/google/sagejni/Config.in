@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SAGEJNI
+        bool "google_sagejni"
+        help
+          Builds the SageTV operating system interface library
