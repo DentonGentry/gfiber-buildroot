@@ -9,4 +9,10 @@ define BCM_ROCKFORD_BUILD_CMDS
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/platform/nexus -f platform_nexus.mk
 endef
 
+define BCM_ROCKFORD_INSTALL_TARGET_CMDS
+  mkdir -p $(TARGET_DIR)/$(BCM_NEXUS_TARGET_PATH)/bin
+  cp $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/$(BCM_NEXUS_TARGET_PATH)/bin/
+  cp $(BCM_NEXUS_DIR)/bin/libnxpl.so $(TARGET_DIR)/$(BCM_NEXUS_TARGET_PATH)/bin/
+endef
+
 $(eval $(call GENTARGETS,package,bcm_rockford))
