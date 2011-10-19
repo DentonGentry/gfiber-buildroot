@@ -12,13 +12,11 @@ define BCM_DRIVERS_BUILD_MOCA
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_MOCA
-	mkdir -p $(TARGET_DIR)/bin $(TARGET_DIR)/lib/modules $(TARGET_DIR)/etc/moca
-	mkdir -p $(TARGET_DIR)/etc/moca && \
-	$(INSTALL) -m 0700 $(@D)/moca/lib/mocad $(TARGET_DIR)/bin/ && \
-	$(INSTALL) -m 0700 $(@D)/moca/util/mocactl $(TARGET_DIR)/bin/ && \
-	$(INSTALL) -m 0700 $(@D)/moca/soapserver/soapserver $(TARGET_DIR)/bin/ && \
-	$(INSTALL) -m 0700 $(@D)/moca/mocacore-gen1.bin $(TARGET_DIR)/etc/moca/ && \
-	$(INSTALL) -m 0700 $(@D)/moca/mocacore-gen2.bin $(TARGET_DIR)/etc/moca/
+	$(INSTALL) -m 0700 $(@D)/moca/bin/mocad $(TARGET_DIR)/bin/ && \
+	$(INSTALL) -m 0700 $(@D)/moca/bin/mocactl $(TARGET_DIR)/bin/ && \
+	$(INSTALL) -m 0700 $(@D)/moca/bin/soapserver $(TARGET_DIR)/bin/ && \
+	$(INSTALL) -D -m 0700 $(@D)/moca/mocacore-gen1.bin $(TARGET_DIR)/etc/moca/mocacore-gen1.bin && \
+	$(INSTALL) -D -m 0700 $(@D)/moca/mocacore-gen2.bin $(TARGET_DIR)/etc/moca/mocacore-gen2.bin
 endef
 endif
 
