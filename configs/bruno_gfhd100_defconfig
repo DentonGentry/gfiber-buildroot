@@ -158,7 +158,7 @@ BR2_BUSYBOX_VERSION_1_18_X=y
 # BR2_PACKAGE_BUSYBOX_SNAPSHOT is not set
 BR2_BUSYBOX_VERSION="1.18.5"
 BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.18.x.config"
-# BR2_PACKAGE_BUSYBOX_SHOW_OTHERS is not set
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
 # BR2_PACKAGE_CUSTOMIZE is not set
 
 #
@@ -239,6 +239,7 @@ BR2_PACKAGE_ALSA_UTILS_ALSAMIXER=y
 # Compressors and decompressors
 #
 # BR2_PACKAGE_BZIP2 is not set
+# BR2_PACKAGE_GZIP is not set
 # BR2_PACKAGE_LZOP is not set
 # BR2_PACKAGE_XZ is not set
 
@@ -265,20 +266,28 @@ BR2_PACKAGE_ALSA_UTILS_ALSAMIXER=y
 # BR2_PACKAGE_BISON is not set
 # BR2_PACKAGE_BSDIFF is not set
 # BR2_PACKAGE_CCACHE is not set
+BR2_PACKAGE_COREUTILS=y
 # BR2_PACKAGE_CVS is not set
+# BR2_PACKAGE_DIFFUTILS is not set
 # BR2_PACKAGE_DISTCC is not set
+# BR2_PACKAGE_FINDUTILS is not set
 # BR2_PACKAGE_FLEX is not set
+# BR2_PACKAGE_GAWK is not set
 BR2_PACKAGE_GETTEXT=y
 BR2_PACKAGE_LIBINTL=y
 # BR2_PACKAGE_GMP is not set
 # BR2_PACKAGE_GPERF is not set
+# BR2_PACKAGE_GREP is not set
 # BR2_PACKAGE_MAKE is not set
 # BR2_PACKAGE_MPC is not set
 # BR2_PACKAGE_MPFR is not set
 # BR2_PACKAGE_LIBTOOL is not set
 # BR2_PACKAGE_M4 is not set
+# BR2_PACKAGE_PATCH is not set
 BR2_PACKAGE_PKG_CONFIG=y
+# BR2_PACKAGE_SED is not set
 # BR2_PACKAGE_SSTRIP is not set
+# BR2_PACKAGE_TAR is not set
 
 #
 # Games
@@ -301,6 +310,7 @@ BR2_PACKAGE_PKG_CONFIG=y
 # BR2_PACKAGE_DIRECTFB is not set
 # BR2_PACKAGE_FBDUMP is not set
 # BR2_PACKAGE_FBGRAB is not set
+# BR2_PACKAGE_FBSET is not set
 # BR2_PACKAGE_FBV is not set
 # BR2_PACKAGE_IMAGEMAGICK is not set
 # BR2_PACKAGE_LINUX_FUSION is not set
@@ -348,6 +358,7 @@ BR2_PACKAGE_PKG_CONFIG=y
 # BR2_PACKAGE_GENROMFS is not set
 # BR2_PACKAGE_GPSD is not set
 # BR2_PACKAGE_GVFS is not set
+# BR2_PACKAGE_HDPARM is not set
 # BR2_PACKAGE_HWDATA is not set
 # BR2_PACKAGE_I2C_TOOLS is not set
 # BR2_PACKAGE_INPUT_EVENT_DAEMON is not set
@@ -577,6 +588,7 @@ BR2_PACKAGE_EXPAT=y
 # BR2_PACKAGE_ARGUS is not set
 # BR2_PACKAGE_AVAHI is not set
 # BR2_PACKAGE_AXEL is not set
+# BR2_PACKAGE_BOA is not set
 # BR2_PACKAGE_BIND is not set
 # BR2_PACKAGE_BMON is not set
 # BR2_PACKAGE_BRIDGE is not set
@@ -599,6 +611,7 @@ BR2_PACKAGE_EXPAT=y
 # BR2_PACKAGE_IW is not set
 # BR2_PACKAGE_KISMET is not set
 # BR2_PACKAGE_XL2TP is not set
+# BR2_PACKAGE_LIGHTTPD is not set
 # BR2_PACKAGE_LINKS is not set
 # BR2_PACKAGE_LRZSZ is not set
 # BR2_PACKAGE_MII_DIAG is not set
@@ -606,23 +619,18 @@ BR2_PACKAGE_EXPAT=y
 # BR2_PACKAGE_MUTT is not set
 # BR2_PACKAGE_NBD is not set
 # BR2_PACKAGE_NCFTP is not set
+# BR2_PACKAGE_NETCAT is not set
+# BR2_PACKAGE_NETKITBASE is not set
+# BR2_PACKAGE_NETKITTELNET is not set
 # BR2_PACKAGE_NETPLUG is not set
 # BR2_PACKAGE_NETSNMP is not set
 # BR2_PACKAGE_NETSTAT_NAT is not set
 # BR2_PACKAGE_NFS_UTILS is not set
 # BR2_PACKAGE_NGIRCD is not set
-BR2_PACKAGE_BRIDGE=y
-BR2_PACKAGE_NTP=y
-# BR2_PACKAGE_NTP_SNTP is not set
-# BR2_PACKAGE_NTP_NTP_KEYGEN is not set
-BR2_PACKAGE_NTP_NTPD=y
-# BR2_PACKAGE_NTP_NTPDATE is not set
-# BR2_PACKAGE_NTP_NTPDC is not set
-# BR2_PACKAGE_NTP_NTPQ is not set
-# BR2_PACKAGE_NTP_TICKADJ is not set
+# BR2_PACKAGE_NTP is not set
 # BR2_PACKAGE_NUTTCP is not set
 # BR2_PACKAGE_OLSR is not set
-# BR2_PACKAGE_OPENNTPD is not set
+BR2_PACKAGE_OPENNTPD=y
 # BR2_PACKAGE_OPENSSH is not set
 # BR2_PACKAGE_OPENVPN is not set
 # BR2_PACKAGE_PORTMAP is not set
@@ -641,12 +649,16 @@ BR2_PACKAGE_NTP_NTPD=y
 # BR2_PACKAGE_STUNNEL is not set
 # BR2_PACKAGE_TCPDUMP is not set
 # BR2_PACKAGE_TCPREPLAY is not set
+# BR2_PACKAGE_TFTPD is not set
+# BR2_PACKAGE_THTTPD is not set
+# BR2_PACKAGE_TINYHTTPD is not set
 # BR2_PACKAGE_TN5250 is not set
 # BR2_PACKAGE_TTCP is not set
 # BR2_PACKAGE_UDPCAST is not set
 # BR2_PACKAGE_VPNC is not set
 # BR2_PACKAGE_VSFTPD is not set
 # BR2_PACKAGE_VTUN is not set
+# BR2_PACKAGE_WGET is not set
 # BR2_PACKAGE_WIRELESS_TOOLS is not set
 # BR2_PACKAGE_WPA_SUPPLICANT is not set
 
@@ -656,9 +668,15 @@ BR2_PACKAGE_NTP_NTPD=y
 # BR2_PACKAGE_IPKG is not set
 
 #
+# rpm requires libneon with SSL, XML and ZLIB support
+#
+
+#
 # Shell and utilities
 #
 # BR2_PACKAGE_AT is not set
+# BR2_PACKAGE_BASH is not set
+# BR2_PACKAGE_DASH is not set
 # BR2_PACKAGE_DIALOG is not set
 # BR2_PACKAGE_FILE is not set
 # BR2_PACKAGE_INOTIFY_TOOLS is not set
@@ -674,15 +692,24 @@ BR2_PACKAGE_NTP_NTPD=y
 #
 # BR2_PACKAGE_ACL is not set
 # BR2_PACKAGE_ATTR is not set
+# BR2_PACKAGE_BOOTUTILS is not set
 # BR2_PACKAGE_HTOP is not set
+# BR2_PACKAGE_MODULE_INIT_TOOLS is not set
+# BR2_PACKAGE_PROCPS is not set
+# BR2_PACKAGE_PSMISC is not set
+# BR2_PACKAGE_RSYSLOG is not set
+# BR2_PACKAGE_SYSKLOGD is not set
+# BR2_PACKAGE_SYSVINIT is not set
 # BR2_PACKAGE_UTIL_LINUX is not set
 
 #
 # Text editors and viewers
 #
 # BR2_PACKAGE_ED is not set
+# BR2_PACKAGE_LESS is not set
 # BR2_PACKAGE_NANO is not set
 # BR2_PACKAGE_UEMACS is not set
+# BR2_PACKAGE_VIM is not set
 
 #
 # Marvell custom build
