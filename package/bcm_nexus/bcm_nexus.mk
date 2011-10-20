@@ -22,7 +22,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
-	$(INSTALL) -D $(@D)/bin/nexus.ko $(TARGET_DIR)/usr/lib/modules/nexus.ko
+	$(INSTALL) -m 644 -D $(@D)/bin/nexus.ko $(TARGET_DIR)/usr/lib/modules/nexus.ko
 	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/modules/libnexus.so
 endef
 
