@@ -91,4 +91,7 @@ config BR2_PACKAGE_BCM_APP_LIBPNG
 config BR2_PACKAGE_BCM_APP_JPEG
 	bool "jpeg library"
 
+config BR2_PACKAGE_BCM_APP_NETFLIX
+	bool "Netflix library"
+
 endmenu
