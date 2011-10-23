@@ -69,6 +69,8 @@ MESSAGE = echo "$(TERM_BOLD)>>> $($(PKG)_NAME) $($(PKG)_VERSION) $(1)$(TERM_RESE
 TERM_BOLD := $(shell tput smso)
 TERM_RESET := $(shell tput rmso)
 
+BASH_HEADER = echo "$(TERM_BOLD)>>> $$($(2)_NAME) $$($(2)_VERSION) buildbash$(TERM_RESET)"
+
 # Download method commands
 WGET:=$(call qstrip,$(BR2_WGET)) $(QUIET)
 SVN:=$(call qstrip,$(BR2_SVN)) $(QUIET)
@@ -546,6 +548,11 @@ $(1)-clean:		$(1)-uninstall \
 
 $(1)-dirclean:		$$($(2)_TARGET_DIRCLEAN)
 
+$(1)-buildbash:		$(1)-extract $$($(2)_TARGET_BASH)
+	@$(call BASH_HEADER,$(1),$(2))
+	@cd $$($(2)_DIR); env PS1="[build-$(1)] % "  /bin/bash --norc -i </dev/tty
+
+
 # define the PKG variable for all targets, containing the
 # uppercase package variable prefix
 $$($(2)_TARGET_INSTALL_TARGET):		PKG=$(2)
@@ -561,6 +568,7 @@ $$($(2)_TARGET_SOURCE):			PKG=$(2)
 $$($(2)_TARGET_UNINSTALL):		PKG=$(2)
 $$($(2)_TARGET_CLEAN):			PKG=$(2)
 $$($(2)_TARGET_DIRCLEAN):		PKG=$(2)
+$$($(2)_TARGET_BASH):			PKG=$(2)
 
 # Compute the name of the Kconfig option that correspond to the
 # package being enabled. We handle three cases: the special Linux
