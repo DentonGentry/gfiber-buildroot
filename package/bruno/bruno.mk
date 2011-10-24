@@ -25,6 +25,12 @@ define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
+# :TODO: (by sledbetter)
+# There are more than just libssp, libgcc_s, libstdc++ that is missing and
+# we'll keep having to fix this unless we fix the overall toolchain integration.
+# Shawn is working on fixing the spec for the toolchain so it is built more like
+# what buildroot expects. Once that cl is done, the following copy hacks will
+# be removed.
 define BRUNO_INSTALL_TARGET_CMDS_SKEL
 	$(INSTALL) -D $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libstdc++.so.6.0.14 \
 		$(TARGET_DIR)/lib/libstdc++.so.6.0.14
