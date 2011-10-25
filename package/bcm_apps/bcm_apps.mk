@@ -52,12 +52,20 @@ BCM_APPS_APPLIB_TARGETS += directfb
 BCM_APPS_DEPENDENCIES += openssl expat curl
 endif
 
-define BCM_APPS_BUILD_CMDS
+define BCM_APPS_BUILD_APPS
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common $(BCM_APPS_APPLIB_TARGETS)
-	[ "y" == "$(BR2_PACKAGE_BCM_APP_NETFLIX)" ] && \
-	$(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) $(MAKE1) $(NETFLIX_MAKEFLAGS) -C $(@D)/thirdparty/netflix/3.x all
 endef
 
+ifeq ($(BR2_PACKAGE_BCM_APP_NETFLIX),y)
+define BCM_APPS_BUILD_NETFLIX
+	$(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) $(MAKE1) $(NETFLIX_MAKEFLAGS) -C $(@D)/thirdparty/netflix/3.x all
+endef
+endif
+
+define BCM_APPS_BUILD_CMDS
+	$(BCM_APPS_BUILD_APPS)
+	$(BCM_APPS_BUILD_NETFLIX)
+endef
 
 define BCM_APPS_INSTALL_TARGET_CMDS
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
