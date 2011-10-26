@@ -61,7 +61,7 @@ SAMBA_CONF_OPT = \
 	--without-ldap \
 	--with-included-popt \
 	--with-included-iniparser \
-	--with-libiconv=$(STAGING_DIR) \
+	$(if $(BR2_TOOLCHAIN_EXTERNAL_UCLIBC),--with-libiconv=none,--with-libiconv=$(STAGING_DIR)) \
 	\
 	$(if $(BR2_PACKAGE_SAMBA_CIFS),--with-cifsmount,--without-cifsmount) \
 	$(if $(BR2_PACKAGE_SAMBA_RPCCLIENT),--with-readline=$(STAGING_DIR)) \
