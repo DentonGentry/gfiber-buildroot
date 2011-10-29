@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2011.08-00061-gca2ee80 Configuration
-# Thu Oct 20 09:37:40 2011
+# Buildroot 2011.08-00085-ga814771 Configuration
+# Sat Oct 29 15:29:41 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -698,11 +698,11 @@ BR2_PACKAGE_TCPDUMP_SMB=y
 # BR2_PACKAGE_BOOTUTILS is not set
 # BR2_PACKAGE_HTOP is not set
 # BR2_PACKAGE_MODULE_INIT_TOOLS is not set
-# BR2_PACKAGE_PROCPS is not set
+BR2_PACKAGE_PROCPS=y
 # BR2_PACKAGE_PSMISC is not set
 # BR2_PACKAGE_RSYSLOG is not set
 # BR2_PACKAGE_SYSKLOGD is not set
-# BR2_PACKAGE_SYSVINIT is not set
+BR2_PACKAGE_SYSVINIT=y
 # BR2_PACKAGE_UTIL_LINUX is not set
 
 #
