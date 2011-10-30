@@ -68,11 +68,13 @@ define BCM_APPS_BUILD_CMDS
 endef
 
 define BCM_APPS_INSTALL_TARGET_CMDS
+	rm -f $(@D)/target/97425*.mipsel-linux*release.*tgz
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
 	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*release.*tgz -C $(TARGET_DIR)
 endef
 
 define BCM_APPS_INSTALL_STAGING_CMDS
+	rm -f $(@D)/target/97425*.mipsel-linux*release.*tgz
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
 	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*release.*tgz -C $(STAGING_DIR)
 endef
