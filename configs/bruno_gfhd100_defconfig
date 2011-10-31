@@ -638,7 +638,60 @@ BR2_PACKAGE_OPENNTPD=y
 # BR2_PACKAGE_QUAGGA is not set
 # BR2_PACKAGE_RSH_REDONE is not set
 # BR2_PACKAGE_RSYNC is not set
-# BR2_PACKAGE_SAMBA is not set
+BR2_PACKAGE_SAMBA=y
+
+#
+# Samba tools selection
+#
+BR2_PACKAGE_SAMBA_CIFS=y
+# BR2_PACKAGE_SAMBA_EVENTLOGADM is not set
+
+#
+# findsmb       - disabled (requires nmblookup, smbclient and perl)
+#
+# BR2_PACKAGE_SAMBA_NET is not set
+BR2_PACKAGE_SAMBA_NMBD=y
+# BR2_PACKAGE_SAMBA_NMBLOOKUP is not set
+# BR2_PACKAGE_SAMBA_NTLM_AUTH is not set
+# BR2_PACKAGE_SAMBA_PDBEDIT is not set
+# BR2_PACKAGE_SAMBA_PROFILES is not set
+# BR2_PACKAGE_SAMBA_RPCCLIENT is not set
+# BR2_PACKAGE_SAMBA_SMBCACLS is not set
+# BR2_PACKAGE_SAMBA_SMBCLIENT is not set
+# BR2_PACKAGE_SAMBA_SMBCONTROL is not set
+# BR2_PACKAGE_SAMBA_SMBCQUOTAS is not set
+# BR2_PACKAGE_SAMBA_SMBGET is not set
+# BR2_PACKAGE_SAMBA_SMBLDBTOOLS is not set
+# BR2_PACKAGE_SAMBA_SMBPASSWD is not set
+# BR2_PACKAGE_SAMBA_SMBSHARESEC is not set
+# BR2_PACKAGE_SAMBA_SMBSPOOL is not set
+# BR2_PACKAGE_SAMBA_SMBSTATUS is not set
+# BR2_PACKAGE_SAMBA_SMBTREE is not set
+# BR2_PACKAGE_SAMBA_SWAT is not set
+
+#
+# smbtar        - disabled (requires smbclient)
+#
+# BR2_PACKAGE_SAMBA_TDB is not set
+# BR2_PACKAGE_SAMBA_TESTPARM is not set
+# BR2_PACKAGE_SAMBA_WINBINDD is not set
+
+#
+# Samba libraries selection
+#
+# BR2_PACKAGE_SAMBA_LIBSMBCLIENT is not set
+
+#
+# Samba support selection
+#
+
+#
+# support avahi - disabled (requires avahi-daemon/dbus)
+#
+
+#
+# support gamin - disabled (requires gamin)
+#
 # BR2_PACKAGE_SER2NET is not set
 # BR2_PACKAGE_SOCAT is not set
 # BR2_PACKAGE_SPAWN_FCGI is not set
@@ -735,6 +788,7 @@ BR2_PACKAGE_GOOGLE_IMAGELOADJNI=y
 BR2_PACKAGE_GOOGLE_JTUX=y
 BR2_PACKAGE_GOOGLE_MPEGPARSER=y
 BR2_PACKAGE_GOOGLE_TVSTREAMPARSER=y
+BR2_PACKAGE_GOOGLE_MCASTCAPTURE=y
 BR2_PACKAGE_GOOGLE_SAGEJNI=y
 BR2_PACKAGE_GOOGLE_LIBJINGLE=y
 
