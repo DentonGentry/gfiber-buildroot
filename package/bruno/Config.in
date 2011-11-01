@@ -4,6 +4,22 @@ config BR2_PACKAGE_BRUNO
 	help
 	  Customization for Bruno boards.
 
+config BR2_PACKAGE_BRUNO_DEBUG
+	bool "Bruno Debug Build"
+	default n
+	select BR2_PACKAGE_DROPBEAR
+	select BR2_PACKAGE_DROPBEAR_SMALL
+	select BR2_PACKAGE_ETHTOOL
+	select BR2_PACKAGE_IPERF
+	select BR2_PACKAGE_MEMSTAT
+	select BR2_PACKAGE_MEMTESTER
+	select BR2_PACKAGE_NETPERF
+	select BR2_PACKAGE_STRACE
+	select BR2_PACKAGE_TCPDUMP
+	select BR2_PACKAGE_TCPDUMP_SMB
+	help
+	  Enable debug packages and symbols.
+
 choice
 	prompt "Board selection"
 	depends on BR2_PACKAGE_BRUNO
