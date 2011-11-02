@@ -10,6 +10,9 @@ endef
 
 define SAGETV_MINICLIENT_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/miniclient $(TARGET_DIR)/app/client/miniclient
+        @if [ ! -f $(TARGET_DIR)/etc/init.d/S99miniclient ]; then \
+          $(INSTALL) -m 0755 -D package/sagetv/miniclient/S99miniclient $(TARGET_DIR)/etc/init.d/S99miniclient; \
+        fi
 endef
 
 $(eval $(call GENTARGETS,package/sagetv,sagetv_miniclient))
