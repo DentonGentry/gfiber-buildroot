@@ -4,7 +4,7 @@
  target_alias = @target_alias@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
--SUBDIRS = pixman test
+-SUBDIRS = pixman demos test
 +SUBDIRS = pixman
  pkgconfigdir = $(libdir)/pkgconfig
  pkgconfig_DATA = pixman-1.pc
