@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SAGESERVER
+        bool "google_sageserver"
+        help
+          Installs the SageTV server package
