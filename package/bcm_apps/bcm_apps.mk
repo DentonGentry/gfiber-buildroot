@@ -63,9 +63,9 @@ endef
 endif
 
 ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
-BUILD_TYPE=debug
+BCM_APPS_BUILD_TYPE=debug
 else
-BUILD_TYPE=release
+BCM_APPS_BUILD_TYPE=release
 endif
 
 define BCM_APPS_BUILD_CMDS
@@ -74,15 +74,15 @@ define BCM_APPS_BUILD_CMDS
 endef
 
 define BCM_APPS_INSTALL_TARGET_CMDS
-	rm -f $(@D)/target/97425*.mipsel-linux*$(BUILD_TYPE).*tgz
+	rm -f $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
-	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BUILD_TYPE).*tgz -C $(TARGET_DIR)
+	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(TARGET_DIR)
 endef
 
 define BCM_APPS_INSTALL_STAGING_CMDS
-	rm -f $(@D)/target/97425*.mipsel-linux*$(BUILD_TYPE).*tgz
+	rm -f $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
-	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BUILD_TYPE).*tgz -C $(STAGING_DIR)
+	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(STAGING_DIR)
 endef
 
 $(eval $(call GENTARGETS,package,bcm_apps))
