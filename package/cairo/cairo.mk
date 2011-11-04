@@ -3,12 +3,18 @@
 # cairo
 #
 #############################################################
-CAIRO_VERSION = 1.8.10
+CAIRO_VERSION = 1.10.0
 CAIRO_SOURCE = cairo-$(CAIRO_VERSION).tar.gz
 CAIRO_SITE = http://cairographics.org/releases
 CAIRO_AUTORECONF = NO
 CAIRO_INSTALL_STAGING = YES
 CAIRO_INSTALL_TARGET = YES
+
+define CAIRO_DIRECTFB_COPY_FILES
+	cp $(CAIRO_DIR_PREFIX)/$(RAWNAME)/cairo-directfb/* $(@D)/src
+endef
+
+CAIRO_POST_PATCH_HOOKS += CAIRO_DIRECTFB_COPY_FILES
 
 CAIRO_CONF_ENV = ac_cv_func_posix_getpwuid_r=yes glib_cv_stack_grows=no \
 		glib_cv_uscore=no ac_cv_func_strtod=yes \
@@ -42,7 +48,14 @@ ifeq ($(BR2_PACKAGE_DIRECTFB),y)
 	CAIRO_CONF_OPT += --enable-directfb
 	CAIRO_DEPENDENCIES += directfb
 else
+ifeq ($(BR2_PACKAGE_BCM_APP_DIRECTFB),y)
+	CAIRO_CONF_OPT += --enable-directfb
+	CAIRO_DEPENDENCIES += bcm_apps_indirect-directfb
+	CAIRO_CONF_ENV += directfb_CFLAGS="-I$(BCM_APPS_DIR)/opensource/directfb/bin/DirectFB-1.4.5_$(BCM_APPS_BUILD_TYPE)_build.97425A1/usr/local/include/directfb"
+	CAIRO_CONF_ENV += directfb_LIBS="-L$(STAGING_DIR)/staging/usr/local/lib -ldirect -ldirectfb -lfusion"
+else
 	CAIRO_CONF_OPT += --disable-directfb
+endif
 endif
 
 ifeq ($(BR2_PACKAGE_XORG7),y)

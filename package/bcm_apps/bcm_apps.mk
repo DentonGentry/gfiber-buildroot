@@ -27,7 +27,12 @@ BCM_OBJS-$(BR2_PACKAGE_BCM_APP_STAGECRAFT)  += stagecraft
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_ARGO)        += argo
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_COVERFLOW3D) += coverflow3d
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_BMC)         += bmc
+
+ifeq ($(BR2_PACKAGE_BCM_APP_BROWSER),y)
+BCM_APPS_DEPENDENCIES += openssl expat libcurl libxml2 libxslt fontconfig sqlite pixman cairo
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_BROWSER)     += browser
+endif
+
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_GSTREAMER)   += gstreamer
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_ALSA)        += alsa
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_PLAYBACK_IP) += playback_ip
@@ -48,12 +53,19 @@ BCM_OBJS-$(BR2_PACKAGE_BCM_APP_JPEG)        += jpeg
 include package/bcm_common/bcm_common.mk
 
 ifeq (y,$(BR2_PACKAGE_BCM_APP_NETFLIX))
-BCM_APPS_APPLIB_TARGETS += directfb
-BCM_APPS_DEPENDENCIES += openssl expat curl
+BCM_APPS_DEPENDENCIES += openssl expat curl bcm_apps_indirect-directfb
 endif
 
 define BCM_APPS_BUILD_APPS
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common $(BCM_APPS_APPLIB_TARGETS)
+endef
+
+define BCM_APPS_BUILD_ONE_APP
+	rm -f $(BCM_APPS_DIR)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(BCM_APPS_DIR)/common $(subst bcm_apps_indirect-,,$(1))
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(BCM_APPS_DIR)/common bundle
+	$(TAR) -xf $(BCM_APPS_DIR)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(STAGING_DIR)
+	$(TAR) -xf $(BCM_APPS_DIR)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(TARGET_DIR)
 endef
 
 ifeq ($(BR2_PACKAGE_BCM_APP_NETFLIX),y)
@@ -86,3 +98,7 @@ define BCM_APPS_INSTALL_STAGING_CMDS
 endef
 
 $(eval $(call GENTARGETS,package,bcm_apps))
+
+bcm_apps_indirect-%: $(BCM_APPS_TARGET_CONFIGURE)
+	@$(call MESSAGE,"$@ building")
+	$(call BCM_APPS_BUILD_ONE_APP,$@)
