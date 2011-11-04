@@ -103,11 +103,19 @@ endif
 # "external dependencies" of a given build configuration.
 ################################################################################
 define DOWNLOAD_REPO
-	test -e $(DL_DIR)/$($(PKG)_SOURCE) || \
-	(pushd $(DL_DIR) > /dev/null && \
-	echo "$($(PKG)_REPO_PATH) $$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
-	$(GIT) archive --remote=$(TOPDIR)/../$($(PKG)_REPO_PATH) --format=tar --prefix=$($(PKG)_BASE_NAME)/ $($(PKG)_DL_VERSION) | \
-		gzip -c > $(DL_DIR)/$($(PKG)_SOURCE) && \
+	test -e $(BUILD_DIR)/$($(PKG)_BASE_NAME) || \
+	(pushd $(BUILD_DIR) > /dev/null && \
+	(if [[ "$($(PKG)_DL_VERSION)" == "HEAD" ]]; then \
+		DL_VERSION="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)"  ; \
+		DL_BRANCH="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git symbolic-ref HEAD 2>/dev/null )"  ; \
+		[[ -n $$DL_BRANCH ]] && DL_VERSION="$${DL_BRANCH#refs/heads/}"; \
+		echo "DL_VERSION=$$DL_VERSION" ; \
+	else \
+		DL_VERSION=$($(PKG)_DL_VERSION) ; \
+	fi; \
+	/bin/sh /usr/share/doc/git/contrib/workdir/git-new-workdir $(TOPDIR)/../.repo/projects/$($(PKG)_REPO_PATH).git $($(PKG)_BASE_NAME)/ $$DL_VERSION; \
+	) && \
+	echo "$($(PKG)_REPO_PATH) $$($(GIT) --git-dir=$($(PKG)_BASE_NAME)/.git show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
 	popd > /dev/null)
 endef
 
@@ -461,9 +469,13 @@ $(2)_TARGET_CLEAN =		$$($(2)_DIR)/.stamp_cleaned
 $(2)_TARGET_DIRCLEAN =		$$($(2)_DIR)/.stamp_dircleaned
 
 # default extract command
+ifeq ($$($(2)_SITE_METHOD),repo)
+$(2)_EXTRACT_CMDS ?=
+else
 $(2)_EXTRACT_CMDS ?= \
 	$$(if $$($(2)_SOURCE),$$(INFLATE$$(suffix $$($(2)_SOURCE))) $(DL_DIR)/$$($(2)_SOURCE) | \
 	$(TAR) $(TAR_STRIP_COMPONENTS)=1 -C $$($(2)_DIR) $(TAR_OPTIONS) -)
+endif
 
 # post-steps hooks
 $(2)_POST_DOWNLOAD_HOOKS        ?=
