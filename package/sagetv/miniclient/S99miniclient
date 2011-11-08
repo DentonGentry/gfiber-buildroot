@@ -3,6 +3,9 @@
 RETVAL=0
 
 start() {
+  if [ ! -e /app/sage/runsage ]; then
+    return 0;
+  fi
   cd /app/client
   # TODO this might change once we update ld.so.conf
   export LD_LIBRARY_PATH=/app/client:/usr/lib/modules:$LD_LIBRARY_PATH
