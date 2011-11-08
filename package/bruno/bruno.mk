@@ -42,7 +42,6 @@ define BRUNO_INSTALL_TARGET_CMDS_SKEL
 	$(INSTALL) -D $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libgcc_s.so.1 \
 		$(TARGET_DIR)/lib/libgcc_s.so.1
 	cd $(TARGET_DIR)/lib && ln -sf libgcc_s.so.1 libgcc_s.so
-	cp -pr $(@D)/bruno/gfhd100/skel/* $(TARGET_DIR)/
 endef
 endif
 

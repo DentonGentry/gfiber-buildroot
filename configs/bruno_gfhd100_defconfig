@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2011.08-00108-g0a514c2 Configuration
-# Thu Nov  3 17:41:46 2011
+# Buildroot 2011.08-00107-g1b50b99-dirty Configuration
+# Mon Nov  7 15:14:54 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -142,7 +142,7 @@ BR2_TARGET_GENERIC_GETTY_PORT="ttyS0"
 BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
 BR2_TARGET_GENERIC_GETTY_BAUDRATE="115200"
 BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW=y
-BR2_ROOTFS_POST_BUILD_SCRIPT=""
+BR2_ROOTFS_POST_BUILD_SCRIPT="${TOPDIR}/../vendor/google/platform/bruno/gfhd100/copy_skel.sh"
 
 #
 # Package Selection for the target
@@ -749,11 +749,11 @@ BR2_PACKAGE_SAMBA_NMBD=y
 # BR2_PACKAGE_BOOTUTILS is not set
 # BR2_PACKAGE_HTOP is not set
 # BR2_PACKAGE_MODULE_INIT_TOOLS is not set
-# BR2_PACKAGE_PROCPS=y
+BR2_PACKAGE_PROCPS=y
 # BR2_PACKAGE_PSMISC is not set
 # BR2_PACKAGE_RSYSLOG is not set
-# BR2_PACKAGE_SYSKLOGD is not set
-# BR2_PACKAGE_SYSVINIT=y
+BR2_PACKAGE_SYSKLOGD=y
+BR2_PACKAGE_SYSVINIT=y
 # BR2_PACKAGE_UTIL_LINUX is not set
 
 #
