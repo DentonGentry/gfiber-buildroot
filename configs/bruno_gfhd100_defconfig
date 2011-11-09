@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2011.08-00107-g1b50b99-dirty Configuration
-# Mon Nov  7 15:14:54 2011
+# Buildroot 2011.08-00109-gf5af657 Configuration
+# Wed Nov  9 11:19:39 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -596,7 +596,10 @@ BR2_PACKAGE_BRIDGE=y
 # BR2_PACKAGE_CAN_UTILS is not set
 # BR2_PACKAGE_CTORRENT is not set
 # BR2_PACKAGE_CUPS is not set
-# BR2_PACKAGE_DHCP is not set
+BR2_PACKAGE_DHCP=y
+# BR2_PACKAGE_DHCP_SERVER is not set
+# BR2_PACKAGE_DHCP_RELAY is not set
+BR2_PACKAGE_DHCP_CLIENT=y
 # BR2_PACKAGE_DHCPDUMP is not set
 # BR2_PACKAGE_DNSMASQ is not set
 # BR2_PACKAGE_DROPBEAR is not set
