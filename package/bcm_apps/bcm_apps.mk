@@ -89,6 +89,9 @@ define BCM_APPS_INSTALL_TARGET_CMDS
 	rm -f $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(@D)/common bundle
 	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(TARGET_DIR)
+	$(RM) -f $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
+	ln -s ../../../lib/modules/nexus.ko \
+	  $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
 endef
 
 define BCM_APPS_INSTALL_STAGING_CMDS

@@ -23,7 +23,7 @@ endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 -D $(@D)/bin/nexus.ko $(TARGET_DIR)/usr/lib/modules/nexus.ko
-	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/modules/libnexus.so
+	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/libnexus.so
 endef
 
 $(eval $(call GENTARGETS,package,bcm_nexus))
