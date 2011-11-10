@@ -21,8 +21,8 @@ define LIBJINGLE_BUILD_CMDS
 endef
 
 define LIBJINGLE_INSTALL_TARGET_CMDS
-	mkdir -p $(TARGET_DIR)/app/telepresence && \
-	cp -rf $(@D)/talk/build/dbg/obj/ $(TARGET_DIR)/app/telepresence
+	$(INSTALL) -D -m $(@D)/talk/build/dbg/obj/login $(TARGET_DIR)/home/test/vc/login
+	$(INSTALL) -D -m $(@D)/talk/build/dbg/obj/call $(TARGET_DIR)/home/test/vc/call
 endef
 
 $(eval $(call GENTARGETS,package/google,libjingle))
