@@ -309,12 +309,12 @@ source "package/libusb-compat/Config.in"
 source "package/python-serial/Config.in"
 endmenu
 
-if BROKEN
+#if BROKEN
 menu "Java"
 source "package/java/classpath/Config.in"
 source "package/java/concierge/Config.in"
 endmenu
-endif
+#endif
 
 menu "Networking"
 source "package/libcgi/Config.in"
