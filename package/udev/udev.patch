@@ -1,0 +1,74 @@
+diff -crB ./Makefile.am /usr/local/google/clients/gbruno/buildroot/package/udev/Makefile.am
+*** ./Makefile.am       2011-07-19 12:16:52.000000000 -0700
+--- /usr/local/google/clients/gbruno/buildroot/package/udev/Makefile.am 2011-11-10 23:18:00.000000000 -0800
+***************
+*** 23,29 ****
+  	-fdata-sections
+  
+  AM_LDFLAGS = \
+! 	-Wl,--gc-sections \
+  	-Wl,--as-needed
+  
+  DISTCHECK_CONFIGURE_FLAGS = \
+--- 23,29 ----
+  	-fdata-sections
+  
+  AM_LDFLAGS = \
+! 	--gc-sections \
+  	-Wl,--as-needed
+  
+  DISTCHECK_CONFIGURE_FLAGS = \
+***************
+*** 167,173 ****
+  	udev/udevd.c \
+  	udev/sd-daemon.h \
+  	udev/sd-daemon.c
+! udev_udevd_LDADD = libudev/libudev-private.la
+  
+  udev_udevadm_SOURCES = \
+  	$(udev_common_sources) \
+--- 167,173 ----
+  	udev/udevd.c \
+  	udev/sd-daemon.h \
+  	udev/sd-daemon.c
+! udev_udevd_LDADD = libudev/libudev-private.la -lrt
+  
+  udev_udevadm_SOURCES = \
+  	$(udev_common_sources) \
+diff -crB ./Makefile.in /usr/local/google/clients/gbruno/buildroot/package/udev/Makefile.in
+*** ./Makefile.in       2011-07-30 14:33:20.000000000 -0700
+--- /usr/local/google/clients/gbruno/buildroot/package/udev/Makefile.in 2011-11-10 23:18:03.000000000 -0800
+***************
+*** 751,757 ****
+  	-fdata-sections
+  
+  AM_LDFLAGS = \
+! 	-Wl,--gc-sections \
+  	-Wl,--as-needed
+  
+  DISTCHECK_CONFIGURE_FLAGS = \
+--- 751,757 ----
+  	-fdata-sections
+  
+  AM_LDFLAGS = \
+! 	--gc-sections \
+  	-Wl,--as-needed
+  
+  DISTCHECK_CONFIGURE_FLAGS = \
+***************
+*** 844,850 ****
+  	udev/sd-daemon.h \
+  	udev/sd-daemon.c
+  
+! udev_udevd_LDADD = libudev/libudev-private.la
+  udev_udevadm_SOURCES = \
+  	$(udev_common_sources) \
+  	udev/udevadm.c \
+--- 844,850 ----
+  	udev/sd-daemon.h \
+  	udev/sd-daemon.c
+  
+! udev_udevd_LDADD = libudev/libudev-private.la -lrt
+  udev_udevadm_SOURCES = \
+  	$(udev_common_sources) \
+  	udev/udevadm.c \
