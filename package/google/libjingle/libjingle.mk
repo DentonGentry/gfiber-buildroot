@@ -3,16 +3,16 @@
 # libjingle (Google Talk Voice and P2P Interoperability Library)
 #
 #############################################################
-LIBJINGLE_SITE=repo://vendor/opensource/libjingle
-LIBJINGLE_INSTALL_STAGING=YES
+GOOGLE_LIBJINGLE_SITE=repo://vendor/opensource/libjingle
+GOOGLE_LIBJINGLE_INSTALL_STAGING=YES
 
-LIBJINGLE_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit
-LIBJINGLE_INSTALL_STAGING=YES
+GOOGLE_LIBJINGLE_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit
+GOOGLE_LIBJINGLE_INSTALL_STAGING=YES
 
-LIBJINGLE_STAGING_PATH=usr/lib/libjingle
+GOOGLE_LIBJINGLE_STAGING_PATH=usr/lib/libjingle
 PATH_TO_SWTOOLKIT=$(HOST_DIR)/usr/lib/swtoolkit
 
-define LIBJINGLE_BUILD_CMDS
+define GOOGLE_LIBJINGLE_BUILD_CMDS
 	(cd $(@D); \
 	PATH=${HOST_DIR}/usr/bin:${PATH} talk/third_party/expat-2.0.1/configure \
             --build=$(GNU_HOST_NAME) \
@@ -30,9 +30,9 @@ define LIBJINGLE_BUILD_CMDS
 	SCONS_DIR=$(HOST_DIR)/usr/lib/scons-2.0.1 CROSS_COMPILE=${TARGET_CROSS} $(PATH_TO_SWTOOLKIT)/hammer.sh --host-platform=LINUX --verbose)
 endef
 
-define LIBJINGLE_INSTALL_TARGET_CMDS
+define GOOGLE_LIBJINGLE_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/login $(TARGET_DIR)/home/test/login
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/call $(TARGET_DIR)/home/test/call
 endef
 
-$(eval $(call GENTARGETS,package/google,libjingle))
+$(eval $(call GENTARGETS,package/google,google_libjingle))

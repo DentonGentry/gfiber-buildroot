@@ -1,5 +1,5 @@
 config BR2_PACKAGE_GOOGLE_LIBJINGLE
-	bool "libjingle"
+	bool "google_libjingle"
 	help
 	  libjingle is the Google Talk Voice and P2P Interoperability Library.
 
