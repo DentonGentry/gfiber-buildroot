@@ -8,5 +8,6 @@ source "package/google/mpegparser/Config.in"
 source "package/google/tvstreamparser/Config.in"
 source "package/google/sagejni/Config.in"
 source "package/google/sageserver/Config.in"
+source "package/google/gips/Config.in"
 source "package/google/libjingle/Config.in"
 endmenu

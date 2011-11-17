@@ -4,12 +4,8 @@
 #
 #############################################################
 GOOGLE_LIBJINGLE_SITE=repo://vendor/opensource/libjingle
-GOOGLE_LIBJINGLE_INSTALL_STAGING=YES
+GOOGLE_LIBJINGLE_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit google_gips
 
-GOOGLE_LIBJINGLE_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit
-GOOGLE_LIBJINGLE_INSTALL_STAGING=YES
-
-GOOGLE_LIBJINGLE_STAGING_PATH=usr/lib/libjingle
 PATH_TO_SWTOOLKIT=$(HOST_DIR)/usr/lib/swtoolkit
 
 define GOOGLE_LIBJINGLE_BUILD_CMDS
@@ -29,6 +25,8 @@ define GOOGLE_LIBJINGLE_BUILD_CMDS
 	cd $(@D)/talk; \
 	SCONS_DIR=$(HOST_DIR)/usr/lib/scons-2.0.1 CROSS_COMPILE=${TARGET_CROSS} $(PATH_TO_SWTOOLKIT)/hammer.sh --host-platform=LINUX --verbose)
 endef
+
+# :TODO: (kedong) Will add the staging for VC later when VC is ready.
 
 define GOOGLE_LIBJINGLE_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/login $(TARGET_DIR)/home/test/login
