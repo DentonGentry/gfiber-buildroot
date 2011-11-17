@@ -23,6 +23,10 @@ ifeq ($(BR2_PACKAGE_BCM_APP_DIRECTFB),y)
 BCM_APPS_DEPENDENCIES += bcm_rockford libpng jpeg zlib freetype
 endif
 
+ifeq ($(BR2_PACKAGE_DIRECTFB),y)
+BCM_APPS_DEPENDENCIES += bcm_rockford libpng jpeg zlib freetype
+endif
+
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_STAGECRAFT)  += stagecraft
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_ARGO)        += argo
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_COVERFLOW3D) += coverflow3d
@@ -53,7 +57,7 @@ BCM_OBJS-$(BR2_PACKAGE_BCM_APP_JPEG)        += jpeg
 include package/bcm_common/bcm_common.mk
 
 ifeq (y,$(BR2_PACKAGE_BCM_APP_NETFLIX))
-BCM_APPS_DEPENDENCIES += openssl expat curl bcm_apps_indirect-directfb
+BCM_APPS_DEPENDENCIES += openssl expat curl
 endif
 
 define BCM_APPS_BUILD_APPS
