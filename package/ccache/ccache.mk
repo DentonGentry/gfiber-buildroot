@@ -28,6 +28,12 @@ export CCACHE_COMPILERCHECK=none
 export CCACHE_BASEDIR=$(BUILD_DIR)
 export CCACHE_SLOPPINESS=time_macros
 
+HOST_CCACHE_POST_INSTALL_HOOKS += HOST_CCACHE_LARGE_LIMITS
+
+define HOST_CCACHE_LARGE_LIMITS
+	$(CCACHE) -M=20G -F=0
+endef
+
 $(eval $(call AUTOTARGETS,package,ccache))
 $(eval $(call AUTOTARGETS,package,ccache,host))
 
