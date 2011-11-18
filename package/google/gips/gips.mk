@@ -13,7 +13,7 @@ define GOOGLE_GIPS_BUILD_CMDS
 endef
 
 define GOOGLE_GIPS_INSTALL_STAGING_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/build/libraries/VoiceEngine_Linux_gcc.a $(STAGING_DIR)/usr/lib/VoiceEngine_Linux_gcc.a
+	$(INSTALL) -D -m 0755 $(@D)/build/libraries/VoiceEngine_Linux_gcc.a $(STAGING_DIR)/usr/lib/libVoiceEngine_Linux_gcc.a
 endef
 
 $(eval $(call GENTARGETS,package/google,google_gips))
