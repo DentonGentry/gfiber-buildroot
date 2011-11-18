@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_GIPS
+	bool "google_gips"
+	help
+	  gips is the software codec for Google Talk Voice.
