@@ -1,10 +1,15 @@
 #!/bin/sh
 
 RETVAL=0
+PLATFORM=`cat /sys/devices/platform/brcmstb/platform_name | tr a-z A-Z`
 
 start() {
   cd /app/sage
-  ./runsage &
+  if [ "$PLATFORM" = "GFHD100" ]; then
+    ./runsageclient &
+  else
+    ./runsage &
+  fi
   return $RETVAL
 }
 
