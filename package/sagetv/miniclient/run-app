@@ -1,0 +1,17 @@
+#!/bin/sh
+
+appname=`cat /tmp/runappold`
+
+case $appname in
+netflix)
+  cd /usr/local/bin/netflix
+  ./start netflix -I key.bin
+  ;;
+youtube)
+  cd /usr/local/bin/browsertest
+  ./start browsertest http://www.youtube.com/leanback?version=3
+  ;;
+*)
+  echo Unknown application
+  ;;
+esac

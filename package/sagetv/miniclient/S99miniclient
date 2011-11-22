@@ -29,7 +29,7 @@ start() {
     if [ -e /tmp/runapp ] ; then
       mv /tmp/runapp /tmp/runappold
       # TODO: add switch based on which app to run...
-      cd /app/runapp
+      cd /app/client
       ./run-app
       continue
     fi
@@ -57,7 +57,7 @@ start() {
         if [ -e /tmp/runapp ] ; then
           mv /tmp/runapp /tmp/runappold
           # TODO: add switch based on which app to run...
-          cd /app/runapp
+          cd /app/client
           ./run-app
           continue
         fi
