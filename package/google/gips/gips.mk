@@ -9,10 +9,12 @@ GOOGLE_GIPS_INSTALL_STAGING=YES
 GOOGLE_GIPS_INSTALL_TARGET=NO
 
 define GOOGLE_GIPS_BUILD_CMDS
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D) -f make_all.txt
+	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE1) -C $(@D) -f make_all.txt
 endef
 
 define GOOGLE_GIPS_INSTALL_STAGING_CMDS
+	mkdir -p $(STAGING_DIR)/usr/include/gips/Interface
+	cp -rf $(@D)/build/interface/* $(STAGING_DIR)/usr/include/gips/Interface
 	$(INSTALL) -D -m 0755 $(@D)/build/libraries/VoiceEngine_Linux_gcc.a $(STAGING_DIR)/usr/lib/libVoiceEngine_Linux_gcc.a
 endef
 
