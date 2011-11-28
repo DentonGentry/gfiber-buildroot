@@ -11,5 +11,6 @@ source "package/google/sageserver/Config.in"
 source "package/google/swscale/Config.in"
 source "package/google/ginstall/Config.in"
 source "package/google/gips/Config.in"
+source "package/google/hnvram/Config.in"
 source "package/google/libjingle/Config.in"
 endmenu

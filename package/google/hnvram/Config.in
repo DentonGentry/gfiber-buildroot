@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_HNVRAM
+	bool "google_hnvram"
+	help
+	  NVRAM manipulation utility for Google platforms.
