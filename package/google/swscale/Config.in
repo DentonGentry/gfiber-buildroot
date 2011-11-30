@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SWSCALE
+        bool "google_swscale"
+        help
+          Builds the swscale library
