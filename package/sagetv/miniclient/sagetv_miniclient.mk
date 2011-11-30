@@ -1,10 +1,11 @@
 SAGETV_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
-SAGETV_MINICLIENT_DEPENDENCIES=linux bcm_nexus bcm_rockford sagetv_pullreader openssl
+SAGETV_MINICLIENT_DEPENDENCIES=linux bcm_nexus bcm_rockford sagetv_pullreader openssl google_swscale
 
 include package/bcm_common/bcm_common.mk
 
 define SAGETV_MINICLIENT_BUILD_CMDS
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \
+        SWSCALE_PATH=$(STAGING_DIR)/usr/local/ \
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425
 endef
 
