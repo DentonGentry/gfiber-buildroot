@@ -29,6 +29,7 @@ endef
 
 define DIRECTFB_INSTALL_TARGET_CMDS
 	$(call DIRECTFB_BUILD_EXTRACT_TARBALL,$(TARGET_DIR))
+	echo no-cursor >> $(TARGET_DIR)/usr/local/etc/directfbrc
 endef
 
 
