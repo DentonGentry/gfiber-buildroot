@@ -109,6 +109,13 @@ else
 PYTHON_CONF_OPT += --disable-zlib
 endif
 
+ifeq ($(BR2_PACKAGE_PYTHON_IPV6),y)
+PYTHON_CONF_ENV += ac_cv_buggy_getaddrinfo=no
+PYTHON_CONF_OPT += --enable-ipv6
+else
+PYTHON_CONF_OPT += --disable-ipv6
+endif
+
 PYTHON_CONF_ENV += \
 	PYTHON_FOR_BUILD=$(HOST_PYTHON_DIR)/python \
 	PGEN_FOR_BUILD=$(HOST_PYTHON_DIR)/Parser/pgen \
