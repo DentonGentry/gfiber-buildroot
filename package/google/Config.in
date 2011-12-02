@@ -1,4 +1,5 @@
 menu "Google libraries and applications"
+source "package/google/catawampus/Config.in"
 source "package/google/dvbcapture/Config.in"
 source "package/google/freetypejni/Config.in"
 source "package/google/imageloadjni/Config.in"
