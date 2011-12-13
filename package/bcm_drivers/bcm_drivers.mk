@@ -1,4 +1,5 @@
 BCM_DRIVERS_SITE=repo://vendor/broadcom/drivers
+BCM_DRIVERS_INSTALL_STAGING=YES
 BCM_DRIVERS_INSTALL_TARGET=YES
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
@@ -9,6 +10,13 @@ define BCM_DRIVERS_BUILD_MOCA
 		EXTRA_CFLAGS="$(TARGET_CFLAGS)" \
 		EXTRA_LDFLAGS="$(TARGET_LDFLAGS)" \
 		-C $(@D)/moca/
+endef
+
+define BCM_DRIVERS_INSTALL_STAGING_MOCA
+	$(INSTALL) -D -m 0644 $(@D)/moca/lib/libmoca.a $(STAGING_DIR)/usr/lib/libmoca.a
+	$(INSTALL) -D -m 0644 $(@D)/moca/util/libmocactl.a $(STAGING_DIR)/usr/lib/libmocactl.a
+	mkdir -p $(STAGING_DIR)/usr/include/moca && \
+	cp -pr $(@D)/moca/include/* $(STAGING_DIR)/usr/include/moca
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_MOCA
@@ -110,6 +118,10 @@ endef
 
 define BCM_DRIVERS_CLEAN_CMDS
 	$(BCM_DRIVERS_CLEAN_BLUETOOTH)
+endef
+
+define BCM_DRIVERS_INSTALL_STAGING_CMDS
+	$(BCM_DRIVERS_INSTALL_STAGING_MOCA)
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_CMDS

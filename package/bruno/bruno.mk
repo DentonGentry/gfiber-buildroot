@@ -12,6 +12,10 @@ BRUNO_STAGING_PATH=usr/lib/bruno
 ifeq ($(BR2_PACKAGE_BRUNO),y)
 BRUNO_DEFINES += -DBRUNO_PLATFORM=1
 
+define BRUNO_BUILD_CMDS_DIAG
+	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/bruno/diag
+endef
+
 define BRUNO_INSTALL_STAGING_CMDS_PC
 	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig && \
 	cp $(@D)/bruno/pkg-config/bruno.pc $(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc && \
@@ -35,15 +39,22 @@ else
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
 endef
 endif
+
+define BRUNO_INSTALL_TARGET_CMDS_DIAG
+	$(INSTALL) -D -m 0755 $(@D)/bruno/diag/diagd $(TARGET_DIR)/usr/bin/diagd
+endef
 endif
 
 endif
+
+define BRUNO_BUILD_CMDS
+	$(BRUNO_BUILD_CMDS_DIAG)
+endef
 
 define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 	$(BRUNO_INSTALL_STAGING_CMDS_CONFIG)
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
-	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
 endef
 
 BUILD_SECS:=$(shell date +%s --utc)
@@ -51,6 +62,8 @@ define BRUNO_INSTALL_TARGET_CMDS
 	echo 0.1.0-$(BUILD_SECS) > $(TARGET_DIR)/etc/version
 	echo 0.1.0-$(BUILD_SECS) > $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
+	$(BRUNO_INSTALL_TARGET_CMDS_DIAG)
+	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
 endef
 
 $(eval $(call GENTARGETS,package,bruno))
