@@ -58,3 +58,8 @@ define BRUNO_INSTALL_TARGET_CMDS
 endef
 
 $(eval $(call GENTARGETS,package,bruno))
+
+bruno_%_debug: $(BUILD_DIR)/buildroot-config/conf
+	make bruno_$*
+	echo 'BR2_PACKAGE_BRUNO_DEBUG=y' >> $(TOPDIR)/.config
+	$(COMMON_CONFIG_ENV) $< --defconfig=$(TOPDIR)/.config $(CONFIG_CONFIG_IN)
