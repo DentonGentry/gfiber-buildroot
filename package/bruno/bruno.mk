@@ -21,7 +21,7 @@ ifeq ($(BR2_PACKAGE_BRUNO_GFHD100),y)
 BRUNO_DEFINES += -DBRUNO_PLATFORM_GFHD100=1
 
 define BRUNO_INSTALL_STAGING_CMDS_CONFIG
-	cp $(@D)/bruno/gfhd100/config/lkr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/lkr.cfg && \
+	cp $(@D)/bruno/gfhd100/config/lkr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/lkr.cfg
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
@@ -32,14 +32,18 @@ endef
 # what buildroot expects. Once that cl is done, the following copy hacks will
 # be removed.
 define BRUNO_INSTALL_TARGET_CMDS_SKEL
-	$(INSTALL) -D $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libstdc++.so.6.0.14 \
+	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libstdc++.so.6.0.14 \
 		$(TARGET_DIR)/lib/libstdc++.so.6.0.14
 	cd $(TARGET_DIR)/lib && ln -sf libstdc++.so.6.0.14 libstdc++.so.6
 	cd $(TARGET_DIR)/lib && ln -sf libstdc++.so.6.0.14 libstdc++.so
-	$(INSTALL) -D $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libssp.so.0.0.0 \
+	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/sys-root/lib/libubacktrace-0.9.32.so \
+		$(TARGET_DIR)/lib/libubacktrace-0.9.32.so
+	cd $(TARGET_DIR)/lib && ln -sf libubacktrace-0.9.32.so libubacktrace.so.0
+	cd $(TARGET_DIR)/lib && ln -sf libubacktrace-0.9.32.so libubacktrace.so
+	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libssp.so.0.0.0 \
 		$(TARGET_DIR)/lib/libssp.so.0.0.0
 	cd $(TARGET_DIR)/lib && ln -sf libssp.so.0.0.0 libssp.so
-	$(INSTALL) -D $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libgcc_s.so.1 \
+	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libgcc_s.so.1 \
 		$(TARGET_DIR)/lib/libgcc_s.so.1
 	cd $(TARGET_DIR)/lib && ln -sf libgcc_s.so.1 libgcc_s.so
 endef
