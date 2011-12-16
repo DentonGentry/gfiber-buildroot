@@ -14,4 +14,5 @@ source "package/google/ginstall/Config.in"
 source "package/google/gips/Config.in"
 source "package/google/hnvram/Config.in"
 source "package/google/libjingle/Config.in"
+source "package/google/fallocate/Config.in"
 endmenu
