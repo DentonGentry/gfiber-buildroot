@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2011.08-00135-gb2d51a3 Configuration
-# Thu Nov 17 21:09:43 2011
+# Buildroot 2011.08-00168-geacaa48 Configuration
+# Thu Dec 22 13:53:21 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -146,14 +146,13 @@ BR2_ROOTFS_POST_BUILD_SCRIPT="${BRUNO_DIR}/bruno/gfhd100/copy_skel.sh"
 #
 # Package Selection for the target
 #
-BR2_PACKAGE_BUSYBOX=y
+# BR2_PACKAGE_BUSYBOX is not set
 # BR2_BUSYBOX_VERSION_1_16_X is not set
 # BR2_BUSYBOX_VERSION_1_17_X is not set
-BR2_BUSYBOX_VERSION_1_18_X=y
+# BR2_BUSYBOX_VERSION_1_18_X is not set
 # BR2_PACKAGE_BUSYBOX_SNAPSHOT is not set
-BR2_BUSYBOX_VERSION="1.18.5"
-BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox-1.18.x.config"
 BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
+BR2_PACKAGE_TOOLBOX=y
 # BR2_PACKAGE_CUSTOMIZE is not set
 
 #
