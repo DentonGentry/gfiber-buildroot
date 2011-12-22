@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_VMLINUZ_SITE=repo://vendor/google/platform
-GOOGLE_VMLINUZ_DEPENDENCIES=linux
+GOOGLE_VMLINUZ_DEPENDENCIES=linux host-mtd
 GOOGLE_VMLINUZ_INSTALL_STAGING=NO
 GOOGLE_VMLINUZ_INSTALL_TARGET=YES
 
