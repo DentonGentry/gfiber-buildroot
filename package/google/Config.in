@@ -16,4 +16,5 @@ source "package/google/hnvram/Config.in"
 source "package/google/libjingle/Config.in"
 source "package/google/fallocate/Config.in"
 source "package/google/vmlinuz/Config.in"
+source "package/google/vc/Config.in"
 endmenu

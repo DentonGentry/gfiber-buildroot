@@ -80,7 +80,6 @@ define BCM_DRIVERS_INSTALL_TARGET_BLUETOOTH
 	$(INSTALL) -m 0500 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_ag/build/mips/app_ag $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -D -m 0400 $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/btusb.ko $(TARGET_DIR)/usr/lib/modules/btusb.ko
 	$(INSTALL) -D -m 0400 $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/bthid.ko $(TARGET_DIR)/usr/lib/modules/bthid.ko
-
 endef
 endif
 

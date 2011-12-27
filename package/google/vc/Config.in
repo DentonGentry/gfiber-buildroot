@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_VC
+	bool "google_vc"
+	help
+	  Google video conference.

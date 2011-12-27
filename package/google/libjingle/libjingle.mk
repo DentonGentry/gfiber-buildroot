@@ -26,8 +26,6 @@ define GOOGLE_LIBJINGLE_BUILD_CMDS
 	SCONS_DIR=$(HOST_DIR)/usr/lib/scons-2.0.1 CROSS_COMPILE=${TARGET_CROSS} $(PATH_TO_SWTOOLKIT)/hammer.sh --host-platform=LINUX --verbose)
 endef
 
-# :TODO: (kedong) Will add the staging for VC later when VC is ready.
-
 define GOOGLE_LIBJINGLE_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/login $(TARGET_DIR)/home/test/login
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/call $(TARGET_DIR)/home/test/call

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2011.08-00134-gcac55ed Configuration
-# Thu Nov 17 14:55:40 2011
+# Buildroot 2011.08-00135-gb2d51a3 Configuration
+# Thu Nov 17 21:09:43 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -63,9 +63,9 @@ BR2_JLEVEL=6
 BR2_CCACHE=y
 # BR2_DEPRECATED is not set
 # BR2_ENABLE_DEBUG is not set
-# BR2_STRIP_strip is not set
+BR2_STRIP_strip=y
 # BR2_STRIP_sstrip is not set
-BR2_STRIP_none=y
+# BR2_STRIP_none is not set
 # BR2_OPTIMIZE_0 is not set
 # BR2_OPTIMIZE_1 is not set
 # BR2_OPTIMIZE_2 is not set
@@ -324,6 +324,8 @@ BR2_PACKAGE_DIRECTFB_PNG=y
 # BR2_PACKAGE_FBV is not set
 # BR2_PACKAGE_IMAGEMAGICK is not set
 # BR2_PACKAGE_LINUX_FUSION is not set
+# BR2_PACKAGE_LITE is not set
+# BR2_PACKAGE_SAWMAN is not set
 # BR2_PACKAGE_SDL is not set
 
 #
@@ -459,11 +461,10 @@ BR2_PACKAGE_MTD_UBIUPDATEVOL=y
 # BR2_PACKAGE_SYSSTAT is not set
 # BR2_PACKAGE_TI_UTILS is not set
 # BR2_PACKAGE_UBOOT_TOOLS is not set
-
-#
-# udev requires /dev mgmnt set to udev under System configuration
-#
+BR2_PACKAGE_UDEV=y
+# BR2_PACKAGE_UDEV_ALL_EXTRAS is not set
 BR2_PACKAGE_USB_MODESWITCH=y
+# BR2_PACKAGE_USBMOUNT is not set
 BR2_PACKAGE_USBUTILS=y
 # BR2_PACKAGE_USBUTILS_ZLIB is not set
 # BR2_PACKAGE_WIPE is not set
@@ -568,6 +569,7 @@ BR2_PACKAGE_JPEG=y
 # BR2_PACKAGE_LIBART is not set
 # BR2_PACKAGE_LIBEXIF is not set
 # BR2_PACKAGE_GDK_PIXBUF is not set
+# BR2_PACKAGE_LIBGTK2 is not set
 BR2_PACKAGE_LIBPNG=y
 # BR2_PACKAGE_LIBRAW is not set
 # BR2_PACKAGE_LIBSVGTINY is not set
@@ -591,6 +593,11 @@ BR2_PACKAGE_TIFF=y
 BR2_PACKAGE_LIBUSB=y
 BR2_PACKAGE_LIBUSB_COMPAT=y
 # BR2_PACKAGE_PYTHON_SERIAL is not set
+
+#
+# Java
+#
+# BR2_PACKAGE_CLASSPATH is not set
 
 #
 # Networking
@@ -908,6 +915,7 @@ BR2_PACKAGE_GOOGLE_GIPS=y
 BR2_PACKAGE_GOOGLE_HNVRAM=y
 BR2_PACKAGE_GOOGLE_LIBJINGLE=y
 BR2_PACKAGE_GOOGLE_VMLINUZ=y
+BR2_PACKAGE_GOOGLE_VC=y
 
 #
 # Broadcom custom build
@@ -925,7 +933,7 @@ BR2_PACKAGE_BCM_APPS=y
 # BR2_PACKAGE_BCM_APP_NETAPP is not set
 # BR2_PACKAGE_BCM_APP_DLNA is not set
 # BR2_PACKAGE_BCM_APP_DVB is not set
-BR2_PACKAGE_BCM_APP_DIRECTFB=y
+# BR2_PACKAGE_BCM_APP_DIRECTFB is not set
 # BR2_PACKAGE_BCM_APP_STAGECRAFT is not set
 # BR2_PACKAGE_BCM_APP_ARGO is not set
 # BR2_PACKAGE_BCM_APP_COVERFLOW3D is not set
