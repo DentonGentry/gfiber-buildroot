@@ -23,7 +23,6 @@ BRUNO_DEFINES += -DBRUNO_PLATFORM_GFHD100=1
 define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/lkr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/lkr.cfg
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
-	cp $(@D)/bruno/gfhd100/config/k.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/k.cfg
 endef
 
 # :TODO: (by sledbetter)
