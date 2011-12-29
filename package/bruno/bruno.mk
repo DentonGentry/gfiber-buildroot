@@ -4,6 +4,7 @@ GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
 BRUNO_DEPENDENCIES=humax_bootloader humax_misc bcm_drivers
 BRUNO_INSTALL_STAGING=YES
+BRUNO_INSTALL_TARGET=NO
 
 BRUNO_DEFINES=
 BRUNO_STAGING_PATH=usr/lib/bruno
@@ -25,28 +26,6 @@ define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
-# :TODO: (by sledbetter)
-# There are more than just libssp, libgcc_s, libstdc++ that is missing and
-# we'll keep having to fix this unless we fix the overall toolchain integration.
-# Shawn is working on fixing the spec for the toolchain so it is built more like
-# what buildroot expects. Once that cl is done, the following copy hacks will
-# be removed.
-define BRUNO_INSTALL_TARGET_CMDS_SKEL
-	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libstdc++.so.6.0.14 \
-		$(TARGET_DIR)/lib/libstdc++.so.6.0.14
-	cd $(TARGET_DIR)/lib && ln -sf libstdc++.so.6.0.14 libstdc++.so.6
-	cd $(TARGET_DIR)/lib && ln -sf libstdc++.so.6.0.14 libstdc++.so
-	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/sys-root/lib/libubacktrace-0.9.32.so \
-		$(TARGET_DIR)/lib/libubacktrace-0.9.32.so
-	cd $(TARGET_DIR)/lib && ln -sf libubacktrace-0.9.32.so libubacktrace.so.0
-	cd $(TARGET_DIR)/lib && ln -sf libubacktrace-0.9.32.so libubacktrace.so
-	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libssp.so.0.0.0 \
-		$(TARGET_DIR)/lib/libssp.so.0.0.0
-	cd $(TARGET_DIR)/lib && ln -sf libssp.so.0.0.0 libssp.so
-	$(INSTALL) -D -m 0644 $(BR2_TOOLCHAIN_EXTERNAL_PATH)/$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)-uclibc/lib/libgcc_s.so.1 \
-		$(TARGET_DIR)/lib/libgcc_s.so.1
-	cd $(TARGET_DIR)/lib && ln -sf libgcc_s.so.1 libgcc_s.so
-endef
 endif
 
 endif
@@ -55,10 +34,6 @@ define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 	$(BRUNO_INSTALL_STAGING_CMDS_CONFIG)
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
-endef
-
-define BRUNO_INSTALL_TARGET_CMDS
-	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
 endef
 
 $(eval $(call GENTARGETS,package,bruno))
