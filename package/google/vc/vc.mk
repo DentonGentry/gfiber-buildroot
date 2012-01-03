@@ -64,7 +64,7 @@ endef
 
 define GOOGLE_VC_INSTALL_TARGET_CMDS
 	$(GOOGLE_VC_INSTALL_TEST_TARGET_CMDS)
-	$(INSTALL) -D -m 0444 $(@D)/bin/libvcme_audio.so $(STAGING_DIR)/usr/lib/libvcme_audio.so
+	$(INSTALL) -D -m 0444 $(@D)/bin/libvcme_audio.so $(TARGET_DIR)/usr/lib/libvcme_audio.so
 endef
 
 $(eval $(call GENTARGETS,package/google,google_vc))
