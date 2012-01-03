@@ -4,7 +4,7 @@ GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
 BRUNO_DEPENDENCIES=humax_bootloader humax_misc bcm_drivers
 BRUNO_INSTALL_STAGING=YES
-BRUNO_INSTALL_TARGET=NO
+BRUNO_INSTALL_TARGET=YES
 
 BRUNO_DEFINES=
 BRUNO_STAGING_PATH=usr/lib/bruno
@@ -34,6 +34,13 @@ define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 	$(BRUNO_INSTALL_STAGING_CMDS_CONFIG)
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
+endef
+
+BUILD_SECS:=$(shell date +%s --utc)
+define BRUNO_INSTALL_TARGET_CMDS
+	echo 0.1.0-$(BUILD_SECS) > $(TARGET_DIR)/etc/version
+	echo 0.1.0-$(BUILD_SECS) > $(BINARIES_DIR)/version
+	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
 endef
 
 $(eval $(call GENTARGETS,package,bruno))
