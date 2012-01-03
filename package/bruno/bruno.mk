@@ -38,7 +38,6 @@ endef
 
 $(eval $(call GENTARGETS,package,bruno))
 
-bruno_%_debug: $(BUILD_DIR)/buildroot-config/conf
-	make bruno_$*
-	echo 'BR2_PACKAGE_BRUNO_DEBUG=y' >> $(TOPDIR)/.config
-	$(COMMON_CONFIG_ENV) $< --defconfig=$(TOPDIR)/.config $(CONFIG_CONFIG_IN)
+bruno_%_defconfig_debug_impl: $(BUILD_DIR)/buildroot-config/conf
+	echo 'BR2_PACKAGE_BRUNO_DEBUG=y' >> ${CONFIG_DIR}/.config
+	echo 'BR2_STRIP_none=y' >> ${CONFIG_DIR}/.config
