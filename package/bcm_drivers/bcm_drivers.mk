@@ -50,6 +50,7 @@ endef
 endif
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_BLUETOOTH),y)
+BCM_DRIVERS_DEPENDENCIES+=alsa-lib alsa-utils linux
 define BCM_DRIVERS_CLEAN_BLUETOOTH
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CPU=mips \
