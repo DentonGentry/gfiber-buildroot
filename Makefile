@@ -325,8 +325,6 @@ include fs/common.mk
 
 TARGETS+=erase-fakeroots
 
-TARGETS+=target-wrapimage
-
 TARGETS_CLEAN:=$(patsubst %,%-clean,$(TARGETS))
 TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS) $(BASE_TARGETS))
 TARGETS_DIRCLEAN:=$(patsubst %,%-dirclean,$(TARGETS))
@@ -486,11 +484,6 @@ target-purgelocales:
 			grep -qx $$lang $(LOCALE_WHITELIST) || rm -rf $$dir/$$lang; \
 		done; \
 	done
-endif
-
-target-wrapimage:
-ifeq ($(BR2_PACKAGE_BRUNO),y)
-	${TOPDIR}/../vendor/google/platform/bruno/scripts/buildimage.sh $(BINARIES_DIR)
 endif
 
 source: dirs $(TARGETS_SOURCE) $(HOST_SOURCE)
