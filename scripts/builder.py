@@ -114,11 +114,12 @@ class BuildRootBuilder:
       p.communicate()
       if p.returncode != 0:
         raise BuildError("Failed to execute [" + cmd + "]")
-      cmd = "find " + stamp_dir + " -name *installed -exec rm {} \;"
-      p = subprocess.Popen(cmd, cwd=self.options.top_dir, shell=True)
-      p.communicate()
-      if p.returncode != 0:
-        raise BuildError("Failed to execute [" + cmd + "]")
+      if os.path.exists(stamp_dir):
+        cmd = "find " + stamp_dir + " -name *installed -exec rm {} \;"
+        p = subprocess.Popen(cmd, cwd=self.options.top_dir, shell=True)
+        p.communicate()
+        if p.returncode != 0:
+         raise BuildError("Failed to execute [" + cmd + "]")
     cmd = ["make"]
     if (self.options.verbose):
       cmd.append("V=1")
