@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_CATAWAMPUS_SITE=repo://vendor/google/catawampus
-GOOGLE_CATAWAMPUS_DEPENDENCIES=python
+GOOGLE_CATAWAMPUS_DEPENDENCIES=python py-curl
 GOOGLE_CATAWAMPUS_INSTALL_STAGING=NO
 GOOGLE_CATAWAMPUS_INSTALL_TARGET=YES
 
