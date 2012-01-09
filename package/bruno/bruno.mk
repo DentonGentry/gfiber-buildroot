@@ -47,4 +47,6 @@ $(eval $(call GENTARGETS,package,bruno))
 
 bruno_%_defconfig_debug_impl: $(BUILD_DIR)/buildroot-config/conf
 	echo 'BR2_PACKAGE_BRUNO_DEBUG=y' >> ${CONFIG_DIR}/.config
-	echo 'BR2_STRIP_none=y' >> ${CONFIG_DIR}/.config
+
+# :TODO: (kedong) when the loader can handle more than 40M kernel, we will add
+# the strip_none back.
