@@ -54,8 +54,8 @@ class BuildRootBuilder:
         self.build_initramfs()
         self.build_rootfs()
       self.bundle_image()
-    except BuildError:
-      Logger.error(BuildError)
+    except BuildError as e:
+      Logger.error(str(e))
       raise
     return
 
