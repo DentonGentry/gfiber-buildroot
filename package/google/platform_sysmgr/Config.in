@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR
+	bool "google_platform_sysmgr"
+	help
+	  The platform sysmgr.

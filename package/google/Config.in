@@ -18,4 +18,5 @@ source "package/google/fallocate/Config.in"
 source "package/google/vmlinuz/Config.in"
 source "package/google/vc/Config.in"
 source "package/google/platform_base/Config.in"
+source "package/google/platform_sysmgr/Config.in"
 endmenu
