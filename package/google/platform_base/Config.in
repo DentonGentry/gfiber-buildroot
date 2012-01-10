@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
+	bool "google_platform_base"
+	help
+	  The platform base.
