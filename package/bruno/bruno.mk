@@ -26,6 +26,15 @@ define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
+ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
+define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
+        mkdir -p $(TARGET_DIR)/home/test/
+	        cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
+endef
+else
+define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
+endef
+endif
 endif
 
 endif
@@ -34,6 +43,7 @@ define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 	$(BRUNO_INSTALL_STAGING_CMDS_CONFIG)
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
+	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
 endef
 
 BUILD_SECS:=$(shell date +%s --utc)
