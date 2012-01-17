@@ -1904,6 +1904,20 @@ _cairo_directfb_surface_show_glyphs (void		    *abstract_dst,
 				   color->alpha * 0xff);
     }
 
+    int jj;
+    int sWidth, sHeight;
+    cache->dfbsurface->GetSize(cache->dfbsurface, &sWidth, &sHeight);
+    for(jj=0; jj<num_glyphs; jj++)
+    {
+        if(rects[jj].x >= sWidth || rects[jj].y >= sHeight || rects[jj].x < 0 || rects[jj].y < 0)
+        {
+            rects[jj].x = 0;
+            rects[jj].y = 0;
+            rects[jj].w = 0;
+            rects[jj].h = 0;
+        }
+    }
+
     D_DEBUG_AT (CairoDFB_Font, "Running BatchBlit().\n");
 
     RUN_CLIPPED (dst, clip_region, NULL,
