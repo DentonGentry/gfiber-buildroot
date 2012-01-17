@@ -1,0 +1,40 @@
+--- fio-23a7b043700bb99292091f50d98c2029c0110d26/os/os-linux.h	2012-01-16 14:10:29.566466398 -0800
++++ fio-23a7b043700bb99292091f50d98c2029c0110d26.mod/os/os-linux.h	2012-01-16 14:13:48.497450612 -0800
+@@ -21,7 +21,9 @@
+ #include "../file.h"
+ 
+ #define FIO_HAVE_LIBAIO
+-#define FIO_HAVE_POSIXAIO
++/*
++  #define FIO_HAVE_POSIXAIO
++ */
+ #define FIO_HAVE_FADVISE
+ #define FIO_HAVE_CPU_AFFINITY
+ #define FIO_HAVE_DISK_UTIL
+@@ -35,7 +37,9 @@
+ #define FIO_HAVE_BLKTRACE
+ #define FIO_HAVE_STRSEP
+ #define FIO_HAVE_FALLOCATE
+-#define FIO_HAVE_POSIXAIO_FSYNC
++/*
++  #define FIO_HAVE_POSIXAIO_FSYNC
++ */
+ #define FIO_HAVE_PSHARED_MUTEX
+ #define FIO_HAVE_CL_SIZE
+ #define FIO_HAVE_CGROUPS
+@@ -46,6 +50,15 @@
+ #define FIO_HAVE_CLOCK_MONOTONIC
+ #define FIO_HAVE_GETTID
+ 
++
++#ifndef posix_madvise
++#define posix_madvise   madvise
++#define POSIX_MADV_SEQUENTIAL   MADV_SEQUENTIAL
++#define POSIX_MADV_DONTNEED     MADV_DONTNEED
++#define POSIX_MADV_RANDOM       MADV_RANDOM
++#endif
++
++
+ /*
+  * Can only enable this for newer glibcs, or the header and defines are
+  * missing

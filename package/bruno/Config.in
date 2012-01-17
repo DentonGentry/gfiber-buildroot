@@ -27,6 +27,7 @@ config BR2_PACKAGE_BRUNO_DEBUG
 	select BR2_PACKAGE_TCPDUMP
 	select BR2_PACKAGE_TCPDUMP_SMB
 	select BR2_PACKAGE_WHETSTONE
+        select BR2_PACKAGE_FIO
 	help
 	  Enable debug packages and symbols.
 

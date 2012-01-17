@@ -1,0 +1,11 @@
+--- fio-23a7b043700bb99292091f50d98c2029c0110d26/arch/arch-mips.h	2012-01-02 05:32:43.000000000 -0800
++++ fio-23a7b043700bb99292091f50d98c2029c0110d26.mod/arch/arch-mips.h	2012-01-16 12:47:13.930327149 -0800
+@@ -1,6 +1,8 @@
+ #ifndef ARCH_MIPS64_H
+ #define ARCH_MIPS64_H
+ 
++#define arch_mips       10
++
+ #define FIO_ARCH	(arch_mips)
+ 
+ #ifndef __NR_ioprio_set
