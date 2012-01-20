@@ -1,6 +1,7 @@
 config BR2_PACKAGE_BRUNO
 	bool "Enable Bruno Board"
 	default y
+	select BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	help
 	  Customization for Bruno boards.
 
