@@ -23,9 +23,16 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	$(INSTALL) -D $(@D)/bin/nexus.pc $(STAGING_DIR)/usr/lib/pkgconfig/nexus.pc
 endef
 
+ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
+	BCM_NEXUS_SECURITY_LIB=$(@D)/modules/security/7425/lib/libnexus_security.so
+else
+	BCM_NEXUS_SECURITY_LIB=$(@D)/modules/security/7425/lib/retail/libnexus_security.so
+endif
+
 define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
 	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/libnexus.so
+	$(INSTALL) -D $(BCM_NEXUS_SECURITY_LIB) $(TARGET_DIR)/usr/lib/libnexus_security.so
 endef
 
 $(eval $(call GENTARGETS,package,bcm_nexus))
