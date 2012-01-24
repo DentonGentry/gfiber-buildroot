@@ -1,7 +1,7 @@
 #!/bin/sh
 
 RETVAL=0
-PLATFORM=`cat /sys/devices/platform/brcmstb/platform_name | tr a-z A-Z`
+PLATFORM=$(cat /etc/platform)
 
 start() {
   cd /app/sage
@@ -14,8 +14,9 @@ start() {
 }
 
 stop() {
-  /bin/kill `/bin/pidof cvm`
-  /bin/kill `/bin/pidof sagesrv`
+  /usr/bin/pkill cvm
+  /usr/bin/pkill sagesrv
+  /usr/bin/pkill chsrv
   return $RETVAL
 }
 
