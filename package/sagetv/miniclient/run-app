@@ -1,11 +1,11 @@
 #!/bin/sh
 
-appname=`cat /tmp/runappold`
+appname=$(awk '{print $1}' /tmp/runappold)
 
 case $appname in
 netflix)
   cd /usr/local/bin/netflix
-  ./start netflix -I key.bin
+  ./start netflix -I key.bin $(awk '{print $2}' /tmp/runappold)
   ;;
 youtube)
   cd /usr/local/bin/browsertest

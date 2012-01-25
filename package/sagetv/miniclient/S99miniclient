@@ -1,84 +1,19 @@
 #!/bin/sh
 
 RETVAL=0
+PLATFORM=$(cat /etc/platform)
 
 start() {
-  if [ ! -e /app/sage/runsage ]; then
+  if [ "$PLATFORM" != "GFHD100" ]; then
     return 0;
   fi
-  cd /app/client
-  # TODO this might change once we update ld.so.conf
-  export LD_LIBRARY_PATH=/app/client:/usr/lib/modules:$LD_LIBRARY_PATH
-  DEBUGMODE=`/app/sage/getprop debug_logging | tr a-z A-Z`
-  while true; do
-    cd /app/client
-    # This must be cleared for local server connection
-    VIDEO_SUPPORTED_MODES=
-    AUDIO_OUTPUT=
-    export VIDEO_SUPPORTED_MODES
-    export AUDIO_OUTPUT
-    if [ "$DEBUGMODE" = "TRUE" ]; then
-      /app/client/miniclient 127.0.0.1 2>&1 | logger -s -t m
-    else
-      /app/client/miniclient 127.0.0.1
-    fi
-    SERVER=""
-    if [ -e /tmp/config ] ; then
-      . /tmp/config
-    fi
-    if [ -e /tmp/runapp ] ; then
-      mv /tmp/runapp /tmp/runappold
-      # TODO: add switch based on which app to run...
-      cd /app/client
-      ./run-app
-      continue
-    fi
-    if [ "$SERVER" = "" ]; then
-      /app/client/waitpower
-    else
-      . /tmp/config
-      mv /tmp/config /tmp/configold
-      export VIDEO_OUTPUT
-      export VIDEO_RESOLUTION
-      export AUDIO_OUTPUT
-      export VIDEO_SUPPORTED_MODES
-      export CACHED_AUTH
-      export SERVER_NAME
-      powerret=2
-      while [ "$powerret" = "2" ]; do
-        if [ "$SERVER_MAC" != "" ]; then
-          /usr/bin/ether-wake $SERVER_MAC
-        fi
-        if [ "$DEBUGMODE" = "TRUE" ]; then
-          /app/client/miniclient $SERVER 2>&1 | logger -s -t m
-        else
-          /app/client/miniclient $SERVER
-        fi
-        if [ -e /tmp/runapp ] ; then
-          mv /tmp/runapp /tmp/runappold
-          # TODO: add switch based on which app to run...
-          cd /app/client
-          ./run-app
-          continue
-        fi
-        if [ -e /tmp/goalone ] ; then
-          powerret=1
-        else
-          /app/client/waitpower
-          powerret=$?
-        fi
-        if [ -e /tmp/patch.properties ] ; then
-          powerret=1
-        fi
-      done
-    fi
-  done
-
+  /app/client/runminiclient &
   return $RETVAL
 }
 
 stop() {
-
+  /usr/bin/pkill runminiclient
+  /usr/bin/pkill miniclient
   return $RETVAL
 }
 
