@@ -15,6 +15,7 @@ define SAGETV_MINICLIENT_INSTALL_TARGET_CMDS
           $(INSTALL) -m 0755 -D package/sagetv/miniclient/S99miniclient $(TARGET_DIR)/etc/init.d/S99miniclient; \
         fi
         $(INSTALL) -D -m 0755 package/sagetv/miniclient/run-app $(TARGET_DIR)/app/client/run-app
+        $(INSTALL) -D -m 0755 package/sagetv/miniclient/runminiclient $(TARGET_DIR)/app/client/runminiclient
 endef
 
 $(eval $(call GENTARGETS,package/sagetv,sagetv_miniclient))

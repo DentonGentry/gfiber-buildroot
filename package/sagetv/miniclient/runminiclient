@@ -1,0 +1,60 @@
+#!/bin/sh
+
+cd /app/client
+
+export LD_LIBRARY_PATH=/app/client:$LD_LIBRARY_PATH
+while true; do
+  cd /app/client
+  # This must be cleared for local server connection
+  VIDEO_SUPPORTED_MODES=
+  AUDIO_OUTPUT=
+  export VIDEO_SUPPORTED_MODES
+  export AUDIO_OUTPUT
+  /app/client/miniclient 127.0.0.1 2>&1 | logger -t m
+  SERVER=""
+  if [ -e /tmp/config ] ; then
+    . /tmp/config
+  fi
+  if [ -e /tmp/runapp ] ; then
+    mv /tmp/runapp /tmp/runappold
+    # TODO: add switch based on which app to run...
+    cd /app/client
+    ./run-app
+    continue
+  fi
+  if [ "$SERVER" = "" ]; then
+    /app/client/waitpower
+  else
+    . /tmp/config
+    mv /tmp/config /tmp/configold
+    export VIDEO_OUTPUT
+    export VIDEO_RESOLUTION
+    export AUDIO_OUTPUT
+    export VIDEO_SUPPORTED_MODES
+    export CACHED_AUTH
+    export SERVER_NAME
+    powerret=2
+    while [ "$powerret" = "2" ]; do
+      if [ "$SERVER_MAC" != "" ]; then
+        /usr/bin/ether-wake $SERVER_MAC
+      fi
+      /app/client/miniclient $SERVER 2>&1 | logger -t m
+      if [ -e /tmp/runapp ] ; then
+        mv /tmp/runapp /tmp/runappold
+        # TODO: add switch based on which app to run...
+        cd /app/client
+        ./run-app
+        continue
+      fi
+      if [ -e /tmp/goalone ] ; then
+        powerret=1
+      else
+        /app/client/waitpower
+        powerret=$?
+      fi
+      if [ -e /tmp/patch.properties ] ; then
+        powerret=1
+      fi
+    done
+  fi
+done
