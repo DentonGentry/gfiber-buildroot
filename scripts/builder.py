@@ -50,13 +50,14 @@ class BuildRootBuilder:
   def build(self):
     try:
       self.print_options()
+      if self.options.fresh_build:
+        self.clean_build_output_dir();
       if not self.options.bundle_only:
         self.build_initramfs()
         self.build_rootfs()
       self.bundle_image()
     except BuildError as e:
-      Logger.error(str(e))
-      raise
+      Logger.error(e.value)
     return
 
   @staticmethod
@@ -75,20 +76,39 @@ class BuildRootBuilder:
     print "MODEL          :", self.options.model
     print "PRODUCT FAMILY :", self.options.product_family
     print "VERBOSE        :", self.options.verbose
+    print "FRESH          :", self.options.fresh_build
     print "BUILDROOT PATH :", self.options.top_dir
     print "BUILD PATH     :", self.options.base_dir
     print "=========================================================="
+
+  def PopenDir(self, cwd, args, **kwargs):
+    """Execute Popen in arbitrary dir."""
+
+    p = subprocess.Popen(args, cwd=cwd, **kwargs)
+    p.communicate()
+    if p.returncode != 0:
+      raise BuildError("Failed to execute [" + ' '.join(args) +"]")
+    return
+
+  def make(self, make_options):
+    """Execute make for buildroot.
+
+    Args:
+      make_options: list of strings to pass to make
+    """
+    cmd = ["make", "O="+self.options.base_dir]
+    cmd.extend(make_options)
+    self.PopenDir(self.options.top_dir, cmd)
+
+  def clean_build_output_dir(self):
+    Logger.info("Cleaning " + self.options.base_dir + "...")
+    self.make(["clean"])
 
   def build_config(self, config_file):
     if self.options.debug:
       config_file += "_debug"
     Logger.info("Final config file: " + config_file + "...");
-    cmd = ["make", "O="+self.options.base_dir, config_file]
-    p = subprocess.Popen(cmd, cwd=self.options.top_dir)
-    p.communicate()
-    if p.returncode != 0:
-      raise BuildError("Failed to execute [" + ' '.join(cmd) +"]")
-    return
+    self.make([config_file])
 
   def build_initramfs(self):
     if not self.options.initramfs:
@@ -110,24 +130,14 @@ class BuildRootBuilder:
       if os.path.exists(build_dir + "/.root"):
         os.remove(build_dir + "/.root")
       cmd = "find " + build_dir + " -name .stamp*installed -exec rm {} \;"
-      p = subprocess.Popen(cmd, cwd=self.options.top_dir, shell=True)
-      p.communicate()
-      if p.returncode != 0:
-        raise BuildError("Failed to execute [" + cmd + "]")
+      self.PopenDir(self.options.top_dir, cmd, shell=True)
       if os.path.exists(stamp_dir):
         cmd = "find " + stamp_dir + " -name *installed -exec rm {} \;"
-        p = subprocess.Popen(cmd, cwd=self.options.top_dir, shell=True)
-        p.communicate()
-        if p.returncode != 0:
-         raise BuildError("Failed to execute [" + cmd + "]")
-    cmd = ["make"]
+        self.PopenDir(self.options.top_dir, cmd, shell=True)
+    args = []
     if (self.options.verbose):
-      cmd.append("V=1")
-    cmd.append("O=" + self.options.base_dir)
-    p = subprocess.Popen(cmd, cwd=self.options.top_dir)
-    p.communicate()
-    if p.returncode != 0:
-      raise BuildError("Failed to execute [" + ' '.join(cmd) +"]")
+      args.append("V=1")
+    self.make(args)
     vmlinux=self.options.base_dir+"/images/vmlinux"
     # save vmlinux to vmlinux-initramfs to prevent overwrite
     shutil.copyfile(vmlinux, vmlinux+"-initramfs")
@@ -140,14 +150,10 @@ class BuildRootBuilder:
         self.options.chip_revision + "_defconfig"
     Logger.info("Use config file " + config_file + " for rootfs.")
     self.build_config(config_file)
-    cmd = ["make"]
+    args = []
     if (self.options.verbose):
-      cmd.append("V=1")
-    cmd.append("O=" + self.options.base_dir)
-    p = subprocess.Popen(cmd, cwd=self.options.top_dir)
-    p.communicate()
-    if p.returncode != 0:
-      raise BuildError("Failed to execute [" + ' '.join(cmd) +"]")
+      args.append("V=1")
+    self.make(args)
     BuildRootBuilder.__log_done("Building Rootfs")
     return
 
@@ -177,7 +183,7 @@ class BuildRootBuilder:
       cmd = host_dir + "/usr/sbin/ubinize -o " + binaries_dir + \
             "/vmlinuz.ubi " + ubi_ubinize_opts + ' ' + staging_dir + \
             "/etc/kernel_ubinize.cfg"
-      p = subprocess.Popen(cmd, cwd=binaries_dir, shell=True)
+      self.PopenDir(binaries_dir, cmd, shell=True)
       p.communicate()
       if p.returncode != 0:
         raise BuildError("Failed to execute [" + cmd +"]")
@@ -187,10 +193,7 @@ class BuildRootBuilder:
                       binaries_dir+"/loader.bin")
       cmd = [staging_dir+"/usr/lib/humax/makehdf",
              staging_dir+"/usr/lib/bruno/lkr.cfg", "bruno.hdf"]
-      p = subprocess.Popen(cmd, cwd=binaries_dir)
-      p.communicate()
-      if p.returncode != 0:
-        raise BuildError("Failed to execute [" + ' '.join(cmd) +"]")
+      self.PopenDir(binaries_dir, cmd)
       # bundle image in tar format
       Logger.info("Creating final tgz image...")
       tar = tarfile.open(binaries_dir+"/bruno_ginstall_image.tgz", "w:gz")
@@ -237,6 +240,12 @@ def main():
                     dest="bundle_only",
                     default=False,
                     help="Only bundle the image. DEFAULT=False")
+  parser.add_option("-f", "--fresh",
+                    action="store_true",
+                    dest="fresh_build",
+                    default=False,
+                    help="Build a fresh image; ie build all from scratch. "
+                    "DEFAULT=FALSE")
   (options, remainder) = parser.parse_args()
   if len(remainder) != 1:
     parser.error("Incorrect arguments - " + ' '.join(remainder))
