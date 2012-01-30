@@ -184,9 +184,6 @@ class BuildRootBuilder:
             "/vmlinuz.ubi " + ubi_ubinize_opts + ' ' + staging_dir + \
             "/etc/kernel_ubinize.cfg"
       self.PopenDir(binaries_dir, cmd, shell=True)
-      p.communicate()
-      if p.returncode != 0:
-        raise BuildError("Failed to execute [" + cmd +"]")
       # bundle image in hdf format
       Logger.info("Creating final hdf image...")
       shutil.copyfile(staging_dir+"/usr/lib/humax/loader.bin",
