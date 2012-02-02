@@ -109,6 +109,8 @@ class BuildRootBuilder:
       config_file += "_debug"
     Logger.info("Final config file: " + config_file + "...");
     self.make([config_file])
+    # Grab all the sources we need for this config
+    self.make(["source"])
 
   def build_initramfs(self):
     if not self.options.initramfs:
