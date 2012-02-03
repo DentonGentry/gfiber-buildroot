@@ -30,10 +30,10 @@ define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
-ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
+ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
-        mkdir -p $(TARGET_DIR)/home/test/
-	        cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
+	mkdir -p $(TARGET_DIR)/home/test/
+	cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
 endef
 else
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK

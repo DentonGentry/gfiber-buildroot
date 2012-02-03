@@ -6,16 +6,15 @@ config BR2_PACKAGE_BRUNO
 	help
 	  Customization for Bruno boards.
 
-config BR2_PACKAGE_BRUNO_DEBUG
-	bool "Bruno Debug Build"
+config BR2_PACKAGE_BRUNO_TEST
+	bool "Include Test Packages"
 	default n
-	select BR2_ENABLE_DEBUG
 	select BR2_PACKAGE_BONNIE
 	select BR2_PACKAGE_DHRYSTONE
 	select BR2_PACKAGE_DROPBEAR
 	select BR2_PACKAGE_DROPBEAR_SMALL
 	select BR2_PACKAGE_ETHTOOL
-	select BR2_PACKAGE_GDB
+	select BR2_PACKAGE_FIO
 	select BR2_PACKAGE_GDB_SERVER
 	select BR2_PACKAGE_IPERF
 	select BR2_PACKAGE_LMBENCH
@@ -27,9 +26,16 @@ config BR2_PACKAGE_BRUNO_DEBUG
 	select BR2_PACKAGE_TCPDUMP
 	select BR2_PACKAGE_TCPDUMP_SMB
 	select BR2_PACKAGE_WHETSTONE
-        select BR2_PACKAGE_FIO
 	help
-	  Enable debug packages and symbols.
+	  Enable packages for test.
+
+config BR2_PACKAGE_BRUNO_DEBUG
+	bool "Bruno Debug Build"
+	default n
+	select BR2_ENABLE_DEBUG
+	select BR2_PACKAGE_GDB
+	help
+	  Enable debug code.
 
 choice
 	prompt "Board selection"
