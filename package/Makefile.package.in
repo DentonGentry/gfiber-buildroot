@@ -117,7 +117,6 @@ define DOWNLOAD_REPO
 	fi; \
 	/bin/sh /usr/share/doc/git/contrib/workdir/git-new-workdir $(TOPDIR)/../.repo/projects/$($(PKG)_REPO_PATH).git $($(PKG)_BASE_NAME)/ $$DL_VERSION; \
 	) && \
-	echo "$($(PKG)_REPO_PATH) $$($(GIT) --git-dir=$($(PKG)_BASE_NAME)/.git show-ref --head HEAD --hash)" >> $(TARGET_DIR)/etc/repo-buildroot-manifest && \
 	popd > /dev/null)
 endef
 
