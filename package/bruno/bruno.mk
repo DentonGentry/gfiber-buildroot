@@ -59,6 +59,7 @@ endef
 
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
+	repo manifest -r -o $(TARGET_DIR)/etc/repo-buildroot-manifest
 	echo 0.1.0-$(BUILD_SECS) > $(TARGET_DIR)/etc/version
 	echo 0.1.0-$(BUILD_SECS) > $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
