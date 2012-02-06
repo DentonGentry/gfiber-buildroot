@@ -26,6 +26,8 @@ config BR2_PACKAGE_BRUNO_TEST
 	select BR2_PACKAGE_TCPDUMP
 	select BR2_PACKAGE_TCPDUMP_SMB
 	select BR2_PACKAGE_WHETSTONE
+	select BR2_PACKAGE_SDPARM
+	select BR2_PACKAGE_SYSSTAT
 	help
 	  Enable packages for test.
 
