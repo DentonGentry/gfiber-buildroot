@@ -4,11 +4,21 @@ RETVAL=0
 PLATFORM=$(cat /etc/platform)
 
 start() {
+  if [ -e /rw/startupmods ]; then
+    echo Executing startupmods 
+    . /rw/startupmods
+  fi
+
   cd /app/sage
   if [ "$PLATFORM" = "GFHD100" ]; then
     ./runsageclient &
   else
     ./runsage &
+  fi
+
+  if [ -e /rw/poststartupmods ]; then
+    echo Executing poststartupmods 
+    . /rw/poststartupmods
   fi
   return $RETVAL
 }
