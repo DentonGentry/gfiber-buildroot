@@ -282,9 +282,16 @@ def main():
                     help="Add test packages."
                     "DEFAULT=FALSE")
   (options, remainder) = parser.parse_args()
-  if len(remainder) != 1:
-    parser.error("Incorrect arguments - " + ' '.join(remainder))
-  options.base_dir = os.path.abspath(remainder[0]);
+  if len(remainder) == 1:
+    options.base_dir = os.path.abspath(remainder[0]);
+  else:
+    if options.debug:
+      debug_path = "debug"
+    else:
+      debug_path = "release"
+    gitpwd = subprocess.Popen("git rev-parse --abbrev-ref HEAD".split(), stdout=subprocess.PIPE).communicate()[0].strip()
+    options.base_dir = os.path.abspath(os.path.join("..", "builds", gitpwd, debug_path))
+    Logger.warn("Using default build directory of buildroot branch: %s" % options.base_dir)
   if (not os.path.exists(options.base_dir)):
     Logger.warn("Build directory " + options.base_dir + \
                 " does not exist, creating it...")
