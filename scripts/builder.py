@@ -11,6 +11,7 @@ import os
 import sys
 import subprocess
 import tarfile
+import time
 import shutil
 from optparse import OptionParser
 
@@ -48,6 +49,7 @@ class BuildRootBuilder:
     self.options = options
 
   def build(self):
+    starttime = time.time()
     try:
       self.print_options()
       if self.options.fresh_build:
@@ -58,6 +60,9 @@ class BuildRootBuilder:
       self.bundle_image()
     except BuildError as e:
       Logger.error(e.value)
+    endtime = time.time()
+    elapsed = endtime - starttime
+    Logger.info("Time executed: %d:%02d" % (elapsed / 60, elapsed % 60))
     return
 
   @staticmethod
@@ -103,12 +108,19 @@ class BuildRootBuilder:
   def clean_build_output_dir(self):
     Logger.info("Cleaning " + self.options.base_dir + "...")
     self.make(["clean"])
+    if os.path.exists(os.path.join(self.options.base_dir,".localconfig")):
+      os.unlink(os.path.join(self.options.base_dir,".localconfig"))
 
   def build_config(self, config_file):
     if self.options.debug:
-      config_file += "_debug"
+      localcfg = file(os.path.join(self.options.base_dir,".localconfig"),"a")
+      # TODO(kedong): when the loader can handle more than 40M kernel,
+      # we will add the strip_none back.
+      # localcfg.write('BR2_STRIP_none=y\n')
+      localcfg.write("BR2_PACKAGE_BRUNO_DEBUG=y\n")
+      localcfg.close()
     Logger.info("Final config file: " + config_file + "...");
-    self.make([config_file])
+    self.make([config_file + "_rebuild"])
     # Grab all the sources we need for this config
     self.make(["source"])
 
@@ -150,7 +162,19 @@ class BuildRootBuilder:
     BuildRootBuilder.__log_start("Building Rootfs")
     config_file = self.options.product_family + '_' + self.options.model + \
         self.options.chip_revision + "_defconfig"
+    # Add packages if not platform build:
     Logger.info("Use config file " + config_file + " for rootfs.")
+    localcfg = file(os.path.join(self.options.base_dir,".localconfig"),"a")
+    if self.options.platform_only:
+      Logger.info("Building platform-only image.")
+      localcfg.write("BR2_PACKAGE_BRUNO_APPS=n\n")
+    else:
+      Logger.info("Building full image.")
+      localcfg.write("BR2_PACKAGE_BRUNO_APPS=y\n")
+    if self.options.test_packages:
+      Logger.info("Adding test packages")
+      localcfg.write("BR2_PACKAGE_BRUNO_TEST=y\n")
+    localcfg.close()
     self.build_config(config_file)
     args = []
     if (self.options.verbose):
@@ -244,6 +268,18 @@ def main():
                     dest="fresh_build",
                     default=False,
                     help="Build a fresh image; ie build all from scratch. "
+                    "DEFAULT=FALSE")
+  parser.add_option("-x", "--platform-only",
+                    action="store_true",
+                    dest="platform_only",
+                    default=False,
+                    help="Build only base platform (no webkit, netflix, etc.)"
+                    "DEFAULT=FALSE")
+  parser.add_option("-t", "--test",
+                    action="store_true",
+                    dest="test_packages",
+                    default=False,
+                    help="Add test packages."
                     "DEFAULT=FALSE")
   (options, remainder) = parser.parse_args()
   if len(remainder) != 1:
