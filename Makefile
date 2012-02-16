@@ -42,7 +42,7 @@ export BR2_VERSION_FULL:=$(BR2_VERSION)$(shell $(TOPDIR)/scripts/setlocalversion
 noconfig_targets:=menuconfig nconfig gconfig xconfig config oldconfig randconfig \
 	defconfig %_defconfig savedefconfig allyesconfig allnoconfig silentoldconfig release \
 	randpackageconfig allyespackageconfig allnopackageconfig \
-	source-check %_defconfig_debug
+	source-check %_defconfig_rebuild
 
 # Strip quotes and then whitespaces
 qstrip=$(strip $(subst ",,$(1)))
@@ -586,9 +586,12 @@ defconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config
 	@$(COMMON_CONFIG_ENV) $< --defconfig=$(TOPDIR)/configs/$@ $(CONFIG_CONFIG_IN)
 
-%_defconfig_debug:  $(BUILD_DIR)/buildroot-config/conf outputmakefile
+%_defconfig_rebuild:  $(BUILD_DIR)/buildroot-config/conf outputmakefile
 	@make ${EXTRAMAKEARGS} $*_defconfig
-	@make ${EXTRAMAKEARGS} $*_defconfig_debug_impl
+	@if [[ -e $(CONFIG_DIR)/.localconfig ]]; then \
+		cat $(CONFIG_DIR)/.localconfig >> $(CONFIG_DIR)/.config; \
+		rm $(CONFIG_DIR)/.localconfig; \
+	fi
 	@$(COMMON_CONFIG_ENV) $< --defconfig=$(CONFIG_DIR)/.config $(CONFIG_CONFIG_IN)
 
 savedefconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
