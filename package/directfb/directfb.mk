@@ -7,7 +7,10 @@ DIRECTFB_VERSION_MAJOR = 1.4
 DIRECTFB_VERSION = $(DIRECTFB_VERSION_MAJOR).13
 DIRECTFB_SITE = http://www.directfb.org/downloads/Core/DirectFB-$(DIRECTFB_VERSION_MAJOR)
 DIRECTFB_SOURCE = DirectFB-$(DIRECTFB_VERSION).tar.gz
-DIRECTFB_DEPENDENCIES = bcm_apps
+# we're using bcm_apps to provide directfb, but to avoid circular
+# dependencies, we won't explicitly mention it. the only dependency
+# on bcm_apps is that the source is extracted and patched
+directfb-build: bcm_apps-patch
 DIRECTFB_INSTALL_STAGING = YES
 DIRECTFB_INSTALL_TARGET = YES
 
