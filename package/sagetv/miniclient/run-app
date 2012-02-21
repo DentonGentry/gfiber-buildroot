@@ -1,11 +1,12 @@
 #!/bin/sh
 
-appname=$(awk '{print $1}' /tmp/runappold)
+appname=$(python -c "import sys;[sys.stdout.write(l.split(' ')[0].strip()) for l in sys.stdin]" < /tmp/runappold)
 
 case $appname in
 netflix)
   cd /usr/local/bin/netflix
-  ./start netflix -I key.bin $(awk '{print $2}' /tmp/runappold)
+  netflixopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
+  ./start netflix $netflixopt
   ;;
 youtube)
   cd /usr/local/bin/browsertest
