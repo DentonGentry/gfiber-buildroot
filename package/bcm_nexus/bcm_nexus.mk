@@ -16,6 +16,7 @@ define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples pkg-config
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/utils all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples apps
+	cd $(@D)/../BSEAV/lib/playbackdevice && $(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) NEXUS_MGR_DIR=$(@D)/../BSEAV/lib/playbackdevice/nexusMgr/ $(MAKE) $(BCM_MAKEFLAGS) all
 endef
 
 define BCM_NEXUS_INSTALL_STAGING_CMDS
@@ -28,6 +29,8 @@ define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
 	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/libnexus.so
 	$(INSTALL) -D $(BCM_NEXUS_SECURITY_LIB).so $(TARGET_DIR)/usr/lib/libnexus_security.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(TARGET_DIR)/usr/lib/libPlaybackDevice.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/PLAT/libcmndrm.so $(TARGET_DIR)/usr/lib/libcmndrm.so
 endef
 
 $(eval $(call GENTARGETS,package,bcm_nexus))
