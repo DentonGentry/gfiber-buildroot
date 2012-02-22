@@ -125,10 +125,22 @@ class BuildRootBuilder:
     # Grab all the sources we need for this config
     self.make(["source"])
 
+  def force_clean_packages(self):
+    BuildRootBuilder.__log_start("Force cleaning packages")
+    packages = ["bruno", "util-linux"]
+    if os.path.exists(os.path.join(self.options.top_dir,".forceclean")):
+        packages.extend(file(os.path.join(self.options.top_dir,".forceclean"))
+                        .readlines())
+    packages = [p.strip() for p in packages]
+    Logger.warn("Cleaning packages: %s" % " ".join(packages))
+    self.make(["%s-dirclean" % p for p in packages])
+    BuildRootBuilder.__log_done("Completed cleaning packages")
+
   def build_initramfs(self):
     if not self.options.initramfs:
       return
     BuildRootBuilder.__log_start("Building Initramfs")
+    self.force_clean_packages()
     config_file = self.options.product_family + "_initramfs_" + \
         self.options.model + self.options.chip_revision + "_defconfig"
     Logger.info("Use config file " + config_file + " for initramfs.")
@@ -161,6 +173,7 @@ class BuildRootBuilder:
 
   def build_rootfs(self):
     BuildRootBuilder.__log_start("Building Rootfs")
+    self.force_clean_packages()
     config_file = self.options.product_family + '_' + self.options.model + \
         self.options.chip_revision + "_defconfig"
     # Add packages if not platform build:
