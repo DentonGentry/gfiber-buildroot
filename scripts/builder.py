@@ -77,6 +77,7 @@ class BuildRootBuilder:
     print "=========================================================="
     print "CHIP REVISION  :", self.options.chip_revision
     print "DEBUG          :", self.options.debug
+    print "TEST_IMAGE     :", self.options.test_packages
     print "INITRAMFS      :", self.options.initramfs
     print "MODEL          :", self.options.model
     print "PRODUCT FAMILY :", self.options.product_family
@@ -204,19 +205,12 @@ class BuildRootBuilder:
       vmlinuz.write(vmlinux.read())
       vmlinuz.close()
       vmlinux.close()
-      # ubinize vmlinz
+      # ubinize vmlinuz
       Logger.info("Creating ubi image for vmlinuz...")
       cmd = host_dir + "/usr/sbin/ubinize -o " + binaries_dir + \
             "/vmlinuz.ubi " + ubi_ubinize_opts + ' ' + staging_dir + \
             "/etc/kernel_ubinize.cfg"
       self.PopenDir(binaries_dir, cmd, shell=True)
-      # bundle image in hdf format
-      Logger.info("Creating final hdf image...")
-      shutil.copyfile(staging_dir+"/usr/lib/humax/loader.bin",
-                      binaries_dir+"/loader.bin")
-      cmd = [staging_dir+"/usr/lib/humax/makehdf",
-             staging_dir+"/usr/lib/bruno/lkr.cfg", "bruno.hdf"]
-      self.PopenDir(binaries_dir, cmd)
       # bundle image in tar format
       Logger.info("Creating final tgz image...")
       tar = tarfile.open(binaries_dir+"/bruno_ginstall_image.tgz", "w:gz")
