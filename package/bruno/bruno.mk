@@ -60,8 +60,8 @@ endef
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/repo-buildroot-manifest
-	sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest > $(TARGET_DIR)/etc/version
-	sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest > $(BINARIES_DIR)/version
+	echo 0.2.0-$(BUILD_SECS)-$(shell sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest | cut -c1-40) > $(TARGET_DIR)/etc/version
+	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
 	$(BRUNO_INSTALL_TARGET_CMDS_DIAG)
 	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
