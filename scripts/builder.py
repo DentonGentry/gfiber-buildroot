@@ -140,7 +140,6 @@ class BuildRootBuilder:
     if not self.options.initramfs:
       return
     BuildRootBuilder.__log_start("Building Initramfs")
-    self.force_clean_packages()
     config_file = self.options.product_family + "_initramfs_" + \
         self.options.model + self.options.chip_revision + "_defconfig"
     Logger.info("Use config file " + config_file + " for initramfs.")
@@ -149,6 +148,7 @@ class BuildRootBuilder:
     build_dir = self.options.base_dir + "/build"
     target_dir = self.options.base_dir + "/target"
     stamp_dir = self.options.base_dir + "/stamps"
+    self.force_clean_packages()
     if os.path.exists(target_dir):
       Logger.info("Removing target directory...");
       shutil.rmtree(target_dir)
@@ -173,7 +173,6 @@ class BuildRootBuilder:
 
   def build_rootfs(self):
     BuildRootBuilder.__log_start("Building Rootfs")
-    self.force_clean_packages()
     config_file = self.options.product_family + '_' + self.options.model + \
         self.options.chip_revision + "_defconfig"
     # Add packages if not platform build:
@@ -193,6 +192,7 @@ class BuildRootBuilder:
     args = []
     if (self.options.verbose):
       args.append("V=1")
+    self.force_clean_packages()
     self.make(args)
     BuildRootBuilder.__log_done("Building Rootfs")
     return
