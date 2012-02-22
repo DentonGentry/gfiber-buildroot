@@ -230,6 +230,7 @@ class BuildRootBuilder:
       tar.add(binaries_dir+"/vmlinuz", "vmlinuz");
       tar.add(binaries_dir+"/rootfs.squashfs_ubi",
               "rootfs.squashfs_ubi");
+      tar.add(binaries_dir+"/version", "version")
       tar.close()
     BuildRootBuilder.__log_done("Bundling Image")
     return
