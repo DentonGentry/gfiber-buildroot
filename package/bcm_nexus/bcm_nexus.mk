@@ -23,12 +23,16 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	ln -sf $(@D) $(STAGING_DIR)/$(BCM_NEXUS_STAGING_PATH)
 	sed -i"" -e "s@$(@D)@/$(BCM_NEXUS_STAGING_PATH)@g" -e "s@std=c89@std=c99@g" $(@D)/bin/nexus.pc
 	$(INSTALL) -D $(@D)/bin/nexus.pc $(STAGING_DIR)/usr/lib/pkgconfig/nexus.pc
+	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $(STAGING_DIR)/usr/lib/libnexusMgr.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(STAGING_DIR)/usr/lib/libPlaybackDevice.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/PLAT/libcmndrm.so $(STAGING_DIR)/usr/lib/libcmndrm.so
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
 	$(INSTALL) -D $(@D)/bin/libnexus.so $(TARGET_DIR)/usr/lib/libnexus.so
 	$(INSTALL) -D $(BCM_NEXUS_SECURITY_LIB).so $(TARGET_DIR)/usr/lib/libnexus_security.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $(TARGET_DIR)/usr/lib/libnexusMgr.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(TARGET_DIR)/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/PLAT/libcmndrm.so $(TARGET_DIR)/usr/lib/libcmndrm.so
 endef

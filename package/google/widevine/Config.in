@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_WIDEVINE
+        bool "google_widevine"
+        help
+          Installs the widevine libraries
