@@ -52,6 +52,9 @@ ifeq ($(BR2_PACKAGE_BCM_APP_NETFLIX),y)
 define BCM_APPS_BUILD_NETFLIX
 	$(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) $(MAKE1) $(NETFLIX_MAKEFLAGS) -C $(@D)/thirdparty/netflix/3.x all
 endef
+define BCM_APPS_NETFLIX_INSTALL_TARGET_CMDS
+	ln -sf /tmp/playready.bin $(TARGET_DIR)/usr/local/bin/netflix/playready.bin
+endef
 endif
 
 ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
@@ -72,6 +75,7 @@ define BCM_APPS_INSTALL_TARGET_CMDS
 	$(RM) -f $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
 	ln -s ../../../lib/modules/nexus.ko \
 	  $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
+	$(BCM_APPS_NETFLIX_INSTALL_TARGET_CMDS)
 endef
 
 define BCM_APPS_INSTALL_STAGING_CMDS
