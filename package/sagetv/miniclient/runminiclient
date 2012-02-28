@@ -2,7 +2,7 @@
 
 cd /app/client
 
-export LD_LIBRARY_PATH=/app/client:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
 while true; do
   cd /app/client
   # This must be cleared for local server connection
