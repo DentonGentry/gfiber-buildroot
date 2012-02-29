@@ -1,0 +1,8 @@
+config BR2_PACKAGE_IPUTILS
+	bool "iputils"
+	depends on BR2_LINUX_KERNEL
+	help
+	  ping, ping6, traceroute, traceroute6
+
+	  http://www.skbuff.net/iputils/
+	  git://git.linux-ipv6.org/gitroot/iputils.git
