@@ -30,15 +30,10 @@ define BRUNO_INSTALL_STAGING_CMDS_CONFIG
 	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
 endef
 
-ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
 	mkdir -p $(TARGET_DIR)/home/test/
 	cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
 endef
-else
-define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
-endef
-endif
 
 define BRUNO_INSTALL_TARGET_CMDS_DIAG
 	$(INSTALL) -D -m 0755 $(@D)/bruno/diag/diagd $(TARGET_DIR)/usr/bin/diagd
@@ -57,14 +52,22 @@ define BRUNO_INSTALL_STAGING_CMDS
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
 endef
 
+ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
+define BRUNO_INSTALL_TARGET_CMDS_TEST
+	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
+	$(BRUNO_INSTALL_TARGET_CMDS_DIAG)
+	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
+	perl -p -i -e "s%^# TEST_AGETTY%S0:1:respawn:/sbin/agetty -L ttyS0 115200 vt100%" $(TARGET_DIR)/etc/inittab
+endef
+endif
+
+
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/repo-buildroot-manifest
 	echo 0.2.0-$(BUILD_SECS)-$(shell sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest | cut -c1-40) > $(TARGET_DIR)/etc/version
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
-	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
-	$(BRUNO_INSTALL_TARGET_CMDS_DIAG)
-	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
+	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
 endef
 
 $(eval $(call GENTARGETS,package,bruno))
