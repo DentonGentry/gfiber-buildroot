@@ -218,4 +218,8 @@ $(error No kernel configuration file specified, check your BR2_LINUX_KERNEL_CUST
 endif
 endif
 
+define LINUX_DIRCLEAN_CMDS
+rm -f $(BINARIES_DIR)/rootfs.initramfs
+endef
+
 endif

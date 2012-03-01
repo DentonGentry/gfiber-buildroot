@@ -352,6 +352,7 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 
 # Remove package sources
 $(BUILD_DIR)/%/.stamp_dircleaned:
+	$($(PKG)_DIRCLEAN_CMDS)
 	rm -Rf $(@D)
 	@if [[ "$($(PKG)_SITE_METHOD)" == "repo" ]]; then \
 		echo rm -f $(DL_DIR)/$($(PKG)_SOURCE); \
