@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_WEBRTC
+	bool "google_webrtc"
+	help
+	  webrtc is the software codec for Google Talk Voice and Video.
