@@ -2,11 +2,20 @@
 
 appname=$(python -c "import sys;[sys.stdout.write(l.split(' ')[0].strip()) for l in sys.stdin]" < /tmp/runappold)
 
+netflix_clean_up() {
+  logger -t netflix "Netflix exits abnormally, cleaning up..."
+  rm -rf /user/drm/* /user/netflix/*
+  rm -f /user/rw/netflix.run
+}
+
 case $appname in
 netflix)
   cd /usr/local/bin/netflix
+  echo "0" > /rw/netflix.run
   netflixopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
   ./start netflix $netflixopt
+  [ $? != "0" ] && netflix_clean_up
+  rm /rw/netflix.run
   ;;
 youtube)
   cd /usr/local/bin/browsertest
