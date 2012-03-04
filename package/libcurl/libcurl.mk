@@ -22,6 +22,10 @@ else
 LIBCURL_CONF_OPT += --without-ssl
 endif
 
+ifeq ($(BR2_INET_IPV6),y)
+LIBCURL_CONF_OPT += --enable-ipv6
+endif
+
 define LIBCURL_TARGET_CLEANUP
 	rm -rf $(TARGET_DIR)/usr/bin/curl-config \
 	       $(if $(BR2_PACKAGE_CURL),,$(TARGET_DIR)/usr/bin/curl)
