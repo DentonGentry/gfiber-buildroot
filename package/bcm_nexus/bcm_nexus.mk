@@ -27,6 +27,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(STAGING_DIR)/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/CARD/libcmndrm.so $(STAGING_DIR)/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/common_crypto/lib/7425/libcmncrypto.so $(STAGING_DIR)/usr/lib/libcmncrypto.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/libdrmrootfs.so $(STAGING_DIR)/usr/lib/libdrmrootfs.so
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
@@ -37,6 +38,7 @@ define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(TARGET_DIR)/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/CARD/libcmndrm.so $(TARGET_DIR)/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/common_crypto/lib/7425/libcmncrypto.so $(TARGET_DIR)/usr/lib/libcmncrypto.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/libdrmrootfs.so $(TARGET_DIR)/usr/lib/libdrmrootfs.so
 endef
 
 $(eval $(call GENTARGETS,package,bcm_nexus))
