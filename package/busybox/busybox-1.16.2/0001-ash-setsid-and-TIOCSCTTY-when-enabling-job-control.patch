@@ -1,0 +1,33 @@
+From c218648f1a888a75dc7edae3e89c631818e3c5ca Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 9 Mar 2012 20:27:16 -0500
+Subject: [PATCH] ash: setsid and TIOCSCTTY when enabling job control.
+
+Both calls will fail if we are already a process group leader, or the
+process group leader is not us, or we already have a controlling terminal.
+So basically these calls are harmless in the worst case, and get rid of the
+annoying "can't access tty; job control turned off" message in the best
+case.
+
+This makes busybox sh useful with "init=/bin/sh" on the Linux kernel command
+line.
+---
+ shell/ash.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/shell/ash.c b/shell/ash.c
+index 5671a52..5259dd2 100644
+--- a/shell/ash.c
++++ b/shell/ash.c
+@@ -3727,6 +3727,8 @@ setjobctl(int on)
+ 		if (fd < 0)
+ 			goto out;
+ 		/* fd is a tty at this point */
++		setsid();
++		ioctl(fd, TIOCSCTTY, 0);
+ 		close_on_exec_on(fd);
+ 		do { /* while we are in the background */
+ 			pgrp = tcgetpgrp(fd);
+-- 
+1.7.7.3
+
