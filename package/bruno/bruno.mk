@@ -42,9 +42,11 @@ endif
 
 endif
 
+ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
 define BRUNO_BUILD_CMDS
 	$(BRUNO_BUILD_CMDS_DIAG)
 endef
+endif
 
 define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)

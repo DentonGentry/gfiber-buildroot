@@ -1,8 +1,6 @@
 config BR2_PACKAGE_BRUNO
 	bool "Enable Bruno Board"
 	default y
-	select BR2_PACKAGE_GOOGLE_PLATFORM_BASE
-	select BR2_PACKAGE_GOOGLE_PLATFORM_PERIPHERAL
 	help
 	  Customization for Bruno boards.
 
@@ -83,12 +81,17 @@ choice
 	help
 	  Select the Bruno board you are building for.
 
-config BR2_PACKAGE_BRUNO_GFHD100
-	bool "Bruno GFHD100 Board"
-	select BR2_PACKAGE_BRCM_DRIVER_MOCA
-	select BR2_PACKAGE_BRCM_DRIVER_WIFI
-	select BR2_PACKAGE_BRCM_DRIVER_BLUETOOTH
-	help
-	  Builds for Bruno GFHD100 board.
+	config BR2_PACKAGE_BRUNO_NONE
+		bool "None"
+		help
+		  Do not include board-specific drivers.
+
+	config BR2_PACKAGE_BRUNO_GFHD100
+		bool "Bruno GFHD100 Board"
+		select BR2_PACKAGE_BRCM_DRIVER_MOCA
+		select BR2_PACKAGE_BRCM_DRIVER_WIFI
+		select BR2_PACKAGE_BRCM_DRIVER_BLUETOOTH
+		help
+		  Builds for Bruno GFHD100 board.
 
 endchoice
