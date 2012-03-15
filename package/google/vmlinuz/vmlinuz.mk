@@ -15,6 +15,7 @@ ifneq ($(BR2_TARGET_ROOTFS_UBI_SUBSIZE),0)
 endif
 
 define GOOGLE_VMLINUZ_INSTALL_STAGING_CMDS
+	mkdir -p $(STAGING_DIR)/etc
 	cp package/google/vmlinuz/kernel_ubinize.cfg $(STAGING_DIR)/etc/kernel_ubinize.cfg
 	echo $(UBI_UBINIZE_OPTS) > $(STAGING_DIR)/etc/kernel_ubi_opts
 endef
