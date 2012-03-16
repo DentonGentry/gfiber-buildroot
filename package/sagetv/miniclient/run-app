@@ -5,7 +5,6 @@ appname=$(python -c "import sys;[sys.stdout.write(l.split(' ')[0].strip()) for l
 netflix_clean_up() {
   logger -t netflix "Netflix exits abnormally, cleaning up..."
   rm -rf /user/drm/* /user/netflix/*
-  rm -f /user/rw/netflix.run
 }
 
 case $appname in
