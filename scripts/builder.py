@@ -11,6 +11,7 @@ import sys
 import tarfile
 import time
 import options
+import re
 
 __author__ = 'kedong@google.com (Ke Dong)'
 
@@ -278,6 +279,21 @@ def main():
   if not os.path.exists(opt.base_dir):
     Warn('Build directory %r does not exist; creating...', opt.base_dir)
     os.makedirs(opt.base_dir)
+  if not opt.platform_only:
+    loasstat = subprocess.Popen(
+        'prodcertstatus --check_loas'.split(),
+        stdout=subprocess.PIPE).communicate()[0].strip()
+    left = re.match(r'(LOAS cert expires in (\d+):(\d+))', loasstat)
+    if left and left.group(2):
+      if int(left.group(2)) < 2:
+          print 'Your LOAS certificate is only good for less than 2 hours.'
+          print 'Please use prodaccess to renew your LOAS cert.'
+          sys.exit(-1)
+    else:
+      print 'Your LOAS certificate has expired.'
+      print 'Please use prodaccess to renew your LOAS cert.'
+      sys.exit(-1)
+
   opt.top_dir = os.path.abspath(os.path.dirname(sys.argv[0]) + '/..')
   builder = BuildRootBuilder(opt)
   builder.Build()
