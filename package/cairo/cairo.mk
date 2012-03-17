@@ -47,7 +47,7 @@ CAIRO_DEPENDENCIES = host-pkg-config fontconfig pixman
 ifeq ($(BR2_PACKAGE_DIRECTFB),y)
 	CAIRO_CONF_OPT += --enable-directfb
 	CAIRO_DEPENDENCIES += directfb
-	CAIRO_CONF_ENV += directfb_CFLAGS="-I$(BCM_APPS_DIR)/opensource/directfb/bin/DirectFB-1.4.15_$(BCM_APPS_BUILD_TYPE)_build.97425B0/usr/local/include/directfb"
+	CAIRO_CONF_ENV += directfb_CFLAGS="-I$(BCM_APPS_DIR)/opensource/directfb/bin/DirectFB-1.4.15_$(BCM_APPS_BUILD_TYPE)_build.97425$(BCHP_VER)/usr/local/include/directfb"
 	CAIRO_CONF_ENV += directfb_LIBS="-L$(STAGING_DIR)/staging/usr/local/lib -ldirect -ldirectfb -lfusion"
 else
 	CAIRO_CONF_OPT += --disable-directfb
