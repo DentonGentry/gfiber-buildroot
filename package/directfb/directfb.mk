@@ -16,6 +16,14 @@ DIRECTFB_INSTALL_TARGET = YES
 
 include package/bcm_common/bcm_common.mk
 
+define DIRECTFB_REMOVE_CONFIG
+	rm -f $(TARGET_DIR)/usr/local/bin/directfb/$(DIRECTFB_VERSION_MAJOR)/directfb-config
+endef
+
+ifeq ($(BR2_PACKAGE_BRUNO),y)
+DIRECTFB_POST_INSTALL_TARGET_HOOKS += DIRECTFB_REMOVE_CONFIG
+endif
+
 define DIRECTFB_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) -C $(BCM_APPS_DIR)/common directfb
 endef
