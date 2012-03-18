@@ -181,6 +181,7 @@ class BuildRootBuilder(object):
         cmd = 'find ' + stamp_dir + ' -name *installed -exec rm {} \;'
         self.PopenDir(self.opt.top_dir, cmd, shell=True)
     args = []
+    args.append('BCHP_VER='+self.opt.chip_revision.upper())
     if self.opt.verbose:
       args.append('V=1')
     self.Make(args)
@@ -211,6 +212,7 @@ class BuildRootBuilder(object):
     localcfg.close()
     self.BuildConfig(config_file)
     args = []
+    args.append('BCHP_VER='+self.opt.chip_revision.upper())
     if self.opt.verbose:
       args.append('V=1')
     self.ForceCleanPackages()
