@@ -22,7 +22,7 @@ p,product-family=  Product family (eg. bruno, bcm7425) [bruno]
 m,model=           Model name [gfhd100]
 c,chip-revision=   Chip revision [b0]
 v,verbose          Increase verbosity
-n,no-initramfs     Build kernel without initramfs
+n,no-initramfs     Build kernel without initramfs [1]
 d,debug,debug-image  Build debug image with extra debugging features
 b,bundle-only      Only bundle the image
 f,fresh            Build a fresh image (ie. build all from scratch)
