@@ -52,9 +52,6 @@ ifeq ($(BR2_PACKAGE_BCM_APP_NETFLIX),y)
 define BCM_APPS_BUILD_NETFLIX
 	$(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) $(MAKE1) $(NETFLIX_MAKEFLAGS) -C $(@D)/thirdparty/netflix/3.x all
 endef
-define BCM_APPS_NETFLIX_INSTALL_TARGET_CMDS
-	ln -sf /tmp/playready.bin $(TARGET_DIR)/usr/local/bin/netflix/playready.bin
-endef
 endif
 
 ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
@@ -62,6 +59,20 @@ BCM_APPS_BUILD_TYPE=debug
 else
 BCM_APPS_BUILD_TYPE=release
 endif
+
+ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
+LICENSE_TYPE=playready_dev_license
+else
+LICENSE_TYPE=playready_prod_license
+endif
+
+define BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS
+	mkdir -p $(TARGET_DIR)/usr/local/licenses
+	(pushd . > /dev/null; \
+	cd /home/build/google3; \
+	blaze run --forge -- //isp/fiber/drm:drm_keystore_client --key_type $(LICENSE_TYPE) --output $(TARGET_DIR)/usr/local/licenses/playready.bin \
+	popd > /dev/null)
+endef
 
 define BCM_APPS_BUILD_CMDS
 	$(BCM_APPS_BUILD_APPS)
@@ -77,7 +88,7 @@ define BCM_APPS_INSTALL_TARGET_CMDS
 	$(RM) -f $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
 	ln -s ../../../lib/modules/nexus.ko \
 	  $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
-	$(BCM_APPS_NETFLIX_INSTALL_TARGET_CMDS)
+	$(BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS)
 endef
 
 define BCM_APPS_INSTALL_STAGING_CMDS
