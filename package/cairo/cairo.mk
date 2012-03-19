@@ -44,6 +44,14 @@ CAIRO_CONF_ENV = ac_cv_func_posix_getpwuid_r=yes glib_cv_stack_grows=no \
 
 CAIRO_DEPENDENCIES = host-pkg-config fontconfig pixman
 
+ifeq ($(BR2_PACKAGE_BRUNO),y)
+	CAIRO_POST_INSTALL_TARGET_HOOKS += CAIRO_REMOVE_TRACE
+endif
+
+define CAIRO_REMOVE_TRACE
+	rm -f $(TARGET_DIR)/usr/bin/cairo-trace
+endef
+
 ifeq ($(BR2_PACKAGE_DIRECTFB),y)
 	CAIRO_CONF_OPT += --enable-directfb
 	CAIRO_DEPENDENCIES += directfb
