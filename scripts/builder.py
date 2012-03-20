@@ -29,6 +29,7 @@ import sys
 import tarfile
 import time
 import options
+from multiprocessing import Process
 
 __author__ = 'kedong@google.com (Ke Dong)'
 
@@ -140,10 +141,18 @@ class BuildRootBuilder(object):
       Makedirs(self._Path(INIT, 'images'))
       Makedirs(self._Path(APP, 'images'))
       if not self.opt.bundle_only:
+        p_init = None
+        p_app = None
         if self.opt.init:
-          self.BuildInitFs()
+          p_init = Process(target=self.BuildInitFs)
+          p_init.start()
         if self.opt.app:
-          self.BuildAppFs()
+          p_app = Process(target=self.BuildAppFs)
+          p_app.start()
+        if p_init:
+          p_init.join()
+        if p_app:
+          p_app.join()
       self.BundleImage()
     finally:
       endtime = time.time()
