@@ -1,0 +1,7 @@
+config BR2_PACKAGE_ZSH
+	bool "zsh"
+	help
+	Zsh is a shell designed for interactive use, 
+	although it is also a powerful scripting language
+
+	http://zsh.sourceforge.net/
