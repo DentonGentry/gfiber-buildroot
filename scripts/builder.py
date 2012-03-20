@@ -187,10 +187,10 @@ class BuildRootBuilder(object):
       init_or_app: either INIT or APP
       targets: which targets to ask make to build ([] means default)
     """
-    #TODO(apenwarr): put BHCP_VER elsewhere so 'make' finds it, even if
+    #TODO(apenwarr): put BCHP_VER elsewhere so 'make' finds it, even if
     #  further builds are not done with this script.
     cmd = ['make', 'O=%s' % self._Path(init_or_app),
-           'BHCP_VER=%s' % self.opt.chip_revision.upper()] + targets
+           'BCHP_VER=%s' % self.opt.chip_revision.upper()] + targets
     if self.opt.verbose:
       cmd += ['V=1']
     self.PopenAt(self.top_dir, cmd)
