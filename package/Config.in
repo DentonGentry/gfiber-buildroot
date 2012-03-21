@@ -536,10 +536,6 @@ source "package/vim/Config.in"
 endif
 endmenu
 
-menu "Marvell custom build"
-source "package/mv_cust/Config.in"
-endmenu
-
 menu "Bruno custom build"
 source "package/bruno/Config.in"
 source "package/sagetv/Config.in"
