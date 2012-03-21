@@ -322,6 +322,7 @@ TARGETS+=target-purgelocales
 endif
 
 include fs/common.mk
+include local.mk
 
 TARGETS+=erase-fakeroots
 
