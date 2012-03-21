@@ -3,21 +3,10 @@
 # Start the network....
 #
 
-echo "Starting network services"
 case "$1" in
   start)
  	echo "Starting network..."
-        # :TODO: (by kedong, integrate with outside rcS)
-	if [[ "$cmdline" != *nfsroot=* ]]; then
-		# set up networking if we are not on an NFS rootfs
-		for x in `ls /sys/class/net`; do
-			echo "Configuring $x interface"
-			/sbin/ifup $x
-		done
-	else
-		# just configure loopback
-		/sbin/ifup lo
-	fi
+	/sbin/ifup -a
 	;;
   stop)
 	echo -n "Stopping network..."
