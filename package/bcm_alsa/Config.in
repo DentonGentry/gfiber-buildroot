@@ -1,6 +1,0 @@
-config BR2_PACKAGE_BCM_ALSA
-	bool "Build Broadcom ALSA package"
-	select BR2_PACKAGE_BCM_NEXUS
-	select BR2_PACKAGE_BCM_MAGNUM
-	select BR2_PACKAGE_BCM_BSEAV
-
