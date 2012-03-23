@@ -22,6 +22,7 @@ time you run an incremental build.
 import errno
 import glob
 import gzip
+import multiprocessing
 import os
 import re
 import subprocess
@@ -29,7 +30,6 @@ import sys
 import tarfile
 import time
 import options
-from multiprocessing import Process
 
 __author__ = 'kedong@google.com (Ke Dong)'
 
@@ -85,10 +85,10 @@ class SubprocError(Exception):
   pass
 
 
-def PopenAndRead(args, **_kwargs):
-  kwargs = dict(stdout=subprocess.PIPE)
-  kwargs.update(_kwargs)
-  p = subprocess.Popen(args, **kwargs)
+def PopenAndRead(args, **kwargs):
+  nkwargs = dict(stdout=subprocess.PIPE)
+  nkwargs.update(kwargs)
+  p = subprocess.Popen(args, **nkwargs)
   data = p.stdout.read()
   retval = p.wait()
   if retval:
@@ -144,10 +144,10 @@ class BuildRootBuilder(object):
         p_init = None
         p_app = None
         if self.opt.init:
-          p_init = Process(target=self.BuildInitFs)
+          p_init = multiprocessing.Process(target=self.BuildInitFs)
           p_init.start()
         if self.opt.app:
-          p_app = Process(target=self.BuildAppFs)
+          p_app = multiprocessing.Process(target=self.BuildAppFs)
           p_app.start()
         if p_init:
           p_init.join()
@@ -227,8 +227,6 @@ class BuildRootBuilder(object):
 
     # Actually generate the config file
     Info('Config file: %r', filename)
-    fullpath = os.path.join(self.top_dir, 'configs', filename)
-    dotconfig = self._Path(init_or_app, '.config')
     self.Make(init_or_app, [filename + '_rebuild'])
 
     # Grab all the sources before starting, so we fail faster
