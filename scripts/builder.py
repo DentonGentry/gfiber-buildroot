@@ -377,11 +377,10 @@ def main():
     branch = PopenAndRead(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
     base_dir = os.path.abspath(os.path.join('../builds', branch, debug_path))
     Warn('Default output dir: %s', base_dir)
-  if not opt.platform_only:
-    #TODO(apenwarr): put this in the buildroot packages as a "pre-depends"
-    #  or something (so it runs early, but only when needed, and doesn't
-    #  depend on this script).
-    CheckLoasCertificate()
+  #TODO(apenwarr): put LOAS check in the buildroot packages as a "pre-depends"
+  #  or something (so it runs early, but only when needed, and doesn't
+  #  depend on this script).
+  CheckLoasCertificate()
   builder = BuildRootBuilder(base_dir, opt)
   builder.Build()
 
