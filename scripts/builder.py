@@ -98,6 +98,23 @@ def PopenAndRead(args, **kwargs):
   return data.strip()
 
 
+class Processor(object):
+  def __init__(self):
+    self.procs = []
+
+  def Add(self, func):
+    p = multiprocessing.Process(target=func, name=func.__name__)
+    p.start()
+    self.procs.append(p)
+
+  def Wait(self):
+    for p in self.procs:
+      p.join()
+    for p in self.procs:
+      if p.exitcode:
+        raise SubprocError('%r returned exit code %r' % (p.name, p.exitcode))
+
+
 class BuildError(Exception):
   pass
 
@@ -143,18 +160,12 @@ class BuildRootBuilder(object):
       Makedirs(self._Path(INIT, 'images'))
       Makedirs(self._Path(APP, 'images'))
       if not self.opt.bundle_only:
-        p_init = None
-        p_app = None
+        procs = Processor()
         if self.opt.init:
-          p_init = multiprocessing.Process(target=self.BuildInitFs)
-          p_init.start()
+          procs.Add(self.BuildInitFs)
         if self.opt.app:
-          p_app = multiprocessing.Process(target=self.BuildAppFs)
-          p_app.start()
-        if p_init:
-          p_init.join()
-        if p_app:
-          p_app.join()
+          procs.Add(self.BuildAppFs)
+        procs.Wait()
       self.BundleImage()
     finally:
       endtime = time.time()
