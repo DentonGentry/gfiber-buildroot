@@ -292,9 +292,9 @@ class BuildRootBuilder(object):
       vmlinuz.close()
 
     # ubinize vmlinuz
-    if self.opt.app and self.opt.init:
+    if self.opt.init:
       Info('Creating ubi image for vmlinuz...')
-      ubinize_opts = (open(self._Path(APP, 'staging/etc/kernel_ubi_opts'))
+      ubinize_opts = (open(self._Path(INIT, 'staging/etc/kernel_ubi_opts'))
                       .read().strip().split())
       cmd = ([self._Path(INIT, 'host/usr/sbin/ubinize'),
               '-o', self._Path(INIT, 'images/vmlinuz.ubi')]
