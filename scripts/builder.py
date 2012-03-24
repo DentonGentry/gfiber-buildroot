@@ -63,10 +63,12 @@ APP = 'app'    # the application-layer squashfs
 
 
 def _Log(color, fmt, args):
+  sys.stderr.flush()
   if args:
     print color + (fmt % args) + OFF
   else:
     print color + str(fmt) + OFF
+  sys.stdout.flush()
 
 
 def Info(fmt, *args):
@@ -178,6 +180,7 @@ class BuildRootBuilder(object):
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
     print '=========================================================='
+    sys.stdout.flush()
 
   def PopenAt(self, cwd, args, **kwargs):
     """Execute Popen in arbitrary dir."""
