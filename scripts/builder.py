@@ -184,7 +184,10 @@ class BuildRootBuilder(object):
 
   def PopenAt(self, cwd, args, **kwargs):
     """Execute Popen in arbitrary dir."""
-    p = subprocess.Popen(args, cwd=cwd, **kwargs)
+    try:
+      p = subprocess.Popen(args, cwd=cwd, **kwargs)
+    except OSError, e:
+      raise BuildError('%r: %s' % (args, e))
     retval = p.wait()
     if retval:
       raise BuildError('%r returned exit code %r' % (args, retval))
