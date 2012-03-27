@@ -70,7 +70,7 @@ define BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/usr/local/licenses
 	(pushd . > /dev/null; \
 	cd /home/build/google3; \
-	blaze run --forge -- //isp/fiber/drm:drm_keystore_client --key_type $(LICENSE_TYPE) --output $(TARGET_DIR)/usr/local/licenses/playready.bin \
+	blaze --host_jvm_args=-Xmx256m run --forge -- //isp/fiber/drm:drm_keystore_client --key_type $(LICENSE_TYPE) --output $(TARGET_DIR)/usr/local/licenses/playready.bin \
 	popd > /dev/null)
 endef
 
