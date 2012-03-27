@@ -1,5 +1,5 @@
 SAGETV_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
-SAGETV_MINICLIENT_DEPENDENCIES=linux bcm_nexus bcm_rockford sagetv_pullreader openssl google_swscale tiff zlib libpng libungif google_widevine
+SAGETV_MINICLIENT_DEPENDENCIES=linux bcm_apps bcm_nexus bcm_rockford sagetv_pullreader openssl google_swscale tiff zlib libpng libungif google_widevine
 
 include package/bcm_common/bcm_common.mk
 
