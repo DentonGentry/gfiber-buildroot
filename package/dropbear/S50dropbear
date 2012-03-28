@@ -3,6 +3,9 @@
 # Starts dropbear sshd.
 #
 
+# Make sure this load is used for test
+[ -f /tmp/DEBUG ] || exit 0
+
 # Make sure the dropbearkey progam exists
 [ -f /usr/bin/dropbearkey ] || exit 0
 

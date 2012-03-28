@@ -46,8 +46,7 @@ f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 no-init            Don't build the kernel+initramfs
 no-app             Don't build the app squashfs
-t,test,test-packages Add test packages
-d,debug,debug-image  Build debug image with extra debugging features
+r,production       Production build (has production license)
 """
 
 
@@ -182,12 +181,11 @@ class BuildRootBuilder(object):
     """Print the currently-selected options."""
     print '=========================================================='
     print 'CHIP REVISION  :', self.opt.chip_revision
-    print 'DEBUG          :', self.opt.debug
-    print 'TEST_IMAGE     :', self.opt.test_packages
     print 'MODEL          :', self.opt.model
     print 'PRODUCT FAMILY :', self.opt.product_family
     print 'VERBOSE        :', self.opt.verbose
     print 'FRESH          :', self.opt.fresh
+    print 'PRODUCTION     :', self.opt.production
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
     print '=========================================================='
@@ -225,10 +223,7 @@ class BuildRootBuilder(object):
 
   def BuildConfig(self, init_or_app, filename, **extra):
     """Generate a config file for the given set of options."""
-    opts = dict(BR2_PACKAGE_BRUNO_DEBUG=self.opt.debug)
-    # TODO(kedong): when the loader can handle more than 40M kernel,
-    #   we will add the strip_none back.
-    # opts['BR2_STRIP_none'] = 1
+    opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production)
     opts.update(extra)
 
     # We append to the file because the user might have added (unrelated)
@@ -279,8 +274,7 @@ class BuildRootBuilder(object):
                       self.opt.chip_revision))
     Info('app squashfs: config file is %r', config_file)
     self.BuildConfig(APP, config_file,
-                     BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only,
-                     BR2_PACKAGE_BRUNO_TEST=self.opt.test_packages)
+                     BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
       self.RemoveStamps(APP)
     self.Make(APP, [])
@@ -367,12 +361,8 @@ def main():
       o.fatal('at most one output directory expected')
     base_dir = os.path.abspath(extra[0])
   else:
-    if opt.debug:
-      debug_path = 'debug'
-    else:
-      debug_path = 'release'
     branch = PopenAndRead(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-    base_dir = os.path.abspath(os.path.join('../builds', branch, debug_path))
+    base_dir = os.path.abspath(os.path.join('../builds', branch))
     Warn('Default output dir: %s', base_dir)
   #TODO(apenwarr): put LOAS check in the buildroot packages as a "pre-depends"
   #  or something (so it runs early, but only when needed, and doesn't

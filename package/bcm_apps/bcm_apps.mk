@@ -60,10 +60,10 @@ else
 BCM_APPS_BUILD_TYPE=release
 endif
 
-ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
-LICENSE_TYPE=playready_dev_license
-else
+ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
 LICENSE_TYPE=playready_prod_license
+else
+LICENSE_TYPE=playready_dev_license
 endif
 
 define BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS
