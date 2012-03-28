@@ -28,6 +28,7 @@ start() {
 
 stop() {
   /usr/bin/pkill cvm
+  /usr/bin/pkill siege
   /usr/bin/pkill sagesrv
   /usr/bin/pkill chsrv
   return $RETVAL
