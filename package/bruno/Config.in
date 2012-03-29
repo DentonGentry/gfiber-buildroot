@@ -4,6 +4,12 @@ config BR2_PACKAGE_BRUNO
 	help
 	  Customization for Bruno boards.
 
+config BR2_BRUNO_BCHP_VER
+	string "Version of 7425 chip"
+	default B0
+	help
+	  Version of 7425 chip used in bruno build
+
 config BR2_PACKAGE_BRUNO_TEST
 	bool "Include Test Packages"
 	default n
