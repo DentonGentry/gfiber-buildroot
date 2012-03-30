@@ -16,6 +16,7 @@ define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples pkg-config
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/utils all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples apps
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/os
 	cd $(@D)/../BSEAV/lib/playbackdevice && $(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) NEXUS_MGR_DIR=$(@D)/../BSEAV/lib/playbackdevice/nexusMgr/ $(MAKE) $(BCM_MAKEFLAGS) all
 endef
 
@@ -28,6 +29,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/CARD/libcmndrm.so $(STAGING_DIR)/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/common_crypto/lib/7425/libcmncrypto.so $(STAGING_DIR)/usr/lib/libcmncrypto.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/libdrmrootfs.so $(STAGING_DIR)/usr/lib/libdrmrootfs.so
+	$(INSTALL) -D $(@D)/bin/libb_os.so $(STAGING_DIR)/usr/local/lib/libb_os.so
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
