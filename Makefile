@@ -634,6 +634,13 @@ endif
 
 cross: $(BASE_TARGETS)
 
+what-targets:
+	@echo $(TARGETS)
+
+patches: $(patsubst %,%-patch,$(TARGETS))
+%-patch:   # default for targets that don't have any patches
+	@
+
 help:
 	@echo 'Cleaning:'
 	@echo '  clean                  - delete all files created by build'
@@ -677,6 +684,7 @@ endif
 	@echo 'Miscellaneous:'
 	@echo '  source                 - download all sources needed for offline-build'
 	@echo '  source-check           - check all packages for valid download URLs'
+	@echo '  patches                - download, extract, and patch selected packages'
 	@echo '  external-deps          - list external packages used'
 	@echo
 	@echo '  make V=0|1             - 0 => quiet build (default), 1 => verbose build'
