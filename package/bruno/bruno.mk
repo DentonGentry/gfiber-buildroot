@@ -2,9 +2,13 @@
 # :TODO: (by kedong, update BR2_GCC_SHARED_LIBGCC when new toolchain is setup)
 GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
-BRUNO_DEPENDENCIES=humax_bootloader humax_misc bcm_drivers
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
+
+BRUNO_DEPENDENCIES=humax_bootloader humax_misc
+ifneq ($(BR2_PACKAGE_BRUNO_DEBUG)$(BR2_PACKAGE_BRUNO_TEST),)
+BRUNO_DEPENDENCIES += bcm_drivers
+endif
 
 BRUNO_DEFINES=
 BRUNO_STAGING_PATH=usr/lib/bruno
