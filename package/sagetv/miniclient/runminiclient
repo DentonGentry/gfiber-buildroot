@@ -10,7 +10,7 @@ while true; do
   AUDIO_OUTPUT=
   export VIDEO_SUPPORTED_MODES
   export AUDIO_OUTPUT
-  /app/client/miniclient 127.0.0.1 2>&1 | logger -t m
+  /app/client/miniclient 127.0.0.1
   SERVER=""
   if [ -e /tmp/config ] ; then
     . /tmp/config
@@ -20,10 +20,8 @@ while true; do
     # TODO: add switch based on which app to run...
     cd /app/client
     ./run-app
-    continue
-  fi
-  if [ "$SERVER" = "" ]; then
-    /app/client/waitpower
+  elif [ "$SERVER" = "" ]; then
+    [ -x /app/client/waitpower ] && /app/client/waitpower || sleep 10
   else
     . /tmp/config
     mv /tmp/config /tmp/configold
@@ -38,17 +36,16 @@ while true; do
       if [ "$SERVER_MAC" != "" ]; then
         /usr/bin/ether-wake $SERVER_MAC
       fi
-      /app/client/miniclient $SERVER 2>&1 | logger -t m
+      /app/client/miniclient $SERVER
       if [ -e /tmp/runapp ] ; then
         mv /tmp/runapp /tmp/runappold
         # TODO: add switch based on which app to run...
         cd /app/client
         ./run-app
-        continue
-      fi
-      if [ -e /tmp/goalone ] ; then
+      elif [ -e /tmp/goalone ] ; then
         powerret=1
       else
+        [ -x /app/client/waitpower ] && /app/client/waitpower || sleep 10
         /app/client/waitpower
         powerret=$?
       fi

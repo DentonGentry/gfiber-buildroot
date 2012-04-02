@@ -7,7 +7,7 @@ start() {
   if [ "$PLATFORM" != "GFHD100" ]; then
     return 0;
   fi
-  /app/client/runminiclient &
+  /app/client/runminiclient 2>&1 | logger -t miniclient &
   return $RETVAL
 }
 
