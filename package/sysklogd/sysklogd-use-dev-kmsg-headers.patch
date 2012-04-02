@@ -1,0 +1,44 @@
+From bb07743419768744e446d373a77583e10f7f7572 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Mon, 2 Apr 2012 02:38:07 -0400
+Subject: [PATCH] Change syslogd headers to match what /dev/kmsg needs.
+
+In other words, drop the extra timestamp and hostname and whitespace, and
+insert <7> to tell the kernel it's a KERN_DEBUG-level message.
+---
+ syslogd.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/syslogd.c b/syslogd.c
+index 4b1ad2e..dd1ea99 100644
+--- a/syslogd.c
++++ b/syslogd.c
+@@ -1758,17 +1758,17 @@ void fprintlog(f, from, flags, msg)
+ 
+ 	dprintf("Called fprintlog, ");
+ 
+-	v->iov_base = f->f_lasttime;
+-	v->iov_len = 15;
++	v->iov_base = "<7>";
++	v->iov_len = 3;
+ 	v++;
+-	v->iov_base = " ";
+-	v->iov_len = 1;
++	v->iov_base = "";
++	v->iov_len = 0;
+ 	v++;
+-	v->iov_base = f->f_prevhost;
+-	v->iov_len = strlen(v->iov_base);
++	v->iov_base = "";
++	v->iov_len = 0;
+ 	v++;
+-	v->iov_base = " ";
+-	v->iov_len = 1;
++	v->iov_base = "";
++	v->iov_len = 0;
+ 	v++;
+ 	if (msg) {
+ 		v->iov_base = msg;
+-- 
+1.7.9
+
