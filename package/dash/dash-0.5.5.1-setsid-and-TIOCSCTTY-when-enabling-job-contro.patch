@@ -1,0 +1,35 @@
+From 926cfe2647fe3748fd2677a39a76ce29053b7166 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 3 Apr 2012 01:06:24 -0400
+Subject: [PATCH 2/2] jobs.c: setsid and TIOCSCTTY when enabling job control.
+
+Both calls will fail if we are already a process group leader, or the
+process group leader is not us, or we already have a controlling terminal.
+So basically these calls are harmless in the worst case, and get rid of the
+annoying "can't access tty; job control turned off" message in the best
+case.
+
+This makes dash useful with "init=/bin/sh" on the Linux kernel command
+line.
+---
+ src/jobs.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/src/jobs.c b/src/jobs.c
+index a3484c0..0442296 100644
+--- a/src/jobs.c
++++ b/src/jobs.c
+@@ -198,6 +198,10 @@ setjobctl(int on)
+ 		}
+ 		fd = savefd(fd);
+ 		do { /* while we are in the background */
++			if (tcgetpgrp(fd) < 0) {
++				setsid();
++				ioctl(fd, TIOCSCTTY, 0);
++			}
+ 			if ((pgrp = tcgetpgrp(fd)) < 0) {
+ out:
+ 				sh_warnx("can't access tty; job control turned off");
+-- 
+1.7.9
+
