@@ -1,0 +1,32 @@
+From c20d648dda9354350acf6c69422977881dd64f25 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sun, 1 Apr 2012 22:06:30 -0400
+Subject: [PATCH] Don't build curses-requiring bits if NOCURSES=1.
+
+---
+ Makefile |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 0d68fd5..280e079 100644
+--- a/Makefile
++++ b/Makefile
+@@ -46,10 +46,13 @@ usr/include              := $(DESTDIR)/usr/include/
+ #SKIP     := $(bin)kill $(man1)kill.1
+ 
+ BINFILES := $(usr/bin)uptime $(usr/bin)tload $(usr/bin)free $(usr/bin)w \
+-            $(usr/bin)top $(usr/bin)vmstat $(usr/bin)watch $(usr/bin)skill \
++            $(usr/bin)vmstat $(usr/bin)skill \
+             $(usr/bin)snice $(bin)kill $(sbin)sysctl $(usr/bin)pmap \
+-            $(usr/proc/bin)pgrep $(usr/proc/bin)pkill $(usr/bin)slabtop \
++            $(usr/proc/bin)pgrep $(usr/proc/bin)pkill \
+             $(usr/proc/bin)pwdx
++ifeq ($(NOCURSES),)
++BINFILES +=  $(usr/bin)slabtop $(usr/bin)top $(usr/bin)watch
++endif
+ 
+ MANFILES := $(man1)uptime.1 $(man1)tload.1 $(man1)free.1 $(man1)w.1 \
+             $(man1)top.1 $(man1)watch.1 $(man1)skill.1 $(man1)kill.1 \
+-- 
+1.7.7.3
+
