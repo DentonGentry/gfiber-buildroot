@@ -1,0 +1,29 @@
+From 3138ef1563df8dc17e5042abf85d3387b4c97f6b Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 3 Apr 2012 19:04:29 -0400
+Subject: [PATCH] logger.c: default priority must include LOG_USER.
+
+glibc doesn't let you log with LOG_KERN, but uClibc does not seem to have
+that restriction.  To make sure logs that don't specify a facility or
+priority don't accidentally end up as LOG_KERN, add LOG_USER to the default.
+(This was already happening if you *do* specify the -p option.)
+---
+ misc-utils/logger.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/misc-utils/logger.c b/misc-utils/logger.c
+index 625d075..662ad63 100644
+--- a/misc-utils/logger.c
++++ b/misc-utils/logger.c
+@@ -129,7 +129,7 @@ main(int argc, char **argv) {
+ 	textdomain(PACKAGE);
+ 
+ 	tag = NULL;
+-	pri = LOG_NOTICE;
++	pri = LOG_USER | LOG_NOTICE;
+ 	logflags = 0;
+ 	while ((ch = getopt(argc, argv, "f:ip:st:u:d")) != -1)
+ 		switch((char)ch) {
+-- 
+1.7.9
+
