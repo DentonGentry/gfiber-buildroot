@@ -1,0 +1,29 @@
+From 779bbfa44ec0013f6dc9dfdf1ed97e36d6866d96 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 3 Apr 2012 01:01:32 -0400
+Subject: [PATCH 1/2] jobs.c: if we can't open /dev/tty, don't close stderr.
+
+The way the code was written, it used fd==2 as a fd attached to the tty,
+which is correct, but it assumed the obtained fd was one that open() had
+just returned, which meant it needed to be closed, which is totally not
+correct.  dup() the fd to guarantee we get a fresh one.  savefd() then
+copies it again and closes it.
+---
+ src/jobs.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/src/jobs.c b/src/jobs.c
+index 2b6a752..a3484c0 100644
+--- a/src/jobs.c
++++ b/src/jobs.c
+@@ -194,6 +194,7 @@ setjobctl(int on)
+ 			while (!isatty(fd))
+ 				if (--fd < 0)
+ 					goto out;
++			if (fd >= 0) fd = dup(fd);
+ 		}
+ 		fd = savefd(fd);
+ 		do { /* while we are in the background */
+-- 
+1.7.9
+
