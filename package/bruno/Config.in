@@ -25,7 +25,6 @@ config BR2_PACKAGE_BRUNO_TEST
 	select BR2_PACKAGE_DROPBEAR_SMALL
 	select BR2_PACKAGE_ETHTOOL
 	select BR2_PACKAGE_FIO
-	select BR2_PACKAGE_GDB_SERVER
 	select BR2_PACKAGE_HDPARM
 	select BR2_PACKAGE_IPERF
 	select BR2_PACKAGE_IPUTILS
@@ -49,7 +48,6 @@ config BR2_PACKAGE_BRUNO_DEBUG
 	bool "Bruno Debug Build"
 	default n
 	select BR2_ENABLE_DEBUG
-	select BR2_PACKAGE_GDB
 	help
 	  Enable debug code.
 
