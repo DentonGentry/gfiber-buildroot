@@ -11,8 +11,13 @@ ifeq ($(BR2_PACKAGE_TOOLBOX),y)
 TOYBOX_DEPENDENCIES+=toolbox
 endif
 
+TOYBOX_BUILD_CONFIG=$(BR2_PACKAGE_TOYBOX_CONFIG)
+
+define TOYBOX_CONFIGURE_CMDS
+	cp $(TOYBOX_BUILD_CONFIG) $(@D)/.config
+endef
+
 define TOYBOX_BUILD_CMDS
-	$(MAKE) -C $(@D) CFLAGS="--static" CC=gcc CROSS_COMPILE="$(TARGET_CROSS)" defconfig
 	$(MAKE) -C $(@D) CFLAGS="--static" CC=gcc CROSS_COMPILE="$(TARGET_CROSS)"
 endef
 
