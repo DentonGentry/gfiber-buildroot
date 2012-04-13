@@ -361,8 +361,7 @@ def main():
       o.fatal('at most one output directory expected')
     base_dir = os.path.abspath(extra[0])
   else:
-    branch = PopenAndRead(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-    base_dir = os.path.abspath(os.path.join('../builds', branch))
+    base_dir = os.path.abspath('../out')
     Warn('Default output dir: %s', base_dir)
   #TODO(apenwarr): put LOAS check in the buildroot packages as a "pre-depends"
   #  or something (so it runs early, but only when needed, and doesn't
