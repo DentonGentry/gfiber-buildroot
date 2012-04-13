@@ -1,6 +1,5 @@
 config BR2_PACKAGE_TOYBOX
 	bool "Toybox (busybox replacement)"
-	depends on BR2_PACKAGE_BUSYBOX!=y
 
 config BR2_PACKAGE_TOYBOX_CONFIG
 	string "Toybox configuration file to use?"

@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# You can run this script in case you boot with rdinit=/bin/sh and want to
+# quickly mount the basic kernel filesystems.  It mounts them, but doesn't
+# switch_root.
+#
+log()
+{
+  echo "$*" >&2
+}
+
+
+die()
+{
+  log "$*"
+  exit 1
+}
+
+
+mount -t devtmpfs none /dev && log "mounted /dev"
+mount -t proc none /proc && log "mounted /proc"
+mount -t sysfs none /sys && log "mounted /sys"
+mkdir /dev/pts /dev/shm
+
+
+# Finds the *last* /dev/mtd* device with the given realname
+find_mtd()
+{
+  local result=
+  while IFS=" :" read dev size erasesize name; do
+    name=${name#\"}
+    name=${name%\"}
+    if [ "$name" = "$1" ]; then
+      result=${dev#mtd}
+      # fall through in case there's a subsequent device with same name
+    fi
+  done </proc/mtd
+  [ -n "$result" ] && echo "$result"
+}
+
+
+ROOTDEV=
+NFSROOT=
+UBI_MTD=
+INIT=
+DEBUG=
+
+set $(cat /proc/cmdline)
+for i in "$@"; do
+  key=${i%%=*}
+  value=${i#*=}
+  case "$key" in
+    root) ROOTDEV=$value ;;
+    nfsroot) NFSROOT=$value ;;
+    ubi.mtd) UBI_MTD=$value ;;
+    init) INIT=$value ;;
+    debug) DEBUG=1 ;;
+  esac
+done
+
+# NOTE on ubi.mtd= vs. root=
+#
+# Previously, we relied on the installer+bootloader to set ubi.mtd=xxx, and
+# then root=mtdblock:rootfs.  The problem with that is it depends on the
+# installer/bootloader understanding about UBI devices, which means the
+# installer for a *previous* version needs to understand the format of kernel
+# parameters for the *next* (newly-installed) version.  That can make future
+# upgrades more complicated.
+#
+# So what we do now is provide root=xxx, where xxx is the name of the mtd
+# partition where the rootfs is installed (either rootfs0 or rootfs1).  It's
+# the responsibility of the installed image, ie. this script, to know whether
+# the stuff in rootfs0/rootfs1 is UBI or not.
+#
+# However, for backward compatibility, we still need to support kernel options
+# of the form
+#    ubi.mtd=rootfs0 root=mtdblock:rootfs
+# which we treat as the new-style
+#    root=rootfs0
+
+# ubi.mtd= only overrides root= if root= is old-style.
+if [ -n "$UBI_MTD" ]; then
+  if [ -z "$ROOTDEV" -o "${ROOTDEV%%:*}" = "mtdblock" ]; then
+    ROOTDEV=$UBI_MTD
+  fi
+fi
+
+# host:path format in root= means we should do an NFS root
+if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
+  NFSROOT=$ROOTDEV
+fi
+
+if [ -n "$NFSROOT" ]; then
+  mount -t nfs -o nolock,proto=tcp "$NFSROOT" /rootfs || die "NFS mount failed"
+  log "Mounted nfsroot='$NFSROOT'"
+elif [ -n "$ROOTDEV" ]; then
+  mtd=/dev/mtd$(find_mtd "$ROOTDEV")
+  if [ -n "$mtd" ]; then
+    log "Found root='$ROOTDEV': $mtd"
+    # In this build, the rootdev mtd is always an UBI device.
+    ubidetach -p "$mtd"  # Just in case kernel automounted it somewhere
+    ubiattach -p "${mtd}ro"
+    # In this build, the newly-found mtd is always named 'rootfs'
+    ubi_mtd=$(find_mtd "rootfs")
+    [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
+    ROOTDEV=/dev/mtdblock${ubi_mtd}
+  else
+    cat /proc/mtd
+    log "root='$ROOTDEV' is not an mtd device."
+  fi
+  #TODO(apenwarr): verify the root filesystem image signature here.
+  mount "$ROOTDEV" /rootfs || die "root='$ROOTDEV' mount failed"
+  log "Mounted root='$ROOTDEV'"
+else
+  die "No root= or nfsroot= provided."
+fi
+
+mount -t tmpfs none /rootfs/tmp
+
+#TODO(apenwarr): network setup code depends on this file, but it shouldn't.
+# It should just always refuse to touch the network if the network was already
+# set up.
+[ -n "$NFSROOT" ] && echo NFS >/rootfs/tmp/NFS
+[ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
+
+echo "$INIT" >/tmp/initcmd
+
+exit 0

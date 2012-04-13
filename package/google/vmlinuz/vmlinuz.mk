@@ -18,6 +18,8 @@ define GOOGLE_VMLINUZ_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/etc
 	cp package/google/vmlinuz/kernel_ubinize.cfg $(STAGING_DIR)/etc/kernel_ubinize.cfg
 	echo $(UBI_UBINIZE_OPTS) > $(STAGING_DIR)/etc/kernel_ubi_opts
+	gzip -c <$(BINARIES_DIR)/vmlinux >$(BINARIES_DIR)/vmlinuz
+	chmod 0644 $(BINARIES_DIR)/vmlinuz
 endef
 
 $(eval $(call GENTARGETS,package/google,google_vmlinuz))

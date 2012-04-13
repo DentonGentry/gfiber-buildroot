@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# The initial system boot script.  This only does one thing: try to find
+# the root filesystem and mount it if possible.
+#
+echo "Starting '$0' in initramfs."
+echo "To bypass this script, use rdinit=/bin/sh"
+
+
+log()
+{
+  echo "$*" >&2
+}
+
+
+die()
+{
+  log "$*"
+  exit 1
+}
+
+
+trap 'log EXITED; sh' EXIT
+
+
+# Mount /dev, /proc, /sys, /rootfs
+/mounts || die "couldn't mount filesystems"
+
+INIT=$(cat /tmp/initcmd)
+
+log 'Looking for init in rootfs.  To bypass this, use init=/bin/sh'
+for init in "$INIT" /sbin/init /linuxrc /bin/sh; do
+  [ -n "$init" ] || continue
+  log "Trying '/rootfs$init'"
+  [ -x "/rootfs$init" ] || continue
+  case "$init" in
+    /sbin/init) args=1 ;;
+    *) args= ;;
+  esac
+  cd /rootfs
+  exec switch_root /rootfs "$init" $args
+done
+
+die "couldn't switch to root filesystem"

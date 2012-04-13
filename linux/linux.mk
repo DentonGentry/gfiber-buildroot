@@ -31,13 +31,21 @@ LINUX_PATCHES = $(call qstrip,$(BR2_LINUX_KERNEL_PATCH))
 LINUX_INSTALL_IMAGES = YES
 LINUX_DEPENDENCIES  += host-module-init-tools
 
+ifeq ($(BR2_PACKAGE_SIMPLERAMFS),y)
+LINUX_DEPENDENCIES += simpleramfs
+endif
+
 LINUX_MAKE_FLAGS = \
 	HOSTCC="$(HOSTCC)" \
 	HOSTCFLAGS="$(HOSTCFLAGS)" \
 	ARCH=$(KERNEL_ARCH) \
 	INSTALL_MOD_PATH=$(TARGET_DIR) \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
-	LZMA="$(LZMA)"
+	LZMA="$(LZMA)" \
+	initramfs=true
+# (initramfs=true replaces the $(initramfs) build command with 'true',
+# effectively making the kernel build scripts never replace the initramfs
+# with a different one; making the initramfs is our job in buildroot.)
 
 # Get the real Linux version, which tells us where kernel modules are
 # going to be installed in the target filesystem.

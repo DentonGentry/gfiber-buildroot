@@ -44,9 +44,7 @@ v,verbose          Increase verbosity
 b,bundle-only      Only bundle the image
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
-no-init            Don't build the kernel+initramfs
-no-app             Don't build the app squashfs
-r,production       Production build (has production license)
+r,production       Use production signing keys and license
 """
 
 
@@ -54,11 +52,6 @@ RED = '\033[1;31m'
 GREEN = '\033[1;32m'
 YELLOW = '\033[1;33m'
 OFF = '\033[0m'
-
-
-# Possible values for init_or_app
-INIT = 'init'  # the kernel + initramfs
-APP = 'app'    # the application-layer squashfs
 
 
 def _Log(color, fmt, args):
@@ -95,23 +88,6 @@ def PopenAndRead(args, **kwargs):
   if retval:
     raise SubprocError('%r returned exit code %d' % (args, retval))
   return data.strip()
-
-
-class Processor(object):
-  def __init__(self):
-    self.procs = []
-
-  def Add(self, func):
-    p = multiprocessing.Process(target=func, name=func.__name__)
-    p.start()
-    self.procs.append(p)
-
-  def Wait(self):
-    for p in self.procs:
-      p.join()
-    for p in self.procs:
-      if p.exitcode:
-        raise SubprocError('%r returned exit code %r' % (p.name, p.exitcode))
 
 
 class BuildError(Exception):
@@ -156,15 +132,9 @@ class BuildRootBuilder(object):
     starttime = time.time()
     try:
       self.PrintOptions()
-      Makedirs(self._Path(INIT, 'images'))
-      Makedirs(self._Path(APP, 'images'))
+      Makedirs(self._Path('images'))
       if not self.opt.bundle_only:
-        procs = Processor()
-        if self.opt.init:
-          procs.Add(self.BuildInitFs)
-        if self.opt.app:
-          procs.Add(self.BuildAppFs)
-        procs.Wait()
+        self.BuildAppFs()
       self.BundleImage()
     finally:
       endtime = time.time()
@@ -201,27 +171,26 @@ class BuildRootBuilder(object):
     if retval:
       raise BuildError('%r returned exit code %r' % (args, retval))
 
-  def _Path(self, init_or_app, *paths):
-    return os.path.abspath(os.path.join(self.base_dir, init_or_app, *paths))
+  def _Path(self, *paths):
+    return os.path.abspath(os.path.join(self.base_dir, *paths))
 
-  def Make(self, init_or_app, targets):
+  def Make(self, targets):
     """Execute make for buildroot.
 
     Args:
-      init_or_app: either INIT or APP
       targets: which targets to ask make to build ([] means default)
     """
-    cmd = ['make', 'O=%s' % self._Path(init_or_app)] + targets
+    cmd = ['make', 'O=%s' % self._Path()] + targets
     if self.opt.verbose:
       cmd += ['V=1']
     self.PopenAt(self.top_dir, cmd)
 
-  def CleanOutputDir(self, init_or_app):
-    d = self._Path(init_or_app)
+  def CleanOutputDir(self):
+    d = self._Path()
     Info('Cleaning %r...', d)
-    self.Make(init_or_app, ['clean'])
+    self.Make(['clean'])
 
-  def BuildConfig(self, init_or_app, filename, **extra):
+  def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
     opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production)
     opts.update(extra)
@@ -229,56 +198,40 @@ class BuildRootBuilder(object):
     # We append to the file because the user might have added (unrelated)
     # custom entries, but later lines override earlier ones, so it's
     # safe to just re-append forever.
-    localcfg = open(self._Path(init_or_app, '.localconfig'), 'a')
+    localcfg = open(self._Path('.localconfig'), 'a')
     for key, value in opts.iteritems():
       localcfg.write('%s=%s\n' % (key, value and 'y' or 'n'))
     localcfg.close()
 
     # Actually generate the config file
     Info('Config file: %r', filename)
-    self.Make(init_or_app, [filename + '_rebuild'])
+    self.Make([filename + '_rebuild'])
 
     # Grab all the sources before starting, so we fail faster
-    self.Make(init_or_app, ['source'])
+    self.Make(['source'])
 
-  def RemoveStamps(self, init_or_app):
+  def RemoveStamps(self):
     Info('Cleaning up install stamps...')
-    Unlink(self._Path(init_or_app, 'build/.root'))
-    UnlinkGlob(self._Path(init_or_app, 'build/*/.stamp*installed'))
-    UnlinkGlob(self._Path(init_or_app, 'stamps/*installed'))
-
-  def BuildInitFs(self):
-    """Build the kernel + initramfs."""
-    if self.opt.fresh >= 2:
-      self.CleanOutputDir(INIT)
-    self._LogStart('Building kernel + initramfs')
-    config_file = ('%s_initramfs_%s%s_defconfig'
-                   % (self.opt.product_family,
-                      self.opt.model,
-                      self.opt.chip_revision))
-    Info('kernel + initramfs: config file is %r', config_file)
-    self.BuildConfig(INIT, config_file)
-    if self.opt.fresh >= 1:
-      self.RemoveStamps(INIT)
-    self.Make(INIT, [])
-    self._LogDone('Building kernel + initramfs')
+    Unlink(self._Path('build/.root'))
+    UnlinkGlob(self._Path('build/*/.stamp*installed'))
+    UnlinkGlob(self._Path('stamps/*installed'))
 
   def BuildAppFs(self):
-    """Build the squashfs (runs after the initramfs and contains the app)."""
+    """Build the kernel + simpleramfs + squashfs."""
     if self.opt.fresh >= 2:
-      self.CleanOutputDir(APP)
-    self._LogStart('Building app squashfs')
+      self.CleanOutputDir()
+    self._LogStart('Building app')
     config_file = ('%s_%s%s_defconfig'
                    % (self.opt.product_family,
                       self.opt.model,
                       self.opt.chip_revision))
-    Info('app squashfs: config file is %r', config_file)
-    self.BuildConfig(APP, config_file,
+    Info('app: config file is %r', config_file)
+    self.BuildConfig(config_file,
                      BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
-      self.RemoveStamps(APP)
-    self.Make(APP, [])
-    self._LogDone('Building app squashfs')
+      self.RemoveStamps()
+    self.Make([])
+    self._LogDone('Building app')
 
   #TODO(apenwarr): postprocessing like this belongs in a buildroot package.
   #  Generating vmlinuz, tarballs, etc are just more build rules like any
@@ -288,42 +241,25 @@ class BuildRootBuilder(object):
     """Create UBI images and installer tarball."""
     self._LogStart('Bundling Image')
 
-    # gzip vmlinux
-    if self.opt.init:
-      Info('Creating vmlinuz...')
-      vmlinux = open(self._Path(INIT, 'images/vmlinux'), 'rb').read()
-      vmlinuz = gzip.open(self._Path(INIT, 'images/vmlinuz'), 'wb', 9)
-      vmlinuz.write(vmlinux)
-      vmlinuz.close()
-
     # ubinize vmlinuz
-    if self.opt.init:
-      Info('Creating ubi image for vmlinuz...')
-      ubinize_opts = (open(self._Path(INIT, 'staging/etc/kernel_ubi_opts'))
-                      .read().strip().split())
-      cmd = ([self._Path(INIT, 'host/usr/sbin/ubinize'),
-              '-o', self._Path(INIT, 'images/vmlinuz.ubi')]
-             + ubinize_opts +
-             [self._Path(INIT, 'staging/etc/kernel_ubinize.cfg')])
-      self.PopenAt(self._Path(INIT, 'images'), cmd)
-
-    # For user friendliness, show the kernel from the initfs in app/images.
-    if self.opt.app and self.opt.init:
-      Unlink(self._Path(APP, 'images/vmlinuz'))
-      # I might prefer a symlink here, but then 'tar' would do the wrong thing
-      os.link(self._Path(INIT, 'images/vmlinuz'),
-              self._Path(APP, 'images/vmlinuz'))
+    Info('Creating ubi image for vmlinuz...')
+    ubinize_opts = (open(self._Path('staging/etc/kernel_ubi_opts'))
+                    .read().strip().split())
+    cmd = ([self._Path('host/usr/sbin/ubinize'),
+            '-o', self._Path('images/vmlinuz.ubi')]
+           + ubinize_opts +
+           [self._Path('staging/etc/kernel_ubinize.cfg')])
+    self.PopenAt(self._Path('images'), cmd)
 
     # bundle complete package in tar format
-    if self.opt.app:
-      tarname = self._Path(APP, 'images/bruno_ginstall_image.tgz')
-      Info('Creating %r', tarname)
-      tar = tarfile.open(tarname, 'w:gz')
-      tar.add(self._Path(APP, 'images/version'), 'version')
-      tar.add(self._Path(APP, 'images/vmlinuz'), 'vmlinuz')
-      tar.add(self._Path(APP, 'images/rootfs.squashfs_ubi'),
-              'rootfs.squashfs_ubi')
-      tar.close()
+    tarname = self._Path('images/bruno_ginstall_image.tgz')
+    Info('Creating %r', tarname)
+    tar = tarfile.open(tarname, 'w:gz')
+    tar.add(self._Path('images/version'), 'version')
+    tar.add(self._Path('images/vmlinuz'), 'vmlinuz')
+    tar.add(self._Path('images/rootfs.squashfs_ubi'),
+            'rootfs.squashfs_ubi')
+    tar.close()
 
     self._LogDone('Bundling Image')
 

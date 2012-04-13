@@ -1,0 +1,13 @@
+config BR2_PACKAGE_SIMPLERAMFS
+	bool "simpleramfs"
+	select BR2_PACKAGE_TOYBOX
+	select BR2_PACKAGE_TOOLBOX
+	select BR2_PACKAGE_BUSYBOX
+	select BR2_PACKAGE_DASH
+	select BR2_PACKAGE_UTIL_LINUX
+	select BR2_PACKAGE_MTD
+	depends on !BR2_TARGET_ROOTFS_INITRAMFS
+	help
+	  Generate the simplest possible initramfs for finding,
+	  verifying, and mounting the squashfs that contains the "real"
+	  root filesystem.

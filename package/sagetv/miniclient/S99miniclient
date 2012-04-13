@@ -4,6 +4,7 @@ RETVAL=0
 PLATFORM=$(cat /etc/platform)
 
 start() {
+  echo "Starting miniclient."
   if [ "$PLATFORM" != "GFHD100" ]; then
     return 0;
   fi
