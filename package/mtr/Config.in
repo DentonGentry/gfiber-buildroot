@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MTR
+	bool "mtr"
+	depends on BR2_LINUX_KERNEL
+	help
+	  fullscreen ping/traceroute (IP6 as well)
+
+	  http://www.bitwizard.nl/mtr/
