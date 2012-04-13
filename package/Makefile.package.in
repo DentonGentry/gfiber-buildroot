@@ -88,6 +88,29 @@ DL_DIR:=$(TOPDIR)/dl
 endif
 
 ################################################################################
+# BUILD_AFTER_BUSYBOX: make the given target build only *after* busybox-like
+# packages.  That ensures the given target will install on top of busybox
+# (and overwrite the builtin tool with a better one) instead of the other
+# way around.
+#
+# Argument 1 is the name of the package that depends on busybox
+################################################################################
+define _BUILD_AFTER_BUSYBOX
+ifeq ($(BR2_PACKAGE_TOOLBOX),y)
+$(call UPPERCASE,$(1))_DEPENDENCIES += toolbox
+endif
+ifeq ($(BR2_PACKAGE_TOYBOX),y)
+$(call UPPERCASE,$(1))_DEPENDENCIES += toybox
+endif
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+$(call UPPERCASE,$(1))_DEPENDENCIES += busybox
+endif
+endef
+define BUILD_AFTER_BUSYBOX
+$(eval $(call _BUILD_AFTER_BUSYBOX,$(1)))
+endef
+
+################################################################################
 # The DOWNLOAD_{GIT,SVN,BZR} helpers are in charge of getting a
 # working copy of the source repository for their corresponding SCM,
 # checking out the requested version / commit / tag, and create an

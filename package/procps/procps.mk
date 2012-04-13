@@ -13,6 +13,8 @@ else
 PROCPS_OPTS += NOCURSES=1
 endif
 
+$(call BUILD_AFTER_BUSYBOX,procps)
+
 define PROCPS_BUILD_CMDS
 	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D) $(PROCPS_OPTS)
 endef

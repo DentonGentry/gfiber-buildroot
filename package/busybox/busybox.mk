@@ -24,6 +24,15 @@ BUSYBOX_MAKE_OPTS = \
 	CONFIG_PREFIX="$(TARGET_DIR)" \
 	SKIP_STRIP=y
 
+# Toolbox and Toybox are generally inferior to busybox, so if we both provide
+# the same tools, install ours over top.
+ifeq ($(BR2_PACKAGE_TOOLBOX),y)
+BUSYBOX_DEPENDENCIES += toolbox
+endif
+ifeq ($(BR2_PACKAGE_TOYBOX),y)
+BUSYBOX_DEPENDENCIES += toybox
+endif
+
 ifndef BUSYBOX_CONFIG_FILE
 	BUSYBOX_CONFIG_FILE = $(call qstrip,$(BR2_PACKAGE_BUSYBOX_CONFIG))
 endif
