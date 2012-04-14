@@ -1,0 +1,31 @@
+From 59c9ca40dfeb388e4e0b3d129387054ee7cc76d9 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 13 Apr 2012 20:05:07 -0400
+Subject: [PATCH] /bin/login: put /usr/* before /* in default PATH
+
+Generally, when there are two copies of the same tool, the stuff in /usr is
+more powerful than the stuff in /bin, so it should come first.
+---
+ include/pathnames.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/pathnames.h b/include/pathnames.h
+index 4faca1f..4fb1e43 100644
+--- a/include/pathnames.h
++++ b/include/pathnames.h
+@@ -20,10 +20,10 @@
+ 
+ /* DEFPATHs from <paths.h> don't include /usr/local */
+ #undef _PATH_DEFPATH
+-#define	_PATH_DEFPATH	        "/usr/local/bin:/bin:/usr/bin"
++#define	_PATH_DEFPATH	        "/usr/local/bin:/usr/bin:/bin"
+ 
+ #undef _PATH_DEFPATH_ROOT
+-#define	_PATH_DEFPATH_ROOT	"/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
++#define	_PATH_DEFPATH_ROOT	"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ 
+ #define _PATH_SECURETTY		"/etc/securetty"
+ #define _PATH_WTMPLOCK		"/etc/wtmplock"
+-- 
+1.7.9
+
