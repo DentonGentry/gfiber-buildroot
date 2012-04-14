@@ -1,44 +1,114 @@
-From bb07743419768744e446d373a77583e10f7f7572 Mon Sep 17 00:00:00 2001
+From 3e57fb8c8d043c7880e36dae76e5919d3bd85b74 Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
-Date: Mon, 2 Apr 2012 02:38:07 -0400
+Date: Wed, 11 Apr 2012 20:53:25 -0400
 Subject: [PATCH] Change syslogd headers to match what /dev/kmsg needs.
 
 In other words, drop the extra timestamp and hostname and whitespace, and
 insert <7> to tell the kernel it's a KERN_DEBUG-level message.
 ---
- syslogd.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ syslogd.c |   51 +++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 37 insertions(+), 14 deletions(-)
 
 diff --git a/syslogd.c b/syslogd.c
-index 4b1ad2e..dd1ea99 100644
+index 4b1ad2e..402f8e6 100644
 --- a/syslogd.c
 +++ b/syslogd.c
-@@ -1758,17 +1758,17 @@ void fprintlog(f, from, flags, msg)
+@@ -714,10 +714,11 @@ int	repeatinterval[] = { 30, 60 };	/* # of secs before flush */
+ #define F_FORW_SUSP	7		/* suspended host forwarding */
+ #define F_FORW_UNKN	8		/* unknown host forwarding */
+ #define F_PIPE		9		/* named pipe */
++#define F_KMSG		10		/* /dev/kmsg device */
+ char	*TypeNames[] = {
+ 	"UNUSED",	"FILE",		"TTY",		"CONSOLE",
+ 	"FORW",		"USERS",	"WALL",		"FORW(SUSPENDED)",
+-	"FORW(UNKNOWN)", "PIPE"
++	"FORW(UNKNOWN)", "PIPE", "KMSG"
+ };
+ 
+ struct	filed *Files = (struct filed *) 0;
+@@ -1758,18 +1759,34 @@ void fprintlog(f, from, flags, msg)
  
  	dprintf("Called fprintlog, ");
  
 -	v->iov_base = f->f_lasttime;
 -	v->iov_len = 15;
-+	v->iov_base = "<7>";
-+	v->iov_len = 3;
- 	v++;
+-	v++;
 -	v->iov_base = " ";
 -	v->iov_len = 1;
-+	v->iov_base = "";
-+	v->iov_len = 0;
- 	v++;
+-	v++;
 -	v->iov_base = f->f_prevhost;
 -	v->iov_len = strlen(v->iov_base);
-+	v->iov_base = "";
-+	v->iov_len = 0;
- 	v++;
+-	v++;
 -	v->iov_base = " ";
 -	v->iov_len = 1;
-+	v->iov_base = "";
-+	v->iov_len = 0;
- 	v++;
+-	v++;
++	if (f->f_type == F_KMSG) {
++		v->iov_base = "<7>";
++		v->iov_len = 3;
++		v++;
++		v->iov_base = "";
++		v->iov_len = 0;
++		v++;
++		v->iov_base = "";
++		v->iov_len = 0;
++		v++;
++		v->iov_base = "";
++		v->iov_len = 0;
++		v++;
++	} else {
++		v->iov_base = f->f_lasttime;
++		v->iov_len = 15;
++		v++;
++		v->iov_base = " ";
++		v->iov_len = 1;
++		v++;
++		v->iov_base = f->f_prevhost;
++		v->iov_len = strlen(v->iov_base);
++		v++;
++		v->iov_base = " ";
++		v->iov_len = 1;
++		v++;
++	}
++
  	if (msg) {
  		v->iov_base = msg;
+ 		v->iov_len = strlen(msg);
+@@ -1891,6 +1908,7 @@ void fprintlog(f, from, flags, msg)
+ 	case F_TTY:
+ 	case F_FILE:
+ 	case F_PIPE:
++	case F_KMSG:
+ 		f->f_time = now;
+ 		dprintf(" %s\n", f->f_un.f_fname);
+ 		if (f->f_type == F_TTY || f->f_type == F_CONSOLE) {
+@@ -2332,6 +2350,7 @@ void init()
+ 				case F_PIPE:
+ 				case F_TTY:
+ 				case F_CONSOLE:
++				case F_KMSG:
+ 					(void) close(f->f_file);
+ 				break;
+ 			}
+@@ -2483,6 +2502,7 @@ void init()
+ 				case F_PIPE:
+ 				case F_TTY:
+ 				case F_CONSOLE:
++				case F_KMSG:
+ 					printf("%s", f->f_un.f_fname);
+ 					if (f->f_file == -1)
+ 						printf(" (unused)");
+@@ -2745,7 +2765,10 @@ void cfline(line, f)
+ 		} else {
+ 			f->f_file = open(p, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK|O_NOCTTY,
+ 					 0644);
+-			f->f_type = F_FILE;
++			if (strcmp(p, "/dev/kmsg") == 0)
++				f->f_type = F_KMSG;
++			else
++				f->f_type = F_FILE;
+ 		}
+ 		        
+ 	  	if ( f->f_file < 0 ){
 -- 
 1.7.9
 
