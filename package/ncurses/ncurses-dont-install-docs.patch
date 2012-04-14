@@ -1,0 +1,32 @@
+From 8df7a8d31b295c3171e85476e7334d09bc482b10 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 13 Apr 2012 21:20:42 -0400
+Subject: [PATCH] Don't install docs.
+
+Most of the time spent building ncurses is actually spend installing docs.
+Just skip that part, since we don't want the docs anyway.
+---
+ configure |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/configure b/configure
+index 1342387..8ff9dc8 100755
+--- a/configure
++++ b/configure
+@@ -16617,12 +16617,11 @@ echo "${ECHO_T}$cf_cv_src_modules" >&6
+ TEST_ARGS="-L${LIB_DIR} $TEST_ARGS"
+ TEST_ARG2="-L${LIB_2ND} $TEST_ARG2"
+ 
+-SRC_SUBDIRS="man include"
++SRC_SUBDIRS="include"
+ for cf_dir in $cf_cv_src_modules
+ do
+ 	SRC_SUBDIRS="$SRC_SUBDIRS $cf_dir"
+ done
+-SRC_SUBDIRS="$SRC_SUBDIRS test"
+ test -z "$MAKE_TERMINFO" && SRC_SUBDIRS="$SRC_SUBDIRS misc"
+ test "$cf_with_cxx_binding" != no && SRC_SUBDIRS="$SRC_SUBDIRS c++"
+ 
+-- 
+1.7.9
+
