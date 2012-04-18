@@ -3,7 +3,11 @@
 cd /app/client
 
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
-export SERIALNUMBER=$(hnvram -r 1ST_SERIAL_NUMBER | python -c "import sys;[sys.stdout.write(l.split('=')[1].strip()) for l in sys.stdin]")
+SERIALNUMBER=$(hnvram -r 1ST_SERIAL_NUMBER | python -c "import sys;[sys.stdout.write(l.split('=')[1].strip()) for l in sys.stdin]")
+if [ "$SERIALNUMBER" = "" ] ; then
+  SERIALNUMBER=$(hnvram -r SERIAL_NO | python -c "import sys;[sys.stdout.write(l.split('=')[1].strip()) for l in sys.stdin]")
+fi
+export SERIALNUMBER
 
 while true; do
   cd /app/client
