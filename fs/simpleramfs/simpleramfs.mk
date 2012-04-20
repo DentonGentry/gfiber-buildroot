@@ -9,7 +9,6 @@ SIMPLERAMFS_DEPENDENCIES= \
 	dash \
 	toybox \
 	toolbox \
-	busybox \
 	util-linux \
 	mtd
 
@@ -40,18 +39,11 @@ define SIMPLERAMFS_BUILD_CMDS
 			echo toybox: $$name; \
 			ln -sf toybox $(@D)/fs/bin/$$name; \
 		done
-	
-	#TODO(apenwarr): this is the last reference to busybox in simpleramfs.
-	# busybox mount is currently required for NFS; toolbox mount doesn't
-	# do it right, and util-linux mount requires nfs-tools, which installs
-	# extra junk we don't want.
-	ln -sf busybox $(@D)/fs/bin/mount
-		
+
 	# other required binaries.
 	ln -f $(TARGET_DIR)/bin/dash $(@D)/fs/bin/sh
 	ln -f 	$(TARGET_DIR)/bin/toolbox \
 		$(TARGET_DIR)/bin/toybox \
-		$(TARGET_DIR)/bin/busybox \
 		$(TARGET_DIR)/usr/sbin/ubiattach \
 		$(TARGET_DIR)/usr/sbin/ubidetach \
 		$(TARGET_DIR)/sbin/switch_root \

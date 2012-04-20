@@ -42,6 +42,7 @@ find_mtd()
 
 
 ROOTDEV=
+ROOTFSTYPE=
 NFSROOT=
 UBI_MTD=
 INIT=
@@ -53,6 +54,7 @@ for i in "$@"; do
   value=${i#*=}
   case "$key" in
     root) ROOTDEV=$value ;;
+    rootfstype) ROOTFSTYPE=$value ;;
     nfsroot) NFSROOT=$value ;;
     ubi.mtd) UBI_MTD=$value ;;
     init) INIT=$value ;;
@@ -93,7 +95,9 @@ if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
 fi
 
 if [ -n "$NFSROOT" ]; then
-  mount -t nfs -o nolock,proto=tcp "$NFSROOT" /rootfs || die "NFS mount failed"
+  NFSADDR=${NFSROOT%:*}
+  NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
+  mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -n "$ROOTDEV" ]; then
   mtd=/dev/mtd$(find_mtd "$ROOTDEV")
@@ -111,7 +115,7 @@ elif [ -n "$ROOTDEV" ]; then
     log "root='$ROOTDEV' is not an mtd device."
   fi
   #TODO(apenwarr): verify the root filesystem image signature here.
-  mount "$ROOTDEV" /rootfs || die "root='$ROOTDEV' mount failed"
+  mount -t "$ROOTFSTYPE" "$ROOTDEV" /rootfs || die "root='$ROOTDEV' mount failed"
   log "Mounted root='$ROOTDEV'"
 else
   die "No root= or nfsroot= provided."
