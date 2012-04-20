@@ -7,6 +7,7 @@ DASH_VERSION:=0.5.5.1
 DASH_SOURCE:=dash_$(DASH_VERSION).orig.tar.gz
 DASH_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/d/dash
 DASH_PATCH:=dash_$(DASH_VERSION)-6.diff.gz
+DASH_CONF_OPT:=--disable-static
 
 $(call BUILD_AFTER_BUSYBOX,dash)
 
