@@ -1,0 +1,41 @@
+config BR2_TARGET_ROOTFS_GINSTALL
+	bool "ginstall"
+	help
+	  Create installer package for Google platforms
+
+if BR2_TARGET_ROOTFS_GINSTALL
+config BR2_TARGET_ROOTFS_GINSTALL_UBI_LEBSIZE
+	hex "UBI logical erase block size"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+	default 0x1f800
+
+config BR2_TARGET_ROOTFS_GINSTALL_UBI_MINIOSIZE
+	hex "UBI minimum I/O size"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+	default 0x800
+	help
+	  Some comment required here
+
+config BR2_TARGET_ROOTFS_GINSTALL_UBI_MAXLEBCNT
+	int "Maximum LEB count"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+	default 2048
+	help
+	  Some comment required here
+
+config BR2_TARGET_ROOTFS_GINSTALL_UBI_PEBSIZE
+	hex "UBI physical erase block size"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+	default 0x20000
+	help
+	  Tells ubinize the physical eraseblock size of the flash chip
+	  the ubi image is created for.
+
+config BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE
+	int "UBI sub-page size"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+	default 512
+	help
+	  Tells ubinize that the flash supports sub-pages and the sub-page
+	  size. Use 0 if subpages are not supported on flash chip.
+endif

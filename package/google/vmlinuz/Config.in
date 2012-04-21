@@ -1,4 +1,0 @@
-config BR2_PACKAGE_GOOGLE_VMLINUZ
-	bool "google_vmlinuz"
-	help
-	  Package kernel for Google platforms

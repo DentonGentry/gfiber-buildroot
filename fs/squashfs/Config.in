@@ -41,11 +41,4 @@ config BR2_TARGET_ROOTFS_SQUASHFS4_XZ
        bool "xz"
 
 endchoice
-
-config BR2_TARGET_ROOTFS_SQUASHFS_UBI
-	depends on BR2_TARGET_ROOTFS_SQUASHFS
-	bool "Embed into an UBI image"
-	help
-	  Build an ubi image from the squashfs image (with ubinize).
-
 endif

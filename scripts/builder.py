@@ -135,7 +135,6 @@ class BuildRootBuilder(object):
       Makedirs(self._Path('images'))
       if not self.opt.bundle_only:
         self.BuildAppFs()
-      self.BundleImage()
     finally:
       endtime = time.time()
       elapsed = endtime - starttime
@@ -232,36 +231,6 @@ class BuildRootBuilder(object):
       self.RemoveStamps()
     self.Make([])
     self._LogDone('Building app')
-
-  #TODO(apenwarr): postprocessing like this belongs in a buildroot package.
-  #  Generating vmlinuz, tarballs, etc are just more build rules like any
-  #  other. That way you could cd $OUTDIR and just run 'make' and the right
-  #  thing will happen, as long as you've run this script once for setup.
-  def BundleImage(self):
-    """Create UBI images and installer tarball."""
-    self._LogStart('Bundling Image')
-
-    # ubinize vmlinuz
-    Info('Creating ubi image for vmlinuz...')
-    ubinize_opts = (open(self._Path('staging/etc/kernel_ubi_opts'))
-                    .read().strip().split())
-    cmd = ([self._Path('host/usr/sbin/ubinize'),
-            '-o', self._Path('images/vmlinuz.ubi')]
-           + ubinize_opts +
-           [self._Path('staging/etc/kernel_ubinize.cfg')])
-    self.PopenAt(self._Path('images'), cmd)
-
-    # bundle complete package in tar format
-    tarname = self._Path('images/bruno_ginstall_image.tgz')
-    Info('Creating %r', tarname)
-    tar = tarfile.open(tarname, 'w:gz')
-    tar.add(self._Path('images/version'), 'version')
-    tar.add(self._Path('images/vmlinuz'), 'vmlinuz')
-    tar.add(self._Path('images/rootfs.squashfs_ubi'),
-            'rootfs.squashfs_ubi')
-    tar.close()
-
-    self._LogDone('Bundling Image')
 
 
 def LoasTimeLeft():
