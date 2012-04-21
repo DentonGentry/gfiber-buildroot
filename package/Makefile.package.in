@@ -608,6 +608,12 @@ endif
 ifeq ($$($$($(2)_KCONFIG_VAR)),y)
 
 TARGETS += $(1)
+ifneq ($$($(2)_TYPE),host)
+TARGET_STAMPFILES += $$($(2)_TARGET_INSTALL_TARGET)
+endif
+ifeq ($$($(2)_INSTALL_IMAGES),YES)
+IMAGE_STAMPFILES += $$($(2)_TARGET_INSTALL_IMAGES)
+endif
 
 ifeq ($$($(2)_SITE_METHOD),svn)
 DL_TOOLS_DEPENDENCIES += svn

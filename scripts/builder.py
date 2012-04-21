@@ -211,9 +211,7 @@ class BuildRootBuilder(object):
 
   def RemoveStamps(self):
     Info('Cleaning up install stamps...')
-    Unlink(self._Path('build/.root'))
-    UnlinkGlob(self._Path('build/*/.stamp*installed'))
-    UnlinkGlob(self._Path('stamps/*installed'))
+    self.Make(['remove-stamps'])
 
   def BuildAppFs(self):
     """Build the kernel + simpleramfs + squashfs."""

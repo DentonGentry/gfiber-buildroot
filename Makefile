@@ -240,6 +240,8 @@ else
 BASE_TARGETS += uclibc
 endif
 TARGETS:=
+IMAGE_STAMPFILES:=
+TARGET_STAMPFILES:=
 
 # silent mode requested?
 QUIET:=$(if $(findstring s,$(MAKEFLAGS)),-q)
@@ -494,6 +496,12 @@ external-deps:
 
 show-targets:
 	@echo $(TARGETS)
+
+remove-stamps:
+	@rm -rf $(TARGET_STAMPFILES) $(TARGET_DIR) \
+		$(IMAGE_STAMPFILES) $(BINARIES_DIR) \
+		$(STAMP_DIR)/*installed \
+		$(BUILD_DIR)/.root
 
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
