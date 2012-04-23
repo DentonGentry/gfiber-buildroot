@@ -1,0 +1,60 @@
+From 32aae192c849edaeb37a10b2af933dec4f386465 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Mon, 23 Apr 2012 18:22:47 -0400
+Subject: [PATCH] logger.c: fewer buffer size limitations.
+
+In one spot, it was limiting messages to 400 bytes.  In another, it would
+read messages only 1024 bytes at a time, logging them in 1024-byte chunks.
+So bytes 400-1023 were lost, oops.
+
+Fixed the 400-byte limit entirely.  And now we *shrink* the 1024-byte output
+buffer to 768 bytes, because syslogd has another 1024-byte limit, except
+*that* limit includes the header string, so it would tend to chop off
+1024-byte strings.  Now long strings get chopped into multiple log lines of
+no more than 768 bytes each, with no characters lost.
+---
+ misc-utils/logger.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/misc-utils/logger.c b/misc-utils/logger.c
+index 95ed8be..70daa7d 100644
+--- a/misc-utils/logger.c
++++ b/misc-utils/logger.c
+@@ -88,6 +88,7 @@ static void
+ mysyslog(int fd, int logflags, int pri, char *tag, char *msg) {
+        char buf[1000], pid[30], *cp, *tp;
+        time_t now;
++       struct iovec v[2];
+ 
+        if (fd > -1) {
+                if (logflags & LOG_PID)
+@@ -104,10 +105,13 @@ mysyslog(int fd, int logflags, int pri, char *tag, char *msg) {
+                (void)time(&now);
+ 	       tp = ctime(&now)+4;
+ 
+-               snprintf(buf, sizeof(buf), "<%d>%.15s %.200s%s: %.400s",
+-			pri, tp, cp, pid, msg);
+-
+-               if (write(fd, buf, strlen(buf)+1) < 0)
++               snprintf(buf, sizeof(buf), "<%d>%.15s %.200s%s: ",
++			pri, tp, cp, pid);
++               v[0].iov_base = buf;
++               v[0].iov_len = strlen(buf);
++               v[1].iov_base = msg;
++               v[1].iov_len = strlen(msg) + 1;
++               if (writev(fd, v, 2) < 0)
+                        return; /* error */
+        }
+ }
+@@ -121,7 +125,7 @@ mysyslog(int fd, int logflags, int pri, char *tag, char *msg) {
+ int
+ main(int argc, char **argv) {
+ 	int ch, logflags, pri;
+-	char *tag, buf[1024];
++	char *tag, buf[768];
+ 	char *usock = "/dev/log";
+ 	int LogSock = -1;
+ 
+-- 
+1.7.9
+
