@@ -30,7 +30,6 @@ endif
 
 BCM_OBJS-$(BR2_PACKAGE_BCM_APP_ICU)         += icu
 
-include package/bcm_common/bcm_common.mk
 
 ifeq (y,$(BR2_PACKAGE_BCM_APP_NETFLIX))
 BCM_APPS_DEPENDENCIES += openssl expat curl

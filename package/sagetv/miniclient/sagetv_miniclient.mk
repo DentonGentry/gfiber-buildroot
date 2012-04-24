@@ -1,7 +1,6 @@
 SAGETV_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
 SAGETV_MINICLIENT_DEPENDENCIES=linux bcm_nexus bcm_rockford sagetv_pullreader openssl libcurl google_swscale tiff zlib libpng libungif google_widevine
 
-include package/bcm_common/bcm_common.mk
 
 define SAGETV_MINICLIENT_BUILD_CMDS
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \

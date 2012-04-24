@@ -8,7 +8,6 @@ BCM_NEXUS_INSTALL_TARGET=YES
 
 BCM_NEXUS_STAGING_PATH=usr/lib/nexus
 
-include package/bcm_common/bcm_common.mk
 
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs all

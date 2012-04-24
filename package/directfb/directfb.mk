@@ -14,7 +14,6 @@ directfb-build: bcm_apps-patch
 DIRECTFB_INSTALL_STAGING = YES
 DIRECTFB_INSTALL_TARGET = YES
 
-include package/bcm_common/bcm_common.mk
 
 define DIRECTFB_REMOVE_CONFIG
 	rm -f $(TARGET_DIR)/usr/local/bin/directfb/$(DIRECTFB_VERSION_MAJOR)/directfb-config

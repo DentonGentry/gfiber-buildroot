@@ -3,7 +3,6 @@ BCM_ROCKFORD_DEPENDENCIES=linux bcm_nexus
 BCM_ROCKFORD_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/rockford
 BCM_ROCKFORD_INSTALL_STAGING=YES
 
-include package/bcm_common/bcm_common.mk
 
 define BCM_ROCKFORD_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d -f V3DDriver.mk
