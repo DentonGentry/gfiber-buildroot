@@ -39,7 +39,7 @@ builder.py [options...] [output-directory]
 --
 p,product-family=  Product family (eg. bruno, bcm7425) [bruno]
 m,model=           Model name [gfhd100]
-c,chip-revision=   Chip revision [b0]
+c,chip-revision=   Chip revision [b2]
 v,verbose          Increase verbosity
 b,bundle-only      Only bundle the image
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)

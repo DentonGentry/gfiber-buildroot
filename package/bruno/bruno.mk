@@ -29,11 +29,6 @@ endef
 ifeq ($(BR2_PACKAGE_BRUNO_GFHD100),y)
 BRUNO_DEFINES += -DBRUNO_PLATFORM_GFHD100=1
 
-define BRUNO_INSTALL_STAGING_CMDS_CONFIG
-	cp $(@D)/bruno/gfhd100/config/lkr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/lkr.cfg
-	cp $(@D)/bruno/gfhd100/config/kr.cfg $(STAGING_DIR)/$(BRUNO_STAGING_PATH)/kr.cfg
-endef
-
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
 	mkdir -p $(TARGET_DIR)/home/test/
 	cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
@@ -54,7 +49,6 @@ endif
 
 define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
-	$(BRUNO_INSTALL_STAGING_CMDS_CONFIG)
 	$(BRUNO_INSTALL_STAGING_CMDS_PC)
 endef
 
@@ -66,12 +60,21 @@ define BRUNO_INSTALL_TARGET_CMDS_TEST
 endef
 endif
 
+ifeq ($(BR2_BRUNO_BCHP_VER),"B2")
+ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
+# :TODO: (kedong) update this once the signing service is ready.
+BRUNO_LOADER = cfe_signed_unlocked.bin
+else
+BRUNO_LOADER = cfe_signed_unlocked.bin
+endif
+endif
 
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
 	echo -n 0.5.0-$(BUILD_SECS)-$$(sha1sum $(TARGET_DIR)/etc/manifest | cut -c1-20) > $(TARGET_DIR)/etc/version
 	if [[ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]]; then echo -n "-dev"  >> $(TARGET_DIR)/etc/version; fi
+	if [ ! -z "$(BRUNO_LOADER)" ]; then cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin; fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
 endef
