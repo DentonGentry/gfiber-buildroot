@@ -34,6 +34,7 @@ define ROOTFS_GINSTALL_CMD
 	tar zvPc --transform "s,$$(BINARIES_DIR)/,," \
 		-f  $(BINARIES_DIR)/bruno_ginstall_image.tgz \
 		$(BINARIES_DIR)/version \
+		$(BINARIES_DIR)/loader.bin \
 		$(BINARIES_DIR)/vmlinuz \
 		$(BINARIES_DIR)/rootfs.squashfs_ubi; \
 	rm kernel_ubinize.cfg
