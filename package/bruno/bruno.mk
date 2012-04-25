@@ -70,7 +70,7 @@ endif
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/repo-buildroot-manifest
-	echo -n 0.4.3-$(BUILD_SECS)-$$(sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest | cut -c1-20) > $(TARGET_DIR)/etc/version
+	echo -n 0.4.4-$(BUILD_SECS)-$$(sha1sum $(TARGET_DIR)/etc/repo-buildroot-manifest | cut -c1-20) > $(TARGET_DIR)/etc/version
 	if [[ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]]; then echo -n "-dev"  >> $(TARGET_DIR)/etc/version; fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
