@@ -6,7 +6,7 @@ config BR2_PACKAGE_BRUNO
 
 config BR2_BRUNO_BCHP_VER
 	string "Version of 7425 chip"
-	default B0
+	default B2
 	help
 	  Version of 7425 chip used in bruno build
 
