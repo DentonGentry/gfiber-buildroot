@@ -58,7 +58,7 @@ for i in "$@"; do
     nfsroot) NFSROOT=$value ;;
     ubi.mtd) UBI_MTD=$value ;;
     init) INIT=$value ;;
-    debug) DEBUG=1 ;;
+    debug|login) DEBUG=1 ;;
   esac
 done
 

@@ -3,7 +3,10 @@
 # The initial system boot script.  This only does one thing: try to find
 # the root filesystem and mount it if possible.
 #
-echo "Starting '$0' in initramfs."
+mknod /dev/kmsg c 1 11
+exec >/dev/kmsg 2>&1
+
+echo "---- initramfs ('$0')"
 echo "To bypass this script, use rdinit=/bin/sh"
 
 
