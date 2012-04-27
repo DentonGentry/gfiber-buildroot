@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SKELMIR
+        bool "google_skelmir"
+        help
+          Installs the Skelmir Java VM

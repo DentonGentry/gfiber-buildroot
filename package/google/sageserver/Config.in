@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_SAGESERVER
         bool "google_sageserver"
+        select BR2_PACKAGE_GOOGLE_SKELMIR
         help
           Installs the SageTV server package

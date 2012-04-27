@@ -1,0 +1,20 @@
+#!/bin/sh
+export LD_LIBRARY_PATH=.:./lib
+export LANG=en_US.UTF-8
+
+# Start up native streaming server
+./sagesrv.sh &
+# Start up channel service for dogfood
+./chsrv
+
+export SIEGEHOME=/app/sage/skelmir
+
+SIEGEOPT=
+if [ -e /tmp/disablejit ]; then
+  SIEGEOPT+=" -Xint"
+fi
+if [ ! -e /rw/sage ]; then
+	mkdir /rw/sage
+fi
+./skelmir/siege -Djava.io.tmpdir=/tmp -Dsage.paths.logs=/tmp/log -Djava.library.path=. -Dsage.paths.cache=/var/media -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar -Xmx384m $SIEGEOPT sage.Sage 0 0 x "sagetv /rw/sage/Sage.properties" 2>&1 | logger -t s
+
