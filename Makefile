@@ -498,10 +498,10 @@ show-targets:
 	@echo $(TARGETS)
 
 remove-stamps:
-	@rm -rf $(TARGET_STAMPFILES) $(TARGET_DIR) \
-		$(IMAGE_STAMPFILES) $(BINARIES_DIR) \
-		$(STAMP_DIR)/*installed \
-		$(BUILD_DIR)/.root
+	@rm -rf $(TARGET_DIR) $(BINARIES_DIR)
+	@rm -f $(STAMP_DIR)/*installed $(BUILD_DIR)/.root \
+		$(BUILD_DIR)/*/.stamp_images_installed \
+		$(BUILD_DIR)/*/.stamp_target_installed
 
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
