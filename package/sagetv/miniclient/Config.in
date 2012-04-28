@@ -1,4 +1,0 @@
-config BR2_PACKAGE_SAGETV_MINICLIENT
-        bool "sagetv_miniclient"
-        help
-          Builds the SageTV miniclient

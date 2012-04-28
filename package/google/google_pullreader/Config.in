@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_PULLREADER
+        bool "google_pullreader"
+        help
+          Builds the SageTV pullreader

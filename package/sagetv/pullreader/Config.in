@@ -1,4 +1,0 @@
-config BR2_PACKAGE_SAGETV_PULLREADER
-        bool "sagetv_pullreader"
-        help
-          Builds the SageTV pullreader

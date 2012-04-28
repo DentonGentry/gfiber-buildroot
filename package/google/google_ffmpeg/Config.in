@@ -1,4 +1,4 @@
-config BR2_PACKAGE_SAGETV_FFMPEG
-        bool "sagetv_ffmpeg"
+config BR2_PACKAGE_GOOGLE_FFMPEG
+        bool "google_ffmpeg"
         help
           Builds the FFMPEG version with SageTV patch

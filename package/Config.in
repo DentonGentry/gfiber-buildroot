@@ -538,7 +538,6 @@ endmenu
 
 menu "Bruno custom build"
 source "package/bruno/Config.in"
-source "package/sagetv/Config.in"
 source "package/google/Config.in"
 endmenu
 
