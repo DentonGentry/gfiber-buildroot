@@ -12,9 +12,9 @@ start() {
 
   cd /app/sage
   if [ "$PLATFORM" = "GFHD100" ]; then
-    ./runsageclient &
+    (ntp_wait /tmp/ntp.synced; ./runsageclient) &
   else
-    ./runsage &
+    (ntp_wait /tmp/ntp.synced; ./runsage) &
   fi
 
   # TODO: remove in non-test builds
