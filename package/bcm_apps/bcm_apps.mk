@@ -65,15 +65,23 @@ else
 LICENSE_TYPE=playready_dev_license
 endif
 
+define BCM_APPS_BUILD_PLAYREADY_BIN
+	mkdir -p $(STAGING_DIR)/usr/local/licenses
+	cd /google/src/files/head/depot/google3 && \
+	blaze --host_jvm_args=-Xmx256m run --forge -- \
+		//isp/fiber/drm:drm_keystore_client \
+		--key_type $(LICENSE_TYPE) \
+		--output $(STAGING_DIR)/usr/local/licenses/playready.bin
+endef
+
 define BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/usr/local/licenses
-	(pushd . > /dev/null; \
-	cd /home/build/google3; \
-	blaze --host_jvm_args=-Xmx256m run --forge -- //isp/fiber/drm:drm_keystore_client --key_type $(LICENSE_TYPE) --output $(TARGET_DIR)/usr/local/licenses/playready.bin \
-	popd > /dev/null)
+	cp $(STAGING_DIR)/usr/local/licenses/playready.bin \
+		$(TARGET_DIR)/usr/local/licenses/playready.bin
 endef
 
 define BCM_APPS_BUILD_CMDS
+	$(BCM_APPS_BUILD_PLAYREADY_BIN)
 	$(BCM_APPS_BUILD_APPS)
 	$(BCM_APPS_BUILD_NETFLIX)
 endef
