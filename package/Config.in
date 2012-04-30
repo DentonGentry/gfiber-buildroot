@@ -542,6 +542,12 @@ source "package/sagetv/Config.in"
 source "package/google/Config.in"
 endmenu
 
+menu "Google open source packages"
+source "package/catawampus/Config.in"
+source "package/logupload/Config.in"
+source "package/ginstall/Config.in"
+endmenu
+
 menu "Broadcom custom build"
 source "package/bcm_bseav/Config.in"
 source "package/bcm_nexus/Config.in"
