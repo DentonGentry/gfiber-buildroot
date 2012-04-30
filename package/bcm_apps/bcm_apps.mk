@@ -1,5 +1,5 @@
 BCM_APPS_SITE=repo://vendor/broadcom/AppLibs
-BCM_APPS_DEPENDENCIES=linux bcm_bseav bcm_nexus humax_misc
+BCM_APPS_DEPENDENCIES=linux bcm_bseav bcm_nexus
 BCM_APPS_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/AppLibs
 BCM_APPS_POST_EXTRACT_HOOKS=BCM_REMOVE_PATCH_REJECTS
 BCM_APPS_INSTALL_STAGING=YES
