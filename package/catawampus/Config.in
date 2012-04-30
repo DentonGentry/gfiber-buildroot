@@ -1,4 +1,4 @@
-config BR2_PACKAGE_GOOGLE_CATAWAMPUS
+config BR2_PACKAGE_CATAWAMPUS
 	bool "catawampus"
 	help
 	  tr-69 management agent.

@@ -1,4 +1,4 @@
-config BR2_PACKAGE_GOOGLE_LOGUPLOAD
-	bool "google_logupload"
+config BR2_PACKAGE_LOGUPLOAD
+	bool "logupload"
 	help
 	  Tools for periodically uploading log files to a server.

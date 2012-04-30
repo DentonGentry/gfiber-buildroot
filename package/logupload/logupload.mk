@@ -1,8 +1,8 @@
-GOOGLE_LOGUPLOAD_SITE=repo://vendor/google/platform
-GOOGLE_LOGUPLOAD_DEPENDENCIES=python iproute2 google_hnvram
-GOOGLE_LOGUPLOAD_INSTALL_TARGET=YES
+LOGUPLOAD_SITE=repo://vendor/google/platform
+LOGUPLOAD_DEPENDENCIES=python iproute2 google_hnvram
+LOGUPLOAD_INSTALL_TARGET=YES
 
-define GOOGLE_LOGUPLOAD_INSTALL_TARGET_CMDS
+define LOGUPLOAD_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bruno/logupload/upload-logs $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -D -m 0755 $(@D)/bruno/logupload/upload-crash-log $(TARGET_DIR)/usr/bin/
 
@@ -13,4 +13,4 @@ define GOOGLE_LOGUPLOAD_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bruno/logupload/options.py $(TARGET_DIR)/usr/bin/
 endef
 
-$(eval $(call GENTARGETS,package/google,google_logupload))
+$(eval $(call GENTARGETS,package,logupload))

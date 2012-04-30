@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GINSTALL
+	bool "ginstall"
+	help
+	  Installer for Google platforms.
