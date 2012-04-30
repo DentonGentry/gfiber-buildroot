@@ -1,0 +1,85 @@
+From 3fc368780ca6a8b4ac3c26cf1488ed379d3b6324 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Wed, 25 Apr 2012 22:59:26 -0700
+Subject: [PATCH] File based ntp_wait
+
+---
+ ntpd.c |   17 ++++++++++++++++-
+ ntpd.h |    1 +
+ 3 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/ntpd.c b/ntpd.c
+index 66b236e..5edd064 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -45,6 +45,7 @@ int		check_child(pid_t, const char *);
+ int		dispatch_imsg(struct ntpd_conf *);
+ int		ntpd_adjtime(double);
+ void		ntpd_settime(double);
++void		ntpd_write_synced(const char *filename);
+ 
+ volatile sig_atomic_t	 quit = 0;
+ volatile sig_atomic_t	 reconfig = 0;
+@@ -100,7 +101,7 @@ main(int argc, char *argv[])
+ 	log_init(1);		/* log to stderr until daemonized */
+ 	res_init();		/* XXX */
+ 
+-	while ((ch = getopt(argc, argv, "df:sS")) != -1) {
++	while ((ch = getopt(argc, argv, "df:sSw:")) != -1) {
+ 		switch (ch) {
+ 		case 'd':
+ 			conf.debug = 1;
+@@ -114,6 +115,9 @@ main(int argc, char *argv[])
+ 		case 'S':
+ 			conf.settime = 0;
+ 			break;
++		case 'w':
++			conf.synced_file = optarg;
++			break;
+ 		default:
+ 			usage();
+ 			/* NOTREACHED */
+@@ -281,6 +285,7 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 				fatalx("invalid IMSG_ADJTIME received");
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			n = ntpd_adjtime(d);
++			ntpd_write_synced(conf->synced_file);
+ 			imsg_compose(ibuf, IMSG_ADJTIME, 0, 0, &n, sizeof(n));
+ 			break;
+ 		case IMSG_SETTIME:
+@@ -291,6 +296,7 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 			log_init(conf->debug);
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			ntpd_settime(d);
++			ntpd_write_synced(conf->synced_file);
+ 			/* daemonize now */
+ 			if (!conf->debug)
+ 				if (daemon(1, 0))
+@@ -375,3 +381,12 @@ ntpd_settime(double d)
+ 	    localtime(&tval));
+ 	log_info("set local clock to %s (offset %fs)", buf, d);
+ }
++
++void
++ntpd_write_synced(const char *filename) {
++	int fd;
++	if (filename) {
++		fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0444);
++		if (fd >= 0) close(fd);
++	}
++}
+diff --git a/ntpd.h b/ntpd.h
+index e501ce0..9fdae0c 100644
+--- a/ntpd.h
++++ b/ntpd.h
+@@ -132,6 +132,7 @@ struct ntpd_conf {
+ 	u_int8_t				settime;
+ 	u_int8_t				debug;
+ 	u_int32_t				scale;
++	char					*synced_file;
+ };
+ 
+ struct buf {
+-- 
+1.7.9.4
+
