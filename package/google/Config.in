@@ -22,4 +22,5 @@ source "package/google/google_webrtc/Config.in"
 source "package/google/google_platform_base/Config.in"
 source "package/google/google_platform_sysmgr/Config.in"
 source "package/google/google_widevine/Config.in"
+source "package/google/google_signing/Config.in"
 endmenu

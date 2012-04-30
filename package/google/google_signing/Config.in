@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SIGNING
+	bool "google_signing"
+	help
+	  Signing checker for Google platforms.
