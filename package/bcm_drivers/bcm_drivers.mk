@@ -42,7 +42,7 @@ define BCM_DRIVERS_BUILD_WIFI
 		STBLINUX=1 \
 		LINUXDIR="$(LINUX_DIR)" \
 		-C $(@D)/wifi/wl/linux \
-		$(WIFI_CONFIG_PREFIX)-mipsel-mips
+		mipsel-mips
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		TARGETENV="linuxmips" \
 		LINUXDIR="$(LINUX_DIR)" \
@@ -51,7 +51,7 @@ define BCM_DRIVERS_BUILD_WIFI
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_WIFI
-	$(INSTALL) -D -m 0600 $(@D)/wifi/wl/linux/obj-$(WIFI_CONFIG_PREFIX)-mipsel-mips-*/wl.ko $(TARGET_DIR)/usr/lib/modules/wl.ko
+	$(INSTALL) -D -m 0600 $(@D)/wifi/wl/linux/obj-mipsel-mips-*/wl.ko $(TARGET_DIR)/usr/lib/modules/wl.ko
 	$(INSTALL) -m 0700 $(@D)/wifi/wl/exe/wlmips $(TARGET_DIR)/usr/bin/wl
 endef
 
