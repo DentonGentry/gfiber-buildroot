@@ -5,7 +5,7 @@ TOOLBOX_SITE=repo://toolbox-for-linux
 # getty, udhcpd, ntpd, mount (w/ volume support), fdisk
 
 define TOOLBOX_BUILD_CMDS
-	$(MAKE) -C $(@D) CC="$(TARGET_CC)" all
+	$(MAKE) -C $(@D) CC="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" all
 endef
 
 define TOOLBOX_INSTALL_TARGET_CMDS
