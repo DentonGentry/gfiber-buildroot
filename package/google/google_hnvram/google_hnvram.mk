@@ -16,4 +16,4 @@ define GOOGLE_HNVRAM_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bruno/hnvram/hnvram $(TARGET_DIR)/usr/bin/
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

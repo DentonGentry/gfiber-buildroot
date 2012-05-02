@@ -31,4 +31,4 @@ define GOOGLE_LIBJINGLE_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/talk/build/dbg/obj/call $(TARGET_DIR)/home/test/call
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

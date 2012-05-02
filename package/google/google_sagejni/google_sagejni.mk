@@ -10,4 +10,4 @@ define GOOGLE_SAGEJNI_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/libSage.so $(TARGET_DIR)/app/sage/lib/libSage.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

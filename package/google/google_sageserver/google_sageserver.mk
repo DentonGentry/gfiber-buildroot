@@ -39,4 +39,4 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/S95sageserver
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

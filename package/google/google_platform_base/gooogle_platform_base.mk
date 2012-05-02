@@ -22,4 +22,4 @@ define GOOGLE_PLATFORM_BASE_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bruno/base/build/libbrunobase.so $(TARGET_DIR)/usr/lib/libbrunobase.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))
