@@ -72,9 +72,20 @@ endif
 BUILD_SECS:=$(shell date +%s --utc)
 define BRUNO_INSTALL_TARGET_CMDS
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
-	echo -n 0.5.1-$(BUILD_SECS)-$$(sha1sum $(TARGET_DIR)/etc/manifest | cut -c1-20) > $(TARGET_DIR)/etc/version
-	if [[ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]]; then echo -n "-dev"  >> $(TARGET_DIR)/etc/version; fi
-	if [ ! -z "$(BRUNO_LOADER)" ]; then cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin; fi
+	#TODO(apenwarr): 'git describe' should use all projects.
+	#  Right now it only uses buildroot.  I have a plan for this
+	#  involving git submodules, just don't want to change too much
+	#  in this code all at once.  This should work for now.
+	echo -n $$(git describe --dirty --match 'bruno-*' | \
+		sed 's/^bruno-//') >$(TARGET_DIR)/etc/version
+	if [ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]; then \
+		(echo -n '-'; \
+		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
+	fi
+	if [ -n "$(BRUNO_LOADER)" ]; then \
+		cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) \
+			$(BINARIES_DIR)/loader.bin; \
+	fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
 endef
