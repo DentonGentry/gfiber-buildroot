@@ -24,7 +24,17 @@ define SIMPLERAMFS_BUILD_CMDS
 	
 	# the initramfs /init script, executed by the kernel by default
 	ln -f fs/simpleramfs/init fs/simpleramfs/mounts $(@D)/fs/
-	
+
+	# the checksum file base content (to be search-and-replaced later as
+	# part of ginstall signing)
+	rm -f $(@D)/fs/rootfs.sum
+	( \
+		echo "---ROOTFS-SUM-START---"; \
+		perl -e 'print " " x 1024'; \
+		echo; \
+		echo "---ROOTFS-SUM-END-----"; \
+	) >$(@D)/fs/rootfs.sum
+
 	# toolbox/toybox symlinks
 	#TODO(apenwarr): not sure we're actually using toolbox in simpleramfs.
 	set -e; \
@@ -82,13 +92,12 @@ endef
 # staging, which is the closest match philosophically (ie. it's where you
 # install stuff that will be used by builds that depend on yours).
 define SIMPLERAMFS_INSTALL_STAGING_CMDS
-	(cd $(@D)/fs && ((find; echo /dev/console) | cpio -oH newc)) | \
-		gzip -c \
-		>$(BINARIES_DIR)/simpleramfs.cpio.gz.new
-	mv $(BINARIES_DIR)/simpleramfs.cpio.gz.new \
-	   $(BINARIES_DIR)/simpleramfs.cpio.gz
+	(cd $(@D)/fs && ((find; echo /dev/console) | cpio -oH newc)) \
+		>$(BINARIES_DIR)/simpleramfs.cpio.new
+	mv $(BINARIES_DIR)/simpleramfs.cpio.new \
+	   $(BINARIES_DIR)/simpleramfs.cpio
 	rm -f $(LINUX_DIR)/usr/initramfs_data.cpio*
-	cp $(BINARIES_DIR)/simpleramfs.cpio.gz \
+	cp $(BINARIES_DIR)/simpleramfs.cpio \
 	   $(LINUX_DIR)/usr/initramfs_data.cpio
 endef
 
