@@ -35,8 +35,6 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		package/google/sageserver/runsageclient \
 		package/google/sageserver/sagesrv.sh \
 		$(TARGET_DIR)/app/sage/
-	cp -af	$(@D)/build/hd300/app/sage/lib/zi \
-		$(TARGET_DIR)/app/sage/skelmir/Libraries/
 	$(INSTALL) -m 0755 -D package/google/sageserver/S95sageserver \
 		$(TARGET_DIR)/etc/init.d/S95sageserver
 endef
