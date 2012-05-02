@@ -1,0 +1,45 @@
+From 1593b134ebf596ae7a2b1e73f2dcc8c4e7febddd Mon Sep 17 00:00:00 2001
+From: Karel Zak <kzak@redhat.com>
+Date: Thu, 8 Dec 2011 11:39:05 +0100
+Subject: [PATCH] agetty: don't use log_err() for non-fatal errors
+
+The TIOCSCTTY ioctl requires that caller is session leader -- so it
+depends on initd (or we have to add setsid() to aggety). It seems that the
+traditional way is to setup tty in agetty and session in login(1).
+
+It means that all session related things (TIOCSCTTY, vhangup, ...) in the
+command agetty should be optional. (Note that vhangup() is called when
+--hangup is explicitly specified on command line, so log_err() makes
+sense there.)
+
+Reported-by: Andrew Walrond <andrew@...>
+Signed-off-by: Karel Zak <kzak@...>
+---
+ term-utils/agetty.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/term-utils/agetty.c b/term-utils/agetty.c
+index 079a737..3500a8e 100644
+--- a/term-utils/agetty.c
++++ b/term-utils/agetty.c
+@@ -925,7 +925,7 @@ static void open_tty(char *tty, struct termios *tp, struct options *op)
+
+ 		if (((tid = tcgetsid(fd)) < 0) || (pid != tid)) {
+ 			if (ioctl(fd, TIOCSCTTY, 1) == -1)
+-				log_err("/dev/%s: cannot get controlling tty: %m", tty);
++				log_warn("/dev/%s: cannot get controlling tty: %m", tty);
+ 		}
+
+ 		if (op->flags & F_HANGUP) {
+@@ -950,7 +950,7 @@ static void open_tty(char *tty, struct termios *tp, struct options *op)
+ 			log_err(_("/dev/%s: cannot open as standard input: %m"), tty);
+ 		if (((tid = tcgetsid(STDIN_FILENO)) < 0) || (pid != tid)) {
+ 			if (ioctl(STDIN_FILENO, TIOCSCTTY, 1) == -1)
+-				log_err("/dev/%s: cannot get controlling tty: %m", tty);
++				log_warn("/dev/%s: cannot get controlling tty: %m", tty);
+ 		}
+
+ 	} else {
+--
+1.7.6.4
+--
