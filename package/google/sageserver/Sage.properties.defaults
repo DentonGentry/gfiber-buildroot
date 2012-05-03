@@ -375,4 +375,4 @@ use_alternate_streaming_ports=true
 videoframe/ff_time=30000
 debug_input_events=true
 ui/thread_hang_delay_to_dump=60000
-
+sync_system_clock=false
