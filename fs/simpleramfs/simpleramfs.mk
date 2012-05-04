@@ -3,7 +3,7 @@ SIMPLERAMFS_SOURCE=null
 SIMPLERAMFS_VERSION=HEAD
 
 SIMPLERAMFS_INSTALL_TARGET=NO
-SIMPLERAMFS_INSTALL_STAGING=YES
+SIMPLERAMFS_INSTALL_IMAGES=YES
 
 SIMPLERAMFS_DEPENDENCIES= \
 	dash \
@@ -87,18 +87,11 @@ define SIMPLERAMFS_BUILD_CMDS
 	done
 endef
 
-# We're not actually copying to staging - we're copying into the kernel
-# build directory.  But there's no "INSTALL_*_CMDS" for that, so we use
-# staging, which is the closest match philosophically (ie. it's where you
-# install stuff that will be used by builds that depend on yours).
-define SIMPLERAMFS_INSTALL_STAGING_CMDS
+define SIMPLERAMFS_INSTALL_IMAGES_CMDS
 	(cd $(@D)/fs && ((find; echo /dev/console) | cpio -oH newc)) \
 		>$(BINARIES_DIR)/simpleramfs.cpio.new
 	mv $(BINARIES_DIR)/simpleramfs.cpio.new \
 	   $(BINARIES_DIR)/simpleramfs.cpio
-	rm -f $(LINUX_DIR)/usr/initramfs_data.cpio*
-	cp $(BINARIES_DIR)/simpleramfs.cpio \
-	   $(LINUX_DIR)/usr/initramfs_data.cpio
 endef
 
 $(eval $(call GENTARGETS,fs,simpleramfs))
