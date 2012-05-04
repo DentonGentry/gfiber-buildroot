@@ -20,6 +20,10 @@ define BRUNO_BUILD_CMDS_DIAG
 	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/bruno/diag
 endef
 
+define BRUNO_BUILD_CMDS_MISC
+	CC="$(TARGET_CC) $(TARGET_CFLAGS)" $(MAKE) -C $(@D)/bruno/cmds
+endef
+
 define BRUNO_INSTALL_STAGING_CMDS_PC
 	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig && \
 	cp $(@D)/bruno/pkg-config/bruno.pc $(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc && \
@@ -37,6 +41,10 @@ endef
 define BRUNO_INSTALL_TARGET_CMDS_DIAG
 	$(INSTALL) -D -m 0755 $(@D)/bruno/diag/diagd $(TARGET_DIR)/usr/bin/diagd
 endef
+
+define BRUNO_INSTALL_TARGET_CMDS_MISC
+	$(INSTALL) -D -m 0755 $(@D)/bruno/cmds/grep $(TARGET_DIR)/bin/grep
+endef
 endif
 
 endif
@@ -44,6 +52,7 @@ endif
 ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
 define BRUNO_BUILD_CMDS
 	$(BRUNO_BUILD_CMDS_DIAG)
+	$(BRUNO_BUILD_CMDS_MISC)
 endef
 endif
 
@@ -56,6 +65,7 @@ ifeq ($(BR2_PACKAGE_BRUNO_TEST),y)
 define BRUNO_INSTALL_TARGET_CMDS_TEST
 	$(BRUNO_INSTALL_TARGET_CMDS_SKEL)
 	$(BRUNO_INSTALL_TARGET_CMDS_DIAG)
+	$(BRUNO_INSTALL_TARGET_CMDS_MISC)
 	$(BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK)
 endef
 endif
