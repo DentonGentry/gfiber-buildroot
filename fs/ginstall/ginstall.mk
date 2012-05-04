@@ -11,6 +11,7 @@ GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
 endif
 
 ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd
+ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
 # TODO(sledbetter): remove vmlinuz gen after merging buildroot 2012.02+
 define ROOTFS_GINSTALL_CMD
@@ -40,9 +41,9 @@ define ROOTFS_GINSTALL_CMD
 		$(GINSTALL_UBI_UBINIZE_OPTS) \
 		$(BUILD_DIR)/rootfs_ubinize.cfg && \
 	cd $(BINARIES_DIR) && \
-	tar -czf bruno-$(shell cat $(BINARIES_DIR)/version).gi \
+	tar -czf bruno-$(value ROOTFS_GINSTALL_VERSION).gi \
 		version loader.bin vmlinuz rootfs.squashfs_ubi && \
-	ln -sf bruno-$(shell cat $(BINARIES_DIR)/version).gi \
+	ln -sf bruno-$(value ROOTFS_GINSTALL_VERSION).gi \
 		bruno_ginstall_image.tgz
 endef
 
