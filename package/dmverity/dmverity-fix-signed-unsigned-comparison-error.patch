@@ -1,0 +1,16 @@
+Fixed the signed/unsigned comparision error.
+
+Signed-off-by: Ke Dong <kedong@google.com>
+
+diff -Nura a/dm-bht_unittest.cc b/dm-bht_unittest.cc
+--- a/dm-bht_unittest.cc	2012-05-03 18:59:08.000000000 -0700
++++ b/dm-bht_unittest.cc	2012-05-04 03:07:08.000000000 -0700
+@@ -87,7 +87,7 @@
+ 
+   int Read(sector_t start, u8 *dst, sector_t count) {
+     EXPECT_LT(start, sectors_);
+-    EXPECT_EQ(to_bytes(count), PAGE_SIZE);
++    EXPECT_EQ(to_bytes(count), (sector_t)PAGE_SIZE);
+     u8 *src = &hash_data_[to_bytes(start)];
+     memcpy(dst, src, to_bytes(count));
+     return 0;

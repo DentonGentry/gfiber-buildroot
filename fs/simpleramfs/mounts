@@ -89,6 +89,14 @@ if [ -n "$UBI_MTD" ]; then
   fi
 fi
 
+replacefirst() {
+  local left right
+  # same as sed -e 's/$2/$3/' $1
+  right=${1#*${2}}
+  left=${1%%${2}*}
+  echo ${left}${3}${right}
+}
+
 # host:path format in root= means we should do an NFS root
 if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
   NFSROOT=$ROOTDEV
@@ -100,6 +108,7 @@ if [ -n "$NFSROOT" ]; then
   mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -n "$ROOTDEV" ]; then
+  KERNELDEV=$(replacefirst ${UBI_MTD} rootfs kernel)
   mtd=/dev/mtd$(find_mtd "$ROOTDEV")
   if [ -n "$mtd" ]; then
     log "Found root='$ROOTDEV': $mtd"
@@ -114,8 +123,12 @@ elif [ -n "$ROOTDEV" ]; then
     cat /proc/mtd
     log "root='$ROOTDEV' is not an mtd device."
   fi
-  #TODO(apenwarr): verify the root filesystem image signature here.
-  mount -t "$ROOTFSTYPE" "$ROOTDEV" /rootfs || die "root='$ROOTDEV' mount failed"
+  KERNELDEV=/dev/mtdblock$(find_mtd "${KERNELDEV}")
+  args=$(readverity ${KERNELDEV})
+  args=$(replacefirst "${args}" ROOT_DEV "${ROOTDEV}")
+  args=$(replacefirst "${args}" HASH_DEV "${KERNELDEV}")
+  dmsetup create -r vroot --table "${args}" || die "dmsetup failed"
+  mount -o ro -t "$ROOTFSTYPE" /dev/mapper/vroot /rootfs || die "root='$ROOTDEV' mount failed"
   log "Mounted root='$ROOTDEV'"
 else
   die "No root= or nfsroot= provided."

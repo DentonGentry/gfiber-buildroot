@@ -10,7 +10,7 @@ ifneq ($(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE),0)
 GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
 endif
 
-ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd
+ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
 # TODO(sledbetter): remove vmlinuz gen after merging buildroot 2012.02+
@@ -20,6 +20,7 @@ define ROOTFS_GINSTALL_CMD
 		<$(BINARIES_DIR)/vmlinux >$(BINARIES_DIR)/vmlinux.subst && \
 	gzip -c <$(BINARIES_DIR)/vmlinux.subst >$(BINARIES_DIR)/vmlinuz && \
 	chmod 0644 $(BINARIES_DIR)/vmlinuz && \
+	fs/ginstall/sign/repack.py -o $(HOST_DIR) -b $(BINARIES_DIR) && \
 	( \
 		echo "[vmlinuz]"; \
 		cat fs/ginstall/ubinize.cfg; \

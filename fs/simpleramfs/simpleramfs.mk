@@ -10,6 +10,8 @@ SIMPLERAMFS_DEPENDENCIES= \
 	toybox \
 	toolbox \
 	util-linux \
+	lvm2 \
+	google_signing \
 	mtd
 
 define SIMPLERAMFS_EXTRACT_CMDS
@@ -56,6 +58,8 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/bin/toybox \
 		$(TARGET_DIR)/usr/sbin/ubiattach \
 		$(TARGET_DIR)/usr/sbin/ubidetach \
+		$(TARGET_DIR)/usr/sbin/dmsetup \
+		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
 		$(@D)/fs/bin/
 	
