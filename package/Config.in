@@ -600,7 +600,6 @@ endmenu
 
 menu "Google open source packages"
 source "package/catawampus/Config.in"
-source "package/logupload/Config.in"
 source "package/ginstall/Config.in"
 endmenu
 
