@@ -1,0 +1,29 @@
+From d53b50a56c35a0f1dffa38c9ecd71936052a586e Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 4 May 2012 20:26:57 -0400
+Subject: [PATCH] hdparm --fallocate: change syscall() to work on mips.
+
+The endianness handling was wrong.  However, this will break hdparm on other
+processor types (probably x86 and x86-64).
+---
+ fallocate.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fallocate.c b/fallocate.c
+index 1c7ec81..277c8f3 100644
+--- a/fallocate.c
++++ b/fallocate.c
+@@ -35,7 +35,9 @@ int do_fallocate_syscall (const char *path, __u64 bytecount)
+ 		err = errno;
+ 	} else {
+ 		len = bytecount;
+-		err = syscall(SYS_fallocate, fd, mode, offset, len);
++		err = syscall(SYS_fallocate, fd, mode,
++				(__u32)offset, (__u32)(offset>>32),
++				(__u32)len, (__u32)(len>>32));
+ 		if (err >= 0) {
+ 			fsync(fd);
+ 			exit(0);
+-- 
+1.7.9
+
