@@ -1,0 +1,112 @@
+From c48b2c107167fe85d0d13b5a9877dcd07543232e Mon Sep 17 00:00:00 2001
+From: Austin Foxley <austinf@cetoncorp.com>
+Date: Fri, 22 Apr 2011 15:06:18 -0700
+Subject: [PATCH] nptl: remove sigaction, sigprocmask, and sigfillset from
+ libpthread
+
+Having them defined in both places was causing errors with static linking
+
+[edit: include <pthreadP.h> to preserve the SIGCANCEL/SIGSETXID logic]
+
+Signed-off-by: Austin Foxley <austinf@cetoncorp.com>
+Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+---
+ libc/signal/sigfillset.c                    |    3 ++
+ libc/sysdeps/linux/common/sigprocmask.c     |    4 +++
+ libpthread/nptl/sysdeps/pthread/Makefile.in |   29 +-------------------------
+ 3 files changed, 9 insertions(+), 27 deletions(-)
+
+diff --git a/libc/signal/sigfillset.c b/libc/signal/sigfillset.c
+index 951e76b..d5dbd68 100644
+--- a/libc/signal/sigfillset.c
++++ b/libc/signal/sigfillset.c
+@@ -20,6 +20,9 @@
+ #include <signal.h>
+ #include <string.h>
+ 
++#ifdef __UCLIBC_HAS_THREADS_NATIVE__
++#include <pthreadP.h>
++#endif
+ 
+ /* Set all signals in SET.  */
+ int
+diff --git a/libc/sysdeps/linux/common/sigprocmask.c b/libc/sysdeps/linux/common/sigprocmask.c
+index 011d7b3..0cb8774 100644
+--- a/libc/sysdeps/linux/common/sigprocmask.c
++++ b/libc/sysdeps/linux/common/sigprocmask.c
+@@ -9,6 +9,10 @@
+ 
+ #include <sys/syscall.h>
+ 
++#ifdef __UCLIBC_HAS_THREADS_NATIVE__
++#include <pthreadP.h>
++#endif
++
+ #if defined __USE_POSIX
+ #include <signal.h>
+ 
+diff --git a/libpthread/nptl/sysdeps/pthread/Makefile.in b/libpthread/nptl/sysdeps/pthread/Makefile.in
+index fc0c6ac..119ebd6 100644
+--- a/libpthread/nptl/sysdeps/pthread/Makefile.in
++++ b/libpthread/nptl/sysdeps/pthread/Makefile.in
+@@ -33,19 +33,12 @@ libpthread_pthread_CSRC = \
+ 	pthread_spin_init.c \
+ 	pthread_spin_unlock.c \
+ 	pt-longjmp.c \
+-	pt-sigaction.c \
+-	pt-sigfillset.c \
+-	pt-sigprocmask.c \
+ 	tpp.c
+ CFLAGS-pthread = $(SSP_ALL_CFLAGS) -DNOT_IN_libc -DIS_IN_libpthread
+ CFLAGS-pthread_barrier_wait.c = -D_GNU_SOURCE
+ CFLAGS-pthread_spin_destroy.c = -D_GNU_SOURCE
+ CFLAGS-pthread_spin_init.c = -D_GNU_SOURCE
+ CFLAGS-pthread_spin_unlock.c = -D_GNU_SOURCE
+-CFLAGS-pt-sigaction.c = -I$(top_srcdir)libc/sysdeps/linux/$(TARGET_ARCH) \
+-			-I$(top_srcdir)libc/signal
+-CFLAGS-pt-sigfillset.c = -I$(top_srcdir)libc/signal
+-CFLAGS-pt-sigprocmask.c = -I$(top_srcdir)libc/sysdeps/linux/common
+ CFLAGS-unwind-forcedunwind.c = -fexceptions -fasynchronous-unwind-tables
+ 
+ CFLAGS-OMIT-librt-cancellation.c = -DIS_IN_libpthread
+@@ -55,8 +48,7 @@ CFLAGS-librt-cancellation.c = -DIS_IN_librt				\
+ CFLAGS-rt-unwind-resume.c = -DIS_IN_librt				\
+ 			    -fexceptions -fasynchronous-unwind-tables
+ 
+-libpthread-so-y += $(patsubst %,$(libpthread_pthread_OUT)/%.oS, \
+-	pt-sigaction pt-sigprocmask unwind-forcedunwind)
++libpthread-so-y += $(patsubst %,$(libpthread_pthread_OUT)/%.oS, unwind-forcedunwind)
+ 
+ CFLAGS-OMIT-sigaction.c = $(CFLAGS-pthread)
+ CFLAGS-sigaction.c = -I$(top_srcdir)libc/signal
+@@ -84,26 +76,9 @@ $(libpthread_pthread_OUT)/crti.S $(libpthread_pthread_OUT)/crtn.S: $(libpthread_
+ 		-e '/@_.*_PROLOG_BEGINS/,/@_.*_PROLOG_ENDS/p' \
+ 		-e '/@TRAILER_BEGINS/,$$p' $< > $@
+ endif
+-# It would have been easier to just add dummy files that include the real
+-# impl, but ok.
+-# Special rules needed since we do objdir->objdir compilation for these 3.
+-# First symlink them, then build them. Rob would freak out on these. Sheesh! ;)
+-pthread-lc-fwd = sigaction sigfillset sigprocmask
+-$(patsubst %,$(libpthread_pthread_OUT)/pt-%.c,$(pthread-lc-fwd)): | $(libpthread_pthread_OUT)
+-	$(do_ln) $(call rel_srcdir)$(patsubst pt-%,$(libpthread_pthread_DIR)/%,$(@F)) $@
+-$(patsubst %,$(libpthread_pthread_OUT)/pt-%.oS,$(pthread-lc-fwd)): $(libpthread_pthread_OUT)/pt-%.oS: $(libpthread_pthread_OUT)/pt-%.c
+-	$(compile.c)
+-$(patsubst %,$(libpthread_pthread_OUT)/pt-%.o,$(pthread-lc-fwd)): $(libpthread_pthread_OUT)/pt-%.o: $(libpthread_pthread_OUT)/pt-%.c
+-	$(compile.c)
+-ifeq ($(DOPIC),y)
+-$(patsubst %,$(libpthread_pthread_OUT)/pt-%.os,$(pthread-lc-fwd)): $(libpthread_pthread_OUT)/pt-%.os: $(libpthread_pthread_OUT)/pt-%.c
+-	$(compile.c)
+-endif
+ 
+ objclean-y += CLEAN_libpthread/nptl/sysdeps/pthread
+ 
+ CLEAN_libpthread/nptl/sysdeps/pthread:
+ 	$(do_rm) $(addprefix $(libpthread_pthread_OUT)/*., o os oS s S) \
+-		$(libpthread_pthread_OUT)/defs.h \
+-		$(addprefix $(libpthread_pthread_DIR)/,pt-sigaction.c \
+-			pt-sigfillset.c pt-sigprocmask.c)
++		$(libpthread_pthread_OUT)/defs.h
+-- 
+1.7.5
+

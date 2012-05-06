@@ -1,0 +1,31 @@
+commit e1576d15bf927a1147ebac7a53f743e27173153c
+Author: Maksim Rayskiy <mrayskiy@broadcom.com>
+Date:   Fri Apr 15 10:25:40 2011 -0700
+
+    MIPS LDSO: pass sym_ref parameter to _dl_find_hash() to support PROTECTED symbols
+    
+    _dl_find_hash() relies on sym_ref parameter to check if the looked-up symbol
+    is protected. The code fixes a case when _dl_perform_mips_global_got_relocations()
+    was calling _dl_find_hash() without providing sym_ref parameter.
+    The bug was causing hangs if a library exporting non-protected symbol was earlier in
+    link order than library with the same symbol declared as protected.
+    
+    Signed-off-by: Maksim Rayskiy <mrayskiy@broadcom.com>
+
+diff --git a/ldso/ldso/mips/elfinterp.c b/ldso/ldso/mips/elfinterp.c
+index 2886f33..82f740d 100644
+--- a/ldso/ldso/mips/elfinterp.c
++++ b/ldso/ldso/mips/elfinterp.c
+@@ -378,8 +378,11 @@ void _dl_perform_mips_global_got_relocations(struct elf_resolve *tpnt, int lazy)
+ 					*got_entry += (unsigned long) tpnt->loadaddr;
+ 			}
+ 			else {
++				struct symbol_ref sym_ref;
++				sym_ref.sym = sym;
++				sym_ref.tpnt = NULL;
+ 				*got_entry = (unsigned long) _dl_find_hash(strtab +
+-					sym->st_name, tpnt->symbol_scope, tpnt, ELF_RTYPE_CLASS_PLT, NULL);
++					sym->st_name, tpnt->symbol_scope, tpnt, ELF_RTYPE_CLASS_PLT, &sym_ref);
+ 			}
+ 
+ 			got_entry++;

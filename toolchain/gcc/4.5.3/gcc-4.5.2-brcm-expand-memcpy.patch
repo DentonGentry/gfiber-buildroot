@@ -1,0 +1,14 @@
+--- a/gcc/builtins.c	2011-04-16 10:59:14.606530377 -0700
++++ b/gcc/builtins.c	2011-04-16 11:02:20.572776096 -0700
+@@ -3298,6 +3298,11 @@ expand_builtin_memcpy (tree exp, rtx tar
+       len_rtx = expand_normal (len);
+       src_str = c_getstr (src);
+ 
++      /* Call optimized libc memcpy for larger copies */
++      if (CONST_INT_P (len_rtx)
++	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) > 256)
++	return NULL_RTX;
++
+       /* If SRC is a string constant and block move would be done
+ 	 by pieces, we can avoid loading the string from memory
+ 	 and only stored the computed constants.  */

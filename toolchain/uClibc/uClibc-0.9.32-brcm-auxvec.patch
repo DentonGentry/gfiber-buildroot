@@ -1,0 +1,80 @@
+commit c8a44ca1203244e18be053bd90b6b6df88d93d67
+Author: Kevin Cernekee <cernekee@gmail.com>
+Date:   Wed Apr 13 19:34:46 2011 -0700
+
+    Cache AT_PLATFORM and AT_L1D_CACHESHAPE from auxvec
+    
+    Allow uClibc internal functions to make optimizations at runtime, based
+    on the CPU type or D$ line size retrieved from the auxiliary vector.
+    This would nominally be used for functions like memcpy(), on processors
+    that do not have an unprivileged instruction along the lines of "CPUID".
+    
+    Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+
+diff --git a/include/libc-internal.h b/include/libc-internal.h
+index 3ac0b05..ef5ce59 100644
+--- a/include/libc-internal.h
++++ b/include/libc-internal.h
+@@ -65,6 +65,10 @@ libc_hidden_proto(__glibc_strerror_r)
+ /* internal access to program name */
+ extern const char *__uclibc_progname attribute_hidden;
+ 
++/* internal access to auxvec AT_PLATFORM, cache info */
++extern const char *__auxv_platform attribute_hidden;
++extern int __auxv_l1d_cacheshape attribute_hidden;
++
+ #  ifdef __UCLIBC_HAS_FORTIFY__
+ extern void __chk_fail(void) attribute_noreturn;
+ libc_hidden_proto(__chk_fail)
+diff --git a/libc/misc/internals/__uClibc_main.c b/libc/misc/internals/__uClibc_main.c
+index 315365a..bc2e253 100644
+--- a/libc/misc/internals/__uClibc_main.c
++++ b/libc/misc/internals/__uClibc_main.c
+@@ -30,6 +30,7 @@
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <sys/sysmacros.h>
++#include <libc-internal.h>
+ #ifdef __UCLIBC_HAS_THREADS_NATIVE__
+ #include <errno.h>
+ #include <pthread-functions.h>
+@@ -156,6 +157,12 @@ weak_alias (program_invocation_short_name, __progname)
+ weak_alias (program_invocation_name, __progname_full)
+ #endif
+ 
++/* Highest numbered auxvec entry to copy into auxvt[] */
++#define AT_MAX		AT_L3_CACHESHAPE
++
++attribute_hidden const char *__auxv_platform = NULL;
++attribute_hidden int __auxv_l1d_cacheshape = 0;
++
+ /*
+  * Declare the __environ global variable and create a weak alias environ.
+  * This must be initialized; we cannot have a weak alias into bss.
+@@ -321,7 +328,7 @@ void __uClibc_main(int (*main)(int, char **, char **), int argc,
+ {
+ #ifndef __ARCH_HAS_NO_LDSO__
+     unsigned long *aux_dat;
+-    ElfW(auxv_t) auxvt[AT_EGID + 1];
++    ElfW(auxv_t) auxvt[AT_MAX + 1];
+ #endif
+ 
+ #ifdef __UCLIBC_HAS_THREADS_NATIVE__
+@@ -355,7 +362,7 @@ void __uClibc_main(int (*main)(int, char **, char **), int argc,
+     aux_dat++;
+     while (*aux_dat) {
+ 	ElfW(auxv_t) *auxv_entry = (ElfW(auxv_t) *) aux_dat;
+-	if (auxv_entry->a_type <= AT_EGID) {
++	if (auxv_entry->a_type <= AT_MAX) {
+ 	    memcpy(&(auxvt[auxv_entry->a_type]), auxv_entry, sizeof(ElfW(auxv_t)));
+ 	}
+ 	aux_dat += 2;
+@@ -376,6 +383,8 @@ void __uClibc_main(int (*main)(int, char **, char **), int argc,
+ #ifndef __ARCH_HAS_NO_LDSO__
+     /* Make certain getpagesize() gives the correct answer */
+     __pagesize = (auxvt[AT_PAGESZ].a_un.a_val)? auxvt[AT_PAGESZ].a_un.a_val : PAGE_SIZE;
++    __auxv_platform = (char *)auxvt[AT_PLATFORM].a_un.a_val;
++    __auxv_l1d_cacheshape = (int)auxvt[AT_L1D_CACHESHAPE].a_un.a_val;
+ 
+     /* Prevent starting SUID binaries where the stdin. stdout, and
+      * stderr file descriptors are not already opened. */
