@@ -78,8 +78,7 @@ BRUNO_LOADER = cfe_signed_unlocked.bin
 endif
 endif
 
-BUILD_SECS:=$(shell date +%s --utc)
-define BRUNO_INSTALL_TARGET_CMDS
+define BRUNO_INSTALL_MANIFEST
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
 	#TODO(apenwarr): 'git describe' should use all projects.
 	#  Right now it only uses buildroot.  I have a plan for this
@@ -91,6 +90,10 @@ define BRUNO_INSTALL_TARGET_CMDS
 		(echo -n '-'; \
 		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
 	fi
+endef
+
+define BRUNO_INSTALL_TARGET_CMDS
+	$(BRUNO_INSTALL_MANIFEST)
 	if [ -n "$(BRUNO_LOADER)" ]; then \
 		cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) \
 			$(BINARIES_DIR)/loader.bin; \
