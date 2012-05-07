@@ -1,0 +1,41 @@
+
+From: Christian Krause chkr at plauener.de
+Date: Tue Jun 14 23:57:24 UTC 2011
+Subject: [PATCH] resolv: allocate the correct amount of memory
+
+Allocate enough memory for the actual structure (struct sockaddr_in6)
+and not only for its pointer.
+
+This fixes a memory corruption in res_init() which happens
+when IPv6 nameservers are configured in /etc/resolv.conf.
+
+Signed-off-by: Christian Krause <chkr at plauener.de>
+---
+ libc/inet/resolv.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libc/inet/resolv.c b/libc/inet/resolv.c
+index e8b7f2b..869c08a 100644
+--- a/libc/inet/resolv.c
++++ b/libc/inet/resolv.c
+@@ -2964,7 +2964,7 @@ int res_init(void)
+ 		if (__nameserver[i].sa.sa_family == AF_INET6
+ 		 && m < ARRAY_SIZE(rp->_u._ext.nsaddrs)
+ 		) {
+-			struct sockaddr_in6 *sa6 = malloc(sizeof(sa6));
++			struct sockaddr_in6 *sa6 = malloc(sizeof(struct sockaddr_in6));
+ 			if (sa6) {
+ 				*sa6 = __nameserver[i].sa6; /* struct copy */
+ 				rp->_u._ext.nsaddrs[m] = sa6;
+@@ -2981,7 +2981,7 @@ int res_init(void)
+
+ #else /* IPv6 only */
+ 	while (m < ARRAY_SIZE(rp->_u._ext.nsaddrs) && i < __nameservers) {
+-		struct sockaddr_in6 *sa6 = malloc(sizeof(sa6));
++		struct sockaddr_in6 *sa6 = malloc(sizeof(struct sockaddr_in6));
+ 		if (sa6) {
+ 			*sa6 = __nameserver[i].sa6; /* struct copy */
+ 			rp->_u._ext.nsaddrs[m] = sa6;
+--
+1.7.3.4
+
