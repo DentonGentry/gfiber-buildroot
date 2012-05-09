@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBPROJECTM
+	bool "libprojectM"
+	help
+	  Builds the ProjectM music visualization shared library.
