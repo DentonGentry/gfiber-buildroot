@@ -1,0 +1,31 @@
+From 404a31584e6074cc5f3246a9299df3025d33965f Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 9 May 2012 21:55:04 -0400
+Subject: [PATCH] Don't capture SIGTERM/SIGINT.
+
+There is no good reason for iperf to be careful about shutting down; it's
+just a stupid benchmark program.  Moreover, it wasn't just being careful
+about shutting down; it was just randomly failing to shut down sometimes
+when sent SIGTERM.  That's ridiculous, so remove the feature entirely.
+---
+ src/main.cpp |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/src/main.cpp b/src/main.cpp
+index 874fe60..7e4eb5a 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -122,8 +122,10 @@ void waitUntilQuit( void );
+ int main( int argc, char **argv ) {
+ 
+     // Set SIGTERM and SIGINT to call our user interrupt function
++#if DELAY_EXIT_UNNECESSARILY
+     my_signal( SIGTERM, Sig_Interupt );
+     my_signal( SIGINT,  Sig_Interupt );
++#endif
+     my_signal( SIGALRM,  Sig_Interupt );
+ 
+ #ifndef WIN32
+-- 
+1.7.9
+
