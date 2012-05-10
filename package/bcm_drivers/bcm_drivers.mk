@@ -147,4 +147,4 @@ define BCM_DRIVERS_INSTALL_TARGET_CMDS
 	$(BCM_DRIVERS_INSTALL_TARGET_WIFI)
 endef
 
-$(eval $(call GENTARGETS,package,bcm_drivers))
+$(eval $(call GENTARGETS))

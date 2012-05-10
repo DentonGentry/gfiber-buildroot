@@ -7,4 +7,4 @@ MTR_SOURCE = mtr-$(MTR_VERSION).tar.gz
 MTR_SITE = ftp://ftp.bitwizard.nl/mtr/
 MTR_DEPENDS = pkg-config
 
-$(eval $(call AUTOTARGETS,package,mtr))
+$(eval $(call AUTOTARGETS))

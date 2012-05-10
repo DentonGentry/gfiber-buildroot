@@ -8,4 +8,4 @@ define GOOGLE_SKELMIR_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/sage/skelmir/
 endef
 
-$(eval $(call GENTARGETS,package/google,google_skelmir))
+$(eval $(call GENTARGETS))

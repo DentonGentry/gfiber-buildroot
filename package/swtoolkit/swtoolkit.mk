@@ -8,4 +8,4 @@ define HOST_SWTOOLKIT_INSTALL_CMDS
 	ln -sf $(@D) $(HOST_DIR)/$(SWTOOLKIT_INSTALL_PATH)
 endef
 
-$(eval $(call GENTARGETS,package,swtoolkit,host))
+$(eval $(call GENTARGETS))

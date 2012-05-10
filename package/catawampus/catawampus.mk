@@ -16,4 +16,4 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 	(cd $(@D); DSTDIR=$(TARGET_DIR)/usr/catawampus/ make install)
 endef
 
-$(eval $(call GENTARGETS,package,catawampus))
+$(eval $(call GENTARGETS))

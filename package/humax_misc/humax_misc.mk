@@ -16,4 +16,4 @@ define HUMAX_MISC_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_nvram.h $(STAGING_DIR)/usr/include/humax
 endef
 
-$(eval $(call GENTARGETS,package,humax_misc))
+$(eval $(call GENTARGETS))

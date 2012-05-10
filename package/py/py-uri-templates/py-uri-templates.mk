@@ -13,4 +13,4 @@ define PY_URI_TEMPLATES_INSTALL_TARGET_CMDS
 	cp $(@D)/uritemplate.py $(TARGET_PYTHONPATH)/uritemplate.py
 endef
 
-$(eval $(call GENTARGETS,package,py-uri-templates))
+$(eval $(call GENTARGETS))
