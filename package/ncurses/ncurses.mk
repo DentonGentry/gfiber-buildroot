@@ -130,8 +130,10 @@ define HOST_NCURSES_BUILD_CMDS
 	$(MAKE) -C $(@D)/progs tic
 endef
 
-HOST_NCURSES_CONF_OPT = \
-	--without-shared
+HOST_NCURSES_DEPENDENCIES =
 
-$(eval $(call AUTOTARGETS,package,ncurses))
-$(eval $(call AUTOTARGETS,package,ncurses,host))
+HOST_NCURSES_CONF_OPT = \
+	--without-shared --without-gpm
+
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

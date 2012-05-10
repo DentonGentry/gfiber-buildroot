@@ -26,4 +26,4 @@ define PROCPS_INSTALL_TARGET_CMDS
 		ldconfig=true install $(PROCPS_OPTS)
 endef
 
-$(eval $(call GENTARGETS,package,procps))
+$(eval $(call GENTARGETS))

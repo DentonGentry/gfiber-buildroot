@@ -4,7 +4,7 @@
 #
 #############################################################
 PYTHON_VERSION_MAJOR = 2.7
-PYTHON_VERSION       = $(PYTHON_VERSION_MAJOR).1
+PYTHON_VERSION       = $(PYTHON_VERSION_MAJOR).2
 PYTHON_SOURCE        = Python-$(PYTHON_VERSION).tar.bz2
 PYTHON_SITE          = http://python.org/ftp/python/$(PYTHON_VERSION)
 
@@ -50,7 +50,7 @@ endef
 
 PYTHON_DEPENDENCIES  = host-python libffi
 
-HOST_PYTHON_DEPENDENCIES = host-expat
+HOST_PYTHON_DEPENDENCIES = host-expat host-zlib
 
 PYTHON_INSTALL_STAGING = YES
 
@@ -137,6 +137,15 @@ PYTHON_MAKE_ENV = \
 	PYTHON_MODULES_INCLUDE=$(STAGING_DIR)/usr/include \
 	PYTHON_MODULES_LIB="$(STAGING_DIR)/lib $(STAGING_DIR)/usr/lib"
 
+# python distutils adds -L$LIBDIR when linking binary extensions, causing
+# trouble for cross compilation
+define PYTHON_FIXUP_LIBDIR
+	$(SED) 's|^LIBDIR=.*|LIBDIR= $(STAGING_DIR)/usr/lib|' \
+	   $(STAGING_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/config/Makefile
+endef
+
+PYTHON_POST_INSTALL_STAGING_HOOKS += PYTHON_FIXUP_LIBDIR
+
 #
 # Development files removal
 #
@@ -165,5 +174,5 @@ PYTHON_POST_INSTALL_TARGET_HOOKS += PYTHON_REMOVE_USELESS_FILES
 PYTHON_AUTORECONF = YES
 TARGET_PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
 
-$(eval $(call AUTOTARGETS,package,python))
-$(eval $(call AUTOTARGETS,package,python,host))
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

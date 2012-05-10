@@ -17,9 +17,11 @@ LINUX_SOURCE = linux-$(LINUX_VERSION).tar.bz2
 # In X.Y.Z, get X and Y. We replace dots and dashes by spaces in order
 # to use the $(word) function. We support versions such as 3.1,
 # 2.6.32, 2.6.32-rc1, 3.0-rc6, etc.
-LINUX_VERSION_MAJOR = $(word 1,$(subst ., ,$(subst -, ,$(LINUX_VERSION))))
-LINUX_VERSION_MINOR = $(word 2,$(subst ., ,$(subst -, ,$(LINUX_VERSION))))
-LINUX_SITE = $(BR2_KERNEL_MIRROR)/linux/kernel/v$(LINUX_VERSION_MAJOR).$(LINUX_VERSION_MINOR)/
+ifeq ($(findstring x2.6.,x$(LINUX_VERSION)),x2.6.)
+LINUX_SITE = $(BR2_KERNEL_MIRROR)/linux/kernel/v2.6/
+else
+LINUX_SITE = $(BR2_KERNEL_MIRROR)/linux/kernel/v3.x/
+endif
 # release candidates are in testing/ subdir
 ifneq ($(findstring -rc,$(LINUX_VERSION)),)
 LINUX_SITE := $(LINUX_SITE)testing/
@@ -41,7 +43,7 @@ LINUX_MAKE_FLAGS = \
 	ARCH=$(KERNEL_ARCH) \
 	INSTALL_MOD_PATH=$(TARGET_DIR) \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
-	LZMA="$(LZMA)" \
+	DEPMOD=$(HOST_DIR)/usr/sbin/depmod
 	initramfs=true
 # (initramfs=true replaces the $(initramfs) build command with 'true',
 # effectively making the kernel build scripts never replace the initramfs
@@ -70,6 +72,8 @@ else ifeq ($(BR2_LINUX_KERNEL_VMLINUX_BIN),y)
 LINUX_IMAGE_NAME=vmlinux.bin
 else ifeq ($(BR2_LINUX_KERNEL_VMLINUX),y)
 LINUX_IMAGE_NAME=vmlinux
+else ifeq ($(BR2_LINUX_KERNEL_VMLINUZ),y)
+LINUX_IMAGE_NAME=vmlinuz
 endif
 endif
 
@@ -86,6 +90,8 @@ KERNEL_ARCH_PATH=$(LINUX_DIR)/arch/$(KERNEL_ARCH)
 endif
 
 ifeq ($(BR2_LINUX_KERNEL_VMLINUX),y)
+LINUX_IMAGE_PATH=$(LINUX_DIR)/$(LINUX_IMAGE_NAME)
+else ifeq ($(BR2_LINUX_KERNEL_VMLINUZ),y)
 LINUX_IMAGE_PATH=$(LINUX_DIR)/$(LINUX_IMAGE_NAME)
 else
 ifeq ($(KERNEL_ARCH),avr32)
@@ -107,11 +113,11 @@ LINUX_POST_DOWNLOAD_HOOKS += LINUX_DOWNLOAD_PATCHES
 define LINUX_APPLY_PATCHES
 	for p in $(LINUX_PATCHES) ; do \
 		if echo $$p | grep -q -E "^ftp://|^http://" ; then \
-			toolchain/patch-kernel.sh $(@D) $(DL_DIR) `basename $$p` ; \
+			support/scripts/apply-patches.sh $(@D) $(DL_DIR) `basename $$p` ; \
 		elif test -d $$p ; then \
-			toolchain/patch-kernel.sh $(@D) $$p linux-\*.patch ; \
+			support/scripts/apply-patches.sh $(@D) $$p linux-\*.patch ; \
 		else \
-			toolchain/patch-kernel.sh $(@D) `dirname $$p` `basename $$p` ; \
+			support/scripts/apply-patches.sh $(@D) `dirname $$p` `basename $$p` ; \
 		fi \
 	done
 endef
@@ -133,17 +139,23 @@ define LINUX_CONFIGURE_CMDS
 		$(call KCONFIG_ENABLE_OPT,CONFIG_AEABI,$(@D)/.config),
 		$(call KCONFIG_DISABLE_OPT,CONFIG_AEABI,$(@D)/.config))
 	# As the kernel gets compiled before root filesystems are
-	# built, we create a fake initramfs file list. It'll be
-	# replaced later by the real list, and the kernel will be
+	# built, we create a fake cpio file. It'll be
+	# replaced later by the real cpio archive, and the kernel will be
 	# rebuilt using the linux26-rebuild-with-initramfs target.
 	$(if $(BR2_TARGET_ROOTFS_INITRAMFS),
-		touch $(BINARIES_DIR)/rootfs.initramfs
+		touch $(BINARIES_DIR)/rootfs.cpio
 		$(call KCONFIG_ENABLE_OPT,CONFIG_BLK_DEV_INITRD,$(@D)/.config)
-		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_SOURCE,\"$(BINARIES_DIR)/rootfs.initramfs\",$(@D)/.config)
+		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_SOURCE,\"$(BINARIES_DIR)/rootfs.cpio\",$(@D)/.config)
 		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_ROOT_UID,0,$(@D)/.config)
 		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_ROOT_GID,0,$(@D)/.config)
 		$(call KCONFIG_DISABLE_OPT,CONFIG_INITRAMFS_COMPRESSION_NONE,$(@D)/.config)
 		$(call KCONFIG_ENABLE_OPT,CONFIG_INITRAMFS_COMPRESSION_GZIP,$(@D)/.config))
+	$(if $(BR2_PACKAGE_SIMPLERAMFS),
+		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_SOURCE,\"$(BINARIES_DIR)/simpleramfs.cpio\",$(@D)/.config)
+		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_ROOT_UID,0,$(@D)/.config)
+		$(call KCONFIG_SET_OPT,CONFIG_INITRAMFS_ROOT_GID,0,$(@D)/.config)
+		$(call KCONFIG_ENABLE_OPT,CONFIG_INITRAMFS_COMPRESSION_NONE,$(@D)/.config)
+		$(call KCONFIG_DISABLE_OPT,CONFIG_INITRAMFS_COMPRESSION_GZIP,$(@D)/.config))
 	$(if $(BR2_ROOTFS_DEVICE_CREATION_STATIC),,
 		$(call KCONFIG_ENABLE_OPT,CONFIG_DEVTMPFS,$(@D)/.config)
 		$(call KCONFIG_ENABLE_OPT,CONFIG_DEVTMPFS_MOUNT,$(@D)/.config))
@@ -184,7 +196,9 @@ define LINUX_INSTALL_TARGET_CMDS
 	fi
 endef
 
-$(eval $(call GENTARGETS,,linux))
+include linux/linux-ext-*.mk
+
+$(eval $(call GENTARGETS))
 
 linux-menuconfig linux-xconfig linux-gconfig linux-nconfig linux26-menuconfig linux26-xconfig linux26-gconfig linux26-nconfig: dirs $(LINUX_DIR)/.stamp_configured
 	$(MAKE) $(LINUX_MAKE_FLAGS) -C $(LINUX_DIR) \
@@ -195,13 +209,21 @@ linux-savedefconfig linux26-savedefconfig: dirs $(LINUX_DIR)/.stamp_configured
 	$(MAKE) $(LINUX_MAKE_FLAGS) -C $(LINUX_DIR) \
 		$(subst linux-,,$(subst linux26-,,$@))
 
-# Support for rebuilding the kernel after the initramfs file list has
-# been generated in $(BINARIES_DIR)/rootfs.initramfs.
-$(LINUX_DIR)/.stamp_initramfs_rebuilt: $(LINUX_DIR)/.stamp_target_installed $(LINUX_DIR)/.stamp_images_installed $(BINARIES_DIR)/rootfs.initramfs
+ifeq ($(BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG),y)
+linux-update-config linux26-update-config: $(LINUX_DIR)/.config
+	cp -f $(LINUX_DIR)/.config $(BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE)
+
+linux-update-defconfig linux26-update-defconfig: linux-savedefconfig
+	cp -f $(LINUX_DIR)/defconfig $(BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE)
+else
+linux-update-config linux26-update-config: ;
+linux-update-defconfig linux26-update-defconfig: ;
+endif
+
+# Support for rebuilding the kernel after the cpio archive has
+# been generated in $(BINARIES_DIR)/rootfs.cpio.
+$(LINUX_DIR)/.stamp_initramfs_rebuilt: $(LINUX_DIR)/.stamp_target_installed $(LINUX_DIR)/.stamp_images_installed $(BINARIES_DIR)/rootfs.cpio
 	@$(call MESSAGE,"Rebuilding kernel with initramfs")
-	# Remove the previously generated initramfs which was empty,
-	# to make sure the kernel will actually regenerate it.
-	$(RM) -f $(@D)/usr/initramfs_data.cpio*
 	# Build the kernel.
 	$(TARGET_MAKE_ENV) $(MAKE) $(LINUX_MAKE_FLAGS) -C $(@D) $(LINUX_IMAGE_NAME)
 	# Copy the kernel image to its final destination

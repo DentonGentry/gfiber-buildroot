@@ -3,8 +3,8 @@
 # util-linux
 #
 #############################################################
-UTIL_LINUX_VERSION = $(UTIL_LINUX_VERSION_MAJOR).1
-UTIL_LINUX_VERSION_MAJOR = 2.19
+UTIL_LINUX_VERSION = $(UTIL_LINUX_VERSION_MAJOR)
+UTIL_LINUX_VERSION_MAJOR = 2.20
 UTIL_LINUX_SOURCE = util-linux-$(UTIL_LINUX_VERSION).tar.bz2
 UTIL_LINUX_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL_LINUX_VERSION_MAJOR)
 UTIL_LINUX_AUTORECONF = YES
@@ -14,6 +14,8 @@ UTIL_LINUX_DEPENDENCIES = host-pkg-config
 UTIL_LINUX_CONF_OPT += --disable-rpath --disable-makeinstall-chown
 
 $(call BUILD_AFTER_BUSYBOX,util-linux)
+HOST_UTIL_LINUX_DEPENDENCIES = host-pkg-config
+
 
 ifeq ($(BR2_PACKAGE_NCURSES),y)
 UTIL_LINUX_DEPENDENCIES += ncurses
@@ -45,7 +47,8 @@ UTIL_LINUX_CONF_OPT += \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_UNSHARE),,--disable-unshare) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_RENAME),,--disable-rename) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_SCHEDUTILS),,--disable-schedutils) \
-	$(if $(BR2_PACKAGE_UTIL_LINUX_WALL),,--disable-wall)
+	$(if $(BR2_PACKAGE_UTIL_LINUX_WALL),,--disable-wall) \
+	$(if $(BR2_PACKAGE_UTIL_LINUX_PARTX),,--disable-partx)
 
 #############################################
 #
@@ -57,13 +60,23 @@ UTIL_LINUX_CONF_OPT += \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_KILL),--enable-kill) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_LAST),--enable-last) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_MESG),--enable-mesg) \
-	$(if $(BR2_PACKAGE_UTIL_LINUX_PARTX),--enable-partx) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_RAW),--enable-raw) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_RESET),--enable-reset) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_LOGIN_UTILS),--enable-login-utils) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_WRITE),--enable-write)
 
-$(eval $(call AUTOTARGETS,package,util-linux))
+# In the host version of util-linux, we so far only require libuuid,
+# and none of the util-linux utilities, so we disable all of them.
+HOST_UTIL_LINUX_CONF_OPT += \
+	--enable-libuuid \
+	--disable-mount --disable-fsck --disable-libmount \
+	--disable-uuidd --disable-libblkid --disable-agetty \
+	--disable-cramfs --disable-switch_root --disable-pivot_root \
+	--disable-fallocate --disable-unshare --disable-rename \
+	--disable-schedutils --disable-wall --disable-partx
+
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))
 
 # MKINSTALLDIRS comes from tweaked m4/nls.m4, but autoreconf uses staging
 # one, so it disappears

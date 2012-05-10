@@ -4,7 +4,7 @@
 #
 #############################################################
 
-CCACHE_VERSION = 3.1.6
+CCACHE_VERSION = 3.1.7
 CCACHE_SITE    = http://samba.org/ftp/ccache
 CCACHE_SOURCE  = ccache-$(CCACHE_VERSION).tar.bz2
 
@@ -34,8 +34,8 @@ define HOST_CCACHE_LARGE_LIMITS
 	$(CCACHE) -M=20G -F=0
 endef
 
-$(eval $(call AUTOTARGETS,package,ccache))
-$(eval $(call AUTOTARGETS,package,ccache,host))
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))
 
 ifeq ($(BR2_CCACHE),y)
 ccache-stats: host-ccache

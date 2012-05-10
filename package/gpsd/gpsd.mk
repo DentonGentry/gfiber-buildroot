@@ -58,8 +58,8 @@ endif
 ifneq ($(BR2_PACKAGE_GPSD_GARMIN),y)
 	GPSD_CONF_OPT += --disable-garmin
 endif
-ifeq ($(BR2_PACKAGE_GPSD_GARMIN_SIMPLE_TXT),y)
-	GPSD_CONF_OPT += --enable-garmintxt
+ifneq ($(BR2_PACKAGE_GPSD_GARMIN_SIMPLE_TXT),y)
+	GPSD_CONF_OPT += --disable-garmintxt
 endif
 ifneq ($(BR2_PACKAGE_GPSD_GPSCLOCK),y)
 	GPSD_CONF_OPT += --disable-gpsclock
@@ -182,4 +182,4 @@ define GPSD_UNINSTALL_TARGET_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S50gpsd
 endef
 
-$(eval $(call AUTOTARGETS,package,gpsd))
+$(eval $(call AUTOTARGETS))

@@ -12,7 +12,7 @@ $(call BUILD_AFTER_BUSYBOX,sysvinit)
 
 define SYSVINIT_DEBIAN_PATCHES
 	if [ -d $(@D)/debian/patches ]; then \
-		toolchain/patch-kernel.sh $(@D) $(@D)/debian/patches \*.patch; \
+		support/scripts/apply-patches.sh $(@D) $(@D)/debian/patches \*.patch; \
 	fi
 endef
 
@@ -43,4 +43,4 @@ define SYSVINIT_CLEAN_CMDS
 	$(MAKE) -C $(@D) clean
 endef
 
-$(eval $(call GENTARGETS,package,sysvinit))
+$(eval $(call GENTARGETS))

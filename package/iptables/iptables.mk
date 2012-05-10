@@ -4,11 +4,10 @@
 #
 #############################################################
 
-IPTABLES_VERSION = 1.4.12
+IPTABLES_VERSION = 1.4.12.2
 IPTABLES_SOURCE = iptables-$(IPTABLES_VERSION).tar.bz2
 IPTABLES_SITE = http://ftp.netfilter.org/pub/iptables
 IPTABLES_INSTALL_STAGING = YES
-IPTABLES_AUTORECONF = YES
 IPTABLES_DEPENDENCIES = host-pkg-config
 
 IPTABLES_CONF_OPT = --libexecdir=/usr/lib --with-kernel=$(LINUX_HEADERS_DIR)
@@ -44,4 +43,4 @@ define IPTABLES_UNINSTALL_TARGET_CMDS
 	rm -rf $(TARGET_DIR)/usr/lib/xtables
 endef
 
-$(eval $(call AUTOTARGETS,package,iptables))
+$(eval $(call AUTOTARGETS))
