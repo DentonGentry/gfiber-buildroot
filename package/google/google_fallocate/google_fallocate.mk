@@ -18,4 +18,4 @@ define GOOGLE_FALLOCATE_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/lib/libfallocate.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

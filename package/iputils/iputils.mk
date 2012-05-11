@@ -31,4 +31,4 @@ define IPUTILS_INSTALL_TARGET_CMDS
 endef
 
 
-$(eval $(call GENTARGETS,package,iputils))
+$(eval $(call GENTARGETS))

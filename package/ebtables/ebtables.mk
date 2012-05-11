@@ -3,7 +3,8 @@
 # ebtables
 #
 #############################################################
-EBTABLES_VERSION = 2.0.10-1
+
+EBTABLES_VERSION = 2.0.10-4
 EBTABLES_SOURCE = ebtables-v$(EBTABLES_VERSION).tar.gz
 EBTABLES_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/ebtables
 
@@ -27,4 +28,4 @@ define EBTABLES_UNINSTALL_TARGET_CMDS
 	rm -f $(TARGET_DIR)/sbin/ebtables
 endef
 
-$(eval $(call GENTARGETS,package,ebtables))
+$(eval $(call GENTARGETS))

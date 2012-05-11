@@ -19,4 +19,4 @@ define GOOGLE_WIDEVINE_INSTALL_STAGING_CMDS
         $(INSTALL) -D -m 0644 $(@D)/WVAssetRegistryAPI.h $(STAGING_DIR)/usr/local/include/
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

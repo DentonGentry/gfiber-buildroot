@@ -1,0 +1,20 @@
+diff --git a/term-utils/agetty.c b/tmp/term-utils/agetty.c
+index 549c857..b4955d8 100644
+--- a/term-utils/agetty.c
++++ b/term-utils/agetty.c
+@@ -906,6 +906,7 @@ static void open_tty(char *tty, struct termios *tp, struct options *op)
+ 		if ((st.st_mode & S_IFMT) != S_IFCHR)
+ 			log_err(_("/dev/%s: not a character device"), tty);
+
++                setsid();
+ 		if (((tid = tcgetsid(fd)) < 0) || (pid != tid)) {
+ 			if (ioctl(fd, TIOCSCTTY, 1) == -1)
+ 				log_err("/dev/%s: cannot get controlling tty: %m", tty);
+@@ -931,6 +932,7 @@ static void open_tty(char *tty, struct termios *tp, struct options *op)
+ 		debug("open(2)\n");
+ 		if (open(buf, O_RDWR|O_NOCTTY|O_NONBLOCK, 0) != 0)
+ 			log_err(_("/dev/%s: cannot open as standard input: %m"), tty);
++                setsid();
+ 		if (((tid = tcgetsid(STDIN_FILENO)) < 0) || (pid != tid)) {
+ 			if (ioctl(STDIN_FILENO, TIOCSCTTY, 1) == -1)
+ 				log_err("/dev/%s: cannot get controlling tty: %m", tty);

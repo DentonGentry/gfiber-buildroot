@@ -100,4 +100,4 @@ define BRUNO_INSTALL_TARGET_CMDS
 	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
 endef
 
-$(eval $(call GENTARGETS,package,bruno))
+$(eval $(call GENTARGETS))

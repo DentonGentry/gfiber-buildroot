@@ -10,5 +10,5 @@ PY_GFLAGS_SITE = http://python-gflags.googlecode.com/files/
 
 PY_GFLAGS_DEPENDENCIES=py-setuptools
 
-$(eval $(call PYTARGETS,package/py,py-gflags))
+$(eval $(call PYTARGETS))
 

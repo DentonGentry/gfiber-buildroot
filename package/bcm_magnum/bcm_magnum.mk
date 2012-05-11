@@ -9,4 +9,4 @@ define BCM_MAGNUM_INSTALL_STAGING_CMDS
 	ln -sf $(@D) $(STAGING_DIR)/$(BCM_MAGNUM_STAGING_PATH)
 endef
 
-$(eval $(call GENTARGETS,package,bcm_magnum))
+$(eval $(call GENTARGETS))

@@ -12,4 +12,4 @@ define GINSTALL_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0555 $(@D)/bruno/ginstall/ginstall.py $(TARGET_DIR)/bin/
 endef
 
-$(eval $(call GENTARGETS,package,ginstall))
+$(eval $(call GENTARGETS))

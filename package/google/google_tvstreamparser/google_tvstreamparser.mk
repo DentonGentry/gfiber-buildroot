@@ -11,4 +11,4 @@ define GOOGLE_TVSTREAMPARSER_INSTALL_TARGET_CMDS
           $(TARGET_DIR)/app/sage/lib/libtvstreamparser.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

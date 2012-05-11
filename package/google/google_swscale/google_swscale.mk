@@ -16,4 +16,4 @@ define GOOGLE_SWSCALE_INSTALL_STAGING_CMDS
         $(INSTALL) -D -m 0644 $(@D)/swscale.h $(STAGING_DIR)/usr/local/include/
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

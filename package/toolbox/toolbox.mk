@@ -12,4 +12,4 @@ define TOOLBOX_INSTALL_TARGET_CMDS
 	$(MAKE) -C $(@D) CC="$(TARGET_CC)" TARGET_OUT="$(TARGET_DIR)/bin" install
 endef
 
-$(eval $(call GENTARGETS,package,toolbox))
+$(eval $(call GENTARGETS))

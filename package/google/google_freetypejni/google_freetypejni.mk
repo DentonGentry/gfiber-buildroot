@@ -13,4 +13,4 @@ define GOOGLE_FREETYPEJNI_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/libFreetypeFontJNI.so $(TARGET_DIR)/app/sage/lib/libFreetypeFontJNI.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

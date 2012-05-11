@@ -3,7 +3,7 @@
 # gst-plugins-base
 #
 #############################################################
-GST_PLUGINS_BASE_VERSION = 0.10.32
+GST_PLUGINS_BASE_VERSION = 0.10.35
 GST_PLUGINS_BASE_SOURCE = gst-plugins-base-$(GST_PLUGINS_BASE_VERSION).tar.bz2
 GST_PLUGINS_BASE_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-base
 GST_PLUGINS_BASE_INSTALL_STAGING = YES
@@ -25,6 +25,10 @@ GST_PLUGINS_BASE_CONF_OPT = \
 		--disable-freetypetest
 
 GST_PLUGINS_BASE_DEPENDENCIES = gstreamer
+
+ifeq ($(BR2_PACKAGE_ORC),y)
+GST_PLUGINS_BASE_DEPENDENCIES += orc
+endif
 
 # alsa support needs pcm+mixer support, but configure fails to check for it
 ifeq ($(BR2_PACKAGE_ALSA_LIB)$(BR2_PACKAGE_ALSA_LIB_MIXER)$(BR2_PACKAGE_ALSA_LIB_PCM),yyy)
@@ -170,4 +174,4 @@ else
 GST_PLUGINS_BASE_CONF_OPT += --disable-vorbis
 endif
 
-$(eval $(call AUTOTARGETS,package/multimedia,gst-plugins-base))
+$(eval $(call AUTOTARGETS))

@@ -3,11 +3,12 @@
 # dash
 #
 #############################################################
-DASH_VERSION:=0.5.5.1
-DASH_SOURCE:=dash_$(DASH_VERSION).orig.tar.gz
-DASH_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/d/dash
-DASH_PATCH:=dash_$(DASH_VERSION)-6.diff.gz
+
+DASH_VERSION = 0.5.7
+DASH_SOURCE = dash_$(DASH_VERSION).orig.tar.gz
+DASH_SITE = $(BR2_DEBIAN_MIRROR)/debian/pool/main/d/dash
 DASH_CONF_OPT:=--disable-static
+DASH_PATCH = dash_$(DASH_VERSION)-2.diff.gz
 
 $(call BUILD_AFTER_BUSYBOX,dash)
 
@@ -20,4 +21,4 @@ define DASH_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/bin/dash
 endef
 
-$(eval $(call AUTOTARGETS,package,dash))
+$(eval $(call AUTOTARGETS))

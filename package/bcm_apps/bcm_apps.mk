@@ -104,7 +104,7 @@ define BCM_APPS_INSTALL_STAGING_CMDS
 	$(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BCM_APPS_BUILD_TYPE).*tgz -C $(STAGING_DIR)
 endef
 
-$(eval $(call GENTARGETS,package,bcm_apps))
+$(eval $(call GENTARGETS))
 
 bcm_apps_indirect-%: $(BCM_APPS_TARGET_CONFIGURE)
 	@$(call MESSAGE,"$@ building")

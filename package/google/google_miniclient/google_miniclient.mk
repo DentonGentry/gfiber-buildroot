@@ -15,4 +15,4 @@ define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 package/google/google_miniclient/runminiclient $(TARGET_DIR)/app/client/runminiclient
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

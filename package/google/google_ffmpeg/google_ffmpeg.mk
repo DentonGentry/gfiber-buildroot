@@ -49,4 +49,4 @@ endef
 
 GOOGLE_FFMPEG_POST_INSTALL_STAGING_HOOKS+=GOOGLE_FFMPEG_INSTALL_AUDIOCONVERT
 
-$(eval $(call AUTOTARGETS,package/google,google_ffmpeg))
+$(eval $(call AUTOTARGETS))

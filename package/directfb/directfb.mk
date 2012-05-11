@@ -42,5 +42,5 @@ define DIRECTFB_INSTALL_TARGET_CMDS
 endef
 
 
-$(eval $(call GENTARGETS,package,directfb))
+$(eval $(call GENTARGETS))
 

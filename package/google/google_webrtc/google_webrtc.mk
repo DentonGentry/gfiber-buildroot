@@ -44,4 +44,4 @@ define GOOGLE_WEBRTC_INSTALL_STAGING_CMDS
 		find . -name '*.h' -exec cp '{}' '$(STAGING_DIR)/usr/include/libyuv/' \;
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

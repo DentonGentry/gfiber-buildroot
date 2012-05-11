@@ -4,7 +4,7 @@
 #
 #############################################################
 
-SUDO_VERSION = 1.7.6p2
+SUDO_VERSION = 1.7.8p1
 SUDO_SITE    = http://www.sudo.ws/sudo/dist
 
 SUDO_CONF_OPT = \
@@ -21,4 +21,4 @@ define SUDO_INSTALL_TARGET_CMDS
 	install -m 0440 -D $(@D)/sudoers $(TARGET_DIR)/etc/sudoers
 endef
 
-$(eval $(call AUTOTARGETS,package,sudo))
+$(eval $(call AUTOTARGETS))

@@ -13,4 +13,4 @@ define GOOGLE_IMAGELOADJNI_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/libImageLoader.so $(TARGET_DIR)/app/sage/lib/libImageLoader.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

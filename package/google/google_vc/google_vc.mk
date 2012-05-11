@@ -67,4 +67,4 @@ define GOOGLE_VC_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0444 $(@D)/bin/libvcme_audio.so $(TARGET_DIR)/usr/lib/libvcme_audio.so
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))

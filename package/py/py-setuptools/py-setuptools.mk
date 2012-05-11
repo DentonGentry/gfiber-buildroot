@@ -18,4 +18,4 @@ define PY_SETUPTOOLS_INSTALL_TARGET_CMDS
   PYTHONPATH=$(TARGET_PYTHONPATH) PATH=$(HOST_DIR)/usr/bin:$(PATH) bash $(DL_DIR)/$(PY_SETUPTOOLS_SOURCE) --prefix=$(TARGET_DIR)/usr
 endef
 
-$(eval $(call GENTARGETS,package/py,py-setuptools))
+$(eval $(call GENTARGETS))

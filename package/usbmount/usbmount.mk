@@ -3,7 +3,7 @@
 # usbmount
 #
 #############################################################
-USBMOUNT_VERSION = 0.0.21
+USBMOUNT_VERSION = 0.0.22
 USBMOUNT_SOURCE = usbmount_$(USBMOUNT_VERSION).tar.gz
 USBMOUNT_SITE = $(BR2_DEBIAN_MIRROR)/debian/pool/main/u/usbmount
 USBMOUNT_DEPENDENCIES = udev lockfile-progs util-linux
@@ -31,4 +31,4 @@ define USBMOUNT_UNINSTALL_TARGET_CMDS
 		$(TARGET_DIR)/media/usb?
 endef
 
-$(eval $(call GENTARGETS,package,usbmount))
+$(eval $(call GENTARGETS))

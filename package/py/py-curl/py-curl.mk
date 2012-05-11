@@ -19,4 +19,4 @@ define PY_CURL_INSTALL_TARGET_CMDS
 	cp -r $(@D)/python/curl $(TARGET_DIR)/usr/lib/python2.7/site-packages/
 endef
 
-$(eval $(call GENTARGETS,package/py,py-curl))
+$(eval $(call GENTARGETS))

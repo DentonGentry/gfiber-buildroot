@@ -17,4 +17,4 @@ define FIO_INSTALL_TARGET_CMDS
   $(MAKE) CC="$(TARGET_CC)" -C $(@D) DESTDIR="$(TARGET_DIR)" install
 endef
 
-$(eval $(call GENTARGETS,package,fio))
+$(eval $(call GENTARGETS))

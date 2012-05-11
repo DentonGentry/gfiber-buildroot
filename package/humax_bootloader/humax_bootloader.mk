@@ -9,4 +9,4 @@ define HUMAX_BOOTLOADER_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 0755 $(@D)/loader.bin $(STAGING_DIR)/$(HUMAX_BOOTLOADER_STAGING_PATH)
 endef
 
-$(eval $(call GENTARGETS,package,humax_bootloader))
+$(eval $(call GENTARGETS))

@@ -18,4 +18,5 @@ endef
 
 LIBUSB_COMPAT_POST_INSTALL_STAGING_HOOKS+=LIBUSB_COMPAT_FIXUP_CONFIG
 
-$(eval $(call AUTOTARGETS,package,libusb-compat))
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

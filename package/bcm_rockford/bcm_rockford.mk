@@ -25,4 +25,4 @@ define BCM_ROCKFORD_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(TARGET_DIR)/usr/lib/libnxpl.so
 endef
 
-$(eval $(call GENTARGETS,package,bcm_rockford))
+$(eval $(call GENTARGETS))

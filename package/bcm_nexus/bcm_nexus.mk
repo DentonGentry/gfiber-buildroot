@@ -45,4 +45,4 @@ define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/libdrmrootfs.so $(TARGET_DIR)/usr/lib/libdrmrootfs.so
 endef
 
-$(eval $(call GENTARGETS,package,bcm_nexus))
+$(eval $(call GENTARGETS))
