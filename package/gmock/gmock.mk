@@ -25,4 +25,4 @@ define HOST_GMOCK_UNINSTALL_CMDS
 	rm -f $(HOST_DIR)/usr/lib/libgmock.a
 endef
 
-$(eval $(call GENTARGETS_NEW,host))
+$(eval $(call GENTARGETS,host))

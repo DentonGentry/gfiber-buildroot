@@ -25,4 +25,4 @@ define HOST_GTEST_UNINSTALL_CMDS
 	rm -f $(HOST_DIR)/usr/lib/libgtest.a
 endef
 
-$(eval $(call GENTARGETS_NEW,host))
+$(eval $(call GENTARGETS,host))

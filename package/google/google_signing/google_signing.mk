@@ -14,4 +14,4 @@ define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/bruno/signing/readverity $(TARGET_DIR)/usr/sbin/
 endef
 
-$(eval $(call GENTARGETS_NEW))
+$(eval $(call GENTARGETS))
