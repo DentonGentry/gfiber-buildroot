@@ -20,6 +20,7 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		 $(TARGET_DIR)/app/sage/skelmir/Libraries
 	cp -af	$(@D)/build/bruno/sage/jars/*.jar \
 		$(@D)/build/bruno/sage/Sage.jar \
+		$(@D)/build/bruno/sage/webserver/* \
 		$(@D)/stvs/fonts \
 		$(TARGET_DIR)/app/sage/
 	rm -f	$(TARGET_DIR)/app/sage/Apache.jar \
@@ -30,11 +31,13 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/sage/STVs/SageTV7/SageTV7.xml
 	cp -f	$(@D)/images/SageTV/images/tvicon* \
 		$(TARGET_DIR)/app/sage/images/
-	cp -af	package/google/google_sageserver/Sage.properties.defaults \
+	cp -af	package/google/google_sageserver/Sage.properties.defaults.* \
 		package/google/google_sageserver/runsage \
 		package/google/google_sageserver/runsageclient \
 		package/google/google_sageserver/sagesrv.sh \
 		$(TARGET_DIR)/app/sage/
+	ln -s	/tmp/Sage.properties.defaults \
+		$(TARGET_DIR)/app/sage/Sage.properties.defaults
 	$(INSTALL) -m 0755 -D package/google/google_sageserver/S95sageserver \
 		$(TARGET_DIR)/etc/init.d/S95sageserver
 endef
