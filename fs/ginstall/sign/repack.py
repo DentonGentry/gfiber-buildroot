@@ -30,6 +30,7 @@ import binascii
 import optparse
 import os
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -99,6 +100,25 @@ def FakeSign(fname):
     f.write(c)
 
 
+def RealSign(hostdir, key, fname):
+  """Sign the image with production key."""
+  orig_copy = fname + '-orig'
+  shutil.copy(fname, orig_copy)
+  # brcm_sign_enc does not use libfakeroot.so. But it fails to preload
+  # libfakeroot.so since it is in the LD_PRELOAD. Just remove it to avoid the
+  # error message.
+  os.environ['LD_PRELOAD'] = ''
+  p = subprocess.Popen([os.path.join(hostdir, 'usr/bin', 'brcm_sign_enc')],
+                       stdin=subprocess.PIPE, shell=False)
+  for cmd in ['sign_kernel_file', orig_copy, fname + '-sig.bin', 'l', key,
+              fname]:
+    p.stdin.write(cmd + '\n')
+  p.stdin.close()
+  retval = p.wait()
+  if retval:
+    raise Exception('brcm_sign_enc returned exit code %d' % retval)
+
+
 def PackVerity(kname, vname, info):
   """Pack verity information in the final image.
 
@@ -139,8 +159,13 @@ def main():
   parser.add_option('-b', '--bindir', dest='bindir',
                     help='binary directory',
                     default=None)
+  parser.add_option('-s', '--sign', dest='sign',
+                    action='store_true',
+                    help='sign image with production key',
+                    default=False)
   parser.add_option('-q', '--quiet', dest='quiet',
-                    help='suppres print',
+                    action='store_true',
+                    help='suppress print',
                     default=False)
   (options, _) = parser.parse_args()
   quiet = options.quiet
@@ -149,7 +174,13 @@ def main():
   PackVerity(os.path.join(options.bindir, options.kernel),
              os.path.join(options.bindir, 'hash.bin'),
              verity_table)
-  FakeSign(os.path.join(options.bindir, options.kernel))
+  if options.sign:
+    olddir = os.getcwd()
+    os.chdir(options.bindir)
+    RealSign(options.hostdir, 'gfiber_private.txt', options.kernel)
+    os.chdir(olddir)
+  else:
+    FakeSign(os.path.join(options.bindir, options.kernel))
 
 
 if __name__ == '__main__':

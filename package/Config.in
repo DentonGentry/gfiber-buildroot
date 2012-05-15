@@ -608,6 +608,7 @@ source "package/bcm_bseav/Config.in"
 source "package/bcm_nexus/Config.in"
 source "package/bcm_apps/Config.in"
 source "package/bcm_drivers/Config.in"
+source "package/bcm_signing/Config.in"
 endmenu
 
 endmenu

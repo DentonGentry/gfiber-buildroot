@@ -13,6 +13,7 @@ config BR2_BRUNO_BCHP_VER
 config BR2_PACKAGE_BRUNO_PROD
 	bool "Production Release"
 	default n
+	select BR2_PACKAGE_BCM_SIGNING
 	help
 	  Build bruno production release.
 

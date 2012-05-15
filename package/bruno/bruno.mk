@@ -72,8 +72,7 @@ endif
 
 ifeq ($(BR2_BRUNO_BCHP_VER),"B2")
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-# :TODO: (kedong) update this once the signing service is ready.
-BRUNO_LOADER = cfe_signed_unlocked.bin
+BRUNO_LOADER = cfe_signed_release.bin
 else
 BRUNO_LOADER = cfe_signed_unlocked.bin
 endif
