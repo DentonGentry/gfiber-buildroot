@@ -20,6 +20,7 @@ define ROOTFS_GINSTALL_CMD
 		<$(BINARIES_DIR)/vmlinux >$(BINARIES_DIR)/vmlinux.subst && \
 	gzip -c <$(BINARIES_DIR)/vmlinux.subst >$(BINARIES_DIR)/vmlinuz && \
 	chmod 0644 $(BINARIES_DIR)/vmlinuz && \
+	cp $(BINARIES_DIR)/vmlinuz $(BINARIES_DIR)/vmlinuz_unsigned && \
 	fs/ginstall/sign/repack.py -o $(HOST_DIR) -b $(BINARIES_DIR) && \
 	( \
 		echo "[vmlinuz]"; \
