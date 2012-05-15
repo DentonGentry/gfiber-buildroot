@@ -11,7 +11,7 @@ export SIEGEHOME=/app/sage/skelmir
 
 SIEGEOPT=
 if [ -e /tmp/disablejit ]; then
-  SIEGEOPT+=" -Xint"
+  SIEGEOPT="$SIEGEOPT"" -Xint"
 fi
 if [ ! -e /rw/sage ]; then
 	mkdir /rw/sage
