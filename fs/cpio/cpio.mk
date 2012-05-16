@@ -4,11 +4,13 @@
 #
 #############################################################
 
+ROOTFS_CPIO_DIR=$(BUILD_DIR)/rootfs-cpio
+
 ifeq ($(BR2_ROOTFS_DEVICE_CREATION_STATIC),y)
 
 define ROOTFS_CPIO_ADD_INIT
         if [ ! -e $(TARGET_DIR)/init ]; then \
-                ln -sf sbin/init $(TARGET_DIR)/init; \
+                ln -sf sbin/init $(ROOTFS_CPIO_DIR)/init; \
         fi
 endef
 
@@ -17,16 +19,17 @@ else
 # Add a pre-init script to mount it before running init
 define ROOTFS_CPIO_ADD_INIT
         if [ ! -e $(TARGET_DIR)/init ]; then \
-                $(INSTALL) -m 0755 fs/cpio/init $(TARGET_DIR)/init; \
+                $(INSTALL) -m 0755 fs/cpio/init $(ROOTFS_CPIO_DIR)/init; \
         fi
 endef
 
 endif # BR2_ROOTFS_DEVICE_CREATION_STATIC
 
-ROOTFS_CPIO_PRE_GEN_HOOKS += ROOTFS_CPIO_ADD_INIT
-
 define ROOTFS_CPIO_CMD
-	cd $(TARGET_DIR) && find . | cpio --quiet -o -H newc > $$@
+	mkdir -p $(ROOTFS_CPIO_DIR); \
+	$(call ROOTFS_CPIO_ADD_INIT); \
+	cd $(ROOTFS_CPIO_DIR) && find . | cpio --quiet -o -H newc -O $$@; \
+	cd $(TARGET_DIR) && find . | cpio --quiet -o -H newc -O $$@ --append
 endef
 
 $(eval $(call ROOTFS_TARGET,cpio))

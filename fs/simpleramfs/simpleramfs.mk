@@ -23,7 +23,7 @@ define SIMPLERAMFS_BUILD_CMDS
 	for d in bin lib proc dev sys rootfs mnt tmp; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
-	
+
 	# the initramfs /init script, executed by the kernel by default
 	ln -f fs/simpleramfs/init fs/simpleramfs/mounts $(@D)/fs/
 
@@ -62,10 +62,10 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
 		$(@D)/fs/bin/
-	
+
 	# strip all the binaries
 	$(STRIPCMD) $(@D)/fs/bin/*
-	
+
 	# without ld.so, nothing works
 	cp $(TARGET_DIR)/lib/ld-uClibc.so.0 \
 		$(@D)/fs/lib/
@@ -98,4 +98,4 @@ define SIMPLERAMFS_INSTALL_IMAGES_CMDS
 	   $(BINARIES_DIR)/simpleramfs.cpio
 endef
 
-$(eval $(call GENTARGETS,fs,simpleramfs))
+$(eval $(call GENTARGETS))

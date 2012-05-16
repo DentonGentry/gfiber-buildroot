@@ -18,6 +18,6 @@ rootfs-initramfs-show-depends:
 	@echo $(ROOTFS_INITRAMFS_DEPENDENCIES)
 
 ifeq ($(BR2_TARGET_ROOTFS_INITRAMFS),y)
-TARGETS += rootfs-initramfs
+ROOTFS_TARGETS += rootfs-initramfs
 endif
 
