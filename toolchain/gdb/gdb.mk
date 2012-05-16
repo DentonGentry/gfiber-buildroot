@@ -60,7 +60,7 @@ GDB_TARGET_CONFIGURE_VARS:= \
 	bash_cv_func_sigsetjmp=present \
 	bash_cv_have_mbstate_t=yes
 
-$(GDB_TARGET_DIR)/.configured: $(GDB_DIR)/.unpacked
+$(GDB_TARGET_DIR)/.configured: $(GDB_DIR)/.unpacked $(STAMP_DIR)/ncurses
 	mkdir -p $(GDB_TARGET_DIR)
 	(cd $(GDB_TARGET_DIR); \
 		gdb_cv_func_sigsetjmp=yes \
@@ -96,7 +96,7 @@ $(GDB_TARGET_DIR)/gdb/gdb: $(GDB_TARGET_DIR)/.configured
 $(TARGET_DIR)/usr/bin/gdb: $(GDB_TARGET_DIR)/gdb/gdb
 	install -c -D $(GDB_TARGET_DIR)/gdb/gdb $(TARGET_DIR)/usr/bin/gdb
 
-gdb_target: ncurses $(TARGET_DIR)/usr/bin/gdb
+gdb_target: $(STAMP_DIR)/ncurses $(TARGET_DIR)/usr/bin/gdb
 
 gdb_target-source: $(DL_DIR)/$(GDB_SOURCE)
 
