@@ -16,6 +16,7 @@ define HOST_GMOCK_BUILD_CMDS
 endef
 
 define HOST_GMOCK_INSTALL_CMDS
+	mkdir -p $(HOST_DIR)/usr/include
 	ln -sf $(@D)/include/gmock $(HOST_DIR)/usr/include/
 	$(INSTALL) -D $(@D)/make/gmock_main.a $(HOST_DIR)/usr/lib/libgmock.a
 endef

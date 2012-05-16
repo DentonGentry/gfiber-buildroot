@@ -8,6 +8,7 @@ define GOOGLE_WIDEVINE_INSTALL_TARGET_CMDS
 endef
 
 define GOOGLE_WIDEVINE_INSTALL_STAGING_CMDS
+        mkdir -p $(STAGING_DIR)/usr/local/lib $(STAGING_DIR)/usr/local/include
         $(INSTALL) -D -m 0755 $(@D)/libWVPlaybackAPI.so $(STAGING_DIR)/usr/local/lib/
         $(INSTALL) -D -m 0755 $(@D)/libWVStreamControlAPI.so $(STAGING_DIR)/usr/local/lib/
         $(INSTALL) -D -m 0644 $(@D)/WVDictionaryKeys.h $(STAGING_DIR)/usr/local/include/

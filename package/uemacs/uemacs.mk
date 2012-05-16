@@ -21,7 +21,7 @@ $(UEMACS_DIR)/.unpacked: $(DL_DIR)/$(UEMACS_SOURCE)
 	support/scripts/apply-patches.sh $(UEMACS_DIR) package/uemacs/ uemacs\*.patch
 	touch $(UEMACS_DIR)/.unpacked
 
-$(UEMACS_DIR)/$(UEMACS_BINARY): $(UEMACS_DIR)/.unpacked
+$(UEMACS_DIR)/$(UEMACS_BINARY): ncurses $(UEMACS_DIR)/.unpacked
 	$(MAKE) -C $(UEMACS_DIR) \
 	CC="$(TARGET_CC)" DEFINES="-DAUTOCONF -DPOSIX -DUSG" CFLAGS+="$(TARGET_CFLAGS) " LIBS="$(TARGET_CFLAGS) -lncurses"
 	$(STRIPCMD) $(UEMACS_DIR)/$(UEMACS_BINARY)

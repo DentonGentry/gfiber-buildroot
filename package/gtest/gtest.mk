@@ -16,6 +16,7 @@ define HOST_GTEST_BUILD_CMDS
 endef
 
 define HOST_GTEST_INSTALL_CMDS
+	mkdir -p $(HOST_DIR)/usr/include
 	ln -sf $(@D)/include/gtest $(HOST_DIR)/usr/include/
 	$(INSTALL) -D $(@D)/make/gtest_main.a $(HOST_DIR)/usr/lib/libgtest.a
 endef

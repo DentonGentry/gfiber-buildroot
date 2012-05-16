@@ -12,6 +12,7 @@ define GOOGLE_SWSCALE_INSTALL_TARGET_CMDS
 endef
 
 define GOOGLE_SWSCALE_INSTALL_STAGING_CMDS
+        mkdir -p $(STAGING_DIR)/usr/local/lib $(STAGING_DIR)/usr/local/include
         $(INSTALL) -D -m 0755 $(@D)/libswscale.so $(STAGING_DIR)/usr/local/lib/
         $(INSTALL) -D -m 0644 $(@D)/swscale.h $(STAGING_DIR)/usr/local/include/
 endef
