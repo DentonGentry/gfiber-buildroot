@@ -700,6 +700,14 @@ patches: $(patsubst %,%-patch,$(TARGETS))
 %-patch:   # default for targets that don't have any patches
 	@
 
+%-configure:
+	@
+
+%-build:
+	@
+
+%-source:
+	@
 help:
 	@echo 'Cleaning:'
 	@echo '  clean                  - delete all files created by build'
