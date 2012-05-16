@@ -29,4 +29,5 @@ define HOST_DMVERITY_UNINSTALL_CMDS
 	rm -f $(HOST_DIR)/usr/bin/verity
 endef
 
+$(eval $(call GENTARGETS))
 $(eval $(call GENTARGETS,host))
