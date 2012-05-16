@@ -606,7 +606,9 @@ endmenu
 menu "Broadcom custom build"
 source "package/bcm_bseav/Config.in"
 source "package/bcm_nexus/Config.in"
-source "package/bcm_apps/Config.in"
+source "package/bcm_directfb/Config.in"
+source "package/bcm_webkit/Config.in"
+source "package/bcm_netflix/Config.in"
 source "package/bcm_drivers/Config.in"
 source "package/bcm_signing/Config.in"
 endmenu

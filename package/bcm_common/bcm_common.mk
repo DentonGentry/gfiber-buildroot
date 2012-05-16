@@ -1,3 +1,11 @@
+#############################################################
+#
+# Helpers for using broadcom's build environment in buildroot
+#
+#############################################################
+
+BCM_COMMON_SITE=repo://vendor/broadcom/common
+
 BCM_MAKE_ENV=\
 NEXUS_TOP=${BCM_NEXUS_DIR} \
 PLATFORM=97425 \
@@ -24,7 +32,7 @@ DTCP_IP_SUPPORT=n \
 DTCP_IP_HARDWARE_ENCRYPTION=n \
 DTCP_IP_HARDWARE_DECRYPTION=n \
 B_HAS_PLAYPUMP_IP=n \
-MULTI_BUILD=y \
+MULTI_BUILD=n \
 NEXUS_TEMP_MONITOR_SUPPORT=y \
 NEXUS_POWER_MANAGEMENT=y \
 NEXUS_HDCP_SUPPORT=y \
@@ -47,9 +55,11 @@ BVDC_MACROVISION=y
 ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
   BCM_NEXUS_SECURITY_LIB=${BCM_NEXUS_DIR}/modules/security/7425/lib/libnexus_security
   BCM_MAKE_ENV += B_REFSW_DEBUG=y
+  BCM_COMMON_BUILD_TYPE=debug
 else
   BCM_NEXUS_SECURITY_LIB=${BCM_NEXUS_DIR}/modules/security/7425/lib/retail/libnexus_security
   BCM_MAKE_ENV += B_REFSW_DEBUG=n
+  BCM_COMMON_BUILD_TYPE=release
 endif
 
 BCM_MAKE_ENV += NEXUS_EXTRALIBS=${BCM_NEXUS_SECURITY_LIB}.a
@@ -74,3 +84,19 @@ NETFLIX_MAKEFLAGS += PKG_CONFIG_PATH="$(STAGING_DIR)/usr/lib/pkgconfig:$(STAGING
 #export DTCP_IP_SUPPORT=y
 #export DTCP_IP_HARDWARE_ENCRYPTION=y
 #export DTCP_IP_HARDWARE_DECRYPTION=y
+
+define BCM_COMMON_USE_BUILD_SYSTEM
+       $(RM) -rf $1/common
+       ln -sf $(BCM_COMMON_DIR)/common $1/common
+       mkdir -p $(@D)/opensource
+       $(RM) -rf $1/opensource/common
+       ln -sf $(BCM_COMMON_DIR)/opensource/common $1/opensource/common
+endef
+
+define BCM_COMMON_BUILD_EXTRACT_TARBALL
+       rm -f $(@D)/target/97425*.mipsel-linux*$(BCM_COMMON_BUILD_TYPE).*tgz
+       $(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common bundle
+       $(TAR) -xf $(@D)/target/97425*.mipsel-linux*$(BCM_COMMON_BUILD_TYPE).*tgz -C $(1)
+endef
+
+$(eval $(call GENTARGETS))

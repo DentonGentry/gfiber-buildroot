@@ -1,0 +1,5 @@
+config BR2_PACKAGE_BCM_DIRECTFB
+	bool "broadcom's directfb"
+	help
+	  http://www.directfb.org/
+
