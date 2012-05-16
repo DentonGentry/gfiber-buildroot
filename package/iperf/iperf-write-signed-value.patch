@@ -1,0 +1,71 @@
+From f3335049b33ec36b24a73d5a3d74525eaf3495f6 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 16 May 2012 03:21:46 -0400
+Subject: [PATCH] Client.cpp: write() returns a signed value.
+
+That's why you can check if it's < 0.
+
+Strangely, -Wall doesn't catch this.  You need to also have -Wtype-limits.
+---
+ src/Client.cpp  |    8 ++++----
+ src/Makefile.in |    4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/Client.cpp b/src/Client.cpp
+index 71a5b5c..2a128c8 100644
+--- a/src/Client.cpp
++++ b/src/Client.cpp
+@@ -116,7 +116,7 @@ const double kSecs_to_usecs = 1e6;
+ const int    kBytes_to_Bits = 8; 
+ 
+ void Client::RunTCP( void ) {
+-    unsigned long currLen = 0; 
++    ssize_t currLen = 0; 
+     struct itimerval it;
+     max_size_t totLen = 0;
+ 
+@@ -171,7 +171,7 @@ void Client::RunTCP( void ) {
+ 
+         if ( !mMode_Time ) {
+             /* mAmount may be unsigned, so don't let it underflow! */
+-            if( mSettings->mAmount >= currLen ) {
++            if( (ssize_t)mSettings->mAmount >= currLen ) {
+                 mSettings->mAmount -= currLen;
+             } else {
+                 mSettings->mAmount = 0;
+@@ -203,7 +203,7 @@ void Client::RunTCP( void ) {
+ 
+ void Client::Run( void ) {
+     struct UDP_datagram* mBuf_UDP = (struct UDP_datagram*) mBuf; 
+-    unsigned long currLen = 0; 
++    ssize_t currLen = 0; 
+ 
+     int delay_target = 0; 
+     int delay = 0; 
+@@ -316,7 +316,7 @@ void Client::Run( void ) {
+         }
+         if ( !mMode_Time ) {
+             /* mAmount may be unsigned, so don't let it underflow! */
+-            if( mSettings->mAmount >= currLen ) {
++            if( (ssize_t)mSettings->mAmount >= currLen ) {
+                 mSettings->mAmount -= currLen;
+             } else {
+                 mSettings->mAmount = 0;
+diff --git a/src/Makefile.in b/src/Makefile.in
+index 734e927..a7807bc 100644
+--- a/src/Makefile.in
++++ b/src/Makefile.in
+@@ -191,8 +191,8 @@ AM_CPPFLAGS = @STRIP_BEGIN@ \
+ 	      -I$(top_builddir)/include \
+ 	      @STRIP_END@
+ 
+-AM_CXXFLAGS = -Wall
+-AM_CFLAGS = -Wall
++AM_CXXFLAGS = -Wall -Wtype-limits
++AM_CFLAGS = -Wall -Wtype-limits
+ iperf_LDFLAGS = @CFLAGS@ @PTHREAD_CFLAGS@ @WEB100_CFLAGS@ @DEFS@
+ iperf_SOURCES = \
+ 		Client.cpp \
+-- 
+1.7.9
+
