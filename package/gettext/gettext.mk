@@ -113,7 +113,11 @@ $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY): $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 		autopoint envsubst gettext.sh gettextize msg* ?gettext)
 	touch -c $@
 
-gettext: host-pkg-config $(if $(BR2_PACKAGE_LIBICONV),libiconv) $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
+$(STAMP_DIR)/gettext: $(STAMP_DIR)/host-pkg-config.deps \
+		$(if $(BR2_PACKAGE_LIBICONV),$(STAMP_DIR)/libiconv) \
+		$(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
+	touch $@
+gettext: $(STAMP_DIR)/gettext
 
 gettext-unpacked: $(GETTEXT_DIR)/.unpacked
 
@@ -149,7 +153,9 @@ $(TARGET_DIR)/usr/lib/libintl.a: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
 	cp -dpf $(STAGING_DIR)/usr/lib/libintl*.a $(TARGET_DIR)/usr/lib/
 	touch -c $@
 
-libintl: $(TARGET_DIR)/$(LIBINTL_TARGET_BINARY)
+$(STAMP_DIR)/libintl: $(TARGET_DIR)/$(LIBINTL_TARGET_BINARY)
+	touch $@
+libintl: $(STAMP_DIR)/libintl
 
 #############################################################
 #
