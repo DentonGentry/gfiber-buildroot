@@ -133,12 +133,16 @@ ifndef HOSTCC
 HOSTCC:=gcc
 HOSTCC:=$(shell which $(HOSTCC) || type -p $(HOSTCC) || echo gcc)
 endif
+ifndef HOSTCC_NOCCACHE
 HOSTCC_NOCCACHE:=$(HOSTCC)
+endif
 ifndef HOSTCXX
 HOSTCXX:=g++
 HOSTCXX:=$(shell which $(HOSTCXX) || type -p $(HOSTCXX) || echo g++)
 endif
+ifndef HOSTCXX_NOCCACHE
 HOSTCXX_NOCCACHE:=$(HOSTCXX)
+endif
 ifndef HOSTFC
 HOSTFC:=gfortran
 endif
@@ -331,16 +335,21 @@ include boot/common.mk
 include target/Makefile.in
 include linux/linux.mk
 
-TARGETS+=target-finalize
+target-finalize: $(TARGETS)
 
 ifeq ($(BR2_ENABLE_LOCALE_PURGE),y)
-TARGETS+=target-purgelocales
+target-maybe-purgelocales: target-purgelocales
+target-purgelocales: target-finalize
+else
+target-maybe-purgelocales: target-finalize
 endif
 
 include fs/common.mk
 -include postpackage.mk
 
-TARGETS+=erase-fakeroots
+erase-fakeroots: target-maybe-purgelocales
+_rootfs_base: erase-fakeroots
+TARGETS+=rootfs
 
 TARGETS_CLEAN:=$(patsubst %,%-clean,$(TARGETS))
 TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS) $(BASE_TARGETS))
@@ -366,21 +375,46 @@ HOST_DEPS = $(sort $(foreach dep,\
 HOST_SOURCE += $(addsuffix -source,$(sort $(TARGETS_HOST_DEPS) $(HOST_DEPS)))
 
 # all targets depend on the crosscompiler and it's prerequisites
-$(TARGETS_ALL): __real_tgt_%: $(BASE_TARGETS) %
+$(TARGETS_ALL): __real_tgt_%: %
+targets: $(TARGETS_ALL)
 
-dirs: $(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
-	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
+patches: $(patsubst %,%-patch,$(TARGETS))
+%-patch:   # default for targets that don't have any patches
+	@
 
-$(BASE_TARGETS): dirs $(O)/toolchainfile.cmake
+_DIRS=$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) \
+	$(TARGET_DIR) $(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
+MK_DIRS=$(STAMP_DIR)/.dirs
+$(MK_DIRS): | $(_DIRS)
+	$(MAKE) $(_DIRS)  # _DIRS
+	touch $@
+dirs: $(MK_DIRS)
+
+$(patsubst %,$(STAMP_DIR)/%.deps,$(PRE_DEPENDS)): $(MK_DIRS)
+
+$(BASE_TARGETS): $(MK_DIRS) $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake
 
 $(BUILD_DIR)/buildroot-config/auto.conf: $(CONFIG_DIR)/.config
 	$(MAKE) $(EXTRAMAKEARGS) HOSTCC="$(HOSTCC_NOCCACHE)" HOSTCXX="$(HOSTCXX_NOCCACHE)" silentoldconfig
 
 prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
-world: prepare dirs dependencies $(BASE_TARGETS) $(TARGETS_ALL)
 
-$(O)/toolchainfile.cmake:
+SHUFFLED_TARGETS = $(shell echo $(TARGETS) | sed 's/ /\n/g' | shuf)
+
+shuffled:
+	@echo $(SHUFFLED_TARGETS)
+
+dirs: prepare
+dependencies: dirs
+world:
+	$(MAKE) O=$O dependencies
+	$(MAKE) O=$O compiler
+	$(MAKE) O=$O cross
+	$(MAKE) O=$O $(SHUFFLED_TARGETS) 2>&1 > $(STAMP_DIR)/shuffledbuild
+
+$(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
+	mkdir -p $(@D)
 	@echo -en "\
 	set(CMAKE_SYSTEM_NAME Linux)\n\
 	set(CMAKE_C_COMPILER $(TARGET_CC_NOCCACHE))\n\
@@ -655,6 +689,7 @@ endif
 	rm -rf $(CONFIG_DIR)/.config $(CONFIG_DIR)/.config.old $(CONFIG_DIR)/.auto.deps
 
 cross: $(BASE_TARGETS)
+compiler: $(filter cross_compiler,$(BASE_TARGETS))
 
 what-targets:
 	@echo $(TARGETS)

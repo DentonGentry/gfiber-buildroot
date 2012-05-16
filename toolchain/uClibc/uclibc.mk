@@ -374,7 +374,7 @@ ifeq ($(BR2_x86_core2),y)
 endif
 endif
 
-$(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.oldconfig
+$(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.oldconfig $(host_preconfig)
 	cp -f $(UCLIBC_DIR)/.oldconfig $(UCLIBC_DIR)/.config
 	mkdir -p $(TOOLCHAIN_DIR)/uClibc_dev/usr/include
 	mkdir -p $(TOOLCHAIN_DIR)/uClibc_dev/usr/lib
@@ -390,14 +390,7 @@ $(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.oldconfig
 		oldconfig
 	touch $@
 
-ifeq ($(BR2_CCACHE),y)
-# we'll need ccache for the host built before make oldconfig
-# if configured, otherwise uclibc-menuconfig will fail.
-# Use order-only dependency as host-ccache is a virtual target
-$(UCLIBC_DIR)/.config: | host-ccache
-endif
-
-$(UCLIBC_DIR)/.configured: $(LINUX_HEADERS_DIR)/.configured $(UCLIBC_DIR)/.config
+$(UCLIBC_DIR)/.configured: $(LINUX_HEADERS_DIR)/.configured $(UCLIBC_DIR)/.config $(gcc_initial)
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TOOLCHAIN_DIR)/uClibc_dev/ \
@@ -502,7 +495,11 @@ UCLIBC_TARGETS+=uclibc-test
 endif
 endif
 
-uclibc: $(gcc_intermediate) $(STAGING_DIR)/usr/lib/libc.a $(UCLIBC_TARGETS)
+uclibc: $(STAGING_DIR)/usr/lib/libc.a $(UCLIBC_TARGETS)
+
+ifeq ($(BR2_CCACHE),y)
+uclibc: host-ccache
+endif
 
 uclibc-source: $(DL_DIR)/$(UCLIBC_SOURCE)
 
@@ -526,7 +523,7 @@ uclibc-clean: uclibc-test-clean
 uclibc-dirclean: uclibc-test-dirclean
 	rm -rf $(UCLIBC_DIR)
 
-uclibc-target-utils: $(TARGET_DIR)/usr/bin/ldd
+uclibc-target-utils: $(TARGET_DIR)/usr/bin/ldd cross_compiler
 
 uclibc-target-utils-source: $(DL_DIR)/$(UCLIBC_SOURCE)
 

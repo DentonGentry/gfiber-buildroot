@@ -203,7 +203,12 @@ endif
 #############################################################
 GCC_BUILD_DIR1:=$(TOOLCHAIN_DIR)/gcc-$(GCC_VERSION)-initial
 
-$(GCC_BUILD_DIR1)/.configured: $(GCC_DIR)/.patched
+host_prereq=$(BUILD_DIR)/.prereq
+host-prereq: $(host_prereq)
+$(host_prereq): $(patsubst %,$(STAMP_DIR)/%,$(GCC_HOST_PREREQ))
+	touch $@
+
+$(GCC_BUILD_DIR1)/.configured: $(GCC_DIR)/.patched $(host_prereq)
 	mkdir -p $(GCC_BUILD_DIR1)
 	(cd $(GCC_BUILD_DIR1); rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
@@ -248,11 +253,25 @@ endif
 	touch $@
 
 gcc_initial=$(GCC_BUILD_DIR1)/.installed
-$(gcc_initial) $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc: $(GCC_BUILD_DIR1)/.compiled
+$(gcc_initial): $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+$(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc: $(GCC_BUILD_DIR1)/.compiled
 	PATH=$(TARGET_PATH) $(MAKE) -C $(GCC_BUILD_DIR1) install-gcc
 	touch $(gcc_initial)
 
-gcc_initial: $(GCC_HOST_PREREQ) host-binutils $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+ifeq ($(BR2_CCACHE),y)
+# we'll need ccache for the host built before configuring,
+# otherwise various detection scripts will fail.
+PRE_DEPENDS += host-ccache
+host_preconfig=$(BASE_DIR)/.preconfig
+$(host_preconfig): $(patsubst %,$(STAMP_DIR)/%,$(PRE_DEPENDS))
+	touch $@
+host-preconfig: $(host_preconfig)
+endif
+host-preconfig:
+
+host-binutils: $(host_prereq)
+$(GCC_BUILD_DIR1)/.installed: | host-binutils
+gcc_initial: $(GCC_BUILD_DIR1)/.installed host-binutils
 
 gcc_initial-clean:
 	rm -rf $(GCC_BUILD_DIR1)
@@ -271,7 +290,7 @@ GCC_BUILD_DIR2:=$(TOOLCHAIN_DIR)/gcc-$(GCC_VERSION)-intermediate
 # fixed, so we need to actually have working C library header files prior to
 # the step or libgcc will not build...
 
-$(GCC_BUILD_DIR2)/.configured: $(GCC_DIR)/.patched
+$(GCC_BUILD_DIR2)/.configured: $(GCC_DIR)/.patched $(gcc_initial)
 	mkdir -p $(GCC_BUILD_DIR2)
 	(cd $(GCC_BUILD_DIR2); rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
@@ -325,7 +344,7 @@ else
 endif
 	touch $(gcc_intermediate)
 
-gcc_intermediate: uclibc-configured $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+gcc_intermediate: uclibc-configured $(gcc_intermediate)
 
 gcc_intermediate-clean:
 	rm -rf $(GCC_BUILD_DIR2)
@@ -347,7 +366,8 @@ gcc_intermediate-dirclean:
 # guarantees. mjn3
 
 GCC_BUILD_DIR3:=$(TOOLCHAIN_DIR)/gcc-$(GCC_VERSION)-final
-$(GCC_BUILD_DIR3)/.configured: $(GCC_SRC_DIR)/.patched $(GCC_STAGING_PREREQ)
+$(GCC_BUILD_DIR3)/.configured: $(GCC_SRC_DIR)/.patched \
+		$(gcc_intermediate) $(GCC_STAGING_PREREQ)
 	mkdir -p $(GCC_BUILD_DIR3)
 	# Important! Required for limits.h to be fixed.
 	ln -snf ../include/ $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/sys-include

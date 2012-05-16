@@ -340,6 +340,11 @@ $(HOST_DIR)/usr/bin/ext-toolchain-wrapper: $(STAMP_DIR)/ext-toolchain-installed
 	$(HOSTCC) $(HOST_CFLAGS) $(TOOLCHAIN_EXTERNAL_WRAPPER_ARGS) -s \
 		toolchain/toolchain-external/ext-toolchain-wrapper.c -o $@
 
+# make sure ccache is ready before building toolchain wrapper
+ifeq ($(BR2_CCACHE),y)
+$(STAMP_DIR)/ext-toolchain-checked $(STAMP_DIR)/ext-toolchain-wrapper: host-ccache
+endif
+
 # 'uclibc' is the target to provide toolchain / staging dir
 uclibc: dependencies $(HOST_DIR)/usr/bin/ext-toolchain-wrapper
 
