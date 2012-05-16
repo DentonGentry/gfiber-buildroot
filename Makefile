@@ -475,6 +475,7 @@ erase-fakeroots:
 	rm -f $(BUILD_DIR)/.fakeroot*
 
 target-finalize:
+	@$(call MESSAGE,"Finalizing targets")
 ifeq ($(BR2_HAVE_DEVFILES),y)
 	( support/scripts/copy.sh $(STAGING_DIR) $(TARGET_DIR) )
 else
@@ -517,6 +518,7 @@ endif
 	echo $(BR2_VERSION_FULL) > $(TARGET_DIR)/etc/br-version
 
 ifneq ($(BR2_ROOTFS_POST_BUILD_SCRIPT),"")
+	@$(call MESSAGE,"Executing post-build script")
 	$(BR2_ROOTFS_POST_BUILD_SCRIPT) $(TARGET_DIR)
 endif
 

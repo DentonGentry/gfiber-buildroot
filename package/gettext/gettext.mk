@@ -33,7 +33,7 @@ IGNORE_EXTERNAL_GETTEXT:=--with-included-gettext
 endif
 
 $(GETTEXT_DIR)/.configured: $(GETTEXT_DIR)/.unpacked
-	(cd $(GETTEXT_DIR); rm -rf config.cache; \
+	$(Q)(cd $(GETTEXT_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		ac_cv_func_strtod=yes \
@@ -97,11 +97,11 @@ $(GETTEXT_DIR)/.configured: $(GETTEXT_DIR)/.unpacked
 	touch $@
 
 $(GETTEXT_DIR)/$(GETTEXT_BINARY): $(GETTEXT_DIR)/.configured
-	$(MAKE) -C $(GETTEXT_DIR)
+	$(Q)$(MAKE) -C $(GETTEXT_DIR)
 	touch -c $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 
 $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY): $(GETTEXT_DIR)/$(GETTEXT_BINARY)
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(GETTEXT_DIR) install
+	$(Q)$(MAKE) DESTDIR=$(STAGING_DIR) -C $(GETTEXT_DIR) install
 	$(SED) 's,/lib/,$(STAGING_DIR)/usr/lib/,g' $(STAGING_DIR)/usr/lib/libgettextlib.la
 	$(SED) 's,/lib/,$(STAGING_DIR)/usr/lib/,g' $(STAGING_DIR)/usr/lib/libgettextpo.la
 	$(SED) 's,/lib/,$(STAGING_DIR)/usr/lib/,g' $(STAGING_DIR)/usr/lib/libgettextsrc.la
@@ -136,7 +136,7 @@ gettext-dirclean:
 #############################################################
 
 gettext-target: $(GETTEXT_DIR)/$(GETTEXT_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GETTEXT_DIR) install
+	$(Q)$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GETTEXT_DIR) install
 	chmod +x $(TARGET_DIR)/usr/lib/libintl.so* # identify as needing to be stripped
 
 $(TARGET_DIR)/usr/lib/libintl.so: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
