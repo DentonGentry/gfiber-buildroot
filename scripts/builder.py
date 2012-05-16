@@ -187,7 +187,7 @@ class BuildRootBuilder(object):
   def CleanOutputDir(self):
     d = self._Path()
     Info('Cleaning %r...', d)
-    self.Make(['clean'])
+    self.Make(['-j','clean'])
 
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
@@ -207,11 +207,11 @@ class BuildRootBuilder(object):
     self.Make([filename + '_rebuild'])
 
     # Grab all the sources before starting, so we fail faster
-    self.Make(['source'])
+    self.Make(['-j','source'])
 
   def RemoveStamps(self):
     Info('Cleaning up install stamps...')
-    self.Make(['remove-stamps'])
+    self.Make(['-j','remove-stamps'])
 
   def BuildAppFs(self):
     """Build the kernel + simpleramfs + squashfs."""
@@ -227,7 +227,7 @@ class BuildRootBuilder(object):
                      BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
       self.RemoveStamps()
-    self.Make([])
+    self.Make(['-j','-l12'])
     self._LogDone('Building app')
 
 
