@@ -7,7 +7,7 @@ endif
 HOSTMAKE :=$(shell which $(HOSTMAKE) || type -p $(HOSTMAKE) || echo make)
 
 MAKE1:=$(HOSTMAKE) -j1
-MAKE:=$(HOSTMAKE) -j$(BR2_JLEVEL)
+MAKE:=$(HOSTMAKE)
 
 # Compute GNU_TARGET_NAME and REAL_GNU_TARGET_NAME
 GNU_TARGET_NAME=$(ARCH)-linux

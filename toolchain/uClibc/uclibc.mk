@@ -379,7 +379,7 @@ $(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.oldconfig $(host_preconfig)
 	mkdir -p $(TOOLCHAIN_DIR)/uClibc_dev/usr/include
 	mkdir -p $(TOOLCHAIN_DIR)/uClibc_dev/usr/lib
 	mkdir -p $(TOOLCHAIN_DIR)/uClibc_dev/lib
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TOOLCHAIN_DIR)/uClibc_dev/ \
 		DEVEL_PREFIX=/usr/ \
@@ -413,7 +413,7 @@ $(UCLIBC_DIR)/.configured: $(LINUX_HEADERS_DIR)/.configured $(UCLIBC_DIR)/.confi
 	touch $@
 
 $(UCLIBC_DIR)/lib/libc.a: $(UCLIBC_DIR)/.configured $(gcc_intermediate) $(LIBFLOAT_TARGET)
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX= \
 		DEVEL_PREFIX=/ \
@@ -425,7 +425,7 @@ $(UCLIBC_DIR)/lib/libc.a: $(UCLIBC_DIR)/.configured $(gcc_intermediate) $(LIBFLO
 	touch -c $@
 
 uclibc-menuconfig: dirs $(UCLIBC_DIR)/.config
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TOOLCHAIN_DIR)/uClibc_dev/ \
 		DEVEL_PREFIX=/usr/ \
@@ -438,7 +438,7 @@ uclibc-menuconfig: dirs $(UCLIBC_DIR)/.config
 
 
 $(STAGING_DIR)/usr/lib/libc.a: $(UCLIBC_DIR)/lib/libc.a
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(STAGING_DIR) \
 		DEVEL_PREFIX=/usr/ \
@@ -452,7 +452,7 @@ $(STAGING_DIR)/usr/lib/libc.a: $(UCLIBC_DIR)/lib/libc.a
 			$(STAGING_DIR)/usr/include/; \
 	fi
 	# Build the host utils. Need to add an install target...
-	$(MAKE1) -C $(UCLIBC_DIR)/utils \
+	$(MAKE) -C $(UCLIBC_DIR)/utils \
 		PREFIX=$(HOST_DIR) \
 		HOSTCC="$(HOSTCC)" \
 		hostutils
@@ -469,7 +469,7 @@ $(STAGING_DIR)/usr/lib/libc.a: $(UCLIBC_DIR)/lib/libc.a
 
 ifneq ($(TARGET_DIR),)
 $(TARGET_DIR)/lib/libc.so.0: $(STAGING_DIR)/usr/lib/libc.a
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \
@@ -480,7 +480,7 @@ $(TARGET_DIR)/lib/libc.so.0: $(STAGING_DIR)/usr/lib/libc.a
 	touch -c $@
 
 $(TARGET_DIR)/usr/bin/ldd: $(cross_compiler)
-	$(MAKE1) -C $(UCLIBC_DIR) CC=$(TARGET_CROSS)gcc \
+	$(MAKE) -C $(UCLIBC_DIR) CC=$(TARGET_CROSS)gcc \
 		CPP=$(TARGET_CROSS)cpp LD=$(TARGET_CROSS)ld \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TARGET_DIR) utils install_utils
@@ -517,7 +517,7 @@ uclibc-configured: gcc_initial kernel-headers $(UCLIBC_DIR)/.configured
 uclibc-configured-source: uclibc-source
 
 uclibc-clean: uclibc-test-clean
-	-$(MAKE1) -C $(UCLIBC_DIR) ARCH="$(UCLIBC_TARGET_ARCH)" clean
+	-$(MAKE) -C $(UCLIBC_DIR) ARCH="$(UCLIBC_TARGET_ARCH)" clean
 	rm -f $(UCLIBC_DIR)/.config
 
 uclibc-dirclean: uclibc-test-dirclean
@@ -557,7 +557,7 @@ uclibc-test-dirclean:
 #############################################################
 
 $(TARGET_DIR)/usr/lib/libc.a: $(STAGING_DIR)/usr/lib/libc.a
-	$(MAKE1) -C $(UCLIBC_DIR) \
+	$(MAKE) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \

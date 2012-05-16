@@ -33,7 +33,7 @@ $(error You have make '$(MAKE_VERSION)' installed. GNU make >= $(MIN_MAKE_VERSIO
 endif
 
 # This top-level Makefile can *not* be executed in parallel
-.NOTPARALLEL:
+#.NOTPARALLEL:
 
 # absolute path
 TOPDIR:=$(shell pwd)
