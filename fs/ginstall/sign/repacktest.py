@@ -17,7 +17,7 @@ import unittest
 import repack
 
 
-INFO_LENGTH = 4088
+INFO_LENGTH = 4080
 VERITY_TABLE = ''.join([
     '0 204800 verity payload=/dev/sda1 hashtree=/dev/sda2 hashstart=204800',
     ' alg=sha1 root_hexdigest=9f74809a2ee7607b16fcc70d9399a4de9725a727'])

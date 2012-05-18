@@ -11,7 +11,9 @@ The info is free format. Now it is only a string to hold verity table.
 |-------------------| <=== Byte 4
 | signature offset  | (integer) pointing to the signature below.
 |-------------------| <=== Byte 8
-| info (e.g. verity | (4088 bytes)
+| padding           | Padding
+|-------------------| <=== Byte 16
+| info (e.g. verity | (4080 bytes)
 |  table)           |
 |-------------------| <=== Byte 4096
 | vmlinuz           | this block is padded to align with 4096 Byte block.
@@ -114,7 +116,7 @@ def PackVerity(kname, vname, info):
     verity_table = UpdateVerityTable(info, offset)
     if not quiet:
       print verity_table
-    f.write('%-4088.4088s' % (VERITY_START + verity_table + VERITY_STOP))
+    f.write('%-4080.4080s' % (VERITY_START + verity_table + VERITY_STOP))
     f.write(c)
     if padding_size > 0:
       f.write('\0'*padding_size)
