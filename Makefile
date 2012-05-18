@@ -401,6 +401,13 @@ prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
 
 SHUFFLED_TARGETS = $(shell echo $(TARGETS) | sed 's/ /\n/g' | shuf)
+FINAL_TARGETS = $(patsubst %,%-source,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-extract,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-patch,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-configure,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-build,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(SHUFFLED_TARGETS)
 
 shuffled:
 	@echo $(SHUFFLED_TARGETS)
@@ -411,7 +418,7 @@ world:
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
-	$(MAKE) O=$O $(SHUFFLED_TARGETS) 2>&1 > $(STAMP_DIR)/shuffledbuild
+	$(MAKE) O=$O $(FINAL_TARGETS) 2>&1 > $(STAMP_DIR)/shuffledbuild
 
 $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	mkdir -p $(@D)
@@ -708,6 +715,13 @@ patches: $(patsubst %,%-patch,$(TARGETS))
 
 %-source:
 	@
+
+%-extract:
+	@
+
+%-depends:
+	@
+
 help:
 	@echo 'Cleaning:'
 	@echo '  clean                  - delete all files created by build'
