@@ -77,7 +77,7 @@ define SIMPLERAMFS_BUILD_CMDS
 	set -e; \
 	for i in 1 2 3; do \
 		echo "Loop $$i:"; \
-		$(TARGET_MAKE_ENV) mipsel-linux-uclibc-readelf -d \
+		$(TARGET_MAKE_ENV) $(TARGET_CROSS)readelf -d \
 			$(@D)/fs/bin/* $(@D)/fs/lib/* | \
 		perl -ne '/library:\s*\[([^\]]+)\]/i && print "$$1\n"' | \
 		sort | uniq | \
