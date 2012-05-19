@@ -4,6 +4,7 @@ GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
+BRUNO_INSTALL_IMAGES=YES
 
 BRUNO_DEPENDENCIES=humax_bootloader humax_misc
 ifneq ($(BR2_PACKAGE_BRUNO_DEBUG)$(BR2_PACKAGE_BRUNO_TEST),)
@@ -94,12 +95,15 @@ endef
 
 define BRUNO_INSTALL_TARGET_CMDS
 	$(BRUNO_INSTALL_MANIFEST)
+	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
+	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
+endef
+
+define BRUNO_INSTALL_IMAGES_CMDS
 	if [ -n "$(BRUNO_LOADER)" ]; then \
 		cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) \
 			$(BINARIES_DIR)/loader.bin; \
 	fi
-	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
-	$(BRUNO_INSTALL_TARGET_CMDS_TEST)
 endef
 
 $(eval $(call GENTARGETS))

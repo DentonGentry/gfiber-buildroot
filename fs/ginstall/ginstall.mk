@@ -10,11 +10,12 @@ ifneq ($(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE),0)
 GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
 endif
 
-ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity
+ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
+			       host-google_signing
 SIGNING_FLAG = ""
 
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-ROOTFS_GINSTALL_DEPENDENCIES += host-bcm_signing
+ROOTFS_GINSTALL_DEPENDENCIES += bcm_signing host-bcm_signing
 SIGNING_FLAG = "-s"
 endif
 
@@ -28,7 +29,7 @@ define ROOTFS_GINSTALL_CMD
 	gzip -c <$(BINARIES_DIR)/vmlinux.subst >$(BINARIES_DIR)/vmlinuz && \
 	chmod 0644 $(BINARIES_DIR)/vmlinuz && \
 	cp $(BINARIES_DIR)/vmlinuz $(BINARIES_DIR)/vmlinuz_unsigned && \
-	fs/ginstall/sign/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
+	$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
 		-b $(BINARIES_DIR) && \
 	( \
 		echo "[vmlinuz]"; \

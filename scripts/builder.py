@@ -133,8 +133,7 @@ class BuildRootBuilder(object):
     try:
       self.PrintOptions()
       Makedirs(self._Path('images'))
-      if not self.opt.bundle_only:
-        self.BuildAppFs()
+      self.BuildAppFs()
     finally:
       endtime = time.time()
       elapsed = endtime - starttime
@@ -228,6 +227,9 @@ class BuildRootBuilder(object):
     if self.opt.fresh >= 1:
       self.RemoveStamps()
     self.Make(['-j','-l12'])
+    if self.opt.production:
+      # shred keys and signing related information.
+      self.Make(['bcm_signing-uninstall'])
     self._LogDone('Building app')
 
 
