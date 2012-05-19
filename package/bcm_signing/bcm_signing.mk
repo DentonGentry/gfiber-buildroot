@@ -2,8 +2,6 @@ BCM_SIGNING_SITE=repo://vendor/broadcom/cfe
 
 define HOST_BCM_SIGNING_INSTALL_CMDS
 	$(INSTALL) -m 700 -D $(@D)/tool/brcm_sign_enc $(HOST_DIR)/usr/bin
-	$(INSTALL) -m 600 -D $(@D)/tool/input_sign_cfe.txt $(BINARIES_DIR)
-	$(INSTALL) -m 600 -D $(@D)/tool/input_sign_kernel.txt $(BINARIES_DIR)
 	$(INSTALL) -m 600 -D $(@D)/tool/BCM7425B0_1_0_BSECK_NDGE_LE_Generic.bin $(BINARIES_DIR)
 	(umask u=rwx,g=,o= && \
 	cd /google/src/files/head/depot/google3 && \
