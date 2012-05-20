@@ -4,8 +4,7 @@
 #
 #############################################################
 GINSTALL_SITE=repo://vendor/google/platform
-GINSTALL_DEPENDENCIES=python mtd
-GINSTALL_INSTALL_STAGING=NO
+GINSTALL_DEPENDENCIES=python python-crypto host-python-crypto mtd
 GINSTALL_INSTALL_TARGET=YES
 GINSTALL_TEST=YES
 

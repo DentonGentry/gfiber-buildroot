@@ -18,7 +18,7 @@ SIGNING_DIR=$(BINARIES_DIR)/signing
 
 define GOOGLE_SIGNING_BUILD_CMDS
 	HOST_DIR=$(HOST_DIR) CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C \
-		    $(@D)/signing
+		 $(@D)/signing
 endef
 
 SIGNING_FLAG=""
@@ -46,8 +46,8 @@ define HOST_GOOGLE_SIGNING_SIGN
 endef
 
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
-	mkdir -p $(TARGET_DIR)/usr/sbin/
-	$(INSTALL) -D -m 0755 $(@D)/signing/readverity $(TARGET_DIR)/usr/sbin/
+	$(INSTALL) -D -m 0755 $(@D)/signing/readverity \
+		$(TARGET_DIR)/usr/sbin/readverity
 endef
 
 define GOOGLE_SIGNING_TEST_CMDS
@@ -56,11 +56,10 @@ endef
 
 define HOST_GOOGLE_SIGNING_INSTALL_CMDS
 	mkdir -p $(HOST_DIR)/usr/sbin/
-	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py $(HOST_DIR)/usr/sbin/
+	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py \
+		$(HOST_DIR)/usr/sbin/repack.py
 endef
 
-# TODO(kedong) add openssl for host-python and replace ubuntu python with
-# host-python
 define HOST_GOOGLE_SIGNING_TEST_CMDS
 	(cd $(@D)/signing; $(HOST_DIR)/usr/bin/python repacktest.py)
 endef

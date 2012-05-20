@@ -21,7 +21,7 @@ endef
 define PYTHON_CRYPTO_BUILD_CMDS
 	(cd $(@D); CC="$(TARGET_CC) -pthread" \
 		CFLAGS="$(TARGET_CFLAGS)" 	\
-		LDSHARED="$(TARGET_CC) -pthread -shared" \
+		LDSHARED="$(TARGET_CROSS)gcc -pthread -shared" \
 		LDFLAGS="$(TARGET_LDFLAGS)" 	\
 		$(HOST_DIR)/usr/bin/python setup.py build_ext \
 		--include-dirs=$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR))
