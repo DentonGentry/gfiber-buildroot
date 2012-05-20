@@ -413,7 +413,7 @@ $(UCLIBC_DIR)/.configured: $(LINUX_HEADERS_DIR)/.configured $(UCLIBC_DIR)/.confi
 	touch $@
 
 $(UCLIBC_DIR)/lib/libc.a: $(UCLIBC_DIR)/.configured $(gcc_intermediate) $(LIBFLOAT_TARGET)
-	$(MAKE) -C $(UCLIBC_DIR) \
+	$(MAKE1) -C $(UCLIBC_DIR) \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX= \
 		DEVEL_PREFIX=/ \
@@ -480,7 +480,7 @@ $(TARGET_DIR)/lib/libc.so.0: $(STAGING_DIR)/usr/lib/libc.a
 	touch -c $@
 
 $(TARGET_DIR)/usr/bin/ldd: $(cross_compiler)
-	$(MAKE) -C $(UCLIBC_DIR) CC=$(TARGET_CROSS)gcc \
+	$(MAKE1) -C $(UCLIBC_DIR) CC=$(TARGET_CROSS)gcc \
 		CPP=$(TARGET_CROSS)cpp LD=$(TARGET_CROSS)ld \
 		ARCH="$(UCLIBC_TARGET_ARCH)" \
 		PREFIX=$(TARGET_DIR) utils install_utils
