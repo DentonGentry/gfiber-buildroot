@@ -41,11 +41,19 @@ define BCM_DRIVERS_BUILD_WIFI
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		STBLINUX=1 \
 		LINUXDIR="$(LINUX_DIR)" \
+		LD="$(TARGET_LD)" \
+		CC="$(TARGET_CC)" \
+		AR="$(TARGET_AR)" \
+		STRIP="$(TARGET_STRIP)" \
 		-C $(@D)/wifi/wl/linux \
 		mipsel-mips
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		TARGETENV="linuxmips" \
 		LINUXDIR="$(LINUX_DIR)" \
+		LD="$(TARGET_LD)" \
+		CC="$(TARGET_CC)" \
+		AR="$(TARGET_AR)" \
+		STRIP="$(TARGET_STRIP)" \
 		-f GNUmakefile \
 		-C $(@D)/wifi/wl/exe
 endef
