@@ -65,10 +65,12 @@ class RepackTest(unittest.TestCase):
       with open(vmlinuz.name, 'rb') as f:
         fc = f.read()
       repack.FakeSign(vmlinuz.name)
-      self.assertEqual(os.stat(vmlinuz.name).st_size, f_sz + 8)
+      self.assertEqual(os.stat(vmlinuz.name).st_size, f_sz + 16)
       with open(vmlinuz.name, 'rb') as f:
         self.assertEqual(f_sz, struct.unpack('I', f.read(4))[0])
         self.assertEqual(0x90091efb, struct.unpack('I', f.read(4))[0])
+        self.assertEqual(0x0, struct.unpack('I', f.read(4))[0])
+        self.assertEqual(0x0, struct.unpack('I', f.read(4))[0])
         self.assertEqual(fc, f.read())
 
   def testPackVerity(self):

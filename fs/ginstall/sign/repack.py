@@ -97,6 +97,8 @@ def FakeSign(fname):
     f.seek(0)
     f.write(struct.pack('I', size))
     f.write(struct.pack('I', 0x90091efb))
+    f.write(struct.pack('I', 0x0))
+    f.write(struct.pack('I', 0x0))
     f.write(c)
 
 
