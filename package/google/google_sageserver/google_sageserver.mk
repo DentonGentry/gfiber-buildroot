@@ -22,6 +22,7 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		$(@D)/build/bruno/sage/Sage.jar \
 		$(@D)/build/bruno/sage/webserver/* \
 		$(@D)/stvs/fonts \
+		$(@D)/build/bruno/sage/Monospaced*.ttf \
 		$(TARGET_DIR)/app/sage/
 	rm -f	$(TARGET_DIR)/app/sage/Apache.jar \
 		$(TARGET_DIR)/app/sage/Standard.jar
