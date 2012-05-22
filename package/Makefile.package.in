@@ -476,8 +476,10 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 	@$(call MESSAGE,"Uninstalling")
 	rm -f $($(PKG)_TARGET_INSTALL_STAGING)
 	rm -f $($(PKG)_TARGET_INSTALL_TARGET)
+	rm -f $($(PKG)_TARGET_INSTALL_IMAGES)
 	$($(PKG)_UNINSTALL_STAGING_CMDS)
 	$($(PKG)_UNINSTALL_TARGET_CMDS)
+	$($(PKG)_UNINSTALL_IMAGES_CMDS)
 
 # Remove package sources
 $(BUILD_DIR)/%/.stamp_dircleaned:
