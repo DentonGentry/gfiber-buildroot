@@ -36,7 +36,7 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		package/google/google_sageserver/runsageclient \
 		package/google/google_sageserver/sagesrv.sh \
 		$(TARGET_DIR)/app/sage/
-	ln -s	/tmp/Sage.properties.defaults \
+	ln -sf	/tmp/Sage.properties.defaults \
 		$(TARGET_DIR)/app/sage/Sage.properties.defaults
 	$(INSTALL) -m 0755 -D package/google/google_sageserver/S95sageserver \
 		$(TARGET_DIR)/etc/init.d/S95sageserver
