@@ -466,14 +466,12 @@ ifeq ($(BR2_ROOTFS_SKELETON_CUSTOM),y)
 TARGET_SKELETON=$(BR2_ROOTFS_SKELETON_CUSTOM_PATH)
 endif
 
-$(BUILD_DIR)/.root:
+$(BUILD_DIR)/.root: $(shell find $(TARGET_SKELETON) -type f)
 	mkdir -p $(TARGET_DIR)
-	if ! [ -d "$(TARGET_DIR)/bin" ]; then \
-		if [ -d "$(TARGET_SKELETON)" ]; then \
-			cp -fa $(TARGET_SKELETON)/* $(TARGET_DIR)/; \
-		fi; \
-		touch $(STAGING_DIR)/.fakeroot.00000; \
+	if [ -d "$(TARGET_SKELETON)" ]; then \
+		cp -fla $(TARGET_SKELETON)/* $(TARGET_DIR)/; \
 	fi
+	touch $(STAGING_DIR)/.fakeroot.00000;
 	-find $(TARGET_DIR) -type d -name CVS -print0 -o -name .svn -print0 | xargs -0 rm -rf
 	-find $(TARGET_DIR) -type f \( -name .empty -o -name '*~' \) -print0 | xargs -0 rm -rf
 	touch $@
