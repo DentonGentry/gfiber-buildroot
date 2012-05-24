@@ -5,7 +5,7 @@ export LANG=en_US.UTF-8
 # Start up native streaming server
 ./sagesrv.sh &
 # Start up channel service for dogfood
-./chsrv
+./chsrv &
 
 export SIEGEHOME=/app/sage/skelmir
 
