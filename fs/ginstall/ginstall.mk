@@ -26,9 +26,10 @@ define ROOTFS_GINSTALL_CMD
 	set -e; \
 	fs/ginstall/sumsubst "ROOTFS_SUM=INSERT_ACTUAL_DATA_HERE" \
 		<$(BINARIES_DIR)/vmlinux >$(BINARIES_DIR)/vmlinux.subst && \
-	gzip -c <$(BINARIES_DIR)/vmlinux.subst >$(BINARIES_DIR)/vmlinuz && \
-	chmod 0644 $(BINARIES_DIR)/vmlinuz && \
-	cp $(BINARIES_DIR)/vmlinuz $(BINARIES_DIR)/vmlinuz_unsigned && \
+	gzip -c <$(BINARIES_DIR)/vmlinux.subst \
+		>$(BINARIES_DIR)/vmlinuz_unsigned && \
+	chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
+	cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
 	$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
 		-b $(BINARIES_DIR) && \
 	( \
