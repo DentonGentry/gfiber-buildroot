@@ -171,18 +171,21 @@ domainseparator=$(if $(1),$(1),/)
 ################################################################################
 define DOWNLOAD_REPO
 	test -e $(BUILD_DIR)/$($(PKG)_BASE_NAME) || \
-	(pushd $(BUILD_DIR) > /dev/null && \
-	(if [[ "$($(PKG)_DL_VERSION)" == "HEAD" ]]; then \
-		DL_VERSION="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)"  ; \
-		DL_BRANCH="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git symbolic-ref HEAD 2>/dev/null )"  ; \
-		[[ -n $$DL_BRANCH ]] && DL_VERSION="$${DL_BRANCH#refs/heads/}"; \
-		echo "DL_VERSION=$$DL_VERSION" ; \
+	(cd $(BUILD_DIR) && \
+	if [ "$($(PKG)_DL_VERSION)" == "HEAD" ]; then \
+		DL_VERSION="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)"; \
+		DL_BRANCH="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git symbolic-ref HEAD 2>/dev/null)"; \
+		[ -n "$$DL_BRANCH" ] && DL_VERSION="$${DL_BRANCH#refs/heads/}"; \
+		echo "DL_VERSION=$$DL_VERSION"; \
 	else \
-		DL_VERSION=$($(PKG)_DL_VERSION) ; \
+		DL_VERSION=$($(PKG)_DL_VERSION); \
 	fi; \
-	/bin/sh /usr/share/doc/git/contrib/workdir/git-new-workdir $(TOPDIR)/../.repo/projects/$($(PKG)_REPO_PATH).git $($(PKG)_BASE_NAME)/ $$DL_VERSION; \
-	) && \
-	popd > /dev/null)
+	rm -rf $($(PKG)_BASE_NAME).tmp/ && \
+	sh /usr/share/doc/git/contrib/workdir/git-new-workdir \
+		$(TOPDIR)/../.repo/projects/$($(PKG)_REPO_PATH).git \
+		$($(PKG)_BASE_NAME).tmp/ $$DL_VERSION && \
+	mv $($(PKG)_BASE_NAME).tmp/ $($(PKG)_BASE_NAME)/ \
+	)
 endef
 
 define DOWNLOAD_GIT
