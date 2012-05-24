@@ -172,7 +172,7 @@ class BuildRootBuilder(object):
   def _Path(self, *paths):
     return os.path.abspath(os.path.join(self.base_dir, *paths))
 
-  def Make(self, targets):
+  def Make(self, targets, parallel):
     """Execute make for buildroot.
 
     Args:
@@ -181,12 +181,14 @@ class BuildRootBuilder(object):
     cmd = ['make', 'O=%s' % self._Path()] + targets
     if self.opt.verbose:
       cmd += ['V=1']
+    if parallel:
+      cmd += ['-j', '-l12']
     self.PopenAt(self.top_dir, cmd)
 
   def CleanOutputDir(self):
     d = self._Path()
     Info('Cleaning %r...', d)
-    self.Make(['-j','clean'])
+    self.Make(['clean'], parallel=True)
 
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
@@ -203,14 +205,14 @@ class BuildRootBuilder(object):
 
     # Actually generate the config file
     Info('Config file: %r', filename)
-    self.Make([filename + '_rebuild'])
+    self.Make([filename + '_rebuild'], parallel=False)
 
     # Grab all the sources before starting, so we fail faster
-    self.Make(['-j','source'])
+    self.Make(['source'], parallel=True)
 
   def RemoveStamps(self):
     Info('Cleaning up install stamps...')
-    self.Make(['-j','remove-stamps'])
+    self.Make(['remove-stamps'], parallel=True)
 
   def BuildAppFs(self):
     """Build the kernel + simpleramfs + squashfs."""
@@ -226,7 +228,7 @@ class BuildRootBuilder(object):
                      BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
       self.RemoveStamps()
-    self.Make(['-j','-l12'])
+    self.Make([], parallel=True)
     if self.opt.production:
       # shred keys and signing related information.
       self.Make(['bcm_signing-uninstall'])
