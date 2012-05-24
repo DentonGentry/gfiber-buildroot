@@ -78,6 +78,14 @@ config BR2_PACKAGE_BRUNO_APPS
 	help
 	  Enable application level code.
 
+config BR2_PACKAGE_BRUNO_DOGFOOD
+	bool "Bruno Dogfood Build"
+	default n
+	select BR2_PACKAGE_GOOGLE_CHANNEL_SRV
+	select BR2_PACKAGE_GOOGLE_HDHOMERUN_PLUGIN
+	help
+	  Enable dogfood code.
+
 choice
 	prompt "Board selection"
 	depends on BR2_PACKAGE_BRUNO

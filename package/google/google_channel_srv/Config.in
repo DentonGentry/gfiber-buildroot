@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_CHANNEL_SRV
+        bool "google_channel_srv"
+        help
+          Builds channel service chsrv for servicing the off grid video streaming.

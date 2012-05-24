@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_HDHOMERUN_PLUGIN
+        bool "google_hdhomerun_plugin"
+        help
+          Builds hdhomerun plugin that turns a hdhomerun tuner into a video streaming source.
