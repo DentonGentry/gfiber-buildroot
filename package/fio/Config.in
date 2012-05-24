@@ -1,6 +1,7 @@
 config BR2_PACKAGE_FIO
 	bool "fio"
 	depends on BR2_LINUX_KERNEL
+	select BR2_PACKAGE_LIBAIO
 	help
 	  A userspace utility for hdd banchmark
 
