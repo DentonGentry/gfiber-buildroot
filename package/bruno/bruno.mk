@@ -18,16 +18,16 @@ ifeq ($(BR2_PACKAGE_BRUNO),y)
 BRUNO_DEFINES += -DBRUNO_PLATFORM=1
 
 define BRUNO_BUILD_CMDS_DIAG
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/bruno/diag
+	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/diag
 endef
 
 define BRUNO_BUILD_CMDS_MISC
-	CC="$(TARGET_CC) $(TARGET_CFLAGS)" $(MAKE) -C $(@D)/bruno/cmds
+	CC="$(TARGET_CC) $(TARGET_CFLAGS)" $(MAKE) -C $(@D)/cmds
 endef
 
 define BRUNO_INSTALL_STAGING_CMDS_PC
 	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig && \
-	cp $(@D)/bruno/pkg-config/bruno.pc $(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc && \
+	cp $(@D)/pkg-config/bruno.pc $(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc && \
 	sed -i"" -e "s@CFLAGS@$(BRUNO_DEFINES)@g" $(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc
 endef
 
@@ -36,15 +36,15 @@ BRUNO_DEFINES += -DBRUNO_PLATFORM_GFHD100=1
 
 define BRUNO_INSTALL_TARGET_CMDS_REGISTER_CHECK
 	mkdir -p $(TARGET_DIR)/home/test/
-	cp -rf $(@D)/bruno/registercheck $(TARGET_DIR)/home/test/
+	cp -rf $(@D)/registercheck $(TARGET_DIR)/home/test/
 endef
 
 define BRUNO_INSTALL_TARGET_CMDS_DIAG
-	$(INSTALL) -D -m 0755 $(@D)/bruno/diag/diagd $(TARGET_DIR)/usr/bin/diagd
+	$(INSTALL) -D -m 0755 $(@D)/diag/diagd $(TARGET_DIR)/usr/bin/diagd
 endef
 
 define BRUNO_INSTALL_TARGET_CMDS_MISC
-	$(INSTALL) -D -m 0755 $(@D)/bruno/cmds/grep $(TARGET_DIR)/bin/grep
+	$(INSTALL) -D -m 0755 $(@D)/cmds/grep $(TARGET_DIR)/bin/grep
 endef
 endif
 
@@ -101,7 +101,7 @@ endef
 
 define BRUNO_INSTALL_IMAGES_CMDS
 	if [ -n "$(BRUNO_LOADER)" ]; then \
-		cp -f $(@D)/bruno/gfhd100/cfe/$(BRUNO_LOADER) \
+		cp -f $(@D)/cfe/$(BRUNO_LOADER) \
 			$(BINARIES_DIR)/loader.bin; \
 	fi
 endef

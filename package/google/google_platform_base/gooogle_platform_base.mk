@@ -8,18 +8,18 @@ GOOGLE_PLATFORM_BASE_DEPENDENCIES=linux
 GOOGLE_PLATFORM_BASE_INSTALL_STAGING=YES
 
 define GOOGLE_PLATFORM_BASE_BUILD_CMDS
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/bruno/base/build
+	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/base/build
 endef
 
 define GOOGLE_PLATFORM_BASE_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/usr/include/base
-	cp -rf $(@D)/bruno/base/src/*.h $(STAGING_DIR)/usr/include/base
-	$(INSTALL) -D -m 0644 $(@D)/bruno/base/build/brunobase.pc $(STAGING_DIR)/usr/lib/pkgconfig/brunobase.pc
-	$(INSTALL) -D -m 0755 $(@D)/bruno/base/build/libbrunobase.* $(STAGING_DIR)/usr/lib
+	cp -rf $(@D)/base/src/*.h $(STAGING_DIR)/usr/include/base
+	$(INSTALL) -D -m 0644 $(@D)/base/build/brunobase.pc $(STAGING_DIR)/usr/lib/pkgconfig/brunobase.pc
+	$(INSTALL) -D -m 0755 $(@D)/base/build/libbrunobase.* $(STAGING_DIR)/usr/lib
 endef
 
 define GOOGLE_PLATFORM_BASE_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/bruno/base/build/libbrunobase.so $(TARGET_DIR)/usr/lib/libbrunobase.so
+	$(INSTALL) -D -m 0755 $(@D)/base/build/libbrunobase.so $(TARGET_DIR)/usr/lib/libbrunobase.so
 endef
 
 $(eval $(call GENTARGETS))
