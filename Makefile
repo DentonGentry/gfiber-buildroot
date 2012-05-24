@@ -409,6 +409,8 @@ FINAL_TARGETS += $(patsubst %,%-configure,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(patsubst %,%-build,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(SHUFFLED_TARGETS)
 
+finaltargets: $(FINAL_TARGETS)
+
 shuffled:
 	@echo $(SHUFFLED_TARGETS)
 
@@ -418,7 +420,7 @@ world:
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
-	$(MAKE) O=$O $(FINAL_TARGETS) 2>&1 > $(STAMP_DIR)/shuffledbuild
+	$(MAKE) O=$O finaltargets
 
 $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	mkdir -p $(@D)
