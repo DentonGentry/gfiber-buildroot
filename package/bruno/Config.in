@@ -74,6 +74,7 @@ config BR2_PACKAGE_BRUNO_APPS
 	select BR2_PACKAGE_CAIRO_PDF
 	select BR2_PACKAGE_CAIRO_PNG
 	select BR2_PACKAGE_CAIRO_SVG
+	select BR2_PACKAGE_LIBPROJECTM
 
 	help
 	  Enable application level code.
