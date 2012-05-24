@@ -1,0 +1,58 @@
+From 81e42d858d4b80740612b5222600c628193b0f3b Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Wed, 23 May 2012 22:36:36 -0700
+Subject: [PATCH] Add argument to set the settime_timeout.
+
+---
+ ntpd.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/ntpd.c b/ntpd.c
+index 5edd064..fc9222b 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -91,6 +91,7 @@ main(int argc, char *argv[])
+ 	int			 ch, nfds, timeout = INFTIM;
+ 	int			 pipe_chld[2];
+ 	extern char		*__progname;
++	int settime_timeout = SETTIME_TIMEOUT;
+ 
+ 	__progname = _compat_get_progname(argv[0]);
+ 
+@@ -101,8 +102,12 @@ main(int argc, char *argv[])
+ 	log_init(1);		/* log to stderr until daemonized */
+ 	res_init();		/* XXX */
+ 
+-	while ((ch = getopt(argc, argv, "df:sSw:")) != -1) {
++        
++	while ((ch = getopt(argc, argv, "b:df:sSw:")) != -1) {
+ 		switch (ch) {
++		case 'b':
++			settime_timeout = atoi(optarg);
++			break;
+ 		case 'd':
+ 			conf.debug = 1;
+ 			break;
+@@ -124,6 +129,10 @@ main(int argc, char *argv[])
+ 		}
+ 	}
+ 
++	if (settime_timeout < 0) {
++		settime_timeout = SETTIME_TIMEOUT;
++	}
++
+ 	if (parse_config(conffile, &conf))
+ 		exit(1);
+ 
+@@ -148,7 +157,7 @@ main(int argc, char *argv[])
+ 			if (daemon(1, 0))
+ 				fatal("daemon");
+ 	} else
+-		timeout = SETTIME_TIMEOUT * 1000;
++		timeout = settime_timeout * 1000;
+ 
+ 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pipe_chld) == -1)
+ 		fatal("socketpair");
+-- 
+1.7.9.4
+
