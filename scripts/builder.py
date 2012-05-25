@@ -41,10 +41,10 @@ p,product-family=  Product family (eg. bruno, bcm7425) [bruno]
 m,model=           Model name [gfhd100]
 c,chip-revision=   Chip revision [b2]
 v,verbose          Increase verbosity
-b,bundle-only      Only bundle the image
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
+no-build           Don't build, just configure
 """
 
 
@@ -228,10 +228,11 @@ class BuildRootBuilder(object):
                      BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
       self.RemoveStamps()
-    self.Make([], parallel=True)
-    if self.opt.production:
-      # shred keys and signing related information.
-      self.Make(['bcm_signing-uninstall'])
+    if self.opt.build:
+      self.Make([], parallel=True)
+      if self.opt.production:
+        # shred keys and signing related information.
+        self.Make(['bcm_signing-uninstall'])
     self._LogDone('Building app')
 
 
