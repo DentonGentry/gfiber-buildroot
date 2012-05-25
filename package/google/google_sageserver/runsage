@@ -2,24 +2,54 @@
 export LD_LIBRARY_PATH=.:./lib
 export LANG=en_US.UTF-8
 
+cd "$(dirname "$0")"
+
+# Read a given key from Sage.properties, printing the value to stdout.
+readarg()
+{
+  local name="$1" out= d= zzz=
+  for d in Sage.properties Sage.properties.autobackup; do
+    [ -e "/rw/sage/$d" ] || continue
+    while IFS== read key value; do
+      [ "$key" = "$name" ] && out=$value
+      [ "$key" = "zzz" ] && zzz=1  # magic zzz key indicating a complete file
+    done <"/rw/sage/$d"
+    [ -z "$zzz" ] || break
+  done
+  echo "$out"
+}
+
+
 # Start up native streaming server
 ./sagesrv.sh &
-# Start up channel service for dogfood
-./chsrv &
+
+# Start up channel service for dogfood, but only if off_the_grid is set.
+if [ "$(readarg off_the_grid)" = "true" ]; then
+  echo "Running chsrv." >&2
+  ./chsrv &
+fi
 
 export SIEGEHOME=/app/sage/skelmir
 
 SIEGEOPT=
-if [ -e /tmp/disablejit ]; then
-  SIEGEOPT="$SIEGEOPT"" -Xint"
-fi
-if [ ! -e /rw/sage ]; then
-	mkdir /rw/sage
-fi
+[ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
+
+mkdir -p /rw/sage
 
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 
-cat Sage.properties.defaults.base Sage.properties.defaults.webserver > /tmp/Sage.properties.defaults
+cat Sage.properties.defaults.base \
+    Sage.properties.defaults.webserver \
+    >/tmp/Sage.properties.defaults
 
-./skelmir/siege -Djava.io.tmpdir=/tmp -Dsage.paths.logs=/tmp/log -Djava.library.path=. -Dsage.paths.cache=/var/media -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:$WEBSERVERJARS -Xmx384m $SIEGEOPT sage.Sage 0 0 x "sagetv /rw/sage/Sage.properties" 2>&1 | logger -t s
+./skelmir/siege \
+    -Djava.io.tmpdir=/tmp \
+    -Dsage.paths.logs=/tmp/log \
+    -Djava.library.path=. \
+    -Dsage.paths.cache=/var/media \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:$WEBSERVERJARS \
+    -Xmx384m \
+    $SIEGEOPT \
+    sage.Sage 0 0 x \
+    "sagetv /rw/sage/Sage.properties" 2>&1 | logger -t s
 
