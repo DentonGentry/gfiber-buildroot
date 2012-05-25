@@ -59,6 +59,8 @@ else
 BCM_APPS_BUILD_TYPE=release
 endif
 
+LICENSE_STATIC_PATH ?= /usr/local/google/gfiber
+
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
 LICENSE_TYPE=playready_prod_license
 else
@@ -67,11 +69,16 @@ endif
 
 define BCM_APPS_BUILD_PLAYREADY_BIN
 	mkdir -p $(STAGING_DIR)/usr/local/licenses
-	cd /google/src/files/head/depot/google3 && \
-	blaze --host_jvm_args=-Xmx256m run --forge -- \
-		//isp/fiber/drm:drm_keystore_client \
-		--key_type $(LICENSE_TYPE) \
-		--output $(STAGING_DIR)/usr/local/licenses/playready.bin
+	if [ -r "$(LICENSE_STATIC_PATH)/$(LICENSE_TYPE)" ]; then \
+		cp $(LICENSE_STATIC_PATH)/$(LICENSE_TYPE) \
+		   $(STAGING_DIR)/usr/local/licenses/playready.bin; \
+	else \
+		cd /google/src/files/head/depot/google3 && \
+		blaze --host_jvm_args=-Xmx256m run --forge -- \
+			//isp/fiber/drm:drm_keystore_client \
+			--key_type $(LICENSE_TYPE) \
+			--output $(STAGING_DIR)/usr/local/licenses/playready.bin; \
+	fi
 endef
 
 define BCM_APPS_PLAYREADY_INSTALL_TARGET_CMDS
