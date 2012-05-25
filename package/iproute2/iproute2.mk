@@ -26,7 +26,7 @@ endif
 
 define IPROUTE2_CONFIGURE_CMDS
 	# Use kernel headers
-	rm -r $(IPROUTE2_DIR)/include/netinet
+	rm -rf $(IPROUTE2_DIR)/include/netinet
 	# arpd needs berkeleydb
 	$(SED) "/^TARGETS=/s: arpd : :" $(IPROUTE2_DIR)/misc/Makefile
 	echo "IPT_LIB_DIR:=/usr/lib/xtables" >>$(IPROUTE2_DIR)/Config
