@@ -611,7 +611,11 @@ $(2)_DEPENDENCIES ?= $(patsubst host-host-%,host-%,$(addprefix host-,$($(3)_DEPE
 
 $(2)_INSTALL_STAGING		?= NO
 $(2)_INSTALL_IMAGES		?= NO
+ifeq ($$($(2)_TYPE),host)
+$(2)_INSTALL_TARGET		?= NO
+else
 $(2)_INSTALL_TARGET		?= YES
+endif
 $(2)_DIR_PREFIX			= $(if $(4),$(4),$(TOP_SRCDIR)/package)
 
 # define sub-target stamps
