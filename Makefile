@@ -466,7 +466,7 @@ ifeq ($(BR2_ROOTFS_SKELETON_CUSTOM),y)
 TARGET_SKELETON=$(BR2_ROOTFS_SKELETON_CUSTOM_PATH)
 endif
 
-$(BUILD_DIR)/.root: $(shell find $(TARGET_SKELETON) -type f)
+$(BUILD_DIR)/.root:
 	mkdir -p $(TARGET_DIR)
 	if [ -d "$(TARGET_SKELETON)" ]; then \
 		cp -fla $(TARGET_SKELETON)/* $(TARGET_DIR)/; \
