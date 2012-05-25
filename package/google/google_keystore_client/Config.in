@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GOOGLE_KEYSTORE_CLIENT
+	bool "google_keystore_client"
+	help
+	  Keystore client for Google Fiber
+
+	This is a client that is used to pull keys used by
+	Google Fiber from Keystore in production.
