@@ -3,6 +3,7 @@
 # Start the network....
 #
 SERVICE='mocad'
+PLATFORM=$(cat /etc/platform)
 
 case "$1" in
   start)
@@ -25,6 +26,11 @@ case "$1" in
 		brctl addbr br0 || exit 1
 		brctl setfd br0 1 || exit 1
 		brctl stp br0 on || exit 1
+		# If fat bruno, set bridge priority to 0x7990 so that
+		# it will be used as the root for the spanning tree.
+		if [ "$PLATFORM" = "GFMS100" ]; then
+			brctl setbridgeprio br0 0x7990 || exit 1
+		fi
 		[ -e /sys/class/net/eth0/address ] && \
 			ip link set br0 address \
 			$(cat /sys/class/net/eth0/address)
