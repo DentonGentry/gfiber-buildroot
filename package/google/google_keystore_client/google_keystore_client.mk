@@ -29,13 +29,13 @@ define HOST_GOOGLE_KEYSTORE_CLIENT_BUILD_CMDS
 endef
 
 define GOOGLE_KEYSTORE_CLIENT_EXECUTE
-	rm -f $(2)
+	rm -f $(2) && \
 	(cd $(HOST_GOOGLE_KEYSTORE_CLIENT_DIR)/depot/google3; \
 	blaze --host_jvm_args=-Xmx256m run \
 		--noshow_progress -- \
 		//isp/fiber/drm:drm_keystore_client \
 		--key_type $(1) \
-		--output $(2) ) && chmod 0555 $(2)
+		--output $(2) ) && chmod 0400 $(2)
 endef
 
 $(eval $(call GENTARGETS))

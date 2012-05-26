@@ -12,12 +12,6 @@ endif
 
 ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
 			       host-google_signing
-SIGNING_FLAG = ""
-
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-ROOTFS_GINSTALL_DEPENDENCIES += bcm_signing host-bcm_signing
-SIGNING_FLAG = "-s"
-endif
 
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
@@ -30,8 +24,9 @@ define ROOTFS_GINSTALL_CMD
 		>$(BINARIES_DIR)/vmlinuz_unsigned && \
 	chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
 	cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
-	$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
-		-b $(BINARIES_DIR) && \
+	( \
+		export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
+	) && \
 	( \
 		echo "[vmlinuz]"; \
 		cat fs/ginstall/ubinize.cfg; \

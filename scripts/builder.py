@@ -230,9 +230,6 @@ class BuildRootBuilder(object):
       self.RemoveStamps()
     if self.opt.build:
       self.Make([], parallel=True)
-      if self.opt.production:
-        # shred keys and signing related information.
-        self.Make(['bcm_signing-uninstall'])
     self._LogDone('Building app')
 
 
