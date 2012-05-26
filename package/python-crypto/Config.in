@@ -1,0 +1,8 @@
+config BR2_PACKAGE_PYTHON_CRYPTO
+	bool "python-crypto"
+	depends on BR2_PACKAGE_PYTHON
+	help
+	  python-crypto is a Python crypto library.
+
+	  https://www.dlitz.net/software/pycrypto
+

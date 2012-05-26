@@ -1,0 +1,19 @@
+--- a/setup.py
++++ b/setup.py
+@@ -262,7 +262,7 @@
+     description = "Generate config.h using ./configure (autoconf)"
+ 
+     def initialize_options(self):
+-        pass
++        self.host = None
+ 
+     def finalize_options(self):
+         pass
+@@ -274,6 +274,8 @@
+             cmd = "sh configure"    # we use "sh" here so that it'll work on mingw32 with standard python.org binaries
+             if self.verbose < 1:
+                 cmd += " -q"
++            if self.host:
++                cmd += " ".join([" --host", self.host])
+             if os.system(cmd) != 0:
+                 raise RuntimeError("autoconf error")
