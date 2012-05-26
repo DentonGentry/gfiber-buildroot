@@ -1,9 +1,4 @@
 menu "Broadcom Drivers"
-	config BR2_PACKAGE_BCM_DRIVER_BLUETOOTH
-		bool "Enable Broadcom Bluetooth Driver"
-		default n
-		help
-		  Builds for Broadcom Bluetooth Driver
 	config BR2_PACKAGE_BCM_DRIVER_MOCA
 		bool "Enable Broadcom MoCA Driver"
 		default n

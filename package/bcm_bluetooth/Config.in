@@ -1,0 +1,7 @@
+menu "Broadcom Bluetooth Driver and Application"
+	config BR2_PACKAGE_BCM_DRIVER_BLUETOOTH
+		bool "Enable Broadcom Bluetooth Driver"
+		default n
+		help
+		  Builds for Broadcom Bluetooth Driver
+endmenu

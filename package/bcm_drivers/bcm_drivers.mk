@@ -65,84 +65,12 @@ endef
 
 endif
 
-ifeq ($(BR2_PACKAGE_BCM_DRIVER_BLUETOOTH),y)
-BCM_DRIVERS_DEPENDENCIES+=alsa-lib alsa-utils linux
-define BCM_DRIVERS_CLEAN_BLUETOOTH
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CPU=mips \
-		MIPSGCC=$(TARGET_CC_NOCCACHE) \
-		MIPSGCCLIBPATH="" \
-		ENABLE_BTHID=TRUE \
-		ENABLE_ALSA=TRUE \
-		-f Makefile.all clean \
-		-C $(@D)/bt/3rdparty/embedded/bsa_examples/linux/server/build/
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CPU=mips \
-		MIPSGCC=$(TARGET_CC_NOCCACHE) \
-		MIPSGCCLIBPATH="" \
-		ENABLE_BTHID=TRUE \
-		ENABLE_ALSA=TRUE \
-		-f Makefile.all clean \
-		-C $(@D)/bt/3rdparty/embedded/google/bruno/server/build/
-endef
-
-define BCM_DRIVERS_BUILD_BLUETOOTH
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CPU=mips \
-		MIPSGCC=$(TARGET_CC_NOCCACHE) \
-		MIPSGCCLIBPATH="" \
-		ENABLE_BTHID=TRUE \
-		ENABLE_ALSA=TRUE \
-		-f Makefile.all all \
-		-C $(@D)/bt/3rdparty/embedded/bsa_examples/linux/server/build/
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CPU=mips \
-		MIPSGCC=$(TARGET_CC_NOCCACHE) \
-		MIPSGCCLIBPATH="" \
-		ENABLE_BTHID=TRUE \
-		ENABLE_ALSA=TRUE \
-		-f Makefile.all all \
-		-C $(@D)/bt/3rdparty/embedded/google/bruno/server/build/
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CROSS_COMPILE="$(TARGET_CROSS)" \
-		KDIR="${LINUX_DIR}" \
-		-C $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CROSS_COMPILE="$(TARGET_CROSS)" \
-		KDIR="${LINUX_DIR}" \
-		-C $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/
-endef
-
-define BCM_DRIVERS_INSTALL_TARGET_BLUETOOTH
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/server/build/mips/bsa_server $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_tm/build/mips/app_tm $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_pbs/build/mips/app_pbs $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_ops/build/mips/app_ops $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_opc/build/mips/app_opc $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_manager/build/mips/app_manager $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_hs/build/mips/app_hs $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_hl/build/mips/app_hl $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_hh/build/mips/app_hh $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_fts/build/mips/app_fts $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_ftc/build/mips/app_ftc $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_dg/build/mips/app_dg $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_avk/build/mips/app_avk $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_av/build/mips/app_av $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_ag/build/mips/app_ag $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/app_gtv $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/btusb.ko $(TARGET_DIR)/usr/lib/modules/btusb.ko
-	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/bthid.ko $(TARGET_DIR)/usr/lib/modules/bthid.ko
-endef
-endif
-
 define BCM_DRIVERS_BUILD_CMDS
-	$(BCM_DRIVERS_BUILD_BLUETOOTH)
 	$(BCM_DRIVERS_BUILD_MOCA)
 	$(BCM_DRIVERS_BUILD_WIFI)
 endef
 
 define BCM_DRIVERS_CLEAN_CMDS
-	$(BCM_DRIVERS_CLEAN_BLUETOOTH)
 endef
 
 define BCM_DRIVERS_INSTALL_STAGING_CMDS
@@ -150,7 +78,6 @@ define BCM_DRIVERS_INSTALL_STAGING_CMDS
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_CMDS
-	$(BCM_DRIVERS_INSTALL_TARGET_BLUETOOTH)
 	$(BCM_DRIVERS_INSTALL_TARGET_MOCA)
 	$(BCM_DRIVERS_INSTALL_TARGET_WIFI)
 endef
