@@ -20,5 +20,11 @@ define HOST_GOOGLE_SIGNING_INSTALL_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py $(HOST_DIR)/usr/sbin/
 endef
 
+# TODO(kedong) add openssl for host-python and replace ubuntu python with
+# host-python
+define HOST_GOOGLE_SIGNING_TEST_CMDS
+	python $(@D)/signing/repacktest.py
+endef
+
 $(eval $(call GENTARGETS))
 $(eval $(call GENTARGETS,host))
