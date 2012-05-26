@@ -60,7 +60,7 @@ define BCM_BLUETOOTH_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_dg/build/mips/app_dg $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_avk/build/mips/app_avk $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_av/build/mips/app_av $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_ag/build/mips/app_ag $(TARGET_DIR)/usr/bin/
+	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/app_gtv $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/btusb.ko $(TARGET_DIR)/usr/lib/modules/btusb.ko
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/bthid.ko $(TARGET_DIR)/usr/lib/modules/bthid.ko
 endef

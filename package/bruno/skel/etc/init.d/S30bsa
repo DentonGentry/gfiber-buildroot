@@ -2,8 +2,12 @@
 case "$1" in
   start)
 	echo -n "Starting Bluetooth service: "
-	cd /user/bsa
-	bsa_server -d /dev/bthid 2>&1 | logger -t bsa &
+	if [ ! -e /tmp/NFS ]; then
+		cd /user/bsa
+	else
+		cd /tmp
+	fi
+	bsa_server -d /dev/btusb0 2>&1 | logger -t bsa &
 	echo "done"
 	;;
   stop)
