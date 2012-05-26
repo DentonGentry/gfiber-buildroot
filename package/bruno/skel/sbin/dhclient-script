@@ -33,14 +33,17 @@ make_resolv_conf() {
     chmod 644 /tmp/resolv.conf.dhclient
     if [ x"$new_domain_search" != x ]; then
       echo search $new_domain_search >> /tmp/resolv.conf.dhclient
+      echo dns4 search $new_domain_search 2>&1 | logger -t dhcpscript
     elif [ x"$new_domain_name" != x ]; then
       # Note that the DHCP 'Domain Name Option' is really just a domain
       # name, and that this practice of using the domain name option as
       # a search path is both nonstandard and deprecated.
       echo search $new_domain_name >> /tmp/resolv.conf.dhclient
+      echo dns4 search $new_domain_name 2>&1 | logger -t dhcpscript
     fi
     for nameserver in $new_domain_name_servers; do
       echo nameserver $nameserver >>/tmp/resolv.conf.dhclient
+      echo dns4 nameserver $nameserver 2>&1 | logger -t dhcpscript
     done
 
     # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
@@ -54,9 +57,11 @@ make_resolv_conf() {
 
     if [ "x${new_dhcp6_domain_search}" != x ] ; then
       echo search ${new_dhcp6_domain_search} >> /tmp/resolv.conf.dhclient6
+      echo dns6 search ${new_dhcp6_domain_search} 2>&1 | logger -t dhcpscript
     fi
     for nameserver in ${new_dhcp6_name_servers} ; do
       echo nameserver ${nameserver} >> /tmp/resolv.conf.dhclient6
+      echo dns6 nameserver ${nameserver} 2>&1 | logger -t dhcpscript
     done
 
     cat /tmp/resolv.conf.dhclient /tmp/resolv.conf.dhclient6 > /tmp/resolv.conf.new 2>/dev/null
@@ -92,23 +97,32 @@ make_cwmp_files() {
     # DHCP server gave us an ACS URL, so we can discard any old ones.
     atomic /tmp/cwmp/acs_url "$new_cwmp_acs_url"
     atomic /config/tr69/acs_url "$new_cwmp_acs_url"
+    echo cwmp dhcp acs "$new_cwmp_acs_url" 2>&1 | logger -t dhcpscript
   elif [ -s /config/tr69/acs_url ]; then
     # DHCP server didn't provide an ACS URL, but we have an old one persisted,
     # so use that as a fallback.
     atomic /tmp/cwmp/acs_url "$(cat /config/tr69/acs_url)"
+    echo cwmp stored acs "$(cat /config/tr69/acs_url)" 2>&1 | logger -t dhcpscript
   elif [ ! -s /tmp/cwmp/acs_url ]; then
     # No DHCP-provided entry and no fallback; use a hardcoded default and
     # hope for the best.  Save it to /tmp, but *not* /config, since it's not
     # a "real" config value (and if the default changes in future software
     # versions, we want it to take effect).
     atomic /tmp/cwmp/acs_url "https://acs.prod.gfsvc.com/default/cwmp"
+    echo cwmp default acs https://acs.prod.gfsvc.com/default/cwmp 2>&1 | logger -t dhcpscript
   fi
-  [ -n "$new_cwmp_provisioning_code" ] &&
+  if [ -n "$new_cwmp_provisioning_code" ]; then
     atomic /tmp/cwmp/provisioning_code "$new_cwmp_provisioning_code"
-  [ -n "$new_cwmp_retry_minimum_wait_interval" ] &&
+    echo cwmp provisioning "$new_cwmp_provisioning_code" 2>&1 | logger -t dhcpscript
+  fi
+  if [ -n "$new_cwmp_retry_minimum_wait_interval" ]; then
     atomic /tmp/cwmp/retry_minimum_wait_interval "$new_cwmp_retry_minimum_wait_interval"
-  [ -n "$new_cwmp_retry_interval_multiplier" ] &&
+    echo cwmp retry minwait "$new_cwmp_retry_minimum_wait_interval" 2>&1 | logger -t dhcpscript
+  fi
+  if [ -n "$new_cwmp_retry_interval_multiplier" ]; then
     atomic /tmp/cwmp/retry_interval_multiplier "$new_cwmp_retry_interval_multiplier"
+    echo cwmp retry mult "$new_cwmp_retry_interval_multiplier" 2>&1 | logger -t dhcpscript
+  fi
 }
 
 # Must be used on exit.   Invokes the local dhcp client exit hooks, if any.
