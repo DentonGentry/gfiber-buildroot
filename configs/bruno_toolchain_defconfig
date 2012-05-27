@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Buildroot 2012.02-00050-g09338b9 Configuration
+# Buildroot 2012.02-00054-gfde6ef9 Configuration
 #
 BR2_HAVE_DOT_CONFIG=y
 # BR2_arm is not set
@@ -147,7 +147,7 @@ BR2_GCC_ENABLE_TLS=y
 #
 # Gdb Options
 #
-BR2_PACKAGE_GDB=y
+# BR2_PACKAGE_GDB is not set
 BR2_PACKAGE_GDB_SERVER=y
 # BR2_PACKAGE_GDB_HOST is not set
 BR2_GDB_VERSION_7_2=y
@@ -582,10 +582,7 @@ BR2_PACKAGE_TOYBOX_CONFIG="package/toybox/toybox.config"
 #
 # BR2_PACKAGE_ENCHANT is not set
 # BR2_PACKAGE_ICU is not set
-BR2_PACKAGE_NCURSES=y
-# BR2_PACKAGE_NCURSES_TARGET_PANEL is not set
-# BR2_PACKAGE_NCURSES_TARGET_FORM is not set
-# BR2_PACKAGE_NCURSES_TARGET_MENU is not set
+# BR2_PACKAGE_NCURSES is not set
 # BR2_PACKAGE_NEWT is not set
 # BR2_PACKAGE_PCRE is not set
 # BR2_PACKAGE_POPT is not set
@@ -765,6 +762,7 @@ BR2_BRUNO_BCHP_VER="B2"
 # BR2_PACKAGE_BRUNO_TEST is not set
 # BR2_PACKAGE_BRUNO_DEBUG is not set
 # BR2_PACKAGE_BRUNO_APPS is not set
+# BR2_PACKAGE_BRUNO_DOGFOOD is not set
 
 #
 # Google libraries and applications
@@ -793,6 +791,8 @@ BR2_BRUNO_BCHP_VER="B2"
 # BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR is not set
 # BR2_PACKAGE_GOOGLE_WIDEVINE is not set
 # BR2_PACKAGE_GOOGLE_SIGNING is not set
+# BR2_PACKAGE_GOOGLE_CHANNEL_SRV is not set
+# BR2_PACKAGE_GOOGLE_HDHOMERUN_PLUGIN is not set
 
 #
 # Google open source packages
