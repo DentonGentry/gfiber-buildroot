@@ -1,0 +1,66 @@
+From a3164459eef7b5bfe85f671b780e240325064ea0 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 29 May 2012 04:20:19 -0400
+Subject: [PATCH] Fix two bugs preventing DNS re-resolution if resolv.conf
+ changes.
+
+First, don't call res_init(); it forces libresolv to do a one-time name
+resolution and save the settings forever (at least in uClibc).  If
+/etc/resolv.conf doesn't exist at program startup time, this would guarantee
+all future DNS requests would fail.
+
+Second, change error_interval() to use a backoff instead of a hardcoded
+"very long time plus randomness" timeout.  The default timeout to retry
+initial DNS was 600 seconds, which was *way* too long.  Now we start at 2
+seconds and work our way up.
+---
+ ntp.c  |   13 ++++++++++---
+ ntpd.c |    7 ++++++-
+ 2 files changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/ntp.c b/ntp.c
+index ac94638..9f83f1a 100644
+--- a/ntp.c
++++ b/ntp.c
+@@ -539,10 +539,17 @@ scale_interval(time_t requested)
+ time_t
+ error_interval(void)
+ {
+-	time_t interval, r;
++	static time_t step = 1;
++	time_t interval, maxival, r;
+ 
+-	interval = INTERVAL_QUERY_PATHETIC * QSCALE_OFF_MAX / QSCALE_OFF_MIN;
+-	r = arc4random() % (interval / 10);
++	maxival = INTERVAL_QUERY_PATHETIC * QSCALE_OFF_MAX / QSCALE_OFF_MIN;
++	interval = step * step / 2 + 1;  /* quadratic backoff timer */
++	if (interval > maxival)
++		interval = maxival;
++	else
++		step++;
++	r = arc4random() % (interval / 10 + 1);
++	log_info("retrying in %d", interval + r);
+ 	return (interval + r);
+ }
+ 
+diff --git a/ntpd.c b/ntpd.c
+index fc9222b..000fdae 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -100,7 +100,12 @@ main(int argc, char *argv[])
+ 	bzero(&conf, sizeof(conf));
+ 
+ 	log_init(1);		/* log to stderr until daemonized */
+-	res_init();		/* XXX */
++
++	/* apenwarr: don't call res_init() here, as it prevents auto-rereading
++	 * of resolv.conf later (at least in uClibc).  I don't see any
++	 * advantage to it anyway.  And it had a fishy-looking XXX comment.
++	 */
++	//res_init();		/* XXX */
+ 
+         
+ 	while ((ch = getopt(argc, argv, "b:df:sSw:")) != -1) {
+-- 
+1.7.9.dirty
+
