@@ -8,7 +8,8 @@ start() {
   if [ "$PLATFORM" != "GFHD100" ]; then
     return 0;
   fi
-  (ntp_wait /tmp/ntp.synced; /app/client/runminiclient) 2>&1 | logger -t miniclient &
+  (wait-until-created /tmp/ntp.synced; /app/client/runminiclient) 2>&1 \
+      | logger -t miniclient &
   return $RETVAL
 }
 

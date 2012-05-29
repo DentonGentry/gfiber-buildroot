@@ -12,9 +12,9 @@ start() {
   cd /app/sage
   [ -e /rw/app/sage ] && cd /rw/app/sage
   if [ "$PLATFORM" = "GFHD100" ]; then
-    (ntp_wait /tmp/ntp.synced; ./runsageclient) &
+    (wait-until-created /tmp/ntp.synced; ./runsageclient) &
   else
-    (ntp_wait /tmp/ntp.synced; ./runsage) &
+    (wait-until-created /tmp/ntp.synced; ./runsage) &
   fi
 
   if [ -e /rw/poststartupmods ]; then
@@ -26,10 +26,10 @@ start() {
 }
 
 stop() {
-  /usr/bin/pkill cvm
-  /usr/bin/pkill siege
-  /usr/bin/pkill sagesrv
-  /usr/bin/pkill chsrv
+  pkill cvm
+  pkill siege
+  pkill sagesrv
+  pkill chsrv
   return $RETVAL
 }
 

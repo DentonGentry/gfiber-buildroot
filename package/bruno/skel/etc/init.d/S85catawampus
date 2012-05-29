@@ -2,7 +2,8 @@
 
 case "$1" in
   start)
-	(ntp_wait /tmp/ntp.synced; babysit 60 cwmpd) 2>&1 | logger -t cwmpd &
+	(wait-until-created /tmp/ntp.synced; babysit 60 cwmpd) 2>&1 \
+	    | logger -t cwmpd &
 	;;
   stop)
 	pkill -x cwmpd
