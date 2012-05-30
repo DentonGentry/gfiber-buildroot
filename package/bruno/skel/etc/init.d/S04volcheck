@@ -143,13 +143,6 @@ umount_ubifs() {
   ubidetach -d ${1}
 }
 
-netflix_sanity_check() {
-  if [ -e /user/rw/netflix.run ]; then
-    rm -rf /user/drm/* /user/netflix/*
-    rm -f /user/rw/netflix.run
-  fi
-}
-
 case "$1" in
   start)
     # Get MTD partition number
@@ -169,7 +162,6 @@ case "$1" in
     [ ! -d /user/drm ] && mkdir -p /user/drm
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
-    netflix_sanity_check
     echo "OK"
     ;;
   stop)
