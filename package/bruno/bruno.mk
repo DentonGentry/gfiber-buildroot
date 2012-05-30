@@ -41,6 +41,10 @@ endef
 
 define BRUNO_INSTALL_TARGET_CMDS_DIAG
 	$(INSTALL) -D -m 0755 $(@D)/diag/diagd $(TARGET_DIR)/usr/bin/diagd
+	mkdir -p $(TARGET_DIR)/user/diag
+	$(INSTALL) -D -m 0644 $(@D)/diag/diag_kern_err_msgs.txt $(TARGET_DIR)/user/diag
+	$(INSTALL) -D -m 0644 $(@D)/diag/diag_kern_warn_msgs.txt $(TARGET_DIR)/user/diag
+	$(INSTALL) -D -m 0644 $(@D)/diag/diag_ref_data.txt $(TARGET_DIR)/user/diag
 endef
 
 define BRUNO_INSTALL_TARGET_CMDS_MISC
