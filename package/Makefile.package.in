@@ -440,6 +440,12 @@ $(BUILD_DIR)/%/.stamp_built::
 	$(foreach hook,$($(PKG)_POST_BUILD_HOOKS),$(call $(hook))$(sep))
 	$(Q)touch $@
 
+# Test
+$(BUILD_DIR)/%/.stamp_tested::
+	@$(call MESSAGE,"Testing")
+	+$(Q)$($(PKG)_TEST_CMDS)
+	$(Q)touch $@
+
 # Install to host dir
 $(BUILD_DIR)/%/.stamp_host_installed:
 	@$(call MESSAGE,"Installing to host directory")
@@ -575,6 +581,12 @@ ifndef $(2)_PATCH
  endif
 endif
 
+ifndef $(2)_TEST
+ ifdef $(3)_TEST
+  $(2)_TEST = $($(3)_TEST)
+ endif
+endif
+
 ifndef $(2)_SITE
  ifdef $(3)_SITE
   $(2)_SITE = $($(3)_SITE)
@@ -609,6 +621,7 @@ endif
 
 $(2)_DEPENDENCIES ?= $(patsubst host-host-%,host-%,$(addprefix host-,$($(3)_DEPENDENCIES)))
 
+$(2)_TEST			?= NO
 $(2)_INSTALL_STAGING		?= NO
 $(2)_INSTALL_IMAGES		?= NO
 ifeq ($$($(2)_TYPE),host)
@@ -630,6 +643,7 @@ $(2)_TARGET_DEPENDS_DONE =	$(STAMP_DIR)/$(1).deps
 $(2)_TARGET_RSYNC =	        $$($(2)_DIR)/.stamp_rsynced
 $(2)_TARGET_RSYNC_SOURCE =      $$($(2)_DIR)/.stamp_rsync_sourced
 $(2)_TARGET_PATCH =		$$($(2)_DIR)/.stamp_patched
+$(2)_TARGET_TEST =		$$($(2)_DIR)/.stamp_tested
 $(2)_TARGET_EXTRACT =		$$($(2)_DIR)/.stamp_extracted
 $(2)_TARGET_SOURCE =		$$($(2)_DIR)/.stamp_downloaded
 $(2)_TARGET_UNINSTALL =		$$($(2)_DIR)/.stamp_uninstalled
@@ -678,6 +692,7 @@ $$($(2)_TARGET_INSTALL_TARGET):		$$($(2)_TARGET_BUILD) $(BUILD_DIR)/.root
 $$($(2)_TARGET_INSTALL_STAGING):	$$($(2)_TARGET_BUILD)
 $$($(2)_TARGET_INSTALL_IMAGES):		$$($(2)_TARGET_BUILD)
 $$($(2)_TARGET_INSTALL_HOST):		$$($(2)_TARGET_BUILD)
+$$($(2)_TARGET_TEST):			$$($(2)_TARGET_BUILD)
 
 ifeq ($$($(2)_INSTALL_TARGET),YES)
 $(1)-install-target:	$$($(2)_TARGET_INSTALL_TARGET)
@@ -717,6 +732,8 @@ $$($(2)_TARGET_INSTALL_IMAGES):		$$($(2)_DEP_HOST_X)
 $(1)-install-host:      $$($(2)_TARGET_INSTALL_HOST)
 
 $(1)-build:		$$($(2)_TARGET_BUILD)
+
+$(1)-test:		$$($(2)_TARGET_TEST)
 
 $(2)_DEPENDS_STAMPS =	$$(patsubst %,$(STAMP_DIR)/%,$$(filter-out $(1),$$($(2)_DEPENDENCIES) $(PRE_DEPENDS)))
 
@@ -778,6 +795,7 @@ endif
 			rm -f $$($(2)_TARGET_INSTALL_TARGET)
 			rm -f $$($(2)_TARGET_INSTALL_IMAGES)
 			rm -f $$($(2)_TARGET_INSTALL_HOST)
+			rm -f $$($(2)_TARGET_TEST)
 
 $(1)-rebuild:		$(1)-clean-for-rebuild all
 
@@ -797,6 +815,7 @@ $$($(2)_TARGET_INSTALL_STAGING):	PKG=$(2)
 $$($(2)_TARGET_INSTALL_IMAGES):		PKG=$(2)
 $$($(2)_TARGET_INSTALL_HOST):           PKG=$(2)
 $$($(2)_TARGET_BUILD):			PKG=$(2)
+$$($(2)_TARGET_TEST):			PKG=$(2)
 $$($(2)_TARGET_CONFIGURE):		PKG=$(2)
 $$($(2)_TARGET_RSYNC):                  SRCDIR=$$($(2)_OVERRIDE_SRCDIR)
 $$($(2)_TARGET_RSYNC):                  PKG=$(2)

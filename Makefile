@@ -557,6 +557,7 @@ show-targets:
 remove-stamps:
 	@rm -rf $(TARGET_DIR) $(BINARIES_DIR)
 	@rm -f $(STAMP_DIR)/*installed $(BUILD_DIR)/.root \
+		$(BUILD_DIR)/*/.stamp_tested \
 		$(BUILD_DIR)/*/.stamp_images_installed \
 		$(BUILD_DIR)/*/.stamp_target_installed
 
