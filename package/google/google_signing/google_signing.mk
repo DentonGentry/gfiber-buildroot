@@ -4,7 +4,8 @@
 #
 #############################################################
 GOOGLE_SIGNING_SITE=repo://vendor/google/platform
-GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-google_keystore_client
+GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
+			    host-google_keystore_client
 GOOGLE_SIGNING_INSTALL_TARGET=YES
 GOOGLE_SIGNING_TEST=YES
 
@@ -61,7 +62,7 @@ endef
 # TODO(kedong) add openssl for host-python and replace ubuntu python with
 # host-python
 define HOST_GOOGLE_SIGNING_TEST_CMDS
-	(cd $(@D)/signing; python repacktest.py)
+	(cd $(@D)/signing; $(HOST_DIR)/usr/bin/python repacktest.py)
 endef
 
 $(eval $(call GENTARGETS))
