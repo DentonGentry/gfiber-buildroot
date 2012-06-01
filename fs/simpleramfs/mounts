@@ -23,6 +23,7 @@ mount -t sysfs none /sys && log "mounted /sys"
 mkdir /dev/pts /dev/shm
 mount -t devpts none /dev/pts && log "mounted /dev/pts"
 mount -t tmpfs none /dev/shm && log "mounted /dev/shm"
+mount -t debugfs none /sys/kernel/debug && log "mounted /sys/kernel/debug"
 
 
 # Finds the *last* /dev/mtd* device with the given realname
