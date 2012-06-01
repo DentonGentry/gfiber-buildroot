@@ -141,6 +141,8 @@ mount -t tmpfs none /rootfs/tmp
 # It should just always refuse to touch the network if the network was already
 # set up.
 [ -n "$NFSROOT" ] && echo NFS >/rootfs/tmp/NFS
+
+DEBUG=1  #TODO(apenwarr): remove once cwmp supports toggling this setting.
 [ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
 
 echo "$INIT" >/tmp/initcmd
