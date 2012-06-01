@@ -236,7 +236,7 @@ BR2_PACKAGE_ALSA_UTILS_ALSAMIXER=y
 # Compressors and decompressors
 #
 # BR2_PACKAGE_BZIP2 is not set
-# BR2_PACKAGE_GZIP is not set
+BR2_PACKAGE_GZIP=y
 # BR2_PACKAGE_LZOP is not set
 # BR2_PACKAGE_XZ is not set
 
