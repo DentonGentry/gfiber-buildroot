@@ -31,7 +31,7 @@ start() {
 	fi
 
 	echo -n "Starting dropbear sshd: "
-	start-stop-daemon -S -q -p /var/run/dropbear.pid --exec /usr/sbin/dropbear
+	start-stop-daemon -S -q -p /var/run/dropbear.pid --exec /usr/sbin/dropbear -- -s
 	echo "OK"
 }
 stop() {
