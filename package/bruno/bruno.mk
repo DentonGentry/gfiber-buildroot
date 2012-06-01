@@ -16,15 +16,13 @@ BRUNO_STAGING_PATH=usr/lib/bruno
 BRUNO_DEFINES += -DBRUNO_PLATFORM=1 -DBRUNO_PLATFORM_GFHD100=1
 
 define BRUNO_BUILD_CMDS
-	# diag
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/diag
+	CROSS_COMPILE=$(TARGET_CROSS) \
+	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
+	$(MAKE) -C $(@D)
+endef
 
-	# diag lib and utest
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/diag/lib
-	CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C $(@D)/diag/utest
-
-	# cmds
-	CC="$(TARGET_CC) $(TARGET_CFLAGS)" $(MAKE) -C $(@D)/cmds
+define BRUNO_TEST_CMDS
+	$(MAKE) -C $(@D) test
 endef
 
 define BRUNO_INSTALL_STAGING_CMDS
@@ -60,17 +58,7 @@ define BRUNO_INSTALL_TARGET_CMDS
 	fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 
-	#TODO(apenwarr): /user/diag is nonstandard.  Consider /usr/lib/diag.
-	mkdir -p $(TARGET_DIR)/user/diag
-	$(INSTALL) -D -m 0755 $(@D)/diag/diagd $(TARGET_DIR)/usr/bin/diagd
-	$(INSTALL) -D -m 0644 $(@D)/diag/diag_kern_err_msgs.txt $(TARGET_DIR)/user/diag
-	$(INSTALL) -D -m 0644 $(@D)/diag/diag_kern_warn_msgs.txt $(TARGET_DIR)/user/diag
-	$(INSTALL) -D -m 0644 $(@D)/diag/diag_ref_data.txt $(TARGET_DIR)/user/diag
-
-	$(INSTALL) -D -m 0755 $(@D)/diag/lib/libbrunodiag.so $(TARGET_DIR)/usr/lib/libbrunodiag.so
-	$(INSTALL) -D -m 0755 $(@D)/diag/utest/test_diaglib $(TARGET_DIR)/home/test/test_diaglib
-
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D)/cmds install
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
 
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
