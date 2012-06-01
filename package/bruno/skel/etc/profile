@@ -1,5 +1,10 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+if [ -n "$ZSH_VERSION" ]; then
+  unsetopt NOMATCH
+  unsetopt AUTO_MENU
+fi
+
 # Choose a fallback $TERM if the given one doesn't have a terminfo entry.
 TERM_END=${TERM#?}
 TERM_FIRST_LETTER=${TERM%${TERM_END}}
