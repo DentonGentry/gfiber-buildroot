@@ -1,6 +1,4 @@
 #!/bin/sh
-
-RETVAL=0
 PLATFORM=$(cat /etc/platform)
 
 start() {
@@ -11,26 +9,27 @@ start() {
   fi
 
   cd /app/sage
-  if [ "$PLATFORM" = "GFHD100" ]; then
-    (wait-until-created /tmp/ntp.synced; ./runsageclient) &
-  else
-    (wait-until-created /tmp/ntp.synced; ./runsage) &
-  fi
+  (
+    wait-until-created /tmp/ntp.synced
+    if [ "$PLATFORM" = "GFHD100" ]; then
+      babysit 10 ./runsageclient &
+    else
+      babysit 10 ./runsage &
+    fi
+  ) 2>&1 | logger -t s &
 
   # TODO: remove in non-test builds
   if [ -e /rw/poststartupmods ]; then
     echo Executing poststartupmods 
     . /rw/poststartupmods
   fi
-  echo "Started sageserver $(cat ./version)"
-  return $RETVAL
+  echo "Started sageserver $(cat /etc/version)"
 }
 
 stop() {
   pkill siege
   pkill sagesrv
   pkill chsrv
-  return $RETVAL
 }
 
 restart() {

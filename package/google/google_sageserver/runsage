@@ -42,7 +42,7 @@ cat Sage.properties.defaults.base \
     Sage.properties.defaults.webserver \
     >/tmp/Sage.properties.defaults
 
-./skelmir/siege \
+exec ./skelmir/siege \
     -Djava.io.tmpdir=/tmp \
     -Dsage.paths.logs=/tmp/log \
     -Djava.library.path=. \
@@ -51,5 +51,4 @@ cat Sage.properties.defaults.base \
     -Xmx384m \
     $SIEGEOPT \
     sage.Sage 0 0 x \
-    "sagetv /rw/sage/Sage.properties" 2>&1 | logger -t s
-
+    "sagetv /rw/sage/Sage.properties"
