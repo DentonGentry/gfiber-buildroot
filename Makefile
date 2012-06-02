@@ -416,10 +416,14 @@ shuffled:
 
 dirs: prepare
 dependencies: dirs
-world:
+
+$O/.stamp.world-setup:
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
+	touch $@
+
+world: $O/.stamp.world-setup
 	$(MAKE) O=$O finaltargets
 
 $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
