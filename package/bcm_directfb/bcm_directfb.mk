@@ -6,7 +6,9 @@
 BCM_DIRECTFB_SITE = repo://vendor/broadcom/directfb
 BCM_DIRECTFB_INSTALL_STAGING = YES
 BCM_DIRECTFB_INSTALL_TARGET = YES
-BCM_DIRECTFB_DEPENDENCIES = bcm_common bcm_nexus bcm_rockford bcm_magnum bcm_bseav
+BCM_DIRECTFB_DEPENDENCIES = \
+	bcm_common bcm_nexus bcm_rockford \
+	bcm_magnum bcm_bseav
 
 define BCM_DIRECTFB_REMOVE_CONFIG
 	rm -f $(TARGET_DIR)/usr/local/bin/directfb/$(DIRECTFB_VERSION_MAJOR)/directfb-config
@@ -18,7 +20,10 @@ endif
 
 define BCM_DIRECTFB_BUILD_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
-	$(BCM_MAKE_ENV) $(MAKE1) MULTI_BUILD=y $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common directfb
+	$(BCM_MAKE_ENV) $(MAKE1) MULTI_BUILD=y \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/common directfb \
+		BUILDING_DIRECTFB=1
 endef
 
 define BCM_DIRECTFB_INSTALL_STAGING_CMDS
