@@ -29,6 +29,9 @@ define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_public_key_signature,$(SIGNING_DIR)/gfiber_key_sig.bin))
 endef
 SIGNING_FLAG="-s"
+GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += \
+	signing_private_key \
+	signing_public_key_signature
 else
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	echo "Skip retrieving signing key..."
