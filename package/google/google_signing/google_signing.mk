@@ -40,7 +40,7 @@ define HOST_GOOGLE_SIGNING_SIGN
 	$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
 		-b $(BINARIES_DIR); \
 	if [ -d "$(SIGNING_DIR)" ]; then \
-		shred -u -z -n 5 $(SIGNING_DIR)/*; \
+		shred -f -u -z -n 5 $(SIGNING_DIR)/*; \
 		rm -rf $(SIGNING_DIR); \
 	fi)
 endef

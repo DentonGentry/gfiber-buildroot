@@ -19,7 +19,7 @@ define PYTHON_CRYPTO_CONFIGURE_CMDS
 endef
 
 define PYTHON_CRYPTO_BUILD_CMDS
-	(cd $(@D); CC="$(TARGET_CROSS)gcc -pthread" \
+	(cd $(@D); CC="$(TARGET_CC) -pthread" \
 		CFLAGS="$(TARGET_CFLAGS)" 	\
 		LDSHARED="$(TARGET_CC) -pthread -shared" \
 		LDFLAGS="$(TARGET_LDFLAGS)" 	\
