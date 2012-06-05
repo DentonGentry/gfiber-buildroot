@@ -16,6 +16,7 @@ start() {
 stop() {
   /usr/bin/pkill runminiclient
   /usr/bin/pkill miniclient
+  /usr/bin/pkill waitpower
   return $RETVAL
 }
 
