@@ -1,8 +1,8 @@
 #!/bin/sh
-export LD_LIBRARY_PATH=.:./lib
+cd "$(dirname "$0")"
+export LD_LIBRARY_PATH=$PWD:$PWD/lib
 export LANG=en_US.UTF-8
 
-cd "$(dirname "$0")"
 
 # Read a given key from Sage.properties, printing the value to stdout.
 readarg()
@@ -19,6 +19,8 @@ readarg()
   echo "$out"
 }
 
+
+ulimit -c 49152
 
 # Start up native streaming server
 ./sagesrv.sh &

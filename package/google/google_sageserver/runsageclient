@@ -1,8 +1,10 @@
 #!/bin/sh
-cd /app/sage
-export LD_LIBRARY_PATH=.:./lib
+cd "$(dirname "$0")"
+export LD_LIBRARY_PATH=$PWD:$PWD/lib
 export LANG=en_US.UTF-8
 export SIEGEHOME=/app/sage/skelmir
+
+ulimit -c 49152
 
 SIEGEOPT=
 [ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
