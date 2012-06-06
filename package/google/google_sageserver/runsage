@@ -44,6 +44,7 @@ cat Sage.properties.defaults.base \
     Sage.properties.defaults.webserver \
     >/tmp/Sage.properties.defaults
 
+export SIEGEDISABLEHEAPDUMP=1
 exec ./skelmir/siege \
     -Djava.io.tmpdir=/tmp \
     -Dsage.paths.logs=/tmp/log \
