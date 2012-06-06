@@ -1,11 +1,11 @@
 #!/bin/sh
 RETRY_TIMEOUT=$1
 
+shift
 if [ -z "$RETRY_TIMEOUT" -o -z "$*" ]; then
   echo "Usage: $0 <retry_timeout> <program> [args...]" >&2
   exit 1
 fi
-shift
 
 # Run until the program manages to exit successfully.
 until "$@"; do
@@ -18,3 +18,4 @@ until "$@"; do
   echo "Error: '$1' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2
   sleep $RETRY_TIMEOUT || sleep 1  # just in case $RETRY_TIMEOUT is invalid
 done
+echo "'$1' exited successfully.  Not restarting." >&2
