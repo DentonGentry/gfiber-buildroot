@@ -1,14 +1,13 @@
 #!/bin/sh
-
 MODULE_PATH=/usr/lib/modules
 
 # Populate the platform ID
 PLAT=$(hnvram -r PLATFORM_NAME)
-echo ${PLAT#PLATFORM_NAME=} > /etc/platform
+echo ${PLAT#PLATFORM_NAME=} >/etc/platform
 chmod 444 /etc/platform
 
 # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
-echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+echo -1 >/proc/sys/kernel/sched_rt_runtime_us
 
 # Set up NEXUS first since it applies PINMUX.
 echo "Starting nexus"
@@ -19,7 +18,4 @@ if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
 fi
 
 # populate hdcp key
-hnvram -br HDCP_KEY > /tmp/hdcp_key
-
-# enhance the memory threshold to reclaim the memory earlier.
-echo 16000 > /proc/sys/vm/min_free_kbytes
+hnvram -br HDCP_KEY >/tmp/hdcp_key
