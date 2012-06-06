@@ -52,7 +52,7 @@ define HOST_GOOGLE_KEYSTORE_CLIENT_BUILD_CMDS
 endef
 
 define GOOGLE_KEYSTORE_CLIENT_EXECUTE
-	rm -f $(2)
+	rm -f $(2); \
 	if [ -r "$(LICENSE_STATIC_PATH)/$(1)" ]; then \
 		cp "$(LICENSE_STATIC_PATH)/$(1)" $(2); \
 	else \
@@ -62,7 +62,7 @@ define GOOGLE_KEYSTORE_CLIENT_EXECUTE
 			//isp/fiber/drm:drm_keystore_client \
 			--key_type $(1) \
 			--output $(2); \
-	fi
+	fi; \
 	chmod 0400 $(2)
 endef
 
