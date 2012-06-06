@@ -1,0 +1,82 @@
+#!/bin/sh
+# Install an image from a USB stick if there's one plugged in and a file
+# named *.gi exists in its root directory.
+#
+log()
+{
+  echo "$(basename $0):" "$@" >&2
+}
+
+
+findall()
+{
+  local path=
+  for path in "$@"; do
+    [ -e "$path" ] && echo "$path"
+  done
+}
+
+
+try_install()
+{
+  any=
+  for path in $(findall /sys/block/sd*/removable); do
+    if [ "$(cat $path)" = "1" ]; then
+      any=1
+      dev=$(basename $(dirname $path))
+      log "Checking $dev for installable images."
+      for partpath in $(findall /sys/block/$dev/*/partition); do
+        part=$(basename $(dirname $partpath))
+        log "Trying $part:"
+        mkdir -p /tmp/installsrc
+        if mount -t vfat /dev/$part /tmp/installsrc; then
+          log "  mounted."
+
+          # we deliberately use the last *.gi file alphabetically.  That
+          # one has the highest version number so it's the best choice.
+          lastimg=
+          for img in $(findall /tmp/installsrc/*.gi); do
+            log "  considering $(basename $img)"
+            lastimg=$img
+          done
+          if [ "$(basename $lastimg)" = "$(cat /etc/version).gi" ]; then
+            log "  already installed; skipping."
+          elif [ -n "$lastimg" ]; then
+            log "  installing $(basename $lastimg)"
+            if ginstall.py -t "$lastimg" -p other; then
+              log "  installed successfully."
+              umount /tmp/installsrc
+              log "Please remove USB and reboot."
+              #TODO(apenwarr): blink LEDs or something here.
+              #  ...once there's a reasonable tool for doing that.
+              while sleep 10; do
+                echo -n '.'
+              done
+            fi
+            log "  ...install failed!"
+          else
+            log "  no files matching *.gi"
+          fi
+          umount /tmp/installsrc
+        fi
+      done  # partition loop
+    fi
+  done  # disk loop
+  [ -z "$any" ] && log "no removable media found."
+}
+
+
+case "$1" in
+  start)
+    try_install
+    ;;
+  stop)
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}" >&2
+    exit 1
+esac
+
+exit $?
