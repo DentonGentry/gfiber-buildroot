@@ -1,8 +1,11 @@
 BCM_NETFLIX_SITE=repo://vendor/broadcom/netflix
-BCM_NETFLIX_DEPENDENCIES=bcm_bseav bcm_nexus bcm_common bcm_directfb \
-			 bcm_rockford netflix_nrd google_licenses google_hdcp \
-			 libpng jpeg zlib freetype openssl expat libcurl \
-			 libxml2 libxslt fontconfig sqlite pixman cairo
+BCM_NETFLIX_DEPENDENCIES=\
+	bcm_bseav bcm_nexus bcm_common bcm_directfb bcm_rockford \
+	netflix_nrd \
+	google_licenses google_hdcp \
+	libpng jpeg zlib freetype openssl expat \
+	libcurl libxml2 libxslt fontconfig \
+	sqlite pixman cairo
 
 define BCM_NETFLIX_CONFIGURE_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))

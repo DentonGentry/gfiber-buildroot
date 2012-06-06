@@ -1,0 +1,127 @@
+#!/usr/bin/python
+# Copyright 2012 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Keep track of heavy consumers of CPU over an interval.
+"""
+
+__author__ = 'dgentry@google.com (Denton Gentry)'
+
+import collections
+import glob
+import options
+import os
+import sys
+import time
+
+
+optspec = """
+cpulog [options...]
+--
+i,interval=        sampling interval in seconds [60]
+n,num=             number of processes to sample [5]
+w,warmup=          seconds to wait before sampling begins [600]
+"""
+
+
+# Unit tests can override these with fake data
+SLASH_PROC = '/proc'
+
+process = collections.namedtuple('process', ('cmd pid msec'))
+
+class ProcessCpuMon(object):
+  """Monitors CPU usage by processes over a specified interval."""
+
+  # Field ordering in /proc/<pid>/stat
+  PID = 0
+  COMM = 1
+  UTIME = 13
+  STIME = 14
+
+  def __init__(self):
+    self.processes = dict()
+    tick = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+    self._msec_per_jiffy = 1000.0 / tick
+
+  def _JiffiesToMsec(self, jifs):
+    return float(jifs) * self._msec_per_jiffy
+
+  def _ProcFileName(self, pid):
+    return '%s/%s/stat' % (SLASH_PROC, pid)
+
+  def _RemoveParens(self, command):
+    return command[1:-1]
+
+  def _GetProcess(self, pid):
+    """Get a process tuple for the given pid."""
+    with open(self._ProcFileName(pid)) as f:
+      fields = f.read().split()
+      cmd = self._RemoveParens(fields[self.COMM])
+      utime = self._JiffiesToMsec(fields[self.UTIME])
+      stime = self._JiffiesToMsec(fields[self.STIME])
+      return process(pid=fields[self.PID], cmd=cmd, msec=utime+stime)
+
+  def _IterProcesses(self):
+    """Walks through /proc/<pid>/stat to generate a list of all processes."""
+    for filename in glob.glob(self._ProcFileName('[0123456789]*')):
+      pid = int(filename.split('/')[-2])
+      try:
+        yield self._GetProcess(pid)
+      except IOError:
+        # This isn't an error. We have a list of files which existed the
+        # moment the glob.glob was run. If a process exits before we get
+        # around to reading it, its /proc files will go away.
+        continue
+
+  def _GetTopCpuUsage(self):
+    """Return CPU usage for processes since the last call to _GetTopCpuUsage."""
+    old_procs = self.processes
+    self.processes = dict()
+    top_cpu = list()
+    for proc in self._IterProcesses():
+      self.processes[proc.pid] = proc
+      old_msec = 0
+      if proc.pid in old_procs and old_procs[proc.pid].cmd == proc.cmd:
+        old_msec = old_procs[proc.pid].msec
+      top_cpu.append((proc.cmd, int(proc.msec - old_msec)))
+    return sorted(top_cpu, key=lambda cpu: cpu[1], reverse=True)
+
+  def GetTopCpuString(self, num):
+    """Return top <num> consumers of CPU since the last call.
+
+    Args:
+      num: number of processes to return
+
+    Returns:
+      string of the form: bittorrent(1200msec) xeyes(400msec) automount(30msec)
+    """
+    top_cpu = self._GetTopCpuUsage()
+    return ' '.join(['%s(%dmsec)' % (cmd, ms) for (cmd, ms) in top_cpu[:num]])
+
+
+def main():
+  o = options.Options(optspec)
+  (opt, flags, extra) = o.parse(sys.argv[1:])  #pylint: disable-msg=W0612
+  if extra:
+    o.fatal('no filenames expected')
+
+  p = ProcessCpuMon()
+  time.sleep(opt.warmup)
+  p.GetTopCpuString(1)  # Collect baseline CPU, throw the string away.
+  while 1:
+    time.sleep(opt.interval)
+    print '%dsec: %s' % (opt.interval,  p.GetTopCpuString(opt.num))
+
+if __name__ == '__main__':
+  main()

@@ -5,8 +5,10 @@
 #############################################################
 
 BCM_WEBKIT_SITE=repo://vendor/broadcom/webkit
-BCM_WEBKIT_DEPENDENCIES=bcm_bseav bcm_nexus bcm_common bcm_directfb bcm_rockford bcm_alsa
-BCM_WEBKIT_DEPENDENCIES+=libpng jpeg zlib freetype openssl expat libcurl libxml2 libxslt fontconfig sqlite pixman cairo
+BCM_WEBKIT_DEPENDENCIES=\
+	bcm_bseav bcm_nexus bcm_common bcm_directfb bcm_rockford bcm_alsa \
+	libpng jpeg zlib freetype openssl expat \
+	libcurl libxml2 libxslt fontconfig sqlite pixman cairo
 BCM_WEBKIT_POST_EXTRACT_HOOKS=BCM_REMOVE_PATCH_REJECTS
 BCM_WEBKIT_INSTALL_STAGING=NO
 BCM_WEBKIT_INSTALL_TARGET=YES
@@ -22,9 +24,18 @@ define BCM_WEBKIT_CONFIGURE_CMDS
 endef
 
 define BCM_WEBKIT_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common dlna
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j MULTI_BUILD=y $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common icu
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j MULTI_BUILD=y $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common browser
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/common dlna \
+		BUILDING_DLNA=1 BUILDING_PLAYBACK_IP=1 \
+		BUILDING_REFSW=1 BUILDING_DTCP_IP=1
+	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j MULTI_BUILD=y \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/common icu \
+		BUILDING_ICU=1
+	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j MULTI_BUILD=y \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/common browser \
+		BUILDING_BROWSER=1
 endef
 
 define BCM_WEBKIT_INSTALL_TARGET_CMDS

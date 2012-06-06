@@ -1,7 +1,7 @@
 BCM_DRIVERS_SITE=repo://vendor/broadcom/drivers
 BCM_DRIVERS_INSTALL_STAGING=YES
 BCM_DRIVERS_INSTALL_TARGET=YES
-BCM_DRIVERS_DEPENDENCIES += linux
+BCM_DRIVERS_DEPENDENCIES=linux
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
 define BCM_DRIVERS_BUILD_MOCA
@@ -47,7 +47,8 @@ define BCM_DRIVERS_BUILD_WIFI
 		AR="$(TARGET_AR)" \
 		STRIP="$(TARGET_STRIP)" \
 		-C $(@D)/wifi/wl/linux \
-		mipsel-mips
+		mipsel-mips \
+		BUILDING_BCM_DRIVERS=1
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		TARGETENV="linuxmips" \
 		LINUXDIR="$(LINUX_DIR)" \
@@ -56,7 +57,8 @@ define BCM_DRIVERS_BUILD_WIFI
 		AR="$(TARGET_AR)" \
 		STRIP="$(TARGET_STRIP)" \
 		-f GNUmakefile \
-		-C $(@D)/wifi/wl/exe
+		-C $(@D)/wifi/wl/exe \
+		BUILDING_BCM_DRIVERS=1
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_WIFI

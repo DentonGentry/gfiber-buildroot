@@ -1,0 +1,46 @@
+From e0f37dcd396f12b17c5070c40adcb68dc2c44d58 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 1 Jun 2012 00:26:40 -0400
+Subject: [PATCH] svr-authpubkey: allow public key auth if uid=0 *or*
+ uid=uid_of("/")
+
+This allows us to ssh into an nfsroot box where all the files in ~root/.ssh
+aren't owned by root, as long as they're owned by the same user who owns /.
+That should be reasonably safe, as anyone with permission to change the
+ownership of / can also change the ownership of ~root/.ssh.
+---
+ svr-authpubkey.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/svr-authpubkey.c b/svr-authpubkey.c
+index d483e9d..99ced6a 100644
+--- a/svr-authpubkey.c
++++ b/svr-authpubkey.c
+@@ -408,7 +408,7 @@ out:
+  * group or other */
+ /* returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
+ static int checkfileperm(char * filename) {
+-	struct stat filestat;
++	struct stat filestat, rootstat;
+ 	int badperm = 0;
+ 
+ 	TRACE(("enter checkfileperm(%s)", filename))
+@@ -417,9 +417,14 @@ static int checkfileperm(char * filename) {
+ 		TRACE(("leave checkfileperm: stat() != 0"))
+ 		return DROPBEAR_FAILURE;
+ 	}
++	if (stat("/", &rootstat) != 0) {
++		TRACE(("leave checkfileperm: root-stat() != 0"))
++		return DROPBEAR_FAILURE;
++	}
+ 	/* check ownership - user or root only*/
+ 	if (filestat.st_uid != ses.authstate.pw_uid
+-			&& filestat.st_uid != 0) {
++			&& filestat.st_uid != 0
++			&& filestat.st_uid != rootstat.st_uid) {
+ 		badperm = 1;
+ 		TRACE(("wrong ownership"))
+ 	}
+-- 
+1.7.9.dirty
+
