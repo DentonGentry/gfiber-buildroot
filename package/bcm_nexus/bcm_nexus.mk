@@ -1,7 +1,5 @@
 BCM_NEXUS_SITE=repo://vendor/broadcom/nexus
-# TODO (by kedong) The dependency on bruno will be moved to board level
-# config in buildroot.
-BCM_NEXUS_DEPENDENCIES=linux bruno bcm_magnum bcm_bseav host-pkg-config
+BCM_NEXUS_DEPENDENCIES=linux bcm_magnum bcm_bseav host-pkg-config
 BCM_NEXUS_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/nexus
 BCM_NEXUS_INSTALL_STAGING=YES
 BCM_NEXUS_INSTALL_TARGET=YES
