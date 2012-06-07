@@ -13,7 +13,6 @@ BRUNO_DEPENDENCIES += bcm_drivers
 endif
 
 BRUNO_STAGING_PATH=usr/lib/bruno
-BRUNO_DEFINES += -DBRUNO_PLATFORM=1 -DBRUNO_PLATFORM_GFHD100=1
 
 define BRUNO_BUILD_CMDS
 	CROSS_COMPILE=$(TARGET_CROSS) \
@@ -27,12 +26,6 @@ endef
 
 define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
-
-	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig && \
-	cp $(@D)/pkg-config/bruno.pc \
-		$(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc && \
-	sed -i"" -e "s@CFLAGS@$(BRUNO_DEFINES)@g" \
-		$(STAGING_DIR)/usr/lib/pkgconfig/bruno.pc
 endef
 
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
