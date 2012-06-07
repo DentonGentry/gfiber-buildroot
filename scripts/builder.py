@@ -207,9 +207,6 @@ class BuildRootBuilder(object):
     Info('Config file: %r', filename)
     self.Make([filename + '_rebuild'], parallel=False)
 
-    # Grab all the sources before starting, so we fail faster
-    self.Make(['source'], parallel=True)
-
   def RemoveStamps(self):
     Info('Cleaning up install stamps...')
     self.Make(['remove-stamps'], parallel=True)
@@ -230,6 +227,8 @@ class BuildRootBuilder(object):
       self.RemoveStamps()
     if self.opt.build:
       self.Make([], parallel=True)
+    else:
+      self.Make(['worldsetup'], parallel=True)
     self._LogDone('Building app')
 
 
