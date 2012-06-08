@@ -1,0 +1,20 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+	if [ -d /var/media/videos ] && [ ! -f /var/media/videos/GoogleFiber.mov ] && \
+	    [ ! -f /var/media/.mfgmedia ] ; then
+		cp /usr/lib/media/GoogleFiber.mov /var/media/videos/
+		echo '' > /var/media/.mfgmedia
+	fi
+	;;
+  stop)
+	;;
+  restart)
+	;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
