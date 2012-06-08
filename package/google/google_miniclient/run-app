@@ -6,11 +6,11 @@ case $appname in
 netflix)
   cd /usr/local/bin/netflix
   netflixopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
-  ./start netflix $netflixopt
+  ./start netflix $netflixopt 2>&1 | logger -t netflix
   ;;
 youtube)
   cd /usr/local/bin/browsertest
-  ./start browsertest http://www.youtube.com/leanback?version=3
+  ./start browsertest http://www.youtube.com/leanback?version=3 2>&1 | logger -t youtube
   ;;
 *)
   echo Unknown application
