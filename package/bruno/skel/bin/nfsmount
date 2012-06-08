@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# The minimal toolbox 'mount' command doesn't know how to mount NFS.
+# Here's a simple script to do it for you, with some defaults (especially
+# "nolock") that are useful in an embedded system.
+#
+SERVERHOST=${1%%:*}
+SERVERPATH=${1#*:}
+FSPATH=$2
+
+usage()
+{
+  echo "usage: $0 <serveraddr:/path/to/dir> <localpath>" >&2
+  echo "  serveraddr needs to be an IP address, not a hostname." >&2
+  exit 10
+}
+
+
+die()
+{
+  echo "$0:" "$@" >&2
+  exit 1
+}
+
+
+[ -n "$SERVERHOST" ] || usage
+[ -n "$SERVERPATH" ] || usage
+[ "$SERVERHOST:$SERVERPATH" = "$1" ] || usage
+[ -n "$FSPATH" ] || usage
+[ -d "$FSPATH" ] || die "path '$FSPATH' does not exist"
+
+exec mount -t nfs \
+    -o "nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$SERVERHOST" \
+    "$SERVERHOST:$SERVERPATH" "$FSPATH"
