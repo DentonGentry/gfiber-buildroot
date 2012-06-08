@@ -1,0 +1,59 @@
+#!/bin/sh
+# A really simple implementation of find, for those of us without busybox
+# or the desire to include the oversized GNU one.
+#
+# WARNING: the symlink-avoidance feature may have race conditions.  Try
+# not to use this tool for anything important.
+#
+
+usage()
+{
+  echo "Usage: $0 <paths>" >&2
+  echo "  Unlike a real version of 'find', this program has no options." >&2
+}
+
+
+startswith()
+{
+  [ "${1#"$2"}" != "$1" ]
+  return $?
+}
+
+
+do_find_onedir()
+{
+  local prefix="$1"
+
+  # Yes, due to oddities of sh parsing rules, this loop is actually safe
+  # for filenames containing spaces.
+  for d in * .*; do
+    [ "$d" = "." ] && continue
+    [ "$d" = ".." ] && continue
+    [ ! -e "$d" ] && continue  # empty dir will pass '*' and '.*'; skip them
+    echo "$prefix/$d"
+    if [ -d "$d" ] && [ ! -L "$d" ]; then
+      cd "$d" && { do_find_onedir "$prefix/$d"; cd ..; }
+    fi
+  done
+}
+
+
+do_find()
+{
+  for d in "$@"; do
+    cd "$d" && { do_find_onedir "${d%/}"; cd ..; }
+  done
+}
+
+
+# Check command line validity
+for d in "$@"; do
+  startswith "$d" "-" && usage
+done
+
+
+if [ $# = 0 ]; then
+  do_find .
+else
+  do_find "$@"
+fi
