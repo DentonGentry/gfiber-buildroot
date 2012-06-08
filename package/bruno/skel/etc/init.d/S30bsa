@@ -3,7 +3,8 @@ case "$1" in
   start)
 	echo -n "Starting Bluetooth service: "
         cd /tmp
-	bsa_server -d /dev/btusb0 2>&1 | logger -t bsa &
+	babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd 2>&1 \
+            | logger -t bsa &
 	echo "done"
 	;;
   stop)
