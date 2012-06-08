@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_PLATFORM_SYSMGR_SITE=repo://vendor/google/platform
-GOOGLE_PLATFORM_SYSMGR_DEPENDENCIES=linux google_platform_base bcm_nexus
+GOOGLE_PLATFORM_SYSMGR_DEPENDENCIES=linux bruno bcm_nexus
 GOOGLE_PLATFORM_SYSMGR_INSTALL_STAGING=YES
 
 ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
