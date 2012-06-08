@@ -1,13 +1,16 @@
 #!/bin/sh
-
 cd /app/client
 
+readword()
+{
+  hnvram -r "$1" | (IFS== read key value; echo "$value")
+}
+
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
-SERIALNUMBER=$(hnvram -r 1ST_SERIAL_NUMBER | python -c "import sys;[sys.stdout.write(l.split('=')[1].strip()) for l in sys.stdin]")
-if [ "$SERIALNUMBER" = "" ] ; then
-  SERIALNUMBER=$(hnvram -r SERIAL_NO | python -c "import sys;[sys.stdout.write(l.split('=')[1].strip()) for l in sys.stdin]")
-fi
-export SERIALNUMBER
+export SERIALNUMBER=$(readword 1ST_SERIAL_NUMBER)
+[ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(readword SERIAL_NO)
+
+ulimit -c 49152
 
 while true; do
   cd /app/client

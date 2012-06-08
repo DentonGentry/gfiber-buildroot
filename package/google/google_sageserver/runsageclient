@@ -1,8 +1,10 @@
 #!/bin/sh
-cd /app/sage
-export LD_LIBRARY_PATH=.:./lib
+cd "$(dirname "$0")"
+export LD_LIBRARY_PATH=$PWD:$PWD/lib
 export LANG=en_US.UTF-8
 export SIEGEHOME=/app/sage/skelmir
+
+ulimit -c 49152
 
 SIEGEOPT=
 [ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
@@ -13,6 +15,7 @@ WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty
 
 cat Sage.properties.defaults.base >/tmp/Sage.properties.defaults
 
+export SIEGEDISABLEHEAPDUMP=1
 exec ./skelmir/siege \
     -Djava.io.tmpdir=/tmp \
     -Dsage.paths.logs=/tmp/log \

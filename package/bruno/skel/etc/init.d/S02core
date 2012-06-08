@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Dump kernel core dumps via a helper script that compresses the core
+# file and ensures it's on a writable filesystem and size-limited.
+echo '|/bin/coredump %p %s %e' >/proc/sys/kernel/core_pattern

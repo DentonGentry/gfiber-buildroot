@@ -6,6 +6,8 @@ PLAT=$(hnvram -r PLATFORM_NAME)
 echo ${PLAT#PLATFORM_NAME=} >/etc/platform
 chmod 444 /etc/platform
 
+hostname gfibertv
+
 # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
 echo -1 >/proc/sys/kernel/sched_rt_runtime_us
 
