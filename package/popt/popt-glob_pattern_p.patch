@@ -1,0 +1,11 @@
+--- popt-orig/poptconfig.c	2012-06-09 09:59:20.924022079 -0700
++++ popt-1.16/poptconfig.c	2012-06-09 09:58:17.052273915 -0700
+@@ -42,7 +42,7 @@
+ /*@=declundef =exportheader =incondefs =protoparammatch =redecl =type @*/
+ #endif	/* __LCLINT__ */
+ 
+-#if !defined(__GLIBC__)
++#if !defined(__GLIBC__) || defined(__UCLIBC__)
+ /* Return nonzero if PATTERN contains any metacharacters.
+    Metacharacters can be quoted with backslashes if QUOTE is nonzero.  */
+ static int
