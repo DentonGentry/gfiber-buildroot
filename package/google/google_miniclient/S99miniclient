@@ -1,23 +1,23 @@
 #!/bin/sh
-
-RETVAL=0
 PLATFORM=$(cat /etc/platform)
 
 start() {
   echo "Starting miniclient."
-  if [ "$PLATFORM" != "GFHD100" ]; then
-    return 0;
-  fi
-  (wait-until-created /tmp/ntp.synced; /app/client/runminiclient) 2>&1 \
-      | logger -t miniclient &
-  return $RETVAL
+  (
+    wait-until-created /tmp/ntp.synced
+    if [ "$PLATFORM" != "GFHD100" ]; then
+      leds 4  # finished booting, solid blue
+    else
+      # on GFMS100, runminiclient will set the leds for us
+      /app/client/runminiclient 2>&1 | logger -t miniclient &
+    fi
+  ) &
 }
 
 stop() {
-  /usr/bin/pkill runminiclient
-  /usr/bin/pkill miniclient
-  /usr/bin/pkill waitpower
-  return $RETVAL
+  pkill runminiclient
+  pkill miniclient
+  pkill waitpower
 }
 
 restart() {

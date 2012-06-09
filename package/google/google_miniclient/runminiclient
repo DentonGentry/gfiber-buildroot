@@ -19,6 +19,7 @@ while true; do
   AUDIO_OUTPUT=
   export VIDEO_SUPPORTED_MODES
   export AUDIO_OUTPUT
+  leds 2  # solid blue while running miniclient
   /app/client/miniclient 127.0.0.1
   SERVER=""
   if [ -e /tmp/config ] ; then
@@ -28,9 +29,11 @@ while true; do
     mv /tmp/runapp /tmp/runappold
     # TODO: add switch based on which app to run...
     cd /app/client
+    leds 5  # blue+red while app is running
     ./run-app
   elif [ "$SERVER" = "" ]; then
-    [ -x /app/client/waitpower ] && /app/client/waitpower || sleep 10
+    leds 0  # off while in waitpower mode
+    [ -x /app/client/waitpower ] && /app/client/waitpower
   else
     . /tmp/config
     mv /tmp/config /tmp/configold
@@ -54,8 +57,8 @@ while true; do
       elif [ -e /tmp/goalone ] ; then
         powerret=1
       else
-        [ -x /app/client/waitpower ] && /app/client/waitpower || sleep 10
-        /app/client/waitpower
+        leds 0  # off while in waitpower mode
+        [ -x /app/client/waitpower ] && /app/client/waitpower
         powerret=$?
       fi
       if [ -e /tmp/patch.properties ] ; then
