@@ -35,8 +35,10 @@ endef
 
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
 BRUNO_LOADER = cfe_signed_release.bin
+BRUNO_LOADER_SIG = cfe_signed_release.sig
 else
 BRUNO_LOADER = cfe_signed_unlocked.bin
+BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
 endif
 
 define BRUNO_INSTALL_TARGET_CMDS
@@ -73,6 +75,8 @@ define BRUNO_INSTALL_IMAGES_CMDS
 	if [ -n "$(BRUNO_LOADER)" ]; then \
 		cp -f $(@D)/cfe/$(BRUNO_LOADER) \
 			$(BINARIES_DIR)/loader.bin; \
+		cp -f $(@D)/cfe/$(BRUNO_LOADER_SIG) \
+			$(BINARIES_DIR)/loader.sig; \
 	fi
 endef
 
