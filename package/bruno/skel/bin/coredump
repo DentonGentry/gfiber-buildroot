@@ -30,6 +30,6 @@ else
     log "'$exe' core dumps aren't interesting; skipping."
   else
     # read and compress the core dump from stdin, limiting max output size
-    gzip -c | dd bs=1024 count=32768 2>/dev/null >"$out"
+    gzip -c | dd bs=1024 count=163840 2>/dev/null >"$out"
   fi
 fi
