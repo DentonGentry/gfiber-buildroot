@@ -1,8 +1,13 @@
 BCM_BLUETOOTH_SITE=repo://vendor/broadcom/drivers
 BCM_BLUETOOTH_INSTALL_STAGING=YES
 BCM_BLUETOOTH_INSTALL_TARGET=YES
-
 BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils linux bcm_nexus
+
+#TODO(apenwarr): remove this dependency after fixing bcm_nexus.
+#  Currently it doesn't install libnexus.so into $(STAGING_DIR).  But
+#  bcm_directfb does.
+BCM_BLUETOOTH_DEPENDENCIES += bcm_directfb
+
 define BCM_BLUETOOTH_CLEAN_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CPU=mips \

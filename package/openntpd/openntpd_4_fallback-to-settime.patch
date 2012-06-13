@@ -1,0 +1,34 @@
+From ff2bdc8c7fe488ceced910e5039e57c1b06b06ff Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Mon, 4 Jun 2012 20:18:09 -0700
+Subject: [PATCH] Fall back to settime if adjtime fails.
+
+---
+ ntpd.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/ntpd.c b/ntpd.c
+index fc9222b..aea47db 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -353,9 +353,14 @@ ntpd_adjtime(double d)
+ 	else
+ 		log_debug("adjusting local clock by %fs", d);
+ 	d_to_tv(d, &tv);
+-	if (adjtime(&tv, &olddelta) == -1)
+-		log_warn("adjtime failed");
+-	else if (!firstadj && olddelta.tv_sec == 0 && olddelta.tv_usec == 0)
++	if (adjtime(&tv, &olddelta) == -1) {
++		if (errno == EINVAL) {
++			log_warn("adjtime too large, attempting settime");
++			ntpd_settime(d);
++		} else {
++			log_warn("adjtime failed");
++		}
++	} else if (!firstadj && olddelta.tv_sec == 0 && olddelta.tv_usec == 0)
+ 		synced = 1;
+ 	firstadj = 0;
+ 	return (synced);
+-- 
+1.7.9.4
+
