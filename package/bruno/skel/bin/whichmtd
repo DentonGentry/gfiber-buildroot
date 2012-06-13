@@ -1,0 +1,36 @@
+#!/bin/sh
+
+log()
+{
+  echo "$@" >&2
+}
+
+usage()
+{
+  log "Usage: $0 <name-of-mtd>"
+  log "  Prints the (last) /dev/mtd* device that matches the given name,"
+  log "  or returns nonzero if none is available."
+  exit 9
+}
+
+if [ "$#" != 1 ]; then
+  usage
+fi
+
+result=
+
+while IFS=" :" read dev size erasesize name; do
+  name=${name#\"}
+  name=${name%\"}
+  if [ "$name" = "$1" ]; then
+    result=${dev#mtd}
+    # fall through in case there's a subsequent device with same name
+  fi
+done </proc/mtd
+
+if [ -n "$result" ]; then
+  echo "/dev/mtd$result"
+  exit 0
+else
+  exit 1
+fi
