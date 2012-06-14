@@ -1,0 +1,39 @@
+From 9ec818740183d1c986b9ad001949c7599a8b6f06 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 14 Jun 2012 15:22:50 -0400
+Subject: [PATCH] nice.c: don't bother with getpriority().
+
+The nice() syscall returns either 0 for success (very old Linux kernels) or
+the new niceness (which might be -1).  To check whether it was successful,
+the nice(2) manpage says you should zero out errno, then if nice() returns
+-1, check that errno is nonzero, and if it is, that's your error.
+
+We could call getpriority(), but the way it was being done is incorrect.
+getpriority() includes the *absolute* priority of the process, while nice()
+adjusts the priority incrementally.  To use getpriority() correctly, we'd
+have to get the priority before and after, and cap it at the
+kernel-dependent range, and make sure the *delta* is the one we requested
+with nice(2).  This is unnecessary since the return value of nice() is
+perfectly sufficient.
+---
+ toys/nice.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/toys/nice.c b/toys/nice.c
+index 0be7488..401e309 100644
+--- a/toys/nice.c
++++ b/toys/nice.c
+@@ -34,8 +34,8 @@ void nice_main(void)
+ {
+ 	if (!toys.optflags) TT.priority = 10;
+ 
+-	nice(TT.priority);
+-	if (getpriority(PRIO_PROCESS, getpid()) != TT.priority)
++	errno = 0;
++	if (nice(TT.priority) == -1 && errno != 0)
+ 		perror_exit("Can't set priority");
+ 
+ 	xexec(toys.optargs);
+-- 
+1.7.9.dirty
+
