@@ -43,17 +43,19 @@ try_install()
             log "  already installed; skipping."
           elif [ -n "$lastimg" ]; then
             log "  installing $(basename $lastimg)"
+            leds 15 0 15 0 15 0  # super noisy leds while doing update
             if ginstall.py -t "$lastimg" -p other; then
               log "  installed successfully."
               umount /tmp/installsrc
-              log "Please remove USB and reboot."
-              #TODO(apenwarr): blink LEDs or something here.
-              #  ...once there's a reasonable tool for doing that.
-              while sleep 10; do
-                echo -n '.'
-              done
+              leds 0  # turn off leds, indicating finished + halted
+            else
+              log "  ...install failed!"
+              leds 1 0  # blinking red means install tried and failed
             fi
-            log "  ...install failed!"
+            log "Please remove USB and reboot."
+            while sleep 10; do
+              echo -n '.'
+            done
           else
             log "  no files matching *.gi"
           fi
