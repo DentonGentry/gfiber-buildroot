@@ -2,13 +2,18 @@
 
 case "$1" in
   start)
-	if [ -d /var/media/videos ] && \
-	    [ ! -f /var/media/videos/Samples/GoogleFiber.mov ] && \
-	    [ ! -f /var/media/.mfgmedia ] ; then
-		mkdir -p /var/media/videos/Samples
-		cp /usr/lib/media/GoogleFiber.mov /var/media/videos/Samples/GoogleFiber.mov
-		cp /usr/lib/media/GoogleFiber.mov /var/media/videos/Samples/GoogleFiber1.mov
-		echo '' > /var/media/.mfgmedia
+	# remove detritus from previous mfg burnin support
+	if [ -f /var/media/.mfgmedia ] ; then
+		rm -f /var/media/videos/GoogleFiber.mov
+		rm -f /var/media/videos/Samples/GoogleFiber.mov
+		rm -f /var/media/videos/Samples/GoogleFiber1.mov
+		if [ -d /var/media/videos/Samples ]; then
+			rmdir /var/media/videos/Samples
+		fi
+		rm -f /var/media/.mfgmedia
+	fi
+	if [ -d /var/media/videos ] && [ ! -f /var/media/ManufacturingBurnin.mov ] ; then
+		cp /usr/lib/media/GoogleFiber.mov /var/media/ManufacturingBurnin.mov
 	fi
 	;;
   stop)
