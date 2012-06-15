@@ -109,7 +109,7 @@ if [ -n "$NFSROOT" ]; then
   mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -n "$ROOTDEV" ]; then
-  KERNELDEV=$(replacefirst ${UBI_MTD} rootfs kernel)
+  KERNELDEV=$(replacefirst ${ROOTDEV} rootfs kernel)
   mtd=/dev/mtd$(find_mtd "$ROOTDEV")
   if [ -n "$mtd" ]; then
     log "Found root='$ROOTDEV': $mtd"
