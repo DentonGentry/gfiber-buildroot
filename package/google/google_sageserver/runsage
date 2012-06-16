@@ -2,6 +2,21 @@
 cd "$(dirname "$0")"
 export LD_LIBRARY_PATH=$PWD:$PWD/lib
 export LANG=en_US.UTF-8
+export SIEGEHOME=/app/sage/skelmir
+
+if [ "$1" = "client" ]; then
+  MODE=client
+  PATHS_CACHE=/rw/sage
+  CONNECT_STRING="-connect $2"
+  RUN=sagetvclient
+  PROPFILE=/rw/sage/SageClient.properties
+else
+  MODE=server
+  PATHS_CACHE=/var/media
+  CONNECT_STRING="x"
+  RUN=sagetv
+  PROPFILE=/rw/sage/Sage.properties
+fi
 
 
 # Read a given key from Sage.properties, printing the value to stdout.
@@ -22,16 +37,16 @@ readarg()
 
 ulimit -c 49152
 
-# Start up native streaming server
-./sagesrv.sh &
+if [ "$MODE" = "server" ]; then
+  # Start up native streaming server
+  babysit 10 ./sagesrv -l6 -m | logger -t z &
 
-# Start up channel service for dogfood, but only if off_the_grid is set.
-if [ "$(readarg off_the_grid)" = "true" ]; then
-  echo "Running chsrv." >&2
-  ./chsrv &
+  # Start up channel service for dogfood, but only if off_the_grid is set.
+  if [ "$(readarg off_the_grid)" = "true" ]; then
+    echo "Running chsrv." >&2
+    babysit 60 ./chsrv | logger -t chsrv &
+  fi
 fi
-
-export SIEGEHOME=/app/sage/skelmir
 
 SIEGEOPT=
 [ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
@@ -40,18 +55,19 @@ mkdir -p /rw/sage
 
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 
-cat Sage.properties.defaults.base \
-    Sage.properties.defaults.webserver \
-    >/tmp/Sage.properties.defaults
+(
+  cat Sage.properties.defaults.base
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver
+) >/tmp/Sage.properties.defaults
 
 export SIEGEDISABLEHEAPDUMP=1
-exec ./skelmir/siege \
+babysit 10 ./skelmir/siege \
     -Djava.io.tmpdir=/tmp \
     -Dsage.paths.logs=/tmp/log \
     -Djava.library.path=. \
-    -Dsage.paths.cache=/var/media \
+    -Dsage.paths.cache="$PATHS_CACHE" \
     -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:$WEBSERVERJARS \
     -Xmx384m \
     $SIEGEOPT \
-    sage.Sage 0 0 x \
-    "sagetv /rw/sage/Sage.properties"
+    sage.Sage 0 0 "$CONNECT_STRING" \
+    "$RUN $PROPFILE"

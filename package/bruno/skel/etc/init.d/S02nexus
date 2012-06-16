@@ -1,0 +1,31 @@
+#!/bin/sh
+MODULE_PATH=/usr/lib/modules
+
+# Set up NEXUS first since it applies PINMUX.
+echo "Starting nexus"
+[ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko
+if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
+  insmod ${MODULE_PATH}/bcmdriver.ko
+  mknod /dev/brcm0 c 30 0
+fi
+
+# Populate the platform ID
+PLAT=$(hnvram -r PLATFORM_NAME)
+echo ${PLAT#PLATFORM_NAME=} >/etc/platform
+chmod 444 /etc/platform
+
+# Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
+mkdir -p /tmp/gpio
+leds 4 0  # blink blue while booting
+echo 30 >/tmp/gpio/fanpercent  # low fan at first
+ulimit -c 49152
+babysit 300 gpio-mailbox 2>&1 | logger -t gpio-mailbox &
+wait-until-created /var/run/gpio-mailbox
+
+hostname gfibertv
+
+# Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
+echo -1 >/proc/sys/kernel/sched_rt_runtime_us
+
+# populate hdcp key
+hnvram -br HDCP_KEY >/tmp/hdcp_key

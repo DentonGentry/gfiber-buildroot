@@ -1,0 +1,72 @@
+From 260d71fad3416b0e6009fcc96312df1f0f046f8a Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 13 Jun 2012 00:39:32 -0400
+Subject: [PATCH] ubiformat: add a --force option.
+
+It's too much pain to try to umount a live filesystem to do a factory reset.
+Let's just reformat the filesystem even if it's mounted.  Then we'll reboot
+to avoid any kernel confusion.
+---
+ ubi-utils/ubiformat.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/ubi-utils/ubiformat.c b/ubi-utils/ubiformat.c
+index a265a9a..f286264 100644
+--- a/ubi-utils/ubiformat.c
++++ b/ubi-utils/ubiformat.c
+@@ -50,6 +50,7 @@
+ /* The variables below are set by command line arguments */
+ struct args {
+ 	unsigned int yes:1;
++	unsigned int force:1;
+ 	unsigned int quiet:1;
+ 	unsigned int verbose:1;
+ 	unsigned int override_ec:1;
+@@ -95,6 +96,7 @@ static const char optionsstr[] =
+ "                             (by default a random number is picked)\n"
+ "-y, --yes                    assume the answer is \"yes\" for all question\n"
+ "                             this program would otherwise ask\n"
++"--force                      force operation even on a busy partition\n"
+ "-q, --quiet                  suppress progress percentage information\n"
+ "-v, --verbose                be verbose\n"
+ "-h, -?, --help               print help message\n"
+@@ -118,6 +120,7 @@ static const struct option long_options[] = {
+ 	{ .name = "flash-image",     .has_arg = 1, .flag = NULL, .val = 'f' },
+ 	{ .name = "image-size",      .has_arg = 1, .flag = NULL, .val = 'S' },
+ 	{ .name = "yes",             .has_arg = 0, .flag = NULL, .val = 'y' },
++	{ .name = "force",           .has_arg = 0, .flag = NULL, .val = '!' },
+ 	{ .name = "erase-counter",   .has_arg = 1, .flag = NULL, .val = 'e' },
+ 	{ .name = "quiet",           .has_arg = 0, .flag = NULL, .val = 'q' },
+ 	{ .name = "verbose",         .has_arg = 0, .flag = NULL, .val = 'v' },
+@@ -136,7 +139,7 @@ static int parse_opt(int argc, char * const argv[])
+ 		int key, error = 0;
+ 		unsigned long int image_seq;
+ 
+-		key = getopt_long(argc, argv, "nh?Vyqve:x:s:O:f:S:", long_options, NULL);
++		key = getopt_long(argc, argv, "nh?Vy!qve:x:s:O:f:S:", long_options, NULL);
+ 		if (key == -1)
+ 			break;
+ 
+@@ -182,6 +185,10 @@ static int parse_opt(int argc, char * const argv[])
+ 			args.yes = 1;
+ 			break;
+ 
++		case '!':
++			args.force = 1;
++			break;
++
+ 		case 'q':
+ 			args.quiet = 1;
+ 			break;
+@@ -807,7 +814,7 @@ int main(int argc, char * const argv[])
+ 
+ 		err = mtd_num2ubi_dev(libubi, mtd.mtd_num, &ubi_dev_num);
+ 		libubi_close(libubi);
+-		if (!err) {
++		if (!err && !args.force) {
+ 			errmsg("please, first detach mtd%d (%s) from ubi%d",
+ 			       mtd.mtd_num, args.node, ubi_dev_num);
+ 			goto out_close;
+-- 
+1.7.9.dirty
+

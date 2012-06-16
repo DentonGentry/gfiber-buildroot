@@ -12,9 +12,9 @@ start() {
   (
     wait-until-created /tmp/ntp.synced
     if [ "$PLATFORM" = "GFHD100" ]; then
-      babysit 10 ./runsageclient &
+      ./runsageclient &
     else
-      babysit 10 ./runsage &
+      ./runsage &
     fi
   ) 2>&1 | logger -t s &
 
@@ -27,9 +27,9 @@ start() {
 }
 
 stop() {
-  pkill siege
-  pkill sagesrv
-  pkill chsrv
+  pkill 'runsage|chsrv|sagesrv|siege'
+  pkill -f '(babysit.*)?(runsage|chsrv|sagesrv|siege)'
+  pkill -9 sagesrv  # doesn't always die happily
 }
 
 restart() {

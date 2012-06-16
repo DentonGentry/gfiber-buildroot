@@ -13,6 +13,7 @@ exec >/dev/kmsg 2>&1
 #  Strangely doing the 'cd' commands below seems to make things like
 #  'mkdir -p /var/lock/whatever' start working, implying it's caused by a bug
 #  in the kernel somewhere (perhaps in NFS).
+mkdir /tmp/run
 (cd /var/lock)
 (cd /var/cache)
 (cd /var/log)

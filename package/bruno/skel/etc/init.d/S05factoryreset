@@ -1,0 +1,27 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+  	# make sure gpio-mailbox has had at least one loop
+  	wait-until-created /tmp/gpio/ready
+  	
+  	if reset-button-held 4000; then
+  	      zap --i-really-mean-it
+ 	      # zap reboots the machine so we should never reach here
+ 	fi
+  	
+  	# if we get here, factory reset wasn't desired at boot.  If they
+  	# press reset during runtime, switch to the alternate boot image.
+  	babysit 60 switch-on-reset 2>&1 | logger -t switch-on-reset &
+	;;
+  stop)
+  	pkill switch-on-reset
+	;;
+  restart)
+	;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

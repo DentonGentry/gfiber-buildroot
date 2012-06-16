@@ -1,6 +1,9 @@
 GOOGLE_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
-GOOGLE_MINICLIENT_DEPENDENCIES=linux bcm_nexus bcm_rockford bcm_bluetooth google_pullreader openssl libcurl google_swscale tiff zlib libpng libungif libprojectM google_widevine google_hdcp libxml2
-
+GOOGLE_MINICLIENT_DEPENDENCIES=\
+	linux \
+	bcm_nexus bcm_rockford bcm_bluetooth \
+	google_pullreader google_swscale google_widevine google_hdcp \
+	openssl libcurl tiff zlib libpng libungif libprojectM libxml2
 
 define GOOGLE_MINICLIENT_BUILD_CMDS
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if [ "$1" != "--i-really-mean-it" ]; then
+  echo
+  echo "                       *    *    *"
+  echo "THIS PROGRAM WILL WIPE ALL DATA IN THE FLASH PARTITIONS!"
+  echo "                       *    *    *"
+  echo
+  echo -n "Are you sure (y/n)? "
+  read yesno
+  [ "$yesno" = "y" ] || exit 1
+  echo
+fi
+
+leds 0 15 0 15 0 15  # noisy leds as we wipe things
+for mtdname in "data+ubi" "misc+ubi"; do
+  mtd=$(whichmtd "$mtdname")
+  if [ -n "$mtd" ]; then
+    echo "Wiping $mtdname ($mtd)..."
+    ubiformat --force -y "$mtd"
+  fi
+done
+
+leds 0  # done
+
+echo "Rebooting in 10 seconds..."
+sleep 10
+reboot
