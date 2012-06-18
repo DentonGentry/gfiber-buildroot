@@ -51,8 +51,8 @@ define BCM_BLUETOOTH_BUILD_CMDS
 endef
 
 define BCM_BLUETOOTH_INSTALL_STAGING_CMDS
-	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/libapp_gtv.a $(STAGING_DIR)/usr/lib/
-	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/libbsa.a $(STAGING_DIR)/usr/lib/
+	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/libapp_gtv.so $(STAGING_DIR)/usr/lib/
+	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/sharedlib/libbsa.so $(STAGING_DIR)/usr/lib/
 	mkdir -p $(STAGING_DIR)/usr/include/bt && \
 	cp -pr $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_*/include/*.h $(STAGING_DIR)/usr/include/bt
 	cp -pr $(@D)/bt/3rdparty/embedded/bsa_examples/linux/simple_app/include/*.h $(STAGING_DIR)/usr/include/bt
@@ -78,6 +78,8 @@ define BCM_BLUETOOTH_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/app_gtv $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/btusb.ko $(TARGET_DIR)/usr/lib/modules/btusb.ko
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/bthid.ko $(TARGET_DIR)/usr/lib/modules/bthid.ko
+	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/libapp_gtv.so $(TARGET_DIR)/usr/lib/
+	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/sharedlib/libbsa.so $(TARGET_DIR)/usr/lib/
 endef
 
 $(eval $(call GENTARGETS))
