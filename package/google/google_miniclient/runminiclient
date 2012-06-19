@@ -21,11 +21,14 @@ while true; do
   export AUDIO_OUTPUT
   leds 2  # solid blue while running miniclient
   /app/client/miniclient 127.0.0.1
+  mcstate=$?
   SERVER=""
   if [ -e /tmp/config ] ; then
     . /tmp/config
   fi
-  if [ -e /tmp/runapp ] ; then
+  if [ "$mcstate" != "0" ]; then
+    echo "Unexpected exit, miniclient restarting"
+  elif [ -e /tmp/runapp ] ; then
     mv /tmp/runapp /tmp/runappold
     # TODO: add switch based on which app to run...
     cd /app/client
