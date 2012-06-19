@@ -25,6 +25,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(STAGING_DIR)/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/libcmndrm.so $(STAGING_DIR)/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/linuxuser/libdrmrootfs.so $(STAGING_DIR)/usr/lib/libdrmrootfs.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/bcrypt/lib/libbcrypt.so $(STAGING_DIR)/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/bin/libb_os.so $(STAGING_DIR)/usr/local/lib/libb_os.so
 endef
 
@@ -37,6 +38,7 @@ define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $(TARGET_DIR)/usr/lib/libnexusMgr.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $(TARGET_DIR)/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/libcmndrm.so $(TARGET_DIR)/usr/lib/libcmndrm.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/bcrypt/lib/libbcrypt.so $(TARGET_DIR)/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/linuxuser/libdrmrootfs.so $(TARGET_DIR)/usr/lib/libdrmrootfs.so
 endef
 
