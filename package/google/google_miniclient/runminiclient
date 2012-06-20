@@ -1,6 +1,19 @@
 #!/bin/sh
 cd /app/client
 
+updateConfig()
+{
+  if [ -e /tmp/config ] ; then
+    . /tmp/config
+  fi
+  export VIDEO_OUTPUT
+  export VIDEO_RESOLUTION
+  export AUDIO_OUTPUT
+  export VIDEO_SUPPORTED_MODES
+  export CACHED_AUTH
+  export SERVER_NAME
+}
+
 readword()
 {
   hnvram -r "$1" | (IFS== read key value; echo "$value")
@@ -14,23 +27,16 @@ ulimit -c 49152
 
 while true; do
   cd /app/client
-  # This must be cleared for local server connection
-  VIDEO_SUPPORTED_MODES=
-  AUDIO_OUTPUT=
-  export VIDEO_SUPPORTED_MODES
-  export AUDIO_OUTPUT
+  updateConfig
   leds 2  # solid blue while running miniclient
   /app/client/miniclient 127.0.0.1
   mcstate=$?
   SERVER=""
-  if [ -e /tmp/config ] ; then
-    . /tmp/config
-  fi
+  updateConfig
   if [ "$mcstate" != "0" ]; then
     echo "Unexpected exit, miniclient restarting"
   elif [ -e /tmp/runapp ] ; then
     mv /tmp/runapp /tmp/runappold
-    # TODO: add switch based on which app to run...
     cd /app/client
     leds 5  # blue+red while app is running
     ./run-app
@@ -38,23 +44,17 @@ while true; do
     leds 0  # off while in waitpower mode
     [ -x /app/client/waitpower ] && /app/client/waitpower
   else
-    . /tmp/config
     mv /tmp/config /tmp/configold
-    export VIDEO_OUTPUT
-    export VIDEO_RESOLUTION
-    export AUDIO_OUTPUT
-    export VIDEO_SUPPORTED_MODES
-    export CACHED_AUTH
-    export SERVER_NAME
     powerret=2
     while [ "$powerret" = "2" ]; do
       if [ "$SERVER_MAC" != "" ]; then
         /usr/bin/ether-wake $SERVER_MAC
       fi
+      leds 2  # solid blue while running miniclient
       /app/client/miniclient $SERVER
       if [ -e /tmp/runapp ] ; then
         mv /tmp/runapp /tmp/runappold
-        # TODO: add switch based on which app to run...
+        leds 5  # blue+red while app is running
         cd /app/client
         ./run-app
       elif [ -e /tmp/goalone ] ; then
