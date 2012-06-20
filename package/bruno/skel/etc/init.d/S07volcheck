@@ -43,9 +43,6 @@ recover_volume() {
   # umount UBI volumes detach UBI devices
   umount_ubifs ${2}
 
-  # erase MTD partition
-  flash_erase /dev/mtd${1} 0 0
-
   # format MTD partition
   ubiformat /dev/mtd${1} -y
 
