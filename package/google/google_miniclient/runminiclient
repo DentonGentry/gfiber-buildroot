@@ -1,4 +1,5 @@
 #!/bin/sh
+PLATFORM=$(cat /etc/platform)
 cd /app/client
 
 updateConfig()
@@ -26,10 +27,14 @@ export SERIALNUMBER=$(readword 1ST_SERIAL_NUMBER)
 ulimit -c 49152
 
 while true; do
+  fatbrunomode=""
+  if [ "$PLATFORM" != "GFHD100" ]; then
+    fatbrunomode="--encodemode"
+  fi
   cd /app/client
   updateConfig
   leds 2  # solid blue while running miniclient
-  /app/client/miniclient 127.0.0.1
+  /app/client/miniclient $fatbrunomode 127.0.0.1
   mcstate=$?
   SERVER=""
   updateConfig
@@ -51,7 +56,7 @@ while true; do
         /usr/bin/ether-wake $SERVER_MAC
       fi
       leds 2  # solid blue while running miniclient
-      /app/client/miniclient $SERVER
+      /app/client/miniclient $fatbrunomode $SERVER
       if [ -e /tmp/runapp ] ; then
         mv /tmp/runapp /tmp/runappold
         leds 5  # blue+red while app is running
