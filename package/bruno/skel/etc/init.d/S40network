@@ -36,6 +36,9 @@ case "$1" in
 			$(cat /sys/class/net/eth0/address)
 		echo "done"
 
+		# VLAN tag for MoCA interface
+		ip link add link eth1 name eth1.0 type vlan id 0
+
 		echo "Adding interfaces... "
 		# set up networking if we are not on an NFS rootfs
 		for x in $(ls /sys/class/net); do
@@ -46,6 +49,9 @@ case "$1" in
 				ifup $x
 			fi
 			if [ -e /sys/class/net/$x/device ]; then
+				if [ $x = eth1 ]; then
+					x=eth1.0
+				fi
 				brctl addif br0 $x
 			fi
 		done
