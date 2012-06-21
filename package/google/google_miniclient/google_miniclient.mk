@@ -1,14 +1,13 @@
 GOOGLE_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
 GOOGLE_MINICLIENT_DEPENDENCIES=\
 	linux \
-	bcm_nexus bcm_rockford bcm_bluetooth \
+	bcm_nexus bcm_rockford \
 	google_pullreader google_swscale google_widevine google_hdcp \
 	openssl libcurl tiff zlib libpng libungif libprojectM libxml2
 
 define GOOGLE_MINICLIENT_BUILD_CMDS
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \
         SWSCALE_PATH=$(STAGING_DIR)/usr/local/ \
-        BT_INCLUDE_PATH=$(STAGING_DIR)/usr/include/bt \
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425
 endef
 

@@ -1,0 +1,23 @@
+#!/bin/sh
+case "$1" in
+  start)
+	echo -n "Starting app_gtv service: "
+	cd /tmp
+	babysit 30 app_gtv -k 2>&1 | logger -t app_gtv &
+	echo "done"
+	;;
+  stop)
+	echo -n "Shutting down app_gtv service: "
+	pkill -x app_gtv
+	echo "done"
+	;;
+
+  restart)
+	$0 stop; sleep 2; $0 start
+	;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
