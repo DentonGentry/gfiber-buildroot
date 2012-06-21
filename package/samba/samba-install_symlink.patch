@@ -1,0 +1,30 @@
+From 8e83ed2775ecfaf9deee1d797d183ec5d812e986 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Mon, 18 Jun 2012 05:36:42 -0700
+Subject: [PATCH] Don't overwrite symlinks.
+
+---
+ source3/script/installdirs.sh |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/source3/script/installdirs.sh b/source3/script/installdirs.sh
+index 062b34b..e1f04b4 100755
+--- a/source3/script/installdirs.sh
++++ b/source3/script/installdirs.sh
+@@ -7,11 +7,11 @@ shift
+ 
+ for dir in $@; do
+ 	DIRNAME=`echo $dir | sed 's/\/\//\//g'`
+-	if [ ! -d $DESTDIR/$DIRNAME ]; then
++	if [ ! -d $DESTDIR/$DIRNAME ] && [ ! -h $DESTDIR/$DIRNAME ]; then
+ 		mkdir -m $INSTALLPERMS -p $DESTDIR/$DIRNAME
+ 	fi
+ 
+-	if [ ! -d $DESTDIR/$DIRNAME ]; then
++	if [ ! -d $DESTDIR/$DIRNAME ] && [ ! -h $DESTDIR/$DIRNAME ]; then
+ 		echo "Failed to make directory $DESTDIR/$DIRNAME "
+ 		exit 1
+ 	fi
+-- 
+1.7.9.4
+
