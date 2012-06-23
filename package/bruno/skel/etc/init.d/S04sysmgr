@@ -1,14 +1,11 @@
 #!/bin/sh
 
 RETVAL=0
-PLATFORM=$(cat /etc/platform)
 
 start() {
-  if [ "$PLATFORM" = "GFMS100" ]; then
-    babysit 5 sysmgr --interval 60000 2>&1 | logger -t sysmgr &
-    RETVAL=$?
-    return $RETVAL
-  fi
+  babysit 5 sysmgr --interval 60000 2>&1 | logger -t sysmgr &
+  RETVAL=$?
+  return $RETVAL
 }
 
 stop() {
