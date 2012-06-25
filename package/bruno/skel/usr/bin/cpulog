@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Keep track of heavy consumers of CPU over an interval.
-"""
+"""Keep track of heavy consumers of CPU over an interval."""
 
 __author__ = 'dgentry@google.com (Denton Gentry)'
 
 import collections
 import glob
-import options
 import os
 import sys
 import time
+import options
 
 
 optspec = """
@@ -38,7 +37,8 @@ w,warmup=          seconds to wait before sampling begins [600]
 # Unit tests can override these with fake data
 SLASH_PROC = '/proc'
 
-process = collections.namedtuple('process', ('cmd pid msec'))
+Process = collections.namedtuple('process', ('cmd pid msec'))
+
 
 class ProcessCpuMon(object):
   """Monitors CPU usage by processes over a specified interval."""
@@ -70,7 +70,7 @@ class ProcessCpuMon(object):
       cmd = self._RemoveParens(fields[self.COMM])
       utime = self._JiffiesToMsec(fields[self.UTIME])
       stime = self._JiffiesToMsec(fields[self.STIME])
-      return process(pid=fields[self.PID], cmd=cmd, msec=utime+stime)
+      return Process(pid=fields[self.PID], cmd=cmd, msec=utime+stime)
 
   def _IterProcesses(self):
     """Walks through /proc/<pid>/stat to generate a list of all processes."""
@@ -121,7 +121,8 @@ def main():
   p.GetTopCpuString(1)  # Collect baseline CPU, throw the string away.
   while 1:
     time.sleep(opt.interval)
-    print '%dsec: %s' % (opt.interval,  p.GetTopCpuString(opt.num))
+    print '%dsec: %s' % (opt.interval, p.GetTopCpuString(opt.num))
+    sys.stdout.flush()
 
 if __name__ == '__main__':
   main()
