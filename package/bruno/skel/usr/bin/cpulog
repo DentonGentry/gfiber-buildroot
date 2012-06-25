@@ -104,10 +104,11 @@ class ProcessCpuMon(object):
       num: number of processes to return
 
     Returns:
-      string of the form: bittorrent(1200msec) xeyes(400msec) automount(30msec)
+      string of the form: bittorrent(1.2) xeyes(0.400) automount(0.030)
     """
     top_cpu = self._GetTopCpuUsage()
-    return ' '.join(['%s(%dmsec)' % (cmd, ms) for (cmd, ms) in top_cpu[:num]])
+    return ' '.join(['%s(%.3f)'
+                     % (cmd, ms/1000.) for cmd, ms in top_cpu[:num]])
 
 
 def main():
