@@ -1,0 +1,110 @@
+From b1538e59e08bb90bda4adcfa98677e4932020998 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Tue, 26 Jun 2012 16:08:34 -0700
+Subject: [PATCH] Allow for a minimum IRT for DHCP6.
+
++ DHCP6 servers which do not include an INFORMATION_REFRESH_TIME
+  option are effectively saying the information in the DHCP6 response
+  is valid indefinitely.
++ dhclient will exit, as it would never need to send another request.
++ Information is *never* valid forever, even if the server thinks it is.
+
++ --never-gonna-give-you-up <seconds> imposes a refresh interval
+  even if the server did not state one.
+
++ it also Rickrolls the rest of the team.
+---
+ client/dhc6.c     |    9 +++++++--
+ client/dhclient.c |   23 +++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/client/dhc6.c b/client/dhc6.c
+index 24f3f18..724ad6b 100644
+--- a/client/dhc6.c
++++ b/client/dhc6.c
+@@ -116,6 +116,7 @@ static int check_timing6(struct client_state *client, u_int8_t msg_type,
+ 
+ extern int onetry;
+ extern int stateless;
++extern int force_default_irt;
+ 
+ /*
+  * The "best" default DUID, since we cannot predict any information
+@@ -4805,9 +4806,13 @@ dhc6_check_irt(struct client_state *client)
+ 			break;
+ 		}
+ 	}
+-	/* Simply return gives a endless loop waiting for nothing. */
+-	if (!found)
++
++	if (force_default_irt) {
++		expire = force_default_irt;
++	} else if (!found) {
++		/* Simply return gives a endless loop waiting for nothing. */
+ 		exit(0);
++	}
+ 
+ 	oc = lookup_option(&dhcpv6_universe, client->active_lease->options,
+ 			   D6O_INFORMATION_REFRESH_TIME);
+diff --git a/client/dhclient.c b/client/dhclient.c
+index 1209a96..7a6bc09 100644
+--- a/client/dhclient.c
++++ b/client/dhclient.c
+@@ -40,6 +40,7 @@
+ 
+ TIME default_lease_time = 43200; /* 12 hours... */
+ TIME max_lease_time = 86400; /* 24 hours... */
++int force_default_irt = 0;
+ 
+ const char *path_dhclient_conf = _PATH_DHCLIENT_CONF;
+ const char *path_dhclient_db = NULL;
+@@ -97,6 +98,7 @@ static int check_domain_name(const char *ptr, size_t len, int dots);
+ static int check_domain_name_list(const char *ptr, size_t len, int dots);
+ static int check_option_values(struct universe *universe, unsigned int opt,
+ 			       const char *ptr, size_t len);
++static int validate_irt(const char *irt);
+ 
+ int
+ main(int argc, char **argv) {
+@@ -289,6 +291,10 @@ main(int argc, char **argv) {
+ 				wanted_ia_na = 0;
+ 			}
+ 			wanted_ia_pd++;
++		} else if (!strcmp(argv[i], "--never-gonna-give-you-up")) {
++			if (++i == argc)
++				usage();
++			force_default_irt = validate_irt(argv[i]);
+ #endif /* DHCPv6 */
+ 		} else if (!strcmp(argv[i], "-v")) {
+ 			quiet = 0;
+@@ -694,6 +700,7 @@ static void usage()
+ 	log_fatal("Usage: dhclient "
+ #ifdef DHCPv6
+ 		  "[-4|-6] [-SNTP1dvrx] [-nw] [-p <port>]\n"
++		  "                [--never-gonna-give-you-up <interval>]\n"
+ #else /* DHCPv6 */
+ 		  "[-1dvrx] [-nw] [-p <port>]\n"
+ #endif /* DHCPv6 */
+@@ -4106,3 +4113,19 @@ add_reject(struct packet *packet) {
+ 	 */
+ 	log_info("Server added to list of rejected servers.");
+ }
++
++static int
++validate_irt(const char *irt) {
++	long local_irt = 0;
++	char *endptr;
++
++	errno = 0;
++	local_irt = strtol(irt, &endptr, 10);
++
++	if ((*endptr != '\0') || (errno == ERANGE) || (errno == EINVAL))
++		log_fatal ("Invalid IRT: %s", irt);
++	if (local_irt < IRT_MINIMUM)
++		log_fatal ("Invalid IRT %ld < minimum (%d)", local_irt, IRT_MINIMUM);
++
++	return (int)local_irt;
++}
+-- 
+1.7.9.4
+

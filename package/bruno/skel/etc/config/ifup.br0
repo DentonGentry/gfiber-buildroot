@@ -17,5 +17,6 @@ if [ -e ${pidfile} ]; then
 fi
 /usr/sbin/dhclient ${iface} -6 -S -nw -v -pf ${pidfile} \
 	-lf /var/run/dhclient-v6.${iface}.lease \
-	-cf /etc/dhclient6.conf 2>&1 | logger -t dhclient6 &
+	-cf /etc/dhclient6.conf \
+    --never-gonna-give-you-up 900 2>&1 | logger -t dhclient6 &
 lockfile-remove ${lock}
