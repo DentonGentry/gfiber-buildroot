@@ -68,6 +68,7 @@ babysit 10 ./skelmir/siege \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:$WEBSERVERJARS \
     -Xmx384m \
+    -verbose:gc \
     $SIEGEOPT \
     sage.Sage 0 0 "$CONNECT_STRING" \
     "$RUN $PROPFILE"
