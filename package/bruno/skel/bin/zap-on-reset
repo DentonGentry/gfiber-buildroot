@@ -9,19 +9,15 @@ log "starting."
 
 while :; do
   log "waiting for reset button."
+  # gpio-mailbox creates reset_button_msecs when ready.
   wait-until-created /tmp/gpio/reset_button_msecs
   log "reset button pressed!  waiting for button release."
   if reset-button-held 4000; then
-    log "switch-image requested."
+    log "factory reset requested."
     leds 0 15 0 15 0 15  # noisy leds to indicate we acknowledged the command
-    sleep 5
-    if ginstall -p other; then
-      leds 0  # success
-      log "rebooting in 10 seconds..."
-      sleep 10
-      reboot
-    else
-      leds 1 0 1 0  #failed
-    fi
+    zap --i-really-mean-it
+    log "rebooting in 10 seconds..."
+    sleep 10
+    reboot
   fi
 done
