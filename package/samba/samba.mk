@@ -13,7 +13,8 @@ SAMBA_DEPENDENCIES = popt \
 	$(if $(BR2_PACKAGE_SAMBA_RPCCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_SMBCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_AVAHI),avahi) \
-	$(if $(BR2_PACKAGE_SAMBA_GAMIN),gamin)
+	$(if $(BR2_PACKAGE_SAMBA_GAMIN),gamin) \
+	$(if $(BR2_PACKAGE_ACL),acl)
 
 SAMBA_CONF_ENV = \
 	ac_cv_file__proc_sys_kernel_core_pattern=yes \
@@ -54,6 +55,7 @@ SAMBA_CONF_OPT = \
 	--without-ldap \
 	--with-included-iniparser \
 	\
+	$(if $(BR2_PACKAGE_ACL),--with-acl-support,--without-acl-support) \
 	$(if $(BR2_PACKAGE_SAMBA_RPCCLIENT),--with-readline=$(STAGING_DIR)) \
 	$(if $(BR2_PACKAGE_SAMBA_SMBCLIENT),--with-readline=$(STAGING_DIR)) \
 	$(if $(BR2_PACKAGE_SAMBA_WINBINDD),--with-winbind,--without-winbind)
