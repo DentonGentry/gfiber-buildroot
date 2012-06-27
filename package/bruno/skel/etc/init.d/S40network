@@ -38,6 +38,10 @@ case "$1" in
 
 		# VLAN tag for MoCA interface
 		ip link add link eth1 name eth1.0 type vlan id 0
+		# SO_PRIORITY -> 802.1p mapping
+		for prio in 0 1 2 3 4 5 6 7; do
+			vconfig set_egress_map eth1.0 $prio $prio >/dev/null 2>&1
+		done
 
 		echo "Adding interfaces... "
 		# set up networking if we are not on an NFS rootfs
