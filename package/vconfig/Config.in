@@ -1,0 +1,6 @@
+config BR2_PACKAGE_VCONFIG
+	bool "vconfig"
+	help
+	  VLAN configuration utilities vconfig and macvlan_config.
+
+	  http://www.candelatech.com/~greear/vlan.html
