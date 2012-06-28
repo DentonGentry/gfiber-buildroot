@@ -40,9 +40,6 @@ endef
 
 define BCM_WEBKIT_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
-	$(RM) -f $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
-	ln -s ../../../lib/modules/nexus.ko \
-	  $(TARGET_DIR)/usr/local/lib/modules/nexus.ko
 endef
 
 $(eval $(call GENTARGETS))
