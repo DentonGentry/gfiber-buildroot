@@ -42,4 +42,10 @@ define BCM_WEBKIT_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
 endef
 
+# Since the webkit needs dlna, dtcp_ip, etc. to be rebuilt and reinstalled to its
+# lib directory. We need to remove the stamp to force the reinstall.
+define BCM_WEBKIT_DIRCLEAN_CMDS
+	$(RM) $(@D)/common/*.stamp
+endef
+
 $(eval $(call GENTARGETS))
