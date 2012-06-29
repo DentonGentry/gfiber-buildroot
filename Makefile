@@ -417,14 +417,16 @@ shuffled:
 dirs: prepare
 dependencies: dirs
 
-$O/.stamp.world-setup:
+WORLD_STAMP = $O/.stamp.world-setup
+
+$(WORLD_STAMP):
 	$(MAKE) O=$O source
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
 	touch $@
 
-worldsetup: $O/.stamp.world-setup
+worldsetup: $(WORLD_STAMP)
 
 world: worldsetup
 	$(MAKE) O=$O finaltargets
@@ -450,7 +452,7 @@ $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	$(BASE_TARGETS) $(TARGETS) $(TARGETS_ALL) \
 	$(TARGETS_CLEAN) $(TARGETS_DIRCLEAN) $(TARGETS_SOURCE) \
 	$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
-	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
+	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR) $(WORLD_STAMP)
 
 #############################################################
 #
@@ -694,7 +696,8 @@ endif
 
 clean:
 	rm -rf $(STAGING_DIR) $(TARGET_DIR) $(BINARIES_DIR) $(HOST_DIR) \
-		$(STAMP_DIR) $(BUILD_DIR) $(TOOLCHAIN_DIR) $(BASE_DIR)/staging
+		$(STAMP_DIR) $(BUILD_DIR) $(TOOLCHAIN_DIR) $(BASE_DIR)/staging \
+		$(WORLD_STAMP)
 
 distclean: clean
 ifeq ($(DL_DIR),$(TOPDIR)/dl)
