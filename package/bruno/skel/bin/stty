@@ -1,0 +1,108 @@
+#!/usr/bin/python -S
+# Copyright 2012 Google Inc. All Rights Reserved.
+#
+"""An extremely basic stty implementation for people who don't have it."""
+
+__author__ = 'apenwarr@google.com (Avery Pennarun)'
+
+import os
+import sys
+import termios
+import tty
+
+
+def Usage():
+  sys.stderr.write('usage: %s <raw|sane|[-]echo|selftest>\n'
+                   '  sets the tty mode\n' % sys.argv[0])
+  sys.exit(99)
+
+
+def SetSane(tc):
+  """Returns a variant of tc with changes made by 'stty sane'."""
+  tc = list(tc)
+  tc[0] &= ~(termios.IGNBRK |
+             termios.INLCR |
+             termios.IGNCR |
+             termios.IXOFF |
+             termios.IUCLC |
+             termios.IXANY)
+  tc[0] |=  (termios.BRKINT |
+             termios.ICRNL |
+             termios.IMAXBEL |
+             termios.IXON)
+  tc[1] &= ~(termios.NLDLY |
+             termios.CRDLY |
+             termios.TABDLY |
+             termios.BSDLY |
+             termios.VTDLY |
+             termios.FFDLY |
+             termios.OLCUC |
+             termios.OCRNL |
+             termios.ONOCR |
+             termios.ONLRET |
+             termios.OFILL |
+             termios.OFDEL)
+  tc[1] |=  (termios.NL0 |
+             termios.CR0 |
+             termios.TAB0 |
+             termios.BS0 |
+             termios.VT0 |
+             termios.FF0 |
+             termios.OPOST |
+             termios.ONLCR)
+  tc[2] &= ~(0)
+  tc[2] |=  (termios.CREAD)
+  tc[3] &= ~(termios.ECHONL |
+             termios.NOFLSH |
+             termios.XCASE |
+             termios.TOSTOP |
+             termios.ECHOPRT)
+  tc[3] |=  (termios.ICANON |
+             termios.ISIG |
+             termios.ECHO |
+             termios.ECHOE |
+             termios.ECHOK |
+             termios.ECHOCTL |
+             termios.ECHOKE)
+  return tc
+
+
+def main():
+  if len(sys.argv) != 2:
+    Usage()
+
+  if sys.argv[1] == 'raw':
+    tty.setraw(1)
+  elif sys.argv[1] == 'sane':
+    tc = termios.tcgetattr(0)
+    tc = SetSane(tc)
+    termios.tcsetattr(0, termios.TCSADRAIN, tc)
+  elif sys.argv[1] == 'echo':
+    tc = termios.tcgetattr(0)
+    tc[3] |= termios.ECHO
+    termios.tcsetattr(0, termios.TCSADRAIN, tc)
+  elif sys.argv[1] == '-echo':
+    tc = termios.tcgetattr(0)
+    tc[3] &= ~termios.ECHO
+    termios.tcsetattr(0, termios.TCSADRAIN, tc)
+  elif sys.argv[1] == 'selftest':
+    os.system('stty sane')
+    tc_orig = termios.tcgetattr(0)
+    tty.setraw(0)
+    tc_raw = termios.tcgetattr(0)
+    tc_sane = SetSane(tc_raw)
+    termios.tcsetattr(0, termios.TCSANOW, tc_orig)
+    print 'orig: %r' % [oct(i) for i in tc_orig[:4]]
+    print 'sane: %r' % [oct(i) for i in tc_sane[:4]]
+    print 'raw:  %r' % [oct(i) for i in tc_raw[:4]]
+    assert tc_orig != tc_raw
+    assert tc_raw != tc_sane
+    tc_orig[0] |= termios.IXON
+    tc_orig[3] &= 0xfff
+    tc_sane[3] &= 0xfff
+    assert tc_orig[:4] == tc_sane[:4]
+  else:
+    Usage()
+
+if __name__ == '__main__':
+  main()
