@@ -2,6 +2,29 @@
 
 appname=$(python -c "import sys;[sys.stdout.write(l.split(' ')[0].strip()) for l in sys.stdin]" < /tmp/runappold)
 
+# Use same output resolution as miniclient was using
+res=720p
+case $VIDEO_RESOLUTION in
+1920x1080p@24*)
+  res=1080p
+  ;;
+1920x1080p@60*)
+  res=1080p
+  ;;
+1920x1080i@60*)
+  res=1080i
+  ;;
+720x480p@60*)
+  res=480p
+  ;;
+720x480i@60*)
+  res=480i
+  ;;
+esac
+
+DFBARGS="mode=1280x720,res=$res"
+export DFBARGS
+
 case $appname in
 netflix)
   cd /usr/local/bin/netflix

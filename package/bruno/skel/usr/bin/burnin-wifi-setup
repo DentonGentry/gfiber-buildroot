@@ -1,0 +1,31 @@
+#!/bin/sh
+if [ -n "$1" ]; then
+  SSID=$1
+else
+  SSID=Gladis_1
+fi
+
+is_fat()
+{
+  [ -e /dev/sda ] && grep GFMS /tmp/platform >/dev/null
+}
+
+set -x
+
+if ! is_fat; then
+  brctl delif br0 eth2
+  wl radio on
+  wl down
+  wl ap 0
+  wl band auto
+  wl up
+  wl scan
+  sleep 3
+  wl scanresults
+  wl join "$SSID"
+  sleep 1
+  wl status
+  dhclient eth2
+fi
+
+exit 0

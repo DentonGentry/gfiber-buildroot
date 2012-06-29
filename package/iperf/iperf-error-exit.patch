@@ -1,0 +1,46 @@
+From 8f4609ab9e3c361c5c80992f8a80d2542275ac3a Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 28 Jun 2012 23:04:41 -0400
+Subject: [PATCH] error.c: abort with nonzero exit code on all
+ warnings/errors.
+
+Otherwise there's no way for a caller script to know anything went wrong.
+---
+ compat/error.c |    2 ++
+ src/Client.cpp |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/compat/error.c b/compat/error.c
+index 829ecc9..0800c35 100644
+--- a/compat/error.c
++++ b/compat/error.c
+@@ -172,6 +172,7 @@ void warn( const char *inMessage, const char *inFile, int inLine ) {
+     /* while debugging output file/line number also */
+     fprintf( stderr, "%s failed (%s:%d)\n", inMessage, inFile, inLine );
+ #endif
++    exit(55);
+ } /* end warn */
+ 
+ /* -------------------------------------------------------------------
+@@ -203,6 +204,7 @@ void warn_errno( const char *inMessage, const char *inFile, int inLine ) {
+     fprintf( stderr, "%s failed (%s:%d): %s (%d)\n",
+              inMessage, inFile, inLine, my_str, my_err );
+ #endif
++    exit(56);
+ } /* end warn_errno */
+ 
+ #ifdef __cplusplus
+diff --git a/src/Client.cpp b/src/Client.cpp
+index 2f1301a..db4b83d 100644
+--- a/src/Client.cpp
++++ b/src/Client.cpp
+@@ -466,5 +466,6 @@ void Client::write_UDP_FIN( ) {
+     } 
+ 
+     fprintf( stderr, warn_no_ack, mSettings->mSock, count ); 
++    exit(57);
+ } 
+ // end write_UDP_FIN 
+-- 
+1.7.9.dirty
+

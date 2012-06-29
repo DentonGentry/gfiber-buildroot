@@ -1,5 +1,4 @@
 BCM_BLUETOOTH_SITE=repo://vendor/broadcom/drivers
-BCM_BLUETOOTH_INSTALL_STAGING=YES
 BCM_BLUETOOTH_INSTALL_TARGET=YES
 BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils linux bcm_nexus
 
@@ -48,16 +47,6 @@ define BCM_BLUETOOTH_BUILD_CMDS
 		CROSS_COMPILE="$(TARGET_CROSS)" \
 		KDIR="${LINUX_DIR}" \
 		-C $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/
-endef
-
-define BCM_BLUETOOTH_INSTALL_STAGING_CMDS
-	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/libapp_gtv.so $(STAGING_DIR)/usr/lib/
-	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/sharedlib/libbsa.so $(STAGING_DIR)/usr/lib/
-	mkdir -p $(STAGING_DIR)/usr/include/bt && \
-	cp -pr $(@D)/bt/3rdparty/embedded/bsa_examples/linux/app_*/include/*.h $(STAGING_DIR)/usr/include/bt
-	cp -pr $(@D)/bt/3rdparty/embedded/bsa_examples/linux/simple_app/include/*.h $(STAGING_DIR)/usr/include/bt
-	cp -pr $(@D)/bt/3rdparty/embedded/bsa_examples/linux/libbsa/include/*.h $(STAGING_DIR)/usr/include/bt
-	cp -pr $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/include/*.h $(STAGING_DIR)/usr/include/bt
 endef
 
 define BCM_BLUETOOTH_INSTALL_TARGET_CMDS

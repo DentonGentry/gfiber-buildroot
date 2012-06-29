@@ -21,35 +21,59 @@ fs_writable()
 
 is_fat()
 {
-  [ -e /dev/sda ] && grep -q GFMS /tmp/platform
+  [ -e /dev/sda ] && grep GFMS /tmp/platform >/dev/null
 }
 
 
 label()
 {
-  "$@" 2>&1 |
-  while read line; do
-    echo "$*: $line"
-  done
+  "$@" 2>&1 | (
+    shift
+    while read line; do
+      echo "$*: $line"
+    done
+  )
+}
+
+
+abort()
+{
+  if [ -z "$DONT_ABORT" ]; then
+    log 'Error encountered and $DONT_ABORT is not set: aborting.'
+    sleep 1
+    kill -TERM $main_pid
+    exit 98
+  else
+    log 'Not aborting - $DONT_ABORT is set.'
+    sleep 10
+  fi
 }
 
 
 retry()
 {
   while :; do
-    "$@"
-    sleep 5
-    log "restarting '$*'"
+    if "$@"; then
+      sleep 5
+      log "restarting '$*'"
+    else
+      log
+      log "FATAL: process ($*) died unexpectedly with code $?"
+      abort
+    fi
   done
 }
 
 
 should_never_die()
 {
-  "$@"
-  log "FATAL: process ($*) died unexpectedly with code $?"
-  kill -TERM $main_pid
-  exit 98
+  while :; do
+    "$@"
+    log
+    log "FATAL: process ($*) died unexpectedly with code $?"
+    abort
+    log "restarting '$*'"
+  done
 }
 
 
@@ -73,25 +97,32 @@ main()
     ethdev=eth0
   fi
   if is_fat; then
-    log 'Fat bruno: address 169.254.1.1'
-    ip addr add 169.254.1.1/24 dev $ethdev
+    ME=169.254.1.1
+    YOU=169.254.1.2
+    log "Fat bruno: address $ME"
   else
-    log 'Thin bruno: address 169.254.1.2'
-    ip addr add 169.254.1.2/24 dev $ethdev
+    ME=169.254.1.2
+    YOU=169.254.1.1
+    log "Thin bruno: address $ME"
   fi
+  ip addr del $YOU/24 dev $ethdev  # just in case
+  ip addr add $ME/24 dev $ethdev
 
-  should_never_die label iperf -s &
-  should_never_die label iperf -s -u &
+  label should_never_die iperf -s &
+  label should_never_die iperf -s -u &
 
-  IPERF_TCP="retry label iperf -t3600 -i10   "
-  IPERF_UDP="retry label iperf -t3600 -i10 -u"
-  if is_fat; then
-    $IPERF_TCP -c 169.254.1.2 &
-    $IPERF_UDP -c 169.254.1.2 &
-  else
-    $IPERF_TCP -c 169.254.1.1 &
-    $IPERF_UDP -c 169.254.1.1 &
-  fi
+  while ! ping -c 1 $YOU >/dev/null; do
+    log "Waiting for $YOU to be visible on $ethdev..."
+  done
+  while ! nc $YOU 5001 </dev/null; do
+    log "Waiting for iperf server to listen on $YOU:5001..."
+    sleep 2
+  done
+
+  IPERF_UDP="label retry iperf -t60 -i10 -u"
+  IPERF_TCP="label retry iperf -t60 -i10   "
+  $IPERF_UDP -c $YOU &
+  $IPERF_TCP -c $YOU &
 
   if fs_writable /var/media; then
     # fast random writes
