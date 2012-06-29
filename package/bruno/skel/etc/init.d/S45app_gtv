@@ -1,4 +1,9 @@
 #!/bin/sh
+
+if [ ! -e /dev/btusb0 ]; then
+	exit 0
+fi
+
 case "$1" in
   start)
 	echo -n "Starting app_gtv service: "
