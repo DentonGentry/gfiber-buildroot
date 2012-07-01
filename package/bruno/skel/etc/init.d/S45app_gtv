@@ -4,11 +4,13 @@ if [ ! -e /dev/btusb0 ]; then
 	exit 0
 fi
 
+BT_MAC_ADDR=`hnvram -rq MAC_ADDR_BT`
+
 case "$1" in
   start)
 	echo -n "Starting app_gtv service: "
-	cd /tmp
-	babysit 30 app_gtv -k 2>&1 | logger -t app_gtv &
+	cd /user/bsa
+	babysit 30 app_gtv -a "${BT_MAC_ADDR}" -k 2>&1 | logger -t app_gtv &
 	echo "done"
 	;;
   stop)
