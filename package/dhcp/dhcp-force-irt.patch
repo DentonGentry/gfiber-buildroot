@@ -1,6 +1,6 @@
-From b1538e59e08bb90bda4adcfa98677e4932020998 Mon Sep 17 00:00:00 2001
+From 1b320f2dd24d075410bc595a6d3b21e303e4883f Mon Sep 17 00:00:00 2001
 From: Denton Gentry <dgentry@google.com>
-Date: Tue, 26 Jun 2012 16:08:34 -0700
+Date: Sun, 1 Jul 2012 23:56:59 -0700
 Subject: [PATCH] Allow for a minimum IRT for DHCP6.
 
 + DHCP6 servers which do not include an INFORMATION_REFRESH_TIME
@@ -10,16 +10,16 @@ Subject: [PATCH] Allow for a minimum IRT for DHCP6.
 + Information is *never* valid forever, even if the server thinks it is.
 
 + --never-gonna-give-you-up <seconds> imposes a refresh interval
-  even if the server did not state one.
+    even if the server did not state one.
 
 + it also Rickrolls the rest of the team.
 ---
- client/dhc6.c     |    9 +++++++--
+ client/dhc6.c     |    9 ++++++---
  client/dhclient.c |   23 +++++++++++++++++++++++
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ 2 files changed, 29 insertions(+), 3 deletions(-)
 
 diff --git a/client/dhc6.c b/client/dhc6.c
-index 24f3f18..724ad6b 100644
+index 24f3f18..b90d2f1 100644
 --- a/client/dhc6.c
 +++ b/client/dhc6.c
 @@ -116,6 +116,7 @@ static int check_timing6(struct client_state *client, u_int8_t msg_type,
@@ -30,22 +30,29 @@ index 24f3f18..724ad6b 100644
  
  /*
   * The "best" default DUID, since we cannot predict any information
-@@ -4805,9 +4806,13 @@ dhc6_check_irt(struct client_state *client)
+@@ -4805,9 +4806,11 @@ dhc6_check_irt(struct client_state *client)
  			break;
  		}
  	}
 -	/* Simply return gives a endless loop waiting for nothing. */
 -	if (!found)
 +
-+	if (force_default_irt) {
-+		expire = force_default_irt;
-+	} else if (!found) {
++	if (!found && !force_default_irt) {
 +		/* Simply return gives a endless loop waiting for nothing. */
  		exit(0);
 +	}
  
  	oc = lookup_option(&dhcpv6_universe, client->active_lease->options,
  			   D6O_INFORMATION_REFRESH_TIME);
+@@ -4829,7 +4832,7 @@ dhc6_check_irt(struct client_state *client)
+ 		}
+ 		data_string_forget(&irt, MDL);
+ 	} else
+-		expire = IRT_DEFAULT;
++		expire = force_default_irt ? force_default_irt : IRT_DEFAULT;
+ 
+ 	if (expire != MAX_TIME) {
+ 		log_debug("PRC: Refresh event scheduled in %u seconds.",
 diff --git a/client/dhclient.c b/client/dhclient.c
 index 1209a96..7a6bc09 100644
 --- a/client/dhclient.c
