@@ -50,12 +50,8 @@ define ROOTFS_GINSTALL_CMD
 	cd $(BINARIES_DIR) && \
 	tar -czf $(value ROOTFS_GINSTALL_VERSION).gi \
 		version loader.bin loader.sig vmlinuz rootfs.squashfs_ubi && \
-	tar -czf $(value ROOTFS_GINSTALL_VERSION)_not_ubinized.gi \
-		version loader.bin loader.sig vmlinuz rootfs.squashfs && \
 	ln -sf $(value ROOTFS_GINSTALL_VERSION).gi \
-		bruno_ginstall_image.tgz && \
-	ln -sf $(value ROOTFS_GINSTALL_VERSION)_not_ubinized.gi \
-		bruno_ginstall_image_not_ubinized.tgz
+		bruno_ginstall_image.tgz
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))
