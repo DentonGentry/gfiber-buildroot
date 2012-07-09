@@ -34,6 +34,7 @@ define GOOGLE_VC_INSTALL_TEST_TARGET_CMDS
 	$(INSTALL) -D -m 0555 $(@D)/bin/test_pcm $(TARGET_DIR)/home/test/test_pcm
 	$(INSTALL) -D -m 0555 $(@D)/bin/test_alsa $(TARGET_DIR)/home/test/test_alsa
 	$(INSTALL) -D -m 0555 $(@D)/bin/test_audio $(TARGET_DIR)/home/test/test_audio
+	$(INSTALL) -D -m 0555 $(@D)/bin/test_audio_playback $(TARGET_DIR)/home/test/test_audio_playback
 	$(INSTALL) -D -m 0444 $(@D)/bin/libvcme.so $(TARGET_DIR)/usr/lib/libvcme.so
 endef
 else
