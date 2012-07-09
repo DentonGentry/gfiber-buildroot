@@ -49,12 +49,12 @@ define HOST_GOOGLE_SIGNING_SIGN
 endef
 
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/signing/readverity \
-		$(TARGET_DIR)/usr/sbin/readverity
+	$(MAKE) HOST_DIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
+		INSTALL=$(INSTALL) -C $(@D)/signing install
 endef
 
 define GOOGLE_SIGNING_TEST_CMDS
-	(cd $(@D)/signing; ./readverity_test)
+	$(MAKE) HOST_DIR=$(HOST_DIR) -C $(@D)/signing test
 endef
 
 define HOST_GOOGLE_SIGNING_INSTALL_CMDS
