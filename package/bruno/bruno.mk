@@ -7,7 +7,7 @@ BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
 BRUNO_INSTALL_IMAGES=YES
 
-BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus host-python-crypto
+BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus
 
 BRUNO_STAGING_PATH=usr/lib/bruno
 
@@ -21,7 +21,7 @@ define BRUNO_BUILD_CMDS
 endef
 
 define BRUNO_TEST_CMDS
-	$(MAKE) HOSTDIR=$(HOST_DIR) -C $(@D) test
+	$(MAKE) -C $(@D) test
 endef
 
 define BRUNO_INSTALL_STAGING_CMDS

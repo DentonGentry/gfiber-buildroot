@@ -3,19 +3,25 @@
 # Volume check service
 #
 
-# 'data+ubi' partition
+# 'data+ubi' and 'misc+ubi' partitions
 DATA_MTD_NAME='"data+ubi"'
 DATA_MTD_NO=
+MISC_MTD_NAME='"misc+ubi"'
+MISC_MTD_NO=
 
 # 'rootfs' on /dev/ubi0
 # 'data+ubi' on /dev/ubi1
+# 'misc+ubi' on /dev/ubi2
 DATA_UBI_NO=1
+MISC_UBI_NO=2
 
 USER_NAME=user
 CONFIG_NAME=config
+MISC_NAME=misc
 
-USER_SIZE=320MiB
-CONFIG_SIZE=17MiB
+USER_SIZE=760MiB
+CONFIG_SIZE=230MiB
+MISC_SIZE=480MiB
 
 check_mtd() {
   local a b c d e
@@ -75,6 +81,9 @@ mount_volumes() {
 
     # mount UBI 'config' volume
     mount_volume ${CONFIG_NAME} ${2} ${CONFIG_SIZE} || return 1
+  elif [ ${1} -eq ${MISC_MTD_NO} ]; then
+    # mount UBI 'scratch' volume
+    mount_volume ${MISC_NAME} ${2} ${MISC_SIZE} || return 1
   fi
 }
 
@@ -121,6 +130,8 @@ umount_ubifs() {
   if [ ${1} -eq ${DATA_UBI_NO} ]; then
     [ -d /{USER_NAME} ] && umount /${USER_NAME}
     [ -d /{CONFIG_NAME} ] && umount /${CONFIG_NAME}
+  elif [ ${1} -eq ${MISC_UBI_NO} ]; then
+    [ -d /{MISC_NAME} ] && umount /${MISC_NAME}
   else
     return 1
   fi
@@ -133,10 +144,14 @@ case "$1" in
   start)
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
+    MISC_MTD_NO=$(check_mtd ${MISC_MTD_NAME})
 
     echo -n "Starting volume check: "
     mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
       recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
+
+    mount_ubifs ${MISC_MTD_NO} ${MISC_UBI_NO} || \
+      recover_volume ${MISC_MTD_NO} ${MISC_UBI_NO}
 
     [ ! -d /user/rw ] && mkdir -p /user/rw
     [ ! -d /user/bsa ] && mkdir -p /user/bsa
@@ -149,9 +164,11 @@ case "$1" in
   stop)
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
+    MISC_MTD_NO=$(check_mtd ${MISC_MTD_NAME})
 
     echo -n "Stopping volume check: "
     umount_ubifs ${DATA_UBI_NO}
+    umount_ubifs ${MISC_UBI_NO}
     echo "OK"
     ;;
   restart|reload)
