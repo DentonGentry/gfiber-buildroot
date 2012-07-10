@@ -13,7 +13,11 @@ define CATAWAMPUS_BUILD_CMDS
 endef
 
 define CATAWAMPUS_INSTALL_TARGET_CMDS
-	(cd $(@D); DSTDIR=$(TARGET_DIR)/usr/catawampus/ make install)
+	DSTDIR=$(TARGET_DIR)/usr/catawampus/ $(MAKE) -C $(@D) install
+endef
+
+define CATAWAMPUS_TEST_CMDS
+	$(MAKE) -C $(@D) test
 endef
 
 $(eval $(call GENTARGETS))
