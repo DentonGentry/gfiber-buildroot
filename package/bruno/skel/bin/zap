@@ -21,6 +21,8 @@ for mtdname in "data+ubi" "misc+ubi"; do
   fi
 done
 
+rm -f /var/media/Wiz.bak /var/media/ManufacturingBurnin.mov
+
 leds 0  # done
 
 echo "Rebooting in 10 seconds..."
