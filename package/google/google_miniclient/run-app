@@ -33,7 +33,12 @@ netflix)
   ;;
 youtube)
   cd /usr/local/bin/browsertest
-  ./start browsertest http://www.youtube.com/leanback?version=3 2>&1 | logger -t youtube
+  youtubeopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
+  if [ "$youtubeopt" != "" ]; then
+    ./start browsertest $youtubeopt 2>&1 | logger -t youtube
+  else
+    ./start browsertest http://www.youtube.com/leanback?version=3 2>&1 | logger -t youtube
+  fi
   ;;
 *)
   echo Unknown application
