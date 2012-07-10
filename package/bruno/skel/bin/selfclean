@@ -20,14 +20,14 @@ fi
 cleanup()
 {
   trap '' TERM
-  kill -TERM -$$
+  kill -TERM -$childpid
   [ "$1" = 0 ] || echo " -- exited with code $1" >&2
   exit $1
 }
 
 
-"$@" &
-child=$!
+setsid "$@" &
+childpid=$!
 
 # we have to capture signals *after* launching the subprocess, otherwise
 # the signal handlers are inherited by the subprocess, and it will start
@@ -35,4 +35,4 @@ child=$!
 trap 'cleanup $?' EXIT
 trap 'exit $?' TERM
 trap 'exit $?' INT
-wait $!
+wait $childpid
