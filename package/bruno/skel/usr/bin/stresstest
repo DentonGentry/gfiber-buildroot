@@ -119,10 +119,16 @@ main()
     sleep 2
   done
 
-  IPERF_UDP="label retry iperf -t60 -i10 -u"
-  IPERF_TCP="label retry iperf -t60 -i10   "
-  $IPERF_UDP -c $YOU &
-  $IPERF_TCP -c $YOU &
+  if [ -n "$MAX_BANDWIDTH" ]; then
+    # iperf can't explicitly limit bandwidth in TCP mode.  Sigh.  So
+    # skip TCP and use fast UDP instead.
+    log "MAX_BANDWIDTH=$MAX_BANDWIDTH; testing UDP only."
+    label retry iperf -t60 -i10 -u -c $YOU -b "${MAX_BANDWIDTH}M" &
+  else
+    log "MAX_BANDWIDTH not set; testing max rate TCP and slow UDP."
+    label retry iperf -t60 -i10 -u -c $YOU &
+    label retry iperf -t60 -i10    -c $YOU &
+  fi
 
   if fs_writable /var/media; then
     # fast random writes
