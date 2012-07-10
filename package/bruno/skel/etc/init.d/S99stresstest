@@ -1,0 +1,26 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    if [ "$(kernopt run_stresstest)" = 1 ]; then
+      ssid=$(kernopt test_ssid)
+      [ -n "$ssid" ] && burnin-wifi-setup "$ssid"
+      export MAX_BANDWIDTH=$(kernopt test_bandwidth)
+      export DONT_ABORT=$(kernopt test_dont_abort)
+      echo "run_stresstest is set: running stresstest on boot."
+      stresstest &
+    else
+      echo "run_stresstest is not set: skipping."
+    fi
+    ;;
+  stop)
+    pkill stresstest
+    ;;
+  restart)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
