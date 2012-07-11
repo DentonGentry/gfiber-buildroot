@@ -6,7 +6,7 @@ exe=$3
 out=/user/core.gz
 outdir=$(dirname "$out")
 interesting_exe="
-  gpio-mailbox bsa_server
+  gpio-mailbox bsa_server app_gtv
   siege chsrv sagesrv miniclient
   netflix browsertest
   python
