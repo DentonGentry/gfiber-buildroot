@@ -1,7 +1,9 @@
+httpls_part_duration_sec=3
 jetty/jetty.configfiles="/app/sage/jetty/etc/jetty.xml"
 jetty/jetty.home=/app/sage/jetty
 jetty/jetty.log.level=INFO
 jetty/jetty.logs=/tmp/log
+media_server/transcode_debug=true
 sagetv_core_plugins/ant/author=Slugger
 sagetv_core_plugins/ant/beta=false
 sagetv_core_plugins/ant/date=1302418800000
