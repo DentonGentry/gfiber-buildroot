@@ -45,7 +45,11 @@ def HttpDo(method, url, content, headers):
   """Make an HTTP request and return the result."""
   proto, hostport, path, query = UrlSplit(url)
   assert proto.lower() in ('http', 'https')
-  connection = httplib.HTTPConnection(hostport)
+  if proto == 'https':
+    connection = httplib.HTTPSConnection(hostport)
+  else:
+    connection = httplib.HTTPConnection(hostport)
+
   if query:
     path += '?' + query
   connection.request(method, path, content, headers)
