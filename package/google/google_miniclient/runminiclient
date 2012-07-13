@@ -47,7 +47,7 @@ while true; do
     ./run-app
   elif [ "$SERVER" = "" ]; then
     leds 0  # off while in waitpower mode
-    [ -x /app/client/waitpower ] && /app/client/waitpower
+    [ -x /app/client/waitpower ] && /app/client/waitpower 2>&1 | logger -t waitpower
   else
     mv /tmp/config /tmp/configold
     powerret=2
@@ -66,7 +66,7 @@ while true; do
         powerret=1
       else
         leds 0  # off while in waitpower mode
-        [ -x /app/client/waitpower ] && /app/client/waitpower
+        [ -x /app/client/waitpower ] && /app/client/waitpower 2>&1 | logger -t waitpower
         powerret=$?
       fi
       if [ -e /tmp/patch.properties ] ; then
