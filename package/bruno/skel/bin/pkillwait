@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# pkill the process given on the command line, first with SIGTERM,
+# then after max 2 seconds, if it still lives, using SIGKILL.  Don't return
+# until the process is dead.
+#
+if [ "$#" = 0 ]; then
+  echo "usage: $0 <pgrep-options...>" >&2
+  exit 1
+fi
+
+echo -n "Stopping $*: " >&2
+pkill "$@"
+for d in $(seq 20); do
+  pgrep "$@" >/dev/null || { echo done >&2; exit 0; }
+  msleep 100
+  echo -n "." >&2
+done
+pkill -9 "$@"
+echo done >&2
