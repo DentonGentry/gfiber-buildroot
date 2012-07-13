@@ -90,6 +90,7 @@ main()
   # MoCA if the thin bruno is connected over MoCA, or ethernet if it's
   # connected over ethernet, which is a lot like what should happen in real
   # life.
+  pkillwait -x dhclient
 
   if ip link show br0; then
     ethdev=br0
