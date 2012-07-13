@@ -159,6 +159,14 @@ case "$1" in
     [ ! -d /user/drm ] && mkdir -p /user/drm
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
+
+    # TODO: Consolidate overheating code to sysmgr.
+    # See peripheralmon.cc for detail
+    if [ -e /user/rw/overheating ]; then
+      echo "Delay 30 seconds because SOC overheating"
+      sleep 30
+      rm -f /user/rw/overheating
+    fi
     echo "OK"
     ;;
   stop)
