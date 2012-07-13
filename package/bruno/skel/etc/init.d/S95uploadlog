@@ -5,7 +5,7 @@ case "$1" in
 	echo "SOFTWARE_VERSION=$(cat /etc/version)" | logger -t system
 	while :; do
 		upload-crash-log
-		sleep 300
+		log-delay
 	done 2>&1 | logger -t upload-crash-log &
 	;;
   stop)

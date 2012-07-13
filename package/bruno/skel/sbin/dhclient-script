@@ -67,6 +67,8 @@ make_resolv_conf() {
     cat /tmp/resolv.conf.dhclient /tmp/resolv.conf.dhclient6 > /tmp/resolv.conf.new 2>/dev/null
     mv /tmp/resolv.conf.new /tmp/resolv.conf
   fi
+
+  upload-logs-now
 }
 
 atomic() {
@@ -328,9 +330,7 @@ if [ x$reason = xBOUND6 ] ; then
 
   # Check for nameserver options.
   make_resolv_conf
-
   make_cwmp_files
-
   exit_with_hooks 0
 fi
 

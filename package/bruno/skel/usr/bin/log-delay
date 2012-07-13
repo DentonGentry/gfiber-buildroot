@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# upload-crash-log spawns this as a subprocess in between log uploads.
+# Run upload-logs-now to kill this process and make upload-crash-log
+# start immediately (if it isn't already running).
+#
+DELAY=300
+
+sleep "$DELAY" &
+pid=$!
+trap 'kill -15 $pid' EXIT
+trap 'exit 1' INT TERM
+wait

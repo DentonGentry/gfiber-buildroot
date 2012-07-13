@@ -27,4 +27,5 @@ else
   coredump-delay &
   log "dumping core in '$out'"
   gzip -c | dd bs=1024 count=163840 2>/dev/null >"$out"
+  upload-logs-now
 fi
