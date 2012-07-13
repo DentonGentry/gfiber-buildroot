@@ -5,15 +5,16 @@
 
 __author__ = 'apenwarr@google.com (Avery Pennarun)'
 
-import httplib
+
 import os.path
 import signal
+import StringIO
 import sys
 import time
 import urllib
 import zlib
+import pycurl
 import options
-
 
 optspec = """
 upload-logs [options...] <filenames...>
@@ -25,38 +26,52 @@ stdin=             Also upload stdin, with the given virtual filename
 
 
 class HttpError(Exception):
-  def __init__(self, result):
-    self.status = result.status
-    self.reason = result.reason
+  def __init__(self, status):
+    self.status = status
     Exception.__init__(self, str(self))
 
   def __str__(self):
-    return 'http status %d: %s' % (self.status, self.reason)
+    return 'http status: %d' % (self.status)
 
 
-def UrlSplit(url):
-  proto, rest = urllib.splittype(url)
-  hostport, rest = urllib.splithost(rest)
-  path, query = urllib.splitquery(rest)
-  return proto, hostport, path, query
-
-
-def HttpDo(method, url, content, headers):
-  """Make an HTTP request and return the result."""
-  proto, hostport, path, query = UrlSplit(url)
+def HttpDo(method, url, post_data=None, content_type=None):
+  """Make an HTTPS request using pycurl and return the result."""
+  proto, _ = urllib.splittype(url)
   assert proto.lower() in ('http', 'https')
-  if proto == 'https':
-    connection = httplib.HTTPSConnection(hostport)
+  assert method in ('GET', 'POST')
+  outdata = StringIO.StringIO()
+  headers = ['User-Agent: upload-logs']
+  if content_type:
+    headers.append('Content-Type: %s' % content_type)
+  curl = pycurl.Curl()
+  curl.setopt(pycurl.WRITEFUNCTION, outdata.write)
+  curl.setopt(pycurl.VERBOSE, 1)
+  curl.setopt(pycurl.FOLLOWLOCATION, 0)
+  curl.setopt(pycurl.SSL_VERIFYPEER, 1)
+  curl.setopt(pycurl.SSL_VERIFYHOST, 2)
+  curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
+  curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
+  curl.setopt(pycurl.URL, url)
+  curl.setopt(pycurl.HTTPHEADER, headers)
+  if method == 'GET':
+    curl.setopt(pycurl.HTTPGET, True)
   else:
-    connection = httplib.HTTPConnection(hostport)
+    assert post_data is not None
+    request_buffer = StringIO.StringIO(post_data)
 
-  if query:
-    path += '?' + query
-  connection.request(method, path, content, headers)
-  result = connection.getresponse()
-  if result.status != 200:
-    raise HttpError(result)
-  return result.read()
+    def Ioctl(cmd):
+      if cmd == pycurl.IOCMD_RESTARTREAD:
+        request_buffer.seek(0)
+    curl.setopt(pycurl.POST, True)
+    curl.setopt(pycurl.IOCTLFUNCTION, Ioctl)
+    curl.setopt(pycurl.READFUNCTION, request_buffer.read)
+    curl.setopt(pycurl.POSTFIELDSIZE, len(post_data))
+  curl.perform()
+  http_status = curl.getinfo(pycurl.HTTP_CODE)
+  if http_status != 200:
+    raise HttpError(http_status)
+  curl.close()
+  return outdata.getvalue()
 
 
 def UploadFile(url, filename, fileobj, keys):
@@ -66,7 +81,7 @@ def UploadFile(url, filename, fileobj, keys):
   start_url = os.path.join(url, 'upload', filename)
   if keys:
     start_url += '?' + urllib.urlencode(keys)
-  upload_url = HttpDo('GET', start_url, None, headers={})
+  upload_url = HttpDo('GET', start_url)
 
   splitter = 'foo-splitter-%f' % time.time()
   content_type = 'multipart/form-data; boundary=%s' % splitter
@@ -85,9 +100,7 @@ def UploadFile(url, filename, fileobj, keys):
                        data=basecontent))
 
   try:
-    HttpDo('POST', upload_url, attachment,
-           headers={'Content-Type': content_type,
-                    'Content-Length': len(attachment)})
+    HttpDo('POST', upload_url, attachment, content_type)
   except HttpError, e:
     if e.status == 302:
       pass
