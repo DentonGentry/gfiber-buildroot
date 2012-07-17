@@ -1,0 +1,25 @@
+From ae63dab9e2bfbada82a726ab3b62c28c2ffb713c Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 17 Jul 2012 01:37:24 -0400
+Subject: [PATCH] Makefile: use -fPIC for object files.
+
+---
+ src/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 7cfc13d..e39ecab 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -8,7 +8,7 @@
+ PLAT= none
+ 
+ CC= gcc
+-CFLAGS= -O2 -Wall $(MYCFLAGS)
++CFLAGS= -O2 -Wall -fPIC $(MYCFLAGS)
+ AR= ar rcu
+ RANLIB= ranlib
+ RM= rm -f
+-- 
+1.7.9.dirty
+
