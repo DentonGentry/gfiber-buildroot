@@ -92,43 +92,37 @@ main()
   # life.
   pkillwait -x dhclient
 
-  if ip link show br0; then
-    ethdev=br0
-  else
-    ethdev=eth0
-  fi
   if is_fat; then
-    ME=169.254.1.1
-    YOU=169.254.1.2
-    log "Fat bruno: address $ME"
+    log "Fat bruno: operating in server mode."
+    label should_never_die iperf -s &
+    label should_never_die iperf -s -u &
   else
-    ME=169.254.1.2
-    YOU=169.254.1.1
-    log "Thin bruno: address $ME"
-  fi
-  ip addr del $YOU/24 dev $ethdev  # just in case
-  ip addr add $ME/24 dev $ethdev
+    while :; do
+      log "Thin bruno: broadcasting for servers..."
+      SERVERS=$(find-servers)
+      [ -n "$SERVERS" ] && break
+    done
+    log "Found servers: " $SERVERS
 
-  label should_never_die iperf -s &
-  label should_never_die iperf -s -u &
+    for server in $SERVERS; do
+      while ! nc $server 5001 </dev/null; do
+        log "Waiting for iperf server to listen on $server:5001..."
+        sleep 2
+      done
+    done
 
-  while ! ping -c 1 $YOU >/dev/null; do
-    log "Waiting for $YOU to be visible on $ethdev..."
-  done
-  while ! nc $YOU 5001 </dev/null; do
-    log "Waiting for iperf server to listen on $YOU:5001..."
-    sleep 2
-  done
-
-  if [ -n "$MAX_BANDWIDTH" ]; then
-    # iperf can't explicitly limit bandwidth in TCP mode.  Sigh.  So
-    # skip TCP and use fast UDP instead.
-    log "MAX_BANDWIDTH=$MAX_BANDWIDTH; testing UDP only."
-    label retry iperf -t60 -i10 -u -c $YOU -b "${MAX_BANDWIDTH}M" &
-  else
-    log "MAX_BANDWIDTH not set; testing max rate TCP and slow UDP."
-    label retry iperf -t60 -i10 -u -c $YOU &
-    label retry iperf -t60 -i10    -c $YOU &
+    for server in $SERVERS; do
+      if [ -n "$MAX_BANDWIDTH" ]; then
+        # iperf can't explicitly limit bandwidth in TCP mode.  Sigh.  So
+        # skip TCP and use fast UDP instead.
+        log "MAX_BANDWIDTH=$MAX_BANDWIDTH; testing UDP only."
+        label retry iperf -t60 -i10 -u -c $server -b "${MAX_BANDWIDTH}M" -d &
+      else
+        log "MAX_BANDWIDTH not set; testing max rate TCP and slow UDP."
+        label retry iperf -t60 -i10 -u -c $server -d &
+        label retry iperf -t60 -i10    -c $server -d &
+      fi
+    done
   fi
 
   if fs_writable /var/media; then
