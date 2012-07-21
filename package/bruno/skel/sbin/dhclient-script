@@ -110,12 +110,16 @@ make_cwmp_files() {
     atomic /tmp/cwmp/acs_url "$(cat /config/tr69/acs_url)"
     echo cwmp stored acs "$(cat /config/tr69/acs_url)" 2>&1 | logger -t dhcpscript
   elif [ ! -s /tmp/cwmp/acs_url ]; then
-    # No DHCP-provided entry and no fallback; use a hardcoded default and
-    # hope for the best.  Save it to /tmp, but *not* /config, since it's not
-    # a "real" config value (and if the default changes in future software
-    # versions, we want it to take effect).
-    atomic /tmp/cwmp/acs_url "https://acs.prod.gfsvc.com/default/cwmp"
-    echo cwmp default acs https://acs.prod.gfsvc.com/default/cwmp 2>&1 | logger -t dhcpscript
+    # No DHCP-provided entry and no fallback.  Try an alternative source,
+    # then a hardcoded default and hope for the best.  Save it to
+    # /tmp, but *not* /config, since it's not a "real" config value (and if
+    # the fallback behaviour changes in future software versions, we want it
+    # to take effect).
+    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
+    findacs=$(curl -sL "https://gfiber-find-acs.appspot.com/find/$serial")
+    [ -n "$findacs" ] || findacs="https://acs.prod.gfsvc.com/default/cwmp"
+    atomic /tmp/cwmp/acs_url "$findacs"
+    echo cwmp default acs "$findacs" 2>&1 | logger -t dhcpscript
   fi
   if [ -n "$new_cwmp_provisioning_code" ]; then
     atomic /tmp/cwmp/provisioning_code "$new_cwmp_provisioning_code"
