@@ -160,6 +160,10 @@ case "$1" in
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
 
+    # /config must be writeable by non-root
+    chown bin.sys /config
+    chmod 775 /config
+
     # TODO: Consolidate overheating code to sysmgr.
     # See peripheralmon.cc for detail
     if [ -e /user/rw/overheating ]; then
