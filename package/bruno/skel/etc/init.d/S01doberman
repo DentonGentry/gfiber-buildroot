@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Start watchdog
+#
+
+case "$1" in
+  start)
+	echo -n "Starting watchdog: "
+	/usr/bin/watchdog > /dev/null &
+	echo "OK"
+	;;
+  stop)
+	echo -n "Stopping watchdog: "
+	pkill watchdog
+	echo "Warning, killing the watchdog will reboot the system."
+	echo "OK"
+	;;
+  restart|reload)
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
