@@ -137,5 +137,9 @@ config BR2_PACKAGE_MTD_UBIUPDATEVOL
 	bool "ubiupdatevol"
 	default y
 
+config BR2_PACKAGE_MTD_UBISCRUBBER
+	bool "ubiscrubber"
+	default y
+
 endif
 
