@@ -2,18 +2,17 @@
 
 case "$1" in
   start)
-	echo -n "Initializing Wifi service: "
-
 	wifi="eth2"
-	wifimac=$(cat /sys/class/net/${wifi}/address)
+	wifisys=/sys/class/net/${wifi}/address
 
-	if [ x"${wifimac}" != "x" ] ; then
-	  /usr/bin/wl ap 1
-	  /usr/bin/wl radio off
-	  /usr/bin/wl bssid ${wifimac}
+	if [ -f $wifisys ] ; then
+	  echo -n "Initializing Wifi service: "
+	  wifimac=$(cat $wifisys)
+	  wl ap 1
+	  wl radio off
+	  wl bssid "$wifimac"
+	  echo "done"
 	fi
-
-	echo "done"
 	;;
   stop)
 	;;
