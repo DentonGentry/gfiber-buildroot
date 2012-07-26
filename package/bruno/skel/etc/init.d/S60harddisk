@@ -6,10 +6,8 @@ case "$1" in
     if [ -e /dev/sda ]; then
       echo "Mounting SATA device"
       if [ -e /dev/sda1 ]; then
-        mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda1 /var/media
-
-        #TODO(apenwarr): /var/backup may be obsolete.  Investigate.
-        [ -e /dev/sda2 ] && mount -o noatime -t ext4 /dev/sda2 /var/backup
+        mount -o noatime,barrier=0,data=writeback,noexec,nosuid,nodev -t ext4 /dev/sda1 /var/media
+        [ -e /dev/sda2 ] && mount -o noatime,noexec,nosuid,nodev -t ext4 /dev/sda2 /var/backup
       elif [ -h /dev/sda ]; then
         mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda /var/media
       fi
@@ -18,8 +16,8 @@ case "$1" in
   stop)
     # Unmount SATA device
     echo "Unmounting SATA device"
-    mountpoint -q /var/media && umount /var/media
-    mountpoint -q /var/backup && umount /var/backup
+    umount /var/media 2>&1 >/dev/null
+    umount /var/backup 2>&1 >/dev/null
     ;;
   restart|reload)
     "$0" stop
