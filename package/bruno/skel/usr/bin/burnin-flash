@@ -5,14 +5,11 @@
 
 __author__ = 'dgentry@google.com (Denton Gentry)'
 
-import binascii
 import ctypes
 import fcntl
-import mmap
 import os
 import os.path
-import random
-import struct
+import subprocess
 import sys
 import time
 import options
@@ -47,7 +44,8 @@ def GetMtdStats(mtddev):
     an MtdEccStats.
   """
 
-  ECCGETSTATS = 0x40104d12  # ECCGETSTATS _IOR('M', 18, struct mtd_ecc_stats)
+  # ECCGETSTATS _IOR('M', 18, struct mtd_ecc_stats)
+  ECCGETSTATS = 0x40104d12  # pylint: disable-msg=C6409
   with open(mtddev, 'r') as f:
     ecc = MtdEccStats()
     if fcntl.ioctl(f, ECCGETSTATS, ctypes.addressof(ecc)) != 0:
@@ -68,8 +66,6 @@ def main():
     filename = os.path.join(filename, 'burnin.tmp')
 
   f = open(filename, 'w+')
-  mem = mmap.mmap(-1, 16 * 1024)
-  vmfd = open('/proc/sys/vm/drop_caches', 'w+')
 
   # we still have the file open; this will ensure it gets deleted upon
   # process exit.
@@ -81,29 +77,24 @@ def main():
 
   while now - start_time < opt.runtime:
     try:
-      for i in range(16):
-        # strongly random data so as to not compress well.
-        DSIZ = 4096
-        mem.seek(0, os.SEEK_SET)
-        randlist = [random.getrandbits(32) for i in range(DSIZ)]
-        mem.write(struct.pack('@4096I', *randlist))
+      # strongly random data so as to not compress well.
+      dsiz = 1048576
+      randdata = subprocess.check_output(['randomdata', '0', str(dsiz)])
 
-        # write random data to flash
-        f.seek(0, os.SEEK_SET)
-        f.write(mem)
-        f.flush()
-        os.fsync(f.fileno())
+      # write random data to flash
+      f.seek(0, os.SEEK_SET)
+      f.write(randdata)
+      f.flush()
+      os.fsync(f.fileno())
 
-        # read back, to notice ECC errors.
-        vmfd.write('3')
-        vmfd.flush()
-        f.seek(0, os.SEEK_SET)
-        readback = binascii.hexlify(f.read(4 * DSIZ))
-        expected = binascii.hexlify(mem)
-        if readback != expected:
-          sys.stderr.write('Read back from %s does not match written\n' % filename)
-          return 2
-        nbytes += DSIZ
+      # read back, to notice ECC errors.
+      open('/proc/sys/vm/drop_caches', 'w+').write('3')
+      f.seek(0, os.SEEK_SET)
+      readback = f.read(dsiz)
+      if readback != randdata:
+        sys.stderr.write('Read back from %s != written\n' % filename)
+        return 2
+      nbytes += dsiz
     except (OSError, IOError) as e:
       sys.stderr.write('%s write: %s\n' % (filename, e))
       return 2
