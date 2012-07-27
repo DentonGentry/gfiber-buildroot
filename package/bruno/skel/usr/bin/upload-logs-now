@@ -1,0 +1,3 @@
+#!/bin/sh
+# See log-delay script for explanation.
+pkill -x log-delay

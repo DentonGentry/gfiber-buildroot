@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# While this program is running, /bin/coredump won't save new core dumps.
+# That prevents us from accidentally killing the flash by writing a zillion
+# core dumps in a tight loop.
+#
+# To re-enable core dumps right away, just do "pkill coredump-min-delay".
+#
+DELAY=600
+
+echo "coredump: core dumps disabled for $DELAY seconds." >&2
+
+trap 'echo "coredump: core dumps re-enabled." >&2' EXIT
+trap 'exit 1' INT TERM
+
+# We need to run it in the background because wait is interruptible
+# by signals, but normal foreground commands are not.
+sleep "$DELAY" &
+wait

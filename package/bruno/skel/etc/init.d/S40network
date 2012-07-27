@@ -59,10 +59,12 @@ case "$1" in
 				brctl addif br0 $x
 			fi
 		done
-		sleep 1
 		echo -n "Bringing up the bridge... "
 		ifup br0
 		echo "done"
+	else
+		# nfsroot; network is already up
+		upload-logs-now
 	fi
 
 	# Set up MoCA link -
