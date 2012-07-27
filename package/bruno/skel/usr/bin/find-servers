@@ -1,0 +1,54 @@
+#!/usr/bin/python -S
+# Copyright 2012 Google Inc. All Rights Reserved.
+#
+"""Prints the IP address of the local sageserver storage device."""
+
+__author__ = 'apenwarr@google.com (Avery Pennarun)'
+
+import re
+import select
+import socket
+import subprocess
+import sys
+
+
+def IPv4Broadcasts():
+  p = subprocess.Popen(['ip', 'addr'], stdout=subprocess.PIPE)
+  data = p.stdout.read()
+  rv = p.wait()
+  if rv:
+    raise Exception('ip addr: exit code %d' % rv)
+  return set(re.findall(re.compile(r'^\s*inet\b.*\bbrd ([\d\.]+)', re.M),
+                        data))
+
+
+def main():
+  msg = 'STV' + chr(1) + chr(99) + chr(0) + (chr(0) * 26)
+  s1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  s1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+  s2 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+  s2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+  addrs = IPv4Broadcasts()
+  answers = set()
+
+  r = None
+  for i in xrange(10):
+    if not r:
+      for addr in addrs:
+        s1.sendto(msg, (addr, 31100))
+      s2.sendto(msg, ('ff02::1', 31100))
+    r, _, _ = select.select([s1,s2], [], [], 0.5)
+    if r:
+      for i in r:
+        buf, addr = i.recvfrom(1024)
+        if buf:
+          if addr not in answers:
+            print addr[0]
+            sys.stdout.flush()
+          answers.add(addr)
+    if answers:
+      sys.exit(0)
+  sys.exit(1)
+
+if __name__ == '__main__':
+  main()
