@@ -22,7 +22,7 @@ case $VIDEO_RESOLUTION in
   ;;
 esac
 
-DFBARGS="mode=1280x720,res=$res"
+DFBARGS="no-sighandler,mode=1280x720,res=$res"
 export DFBARGS
 
 case $appname in
