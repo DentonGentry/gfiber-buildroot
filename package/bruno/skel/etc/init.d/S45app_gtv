@@ -5,22 +5,20 @@ if [ ! -e /dev/btusb0 ]; then
 fi
 
 BT_MAC_ADDR=`hnvram -rq MAC_ADDR_BT`
+BT_NAME=`hnvram -rq PLATFORM_NAME`
 
 case "$1" in
   start)
-	echo -n "Starting app_gtv service: "
 	cd /user/bsa
-	babysit 30 app_gtv -a "${BT_MAC_ADDR}" -k 2>&1 | logger -t app_gtv &
-	echo "done"
+        babysit 30 app_gtv -a "${BT_MAC_ADDR}" -n "${BT_NAME}" -k \
+            2>&1 | logger -t app_gtv &
 	;;
   stop)
-	echo -n "Shutting down app_gtv service: "
-	pkill -x app_gtv
-	echo "done"
+	pkillwait -x app_gtv
 	;;
 
   restart)
-	$0 stop; sleep 2; $0 start
+	$0 stop; $0 start
 	;;
   *)
         echo "Usage: $0 {start|stop|restart}"
