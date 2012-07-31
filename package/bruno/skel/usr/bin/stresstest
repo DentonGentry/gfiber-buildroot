@@ -91,12 +91,17 @@ main()
     label should_never_die iperf -s &
     label should_never_die iperf -s -u &
   else
-    while :; do
-      log "Thin bruno: broadcasting for servers..."
-      SERVERS=$(find-servers)
-      [ -n "$SERVERS" ] && break
-    done
-    log "Found servers: " $SERVERS
+    if [ -z "$SERVER_IP" ]; then
+      while :; do
+        log "Thin bruno: broadcasting for servers..."
+        SERVERS=$(find-servers)
+        [ -n "$SERVERS" ] && break
+      done
+      log "Found servers: " $SERVERS
+    else
+      SERVERS=$SERVER_IP
+      log "Hardcoded \$SERVER_IP: $SERVERS"
+    fi
 
     for server in $SERVERS; do
       while ! nc $server 5001 </dev/null; do
