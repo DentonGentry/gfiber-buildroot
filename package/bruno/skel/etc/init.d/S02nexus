@@ -11,7 +11,8 @@ fi
 
 # Populate the platform ID
 PLAT=$(hnvram -r PLATFORM_NAME)
-echo ${PLAT#PLATFORM_NAME=} >/etc/platform
+PLATFORM=${PLAT#PLATFORM_NAME=}
+echo $PLATFORM >/etc/platform
 chmod 444 /etc/platform
 
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
@@ -22,7 +23,11 @@ ulimit -c 49152
 babysit 300 gpio-mailbox 2>&1 | logger -t gpio-mailbox &
 wait-until-created /var/run/gpio-mailbox
 
-hostname gfibertv
+if [ "$PLATFORM" = "GFMS100" ]; then
+  hostname gfiberstorage
+else
+  hostname gfibertv
+fi
 
 # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
 echo -1 >/proc/sys/kernel/sched_rt_runtime_us

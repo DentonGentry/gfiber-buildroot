@@ -129,7 +129,7 @@ make_cwmp_files() {
 
 make_etc_hosts() {
   (
-    echo "$new_ip_address    gfibertv"
+    echo "$new_ip_address    `hostname`"
     echo "127.0.0.1  localhost"
   ) >/tmp/hosts
 }
