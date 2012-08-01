@@ -1,0 +1,37 @@
+#!/bin/sh
+# Usage:
+#   kernopt [names...]
+#
+# Prints exactly one line containing the value for each "name." We read
+# /proc/cmdline and parse all the key=value pairs, printing the 'value' part
+# if an entry exists where key=name.  If the "=value" part is missing, the
+# value is 1.  If there is no matching key, the value is the empty string.
+#
+# We also look in the environment variable KERNEL_EXTRA for additional
+# options that take precedence over /proc/cmdline.  This is mostly to allow
+# easier testing of scripts that call this one without rebooting over and
+# over.
+#
+
+for want in "$@"; do
+  # This would be easier with sed, but our rootfs currently doesn't have sed.
+  # So we do this slightly insane loop to split on both lines and words.
+  {
+    echo "$KERNEL_EXTRA"
+    while read line; do
+      echo "$line"
+    done </proc/cmdline
+  } | {
+    while read line; do
+      set -- $line
+      for i in "$@"; do
+        echo "$i"
+      done
+    done
+  } | {
+    while IFS== read key value; do
+      [ "$key" = "$want" ] && echo "${value:=1}" && exit 0
+    done
+    echo  # default value
+  }
+done

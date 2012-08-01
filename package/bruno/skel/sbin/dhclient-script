@@ -27,6 +27,12 @@
 # 'ip' just looks too weird.  /sbin/ip looks less weird.
 ip=/sbin/ip
 
+wifi_ifc=eth2
+
+routable_ifc() {
+  [ "$interface" != "$wifi_ifc" ]
+}
+
 make_resolv_conf() {
   if [ x"$new_domain_name_servers" != x ]; then
     cat /dev/null > /tmp/resolv.conf.dhclient
@@ -106,12 +112,16 @@ make_cwmp_files() {
     atomic /tmp/cwmp/acs_url "$(cat /config/tr69/acs_url)"
     echo cwmp stored acs "$(cat /config/tr69/acs_url)" 2>&1 | logger -t dhcpscript
   elif [ ! -s /tmp/cwmp/acs_url ]; then
-    # No DHCP-provided entry and no fallback; use a hardcoded default and
-    # hope for the best.  Save it to /tmp, but *not* /config, since it's not
-    # a "real" config value (and if the default changes in future software
-    # versions, we want it to take effect).
-    atomic /tmp/cwmp/acs_url "https://acs.prod.gfsvc.com/default/cwmp"
-    echo cwmp default acs https://acs.prod.gfsvc.com/default/cwmp 2>&1 | logger -t dhcpscript
+    # No DHCP-provided entry and no fallback.  Try an alternative source,
+    # then a hardcoded default and hope for the best.  Save it to
+    # /tmp, but *not* /config, since it's not a "real" config value (and if
+    # the fallback behaviour changes in future software versions, we want it
+    # to take effect).
+    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
+    findacs=$(curl -sL "https://gfiber-find-acs.appspot.com/find/$serial")
+    [ -n "$findacs" ] || findacs="https://acs.prod.gfsvc.com/default/cwmp"
+    atomic /tmp/cwmp/acs_url "$findacs"
+    echo cwmp default acs "$findacs" 2>&1 | logger -t dhcpscript
   fi
   if [ -n "$new_cwmp_provisioning_code" ]; then
     atomic /tmp/cwmp/provisioning_code "$new_cwmp_provisioning_code"
@@ -221,19 +231,21 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
       ${ip} link set dev ${interface} mtu ${new_interface_mtu}
     fi
     # Add a network route to the computed network address.
-    if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ] ; then
-       # if we've changed routers delete the old and add the new.
-      for router in $old_routers; do
-        ${ip} -4 route del via $router
+    if routable_ifc; then
+      if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ] ; then
+         # if we've changed routers delete the old and add the new.
+        for router in $old_routers; do
+          ${ip} -4 route del via $router
+        done
+      fi
+      for router in $new_routers; do
+        if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
+          ${ip} -4 route add ${router} dev $interface
+        fi
+        ${ip} -4 route add default via ${router} dev ${interface} \
+                    ${metric_arg}
       done
     fi
-    for router in $new_routers; do
-      if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
-        ${ip} -4 route add ${router} dev $interface
-      fi
-      ${ip} -4 route add default via ${router} dev ${interface} \
-                  ${metric_arg}
-    done
   fi
   if [ x$new_ip_address != x$alias_ip_address ] && [ x$alias_ip_address != x ];
    then
@@ -277,7 +289,7 @@ if [ x$reason = xTIMEOUT ]; then
     ip link set dev ${interface} mtu ${new_interface_mtu}
   fi
   set $new_routers
-  if ping -q -c 1 $1; then
+  if routable_ifc && ping -q -c 1 $1; then
     if [ x$new_ip_address != x$alias_ip_address ] && \
 			[ x$alias_ip_address != x ]; then
       ${ip} -4 addr add ${alias_ip_address}${alias_mask} \
