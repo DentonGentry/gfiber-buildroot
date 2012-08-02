@@ -5,7 +5,7 @@ export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
 
 # Send our output (and that of our child processes) to /dev/kmsg so it'll be
 # timestamped and uploaded along with the kernel messages.  We can't use
-# /bin/logger here because syslogd isn't started yet, and anyway, doing it
+# logger here because syslogd isn't started yet, and anyway, doing it
 # this way guarantees all our boot messages are in exactly the right order.
 exec >/dev/kmsg 2>&1
 
