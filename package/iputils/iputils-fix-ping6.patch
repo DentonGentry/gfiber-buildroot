@@ -1,0 +1,65 @@
+From d743ff30f87b95917eaa97b80585d8e2757cebbf Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 2 Aug 2012 00:00:21 -0400
+Subject: [PATCH] Make ping6 build under buildroot.
+
+To do this, disable the -N option, which doesn't seem very important anyway,
+but which creates dependencies on libresolv and libcrypto.  And the libresolv
+dependency doesn't work with ublibc.
+---
+ Makefile |    2 +-
+ ping6.c  |    5 +++++
+ 2 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index d9a5ca5..252862e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -29,7 +29,7 @@ all: $(TARGETS)
+ tftpd: tftpd.o tftpsubs.o
+ arping: arping.o -lsysfs
+ ping: ping.o ping_common.o
+-ping6: ping6.o ping_common.o -lresolv -lcrypto
++ping6: ping6.o ping_common.o
+ ping.o ping6.o ping_common.o: ping_common.h
+ tftpd.o tftpsubs.o: tftp.h
+ 
+diff --git a/ping6.c b/ping6.c
+index c5ff881..9c6e8d7 100644
+--- a/ping6.c
++++ b/ping6.c
+@@ -223,6 +223,7 @@ unsigned int if_name2index(const char *ifname)
+ 	return i;
+ }
+ 
++#if NIQUERY_OPTIONS
+ struct niquery_option {
+ 	char *name;
+ 	int namelen;
+@@ -513,6 +514,8 @@ char *ni_groupaddr(const char *name)
+ 	return nigroup_buf;
+ }
+ 
++#endif /* NIQUERY_OPTIONS */
++
+ int main(int argc, char *argv[])
+ {
+ 	int ch, hold, packlen;
+@@ -595,12 +598,14 @@ int main(int argc, char *argv[])
+ 		case 'V':
+ 			printf("ping6 utility, iputils-ss%s\n", SNAPSHOT);
+ 			exit(0);
++#if NIQUERY_OPTIONS
+ 		case 'N':
+ 			if (niquery_option_handler(optarg) < 0) {
+ 				usage();
+ 				break;
+ 			}
+ 			break;
++#endif
+ 		COMMON_OPTIONS
+ 			common_options(ch);
+ 			break;
+-- 
+1.7.9.dirty
+
