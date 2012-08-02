@@ -26,10 +26,27 @@ die()
 trap 'log EXITED; sh' EXIT
 
 
-# Mount /dev, /proc, /sys, /rootfs
-/mounts || die "couldn't mount filesystems"
+# Mount /dev, /proc, /sys
+/mounts-sys || die "couldn't mount special purpose directories"
 
 INIT=$(cat /tmp/initcmd)
+CURRENT_PARTITION_VER=1
+PREVIOUS_PARTITION_VER=$(hnvram -qr PARTITION_VER)
+
+if [ $? = 0 ]; then
+  if [ "$CURRENT_PARTITION_VER" != "$PREVIOUS_PARTITION_VER" ]; then
+    log "Mismatched partition, repartitioning to $CURRENT_PARTITION_VER..."
+    /recover $CURRENT_PARTITION_VER && \
+      hnvram -w PARTITION_VER=$CURRENT_PARTITION_VER
+  fi
+else
+  log "Missing partition version, set it to ${CURRENT_PARTITION_VER}."
+  hnvram -w PARTITION_VER=$CURRENT_PARTITION_VER || \
+    log 'Failed to set partition version to hnvram.'
+fi
+
+# Mount /rootfs
+/mounts-root || die "couldn't mount root filesystems"
 
 log 'Looking for init in rootfs.  To bypass this, use init=/bin/sh'
 for init in "$INIT" /sbin/init /linuxrc /bin/sh; do

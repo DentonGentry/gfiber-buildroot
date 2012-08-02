@@ -25,7 +25,8 @@ define SIMPLERAMFS_BUILD_CMDS
 	done
 
 	# the initramfs /init script, executed by the kernel by default
-	ln -f fs/simpleramfs/init fs/simpleramfs/mounts $(@D)/fs/
+	ln -f fs/simpleramfs/init fs/simpleramfs/recover \
+		fs/simpleramfs/mounts-sys fs/simpleramfs/mounts-root $(@D)/fs/
 
 	# the checksum file base content (to be search-and-replaced later as
 	# part of ginstall signing)
@@ -61,6 +62,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/usr/sbin/dmsetup \
 		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
+		$(TARGET_DIR)/usr/bin/hnvram \
 		$(@D)/fs/bin/
 
 	# strip all the binaries
