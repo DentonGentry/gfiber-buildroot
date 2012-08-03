@@ -1,46 +1,49 @@
 #!/bin/sh
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-appname=$(python -c "import sys;[sys.stdout.write(l.split(' ')[0].strip()) for l in sys.stdin]" < /tmp/runappold)
+read appname opts </tmp/runappold
 
 # Use same output resolution as miniclient was using
-res=720p
 case $VIDEO_RESOLUTION in
-1920x1080p@24*)
-  res=1080p
-  ;;
-1920x1080p@60*)
-  res=1080p
-  ;;
-1920x1080i@60*)
-  res=1080i
-  ;;
-720x480p@60*)
-  res=480p
-  ;;
-720x480i@60*)
-  res=480i
-  ;;
+  1920x1080p@24*) res=1080p ;;
+  1920x1080p@60*) res=1080p ;;
+  1920x1080i@60*) res=1080i ;;
+  720x480p@60*)   res=480p  ;;
+  720x480i@60*)   res=480i  ;;
+  *)              res=720p  ;;
 esac
+echo "res='$res'"
 
-DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
-export DFBARGS
+export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
+
+# Install DFB /dev/input/event nodes
+/usr/local/bin/directfb/1.4/rundfb.sh install
 
 case $appname in
-netflix)
-  cd /usr/local/bin/netflix
-  netflixopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
-  ./start netflix $netflixopt 2>&1 | logger -t netflix
-  ;;
-youtube)
-  cd /usr/local/bin/browsertest
-  youtubeopt=$(python -c "import sys;[sys.stdout.write(l.split(' ')[1].strip()) for l in sys.stdin]" < /tmp/runappold)
-  if [ "$youtubeopt" != "" ]; then
-    ./start browsertest $youtubeopt 2>&1 | logger -t youtube
-  else
-    ./start browsertest http://www.youtube.com/leanback?version=3 2>&1 | logger -t youtube
-  fi
-  ;;
-*)
-  echo Unknown application
-  ;;
+  netflix)
+    cd /usr/local/bin/netflix
+    export PATH=$PWD:$PATH
+    export QWS_DISPLAY=directfb:boundingrectflip
+    export QT_QWS_FONTDIR=/usr/local/lib/fonts/
+    export QT_PLUGIN_PATH=/usr/local/plugins/
+    export NF_DEV_AUDIOPROFILE=PLAYREADY
+    export NF_DEV_VIDEOPROFILE=PLAYREADY
+    # Bruno startup will extract the idfile from flash and store it in /tmp
+    export NF_IDFILE=/tmp/idfile.secure
+    netflix $opts 2>&1 | logger -t netflix
+    ;;
+  youtube)
+    cd /usr/local/bin/browsertest
+    export PATH=$PWD:$PATH
+    export FONTCONFIG_FILE=/usr/local/bin/browsertest/fonts.conf
+    export FLASH_BYPASS_BROWSER_INVALIDATES=1
+    # User-agent provided by broadcom [CASE#497867]
+    export BRCM_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.12 Safari/535.11"
+    [ -z "$opts" ] && opts='http://www.youtube.com/leanback?version=3'
+    browsertest $opts 2>&1 | logger -t youtube
+    ;;
+  *)
+    echo "Unknown application." >&2
+    exit 1
+    ;;
 esac

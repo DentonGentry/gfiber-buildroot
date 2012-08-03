@@ -2,10 +2,11 @@
 PLATFORM=$(cat /etc/platform)
 cd /app/client
 
-updateConfig()
+update_config()
 {
   if [ -e /tmp/config ] ; then
     . /tmp/config
+    mv /tmp/config /tmp/configold
   fi
   export VIDEO_OUTPUT
   export VIDEO_RESOLUTION
@@ -15,63 +16,53 @@ updateConfig()
   export SERVER_NAME
 }
 
-readword()
-{
-  hnvram -r "$1" | (IFS== read key value; echo "$value")
-}
-
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
-export SERIALNUMBER=$(readword 1ST_SERIAL_NUMBER)
-[ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(readword SERIAL_NO)
+export SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
+[ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(hnvram -qr SERIAL_NO)
 
 ulimit -c 49152
 
-while true; do
-  fatbrunomode=""
-  if [ "$PLATFORM" != "GFHD100" ]; then
-    fatbrunomode="--encodemode"
-  fi
-  cd /app/client
-  updateConfig
-  leds 4  # solid activity light while running miniclient
-  /app/client/miniclient $fatbrunomode 127.0.0.1
-  mcstate=$?
-  SERVER=""
-  updateConfig
-  if [ "$mcstate" != "0" ]; then
-    echo "Unexpected exit, miniclient restarting"
-  elif [ -e /tmp/runapp ] ; then
-    mv /tmp/runapp /tmp/runappold
-    cd /app/client
-    leds 5  # activity+red while app is running
-    ./run-app
-  elif [ "$SERVER" = "" ]; then
-    leds 0  # off while in waitpower mode
-    [ -x /app/client/waitpower ] && /app/client/waitpower 2>&1 | logger -t waitpower
-  else
-    mv /tmp/config /tmp/configold
-    powerret=2
-    while [ "$powerret" = "2" ]; do
-      if [ "$SERVER_MAC" != "" ]; then
-        /usr/bin/ether-wake $SERVER_MAC
-      fi
+SERVER_MAC=
+opts=
+if [ "$PLATFORM" != "GFHD100" ]; then
+  opts="$opts --encodemode"
+  mode=miniclient
+else
+  # TV box starts in powered-off mode
+  mode=waitpower
+fi
+
+SERVER=127.0.0.1
+SERVER_MAC=
+
+while :; do
+  update_config  # may change $SERVER or other things
+  echo "$0: mode: '$mode'"
+  case "$mode" in
+    miniclient)
       leds 4  # solid activity light while running miniclient
-      /app/client/miniclient $fatbrunomode $SERVER
-      if [ -e /tmp/runapp ] ; then
-        mv /tmp/runapp /tmp/runappold
-        leds 5  # activity+red while app is running
-        cd /app/client
-        ./run-app
-      elif [ -e /tmp/goalone ] ; then
-        powerret=1
+      [ -n "$SERVER_MAC" ] && [ ! -e /tmp/goalone ] && ether-wake $SERVER_MAC
+      ./miniclient $opts "$SERVER"
+      mcstate=$?
+      SERVER=127.0.0.1
+      if [ "$mcstate" != "0" ]; then
+        echo "Unexpected exit, miniclient restarting"
+      elif [ -e /tmp/runapp ] ; then
+        mode=app
       else
-        leds 0  # off while in waitpower mode
-        [ -x /app/client/waitpower ] && /app/client/waitpower 2>&1 | logger -t waitpower
-        powerret=$?
+        mode=waitpower
       fi
-      if [ -e /tmp/patch.properties ] ; then
-        powerret=1
-      fi
-    done
-  fi
+      ;;
+    app)
+      mv /tmp/runapp /tmp/runappold
+      leds 5  # blue+red while app is running
+      ./run-app
+      mode=miniclient
+      ;;
+    waitpower)
+      leds 0  # off while in waitpower mode
+      ./waitpower 2>&1 | logger -t waitpower
+      mode=miniclient
+      ;;
+  esac
 done
