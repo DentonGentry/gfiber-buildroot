@@ -33,7 +33,7 @@ while true; do
   fi
   cd /app/client
   updateConfig
-  leds 2  # solid blue while running miniclient
+  leds 4  # solid activity light while running miniclient
   /app/client/miniclient $fatbrunomode 127.0.0.1
   mcstate=$?
   SERVER=""
@@ -43,7 +43,7 @@ while true; do
   elif [ -e /tmp/runapp ] ; then
     mv /tmp/runapp /tmp/runappold
     cd /app/client
-    leds 5  # blue+red while app is running
+    leds 5  # activity+red while app is running
     ./run-app
   elif [ "$SERVER" = "" ]; then
     leds 0  # off while in waitpower mode
@@ -55,11 +55,11 @@ while true; do
       if [ "$SERVER_MAC" != "" ]; then
         /usr/bin/ether-wake $SERVER_MAC
       fi
-      leds 2  # solid blue while running miniclient
+      leds 4  # solid activity light while running miniclient
       /app/client/miniclient $fatbrunomode $SERVER
       if [ -e /tmp/runapp ] ; then
         mv /tmp/runapp /tmp/runappold
-        leds 5  # blue+red while app is running
+        leds 5  # activity+red while app is running
         cd /app/client
         ./run-app
       elif [ -e /tmp/goalone ] ; then
