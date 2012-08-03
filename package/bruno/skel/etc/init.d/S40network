@@ -59,35 +59,26 @@ case "$1" in
 				brctl addif br0 $x
 			fi
 		done
-		echo -n "Bringing up the bridge... "
+		echo "Bringing up the bridge..."
 		ifup br0
-		echo "done"
 	else
 		# nfsroot; network is already up
 		upload-logs-now
 	fi
 
-	# Set up MoCA link -
-	# 1) Kill mocad and mocactl
-	# 2) Issue "mocacfg boot"
 	if [ -e /dev/bmoca0 ]; then
-		echo -n "mocacfg kill"
-		mocacfg kill
-		echo "done"
 		echo "distribute IRQ handling between cores"
 		# IRQ 62 (Serial port) & 31 (MoCA) on CPU 1.
-		echo 1 > /proc/irq/62/smp_affinity
-		echo 1 > /proc/irq/31/smp_affinity
+		echo 1 >/proc/irq/62/smp_affinity
+		echo 1 >/proc/irq/31/smp_affinity
 		# Ethernet interrupts (18-21) on CPU 2.
-		echo 2 > /proc/irq/18/smp_affinity
-		echo 2 > /proc/irq/19/smp_affinity
-		echo 2 > /proc/irq/20/smp_affinity
-		echo 2 > /proc/irq/21/smp_affinity
-		echo "done"
-		echo -n "mocacfg boot "
+		echo 2 >/proc/irq/18/smp_affinity
+		echo 2 >/proc/irq/19/smp_affinity
+		echo 2 >/proc/irq/20/smp_affinity
+		echo 2 >/proc/irq/21/smp_affinity
+		echo "mocacfg boot..."
 		mkdir -p /tmp/moca
-		mocacfg boot
-		echo "done"
+		mocacfg boot &  # a bit slow, so don't bother waiting
 	fi
 
 	;;
@@ -120,7 +111,7 @@ case "$1" in
 	"$0" start
 	;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
+	echo "Usage: $0 {start|stop|restart}"
 	exit 1
 esac
 

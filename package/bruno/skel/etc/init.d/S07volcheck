@@ -146,7 +146,6 @@ case "$1" in
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
     MISC_MTD_NO=$(check_mtd ${MISC_MTD_NAME})
 
-    echo -n "Starting volume check: "
     mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
       recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
 
@@ -171,17 +170,14 @@ case "$1" in
       sleep 30
       rm -f /user/rw/overheating
     fi
-    echo "OK"
     ;;
   stop)
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
     MISC_MTD_NO=$(check_mtd ${MISC_MTD_NAME})
 
-    echo -n "Stopping volume check: "
     umount_ubifs ${DATA_UBI_NO}
     umount_ubifs ${MISC_UBI_NO}
-    echo "OK"
     ;;
   restart|reload)
     ;;

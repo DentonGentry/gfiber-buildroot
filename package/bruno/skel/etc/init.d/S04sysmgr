@@ -1,37 +1,22 @@
 #!/bin/sh
 
-RETVAL=0
-
-start() {
-  babysit 5 sysmgr --interval 60000 2>&1 | logger -t sysmgr &
-  RETVAL=$?
-  return $RETVAL
-}
-
-stop() {
-  pkill -x sysmgr
-  RETVAL=$?
-  return $RETVAL
-}
-
-restart() {
-  stop
-  start
-}
-
 case "$1" in
   start)
-    start
-  ;;
+    (
+      # This takes a half-second or so to start, so wait in the background
+      # in order to speed up booting.
+      wait-until-created /var/run/gpio-mailbox
+      babysit 5 sysmgr --interval 60000 2>&1 | logger -t sysmgr &
+    ) &
+    ;;
   stop)
-    stop
-  ;;
+    pkillwait -x sysmgr
+    ;;
   restart)
-    restart
-  ;;
+    $0 stop; $0 start
+    ;;
   *)
-  echo "Usage: $0 {start|stop|restart}"
-  exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
 esac
-
-exit $RETVAL
