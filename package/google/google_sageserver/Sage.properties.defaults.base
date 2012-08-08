@@ -379,3 +379,5 @@ ui/thread_hang_delay_to_dump=60000
 sync_system_clock=false
 seeker/generate_thumbnail_when_recordings_complete=false
 remove_padding_on_back_to_back_favorites=false
+enable_hotplug_storage_detector=false
+
