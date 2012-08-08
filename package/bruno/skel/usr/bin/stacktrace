@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# This script uses gdb to grab a stacktrace of the given running process
+# or thread.  For a multi-threaded process, use 'ps ax -fL' to get a list
+# of all its thread ids that you might want to trace.
+#
+# Realistically, this script is most useful for a program to call on
+# itself upon receiving a signal like SIGSEGV.
+#
+
+die()
+{
+  echo "$@" >&2
+  exit 1
+}
+
+
+[ -n "$1" ] || die "Usage: $0 <pid>"
+pid=$1
+[ -e "/proc/$pid/exe" ] || die "pid invalid: /proc/$pid/exe does not exist"
+
+
+gdb --batch \
+    -ex "set heuristic-fence-post 100000" \
+    -ex bt \
+    "/proc/$pid/exe" \
+    --pid "$pid" \
+    </dev/null 2>&1 |
+(
+  echo
+  echo '--CRASHDUMP-START--'
+  rv=2
+  while read level offset in func etc; do
+    if [ "$level" != "${level#\#}" ] && [ "$in" = "in" ]; then
+      rv=0
+      echo "$level $offset $func $etc"
+    fi
+  done
+  echo '--CRASHDUMP-END--'
+  echo
+  exit $rv
+)
