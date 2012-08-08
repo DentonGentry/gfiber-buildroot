@@ -12,7 +12,6 @@ define HUMAX_MISC_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH) && \
 	$(INSTALL) -m 0755 $(@D)/makehdf $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH)
 	$(INSTALL) -m 0755 $(@D)/libupgrade/libhmxupgrade.a $(STAGING_DIR)/usr/lib/libhmxupgrade.a
-	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_flash.h $(STAGING_DIR)/usr/include/humax
 	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_nvram.h $(STAGING_DIR)/usr/include/humax
 endef
 
