@@ -1,14 +1,52 @@
 #!/bin/sh
-if [ -n "$1" ]; then
-  SSID=$1
-else
-  SSID=Gladis_1
-fi
 
+# Prints the ethernet MAC address of eth0.
+get_mac_addr()
+{
+  ip link show eth0 | (
+    read junk
+    read words macaddr junk
+    echo $macaddr
+  )
+}
+
+
+# Prints the first word of the first line on stdin
+firstword()
+{
+  read word junk
+  echo "$word"
+}
+
+
+# Given an ssid format string in $1, replace a %d or %s in the format string
+# with a number between 1 and 5, based on a number generated from the
+# machine's ethernet MAC address.  If no %-substitution exists in the
+# string, returns the string unmodified.
+render_ssid()
+{
+  local ssid="$1"
+  local macaddr=$(get_mac_addr)
+  local macsha="$(echo $macaddr | sha1sum | firstword)"
+  local last_4_digits=0x${macsha#????????????????????????????????????}
+  local ssid="$(printf "$ssid" $(($last_4_digits % 5 + 1)))"
+  echo "$ssid"
+}
+
+
+# Returns true if the machine is a fat bruno (ie. has storage)
 is_fat()
 {
   [ -e /dev/sda ] && grep GFMS /tmp/platform >/dev/null
 }
+
+
+if [ -n "$1" ]; then
+  SSID=$1
+else
+  SSID=Gladis_%d
+fi
+SSID=$(render_ssid "$SSID")
 
 set -x
 
