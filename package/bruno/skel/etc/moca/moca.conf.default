@@ -1,2 +1,2 @@
-INIT_TIME="--rfType bandE --singleCh on2 --autoScan off --beaconChannel 575 --lof 575 --tpc off"
+INIT_TIME="--restore_defaults --rf_band 3 --beacon_channel 575 --lof 575 --tpc_en 1"
 MOCAD_PARAMS="-wD -l /tmp/moca"
