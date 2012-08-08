@@ -3,6 +3,7 @@ case "$1" in
   start)
     if [ "$(kernopt run_stresstest)" = 1 ]; then
       ssid=$(kernopt test_ssid)
+      [ "$ssid" = 1 ] && ssid=  # if given but blank, consider it not given
       [ -n "$ssid" ] && burnin-wifi-setup "$ssid"
       export MAX_BANDWIDTH=$(kernopt test_bw)
       export DONT_ABORT=1
@@ -16,6 +17,7 @@ case "$1" in
     pkillwait -x stresstest
     ;;
   restart)
+    $0 stop; $0 start
     ;;
   *)
     echo "Usage: $0 {start|stop|restart}"
