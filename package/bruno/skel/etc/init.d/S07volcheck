@@ -128,10 +128,10 @@ umount_ubifs() {
 # ${1} - UBI device number
 
   if [ ${1} -eq ${DATA_UBI_NO} ]; then
-    [ -d /{USER_NAME} ] && umount /${USER_NAME}
-    [ -d /{CONFIG_NAME} ] && umount /${CONFIG_NAME}
+    [ -d /${USER_NAME} ] && umount /${USER_NAME}
+    [ -d /${CONFIG_NAME} ] && umount /${CONFIG_NAME}
   elif [ ${1} -eq ${MISC_UBI_NO} ]; then
-    [ -d /{MISC_NAME} ] && umount /${MISC_NAME}
+    [ -d /${MISC_NAME} ] && umount /${MISC_NAME}
   else
     return 1
   fi
