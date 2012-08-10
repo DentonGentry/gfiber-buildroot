@@ -5,6 +5,7 @@ BCM_DRIVERS_DEPENDENCIES=linux
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
 define BCM_DRIVERS_BUILD_MOCA
+	rm -rf $(@D)/wifi/wl/linux/obj-*
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CROSS=$(TARGET_CROSS) \
 		CC="$(TARGET_CC)" \

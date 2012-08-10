@@ -24,4 +24,6 @@ config BR2_PACKAGE_PY_HTTPLIB2
 	bool "HTTPLib2"
 	select BR2_PACKAGE_PY_SETUPTOOLS
 
+source "package/py/py-monotime/Config.in"
+
 endmenu
