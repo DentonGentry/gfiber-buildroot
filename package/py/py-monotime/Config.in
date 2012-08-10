@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PY_MONOTIME
+	bool "py-monotime"
+	depends on BR2_PACKAGE_PYTHON
+	help
+	  py-monotime adds time.monotonic() in older python versions.
