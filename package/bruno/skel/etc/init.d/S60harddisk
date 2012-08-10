@@ -29,8 +29,7 @@ case "$1" in
         else
           echo "NO MATCH; NO MOUNT"
           echo 1 > /tmp/gpio/ledcontrol/hdd_bad_pair
-          #TODO(codefu): After soak testing, turn on HDD denial!
-          #exit 0;
+          exit 0;
         fi
       fi
       echo "Mounting SATA device"
