@@ -1,0 +1,5 @@
+#!/bin/sh
+# This script uses the ip utility to monitor all the ipv6 addresses. Any change
+# that occurs will trigger an echo to the file received as argument.
+
+ip -6 -oneline monitor address | while read line; do : >"$1" ; done

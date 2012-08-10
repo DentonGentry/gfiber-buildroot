@@ -1,0 +1,24 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    setsid babysit 60 ipmonitor "/tmp/gpio/ledcontrol/ip.changed" 2>&1 |
+      logger -t ipmonitor &
+    setsid babysit 60 ledmonitor 2>&1 | logger -t ledmonitor &
+    ;;
+  stop)
+    for pgid in $(ps -Cipmonitor -o pgid= | sort -u); do
+      pkillwait -g $pgid
+    done
+    for pgid in $(ps -Cledmonitor -o pgid= | sort -u); do
+      pkillwait -g $pgid
+    done
+    ;;
+  restart)
+    $0 stop; $0 start
+      ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
