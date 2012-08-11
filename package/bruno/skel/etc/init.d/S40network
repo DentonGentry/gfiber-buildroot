@@ -7,7 +7,6 @@ PLATFORM=$(cat /etc/platform)
 
 case "$1" in
   start)
-	echo "Starting network..."
 	# create a default resolv.conf in case DHCP doesn't provide one
 	# (this is always true if using nfsroot).
 	# 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
@@ -18,6 +17,9 @@ case "$1" in
 		(echo 'nameserver 8.8.8.8';
 		 echo 'nameserver 8.8.4.4') >/etc/resolv.conf
 	fi
+
+	# Prepare for DHCP ACS_URL
+	set-acs init
 
 	# configure loopback
 	ifup lo
@@ -92,7 +94,6 @@ case "$1" in
 
 	;;
   stop)
-	echo -n "Stopping network..."
 	if [ ! -e /tmp/NFS ]; then
 		for x in $(ls /sys/class/net); do
 			if [ -n /sys/class/net/$x/bridge ]; then
