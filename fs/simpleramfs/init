@@ -44,6 +44,8 @@ else
   hnvram -w PARTITION_VER=$CURRENT_PARTITION_VER || \
     log 'Failed to set partition version to hnvram.'
 fi
+log 'Disable repartitioning'
+echo 1 > /proc/sys/dev/repartition/disable
 
 # Mount /rootfs
 /mounts-root || die "couldn't mount root filesystems"
