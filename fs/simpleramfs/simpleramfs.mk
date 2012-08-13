@@ -12,7 +12,8 @@ SIMPLERAMFS_DEPENDENCIES= \
 	util-linux \
 	lvm2 \
 	google_signing \
-	mtd
+	mtd \
+	google_hnvram
 
 define SIMPLERAMFS_EXTRACT_CMDS
 	mkdir -p $(@D)
