@@ -49,8 +49,10 @@ def HttpDo(method, url, post_data=None, content_type=None):
   curl.setopt(pycurl.FOLLOWLOCATION, 0)
   curl.setopt(pycurl.SSL_VERIFYPEER, 1)
   curl.setopt(pycurl.SSL_VERIFYHOST, 2)
-  curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
-  curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
+  if os.path.exists('/etc/ssl/private/device.key'):
+    curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
+  if os.path.exists('/etc/ssl/certs/device.pem'):
+    curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
   curl.setopt(pycurl.URL, url)
   curl.setopt(pycurl.HTTPHEADER, headers)
   if method == 'GET':
