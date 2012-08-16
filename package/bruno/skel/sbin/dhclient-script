@@ -260,7 +260,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
   exit_with_hooks 0
 fi
 
-if [ x$reason = xEXPIRE ] || [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
+if [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
    || [ x$reason = xSTOP ]; then
   if [ x$alias_ip_address != x ]; then
     # Turn off alias interface.
@@ -376,7 +376,7 @@ if [ x$reason = xDEPREF6 ] ; then
   exit_with_hooks 0
 fi
 
-if [ x$reason = xEXPIRE6 -o x$reason = xRELEASE6 -o x$reason = xSTOP6 ] ; then
+if [ x$reason = xRELEASE6 -o x$reason = xSTOP6 ] ; then
   if [ x${old_ip6_address} = x ] || [ x${old_ip6_prefixlen} = x ] ; then
     exit_with_hooks 2;
   fi
