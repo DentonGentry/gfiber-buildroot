@@ -29,6 +29,17 @@ sessions = {}
 magic = [0]
 
 
+def _Write(fd, buf):
+  """Like os.write(), but keeps trying if write() returns < len(buf)."""
+  i = 0
+  while i < len(buf):
+    wrote = os.write(fd, buf[i:])
+    if wrote == 0:
+      raise IOError('unexpected EOF on write()')
+    i += wrote
+  return i
+
+
 class Session(object):
   """Describes a server-side session talking to a client."""
 
@@ -45,7 +56,7 @@ class Session(object):
     self.got_init_line = False
     self.exitcode = None
     sessions[self.id] = self
-    os.write(self.fileno(), '%d\n' % self.id)
+    _Write(self.fileno(), '%d\n' % self.id)
 
   def fileno(self):  #gpylint: disable-msg=C6409
     """Returns self.conn.fileno(), so you can select() on this object."""
@@ -158,9 +169,12 @@ def ForkServer():
     traceback.print_exc()
     raise
   finally:
-    if rv:
-      sys.stdout.write('loglinear server: exiting with code %d\n' % rv)
-    os._exit(rv)  #gpylint: disable-msg=W0212
+    try:
+      if rv:
+        sys.stdout.write('loglinear server: exiting with code %d\n' % rv)
+      sys.stdout.flush()
+    finally:
+      os._exit(rv)  #gpylint: disable-msg=W0212
 
 
 def WaitPid(pid):
@@ -205,15 +219,15 @@ def RunClient(conn, cmdline):
   if pid:
     # parent
     rv = WaitPid(pid)
-    os.write(conn.fileno(), '\n\0EXIT=%d\n' % rv)
+    _Write(conn.fileno(), '\n\0EXIT=%d\n' % rv)
     conn.close()
     return rv
   else:
     # child
     try:
-      os.write(conn.fileno(), '%s %s\nPWD: %s\nStarting: %s (%s)\n'
-               % (parent, nice_cmdline or '',
-                  os.getcwd(), cmdline, nice_cmdline))
+      _Write(conn.fileno(), '%s %s\nPWD: %s\nStarting: %s (%s)\n'
+             % (parent, nice_cmdline or '',
+                os.getcwd(), cmdline, nice_cmdline))
       os.dup2(conn.fileno(), 1)
       os.dup2(conn.fileno(), 2)
       conn.close()
