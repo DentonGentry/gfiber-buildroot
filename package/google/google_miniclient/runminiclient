@@ -55,7 +55,6 @@ while :; do
       ;;
     app)
       mv /tmp/runapp /tmp/runappold
-      leds 5  # blue+red while app is running
       ./run-app
       mode=miniclient
       ;;
