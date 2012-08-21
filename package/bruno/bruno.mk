@@ -7,11 +7,13 @@ BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
 BRUNO_INSTALL_IMAGES=YES
 
-BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus
+BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus python py-setuptools
 
 BRUNO_STAGING_PATH=usr/lib/bruno
 
 define BRUNO_BUILD_CMDS
+	HOST_DIR=$(HOST_DIR) \
+	PYTHONPATH=$(TARGET_PYTHONPATH) \
 	CROSS_COMPILE=$(TARGET_CROSS) \
 	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
@@ -52,6 +54,8 @@ define BRUNO_INSTALL_TARGET_CMDS
 	fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
 
+	HOST_DIR=$(HOST_DIR) \
+	PYTHONPATH=$(TARGET_PYTHONPATH) \
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
 
 	# registercheck
