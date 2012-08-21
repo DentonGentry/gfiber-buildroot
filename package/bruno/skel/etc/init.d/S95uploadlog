@@ -1,21 +1,20 @@
 #!/bin/sh
 case "$1" in
   start)
-	echo "Starting log uploader."
-	echo "SOFTWARE_VERSION=$(cat /etc/version)" | logger -t system
-	while :; do
-		upload-crash-log
-		log-delay
-	done 2>&1 | logger -t upload-crash-log &
-	;;
+    echo "SOFTWARE_VERSION=$(cat /etc/version)" | logger -t system
+    upload-logs-loop 2>&1 | logger upload-crash-log &
+    ;;
   stop)
-	pkill $(basename "$0")
-	;;
+    # Should really just kill upload-logs-loop, but pkill can only recognize
+    # the first several letters of an exe name.  So let's use the name prefix
+    # instead and kill both upload-logs and upload-logs-loop.
+    pkillwait upload-logs
+    pkillwait log-delay
+    ;;
   restart|reload)
-	;;
+    $0 stop; $0 start
+    ;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?

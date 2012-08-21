@@ -12,9 +12,11 @@ IPV6_FILE="$BASE_PATH/ipv6connected"
 ACS_FILE="$CONTROL_PATH/acsconnected"
 TEMP_FILE="$CONTROL_PATH/overtemperature"
 HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
+HALT_FILE="$CONTROL_PATH/halted"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
+HALT_LED_ON="1"
 HW_FAIL_LED_ON="1 0 1 0 1 0"
 ACS_LED_ON="2" # solid blue
 IPV6_LED_ON="2 0 2 0 2 0" # fast blue
@@ -31,7 +33,9 @@ while read f; do
   fi
 
   # Check if the overtemperature, dhcp or acs file exist.
-  if [ -f "$TEMP_FILE" ] || [ -f "$HDPAIRING_FILE" ]; then
+  if [ -f "$HALT_FILE" ]; then
+    leds $HALT_LED_ON
+  elif [ -f "$TEMP_FILE" ] || [ -f "$HDPAIRING_FILE" ]; then
     leds $HW_FAIL_LED_ON
   elif [ -f "$ACS_FILE" ]; then
     leds $ACS_LED_ON

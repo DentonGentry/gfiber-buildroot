@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Wait for any running log upload to finish, then start a new one and wait
+# for the new one to finish too.
+#
+# Warning: this script has no timeout.  If you need one, implement it in
+# the caller yourself.
+#
+if [ ! -e /tmp/logs-uploaded ]; then
+  wait-until-created /tmp/logs-uploaded
+fi
+rm -f /tmp/logs-uploaded
+upload-logs-now
+wait-until-created /tmp/logs-uploaded

@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# "Power off" the device.
+#
+# NOTE: This doesn't actually manage a full poweroff (which I think our
+# hardware might not support) on a GFiber TV/Storage device.  It does put
+# it into a "pretty good" sleep though, where if you touch the CPU after
+# a few minutes, it's only a little bit warm.
+#
+# The reboot(RB_POWER_OFF) syscall doesn't seem to turn
+# anything off at all (CPU stays hot, and software watchdog timer kicks
+# in!).  I think it's equivalent to the 'halt' command on this platform.
+#
+# /sys/power/state=standby leaves the CPU cooler, but still warm.  mem seems
+# best.
+#
+echo mem >/sys/power/state
+
+# We should never get here.  But just in case we do, fall back to the normal
+# 'halt' command.  Sadly, different versions take different options.  Try
+# whatever works.
+halt -p -f && sleep 2
+halt -f && sleep 2
+halt && sleep 10
+
+# We should *really* never get here.  But just in case we do, suspend all
+# the tasks.  That's as close as we can get to stopped.
+kill -STOP -1
