@@ -58,6 +58,9 @@ class Session(object):
     sessions[self.id] = self
     _Write(self.fileno(), '%d\n' % self.id)
 
+  def __repr__(self):
+    return 'Session(%d)' % self.id
+
   def fileno(self):  #gpylint: disable-msg=C6409
     """Returns self.conn.fileno(), so you can select() on this object."""
     return self.conn.fileno()
@@ -114,9 +117,12 @@ class Session(object):
   def Done(self, exitcode):
     assert self.exitcode is None
     self.exitcode = exitcode
+    assert self.exitcode is not None
     del sessions[self.id]
-    if self.parent and self.exitcode:
+    if self.parent:
       self.parent.live_children.remove(self)
+    if self.parent and self.exitcode:
+      assert self.parent.id in sessions
       self.parent.errored_children.append(self)
     else:
       self.Flush()
