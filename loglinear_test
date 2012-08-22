@@ -1,0 +1,113 @@
+#!/bin/sh
+MYDIR=$(dirname "$0")
+sequence=$1
+result=$2
+
+cd "$MYDIR"
+
+
+await()
+{
+  while [ ! -e "llt_$1.tmp" ]; do
+    :
+  done
+}
+
+
+run()
+{
+  ./loglinear ./loglinear_test "$1"
+  touch "llt_e$1.tmp"
+}
+
+
+check_sequence()
+{
+  while read header magic val; do
+    echo "check: $header $magic $val"
+    if [ "$magic" = "START" -o "$magic" = "STOP" ]; then
+      if [ "$val" = "$1" ]; then
+        shift
+      else
+        echo "FAILED: expected '$1', got '$val'" >&2
+        return 1
+      fi
+    fi
+  done
+
+  if [ $# != 0 ]; then
+    echo "FAILED: remaining sequence not found: '$*'" >&2
+    return 2
+  fi
+}
+
+
+main()
+{
+  # This requires a bit of explanation.
+  #
+  # First, remember the goal: we want to print logs that pass first, so that
+  # failures end up near the end.  And "inner" failures come after "outer"
+  # failures: if a parent and his child both fail, we mostly care about the
+  # child, because the parent probably only failed because the child failed,
+  # and the child will have the most specific error message.  Other than this
+  # restriction, we want to generally keep things in chronological order.
+  #
+  # So our test works like this:
+  #  1 runs 2a/2b.  2a runs 3a/3b.  2b runs 3c.
+  #  We print logs from steps that succeed first: that's 2b, 3a, 3b.
+  #  2b is dragged downwards, however, because its child, 3c, fails, so the
+  #   other two are printed before it.
+  #  So 3a and 3b first.  3b is set to wait for 3a, so 3a prints before 3b.
+  #
+  #  1, 2a, and 3c all fail.  3c is owned by 2b, though, which didn't fail,
+  #   so 2b is not as important as 2a, which failed.  Thus we print 2b
+  #   before 2a.  We print parents before their failing children, so 2b
+  #   comes before 3c.
+  #  Now 1 and 2a are left.  They both failed, and 1 is 2a's parent, so
+  #   it comes first, followed by 2a.
+  #
+  # Obviously, right?
+  EXPECT="s3a e3a s3b e3b s2b e2b s3c e3c s1 e1 s2a e2a"
+  echo
+  echo
+  rm -f llt_*.tmp
+  (
+    echo -n "MAIN "
+    run 1 2>&1
+  ) | check_sequence $EXPECT
+}
+
+
+echo "START s$sequence"
+touch "llt_s$sequence.tmp"
+rv=101
+case "$sequence" in
+  1) run 2a & (await s2a; run 2b) & wait; rv=1 ;;
+  2a) run 3a & (await s3a; run 3b) & wait; rv=2 ;;
+  2b) run 3c; rv=0 ;;
+  3a) rv=0 ;;
+  3b) await e3a; rv=0 ;;
+  3c) rv=5 ;;
+  "")
+    # we were run with no parameters: initial startup.
+    # Run main() several times in case the test has race conditions.
+    if main && main && main && main && main; then
+      echo
+      echo "Passed!"
+      exit 0
+    else
+      rv=$?
+      echo
+      echo "Failed: code $rv"
+      exit $rv
+    fi
+    ;;
+  *)
+    echo "Unexpected sequence number: '$sequence'" >&2
+    exit 98
+    ;;
+esac
+echo "STOP  e$sequence"
+
+exit $rv

@@ -46,7 +46,8 @@ while :; do
       mcstate=$?
       SERVER=127.0.0.1
       if [ "$mcstate" != "0" ]; then
-        echo "Unexpected exit, miniclient restarting"
+        echo "Unexpected exit, miniclient restarting after a delay"
+        sleep 10  # prevent high-speed spinning in a loop
       elif [ -e /tmp/runapp ] ; then
         mode=app
       else

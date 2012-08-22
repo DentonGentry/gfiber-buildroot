@@ -61,6 +61,7 @@ WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty
 ) >/tmp/Sage.properties.defaults
 
 export SIEGEDISABLEHEAPDUMP=1
+export SIEGENOGDB=1
 babysit 10 ./skelmir/siege \
     -Djava.io.tmpdir=/tmp \
     -Dsage.paths.logs=/tmp/log \
