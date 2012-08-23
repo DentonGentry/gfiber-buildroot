@@ -3,17 +3,20 @@ export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 read appname opts </tmp/runappold
 
+hdsd_mode=1
+
 # Use same output resolution as miniclient was using
 case $VIDEO_RESOLUTION in
   1920x1080p@24*) res=1080p ;;
   1920x1080p@60*) res=1080p ;;
   1920x1080i@60*) res=1080i ;;
   720x480p@60*)   res=480p  ;;
-  720x480i@60*)   res=480i  ;;
+  720x480i@60*)   res=480i; hdsd_mode=0 ;;
   *)              res=720p  ;;
 esac
 echo "res='$res'"
 
+export hdsd_mode
 export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
 
 # Install DFB /dev/input/event nodes
