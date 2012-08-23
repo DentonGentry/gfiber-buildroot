@@ -61,7 +61,12 @@ main() {
   if [ ! -f /tmp/cwmp/acs_url ]; then
     # No better sources, populate a default.
     serial=$(hnvram -br 1ST_SERIAL_NUMBER)
-    acs=$(curl -sL "https://gfiber-find-acs.appspot.com/find/$serial")
+    if [ -e /etc/ssl/private/device.key -a -e /etc/ssl/certs/device.pem ]; then
+      acs=$(curl -sL --key /etc/ssl/private/device.key --cert /etc/ssl/certs/device.pem "https://config.cpe.gfsvc.com/find/$serial")
+    else
+      acs=$(curl -sL "https://config.cpe.gfsvc.com/find/$serial")
+    fi
+
     if [ -n "$acs" ]; then
       acs="https://acs.prod.gfsvc.com/default/cwmp"
       echo using Default ACS "$acs"
