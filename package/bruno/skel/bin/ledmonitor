@@ -14,6 +14,7 @@ TEMP_FILE="$CONTROL_PATH/overtemperature"
 HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
 HALT_FILE="$CONTROL_PATH/halted"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
@@ -36,7 +37,8 @@ while read f; do
   # Check if the overtemperature, dhcp or acs file exist.
   if [ -f "$HALT_FILE" ]; then
     leds $HALT_LED_ON
-  elif [ -f "$TEMP_FILE" ] || [ -f "$HDPAIRING_FILE" ]; then
+  elif [ -f "$TEMP_FILE" ] || [ -f "$HDPAIRING_FILE" ] ||
+      [ -f "$BADBLOCK_FILE" ]; then
     leds $HW_FAIL_LED_ON
   elif [ -f "$WAITPOWER_FILE" ]; then
     leds $ALL_LEDS_OFF
