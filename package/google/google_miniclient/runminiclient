@@ -40,7 +40,7 @@ while :; do
   echo "$0: mode: '$mode'"
   case "$mode" in
     miniclient)
-      leds 4  # solid activity light while running miniclient
+      rm -f /tmp/gpio/ledcontrol/waitpower
       [ -n "$SERVER_MAC" ] && [ ! -e /tmp/goalone ] && ether-wake $SERVER_MAC
       ./miniclient $opts "$SERVER"
       mcstate=$?
@@ -56,11 +56,12 @@ while :; do
       ;;
     app)
       mv /tmp/runapp /tmp/runappold
+      rm -f /tmp/gpio/ledcontrol/waitpower
       ./run-app
       mode=miniclient
       ;;
     waitpower)
-      leds 0  # off while in waitpower mode
+      echo > /tmp/gpio/ledcontrol/waitpower
       ./waitpower 2>&1 | logger -t waitpower
       mode=miniclient
       ;;

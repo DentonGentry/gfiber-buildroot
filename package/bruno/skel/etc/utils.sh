@@ -14,3 +14,11 @@ atomic() {
     mv $filename.new $filename
   fi
 }
+
+#
+# Check whether the system has wifi.
+#
+has_wifi() {
+  WIFI_IF="eth2"
+  return $(test -f "/sys/class/net/$WIFI_IF/address")
+}
