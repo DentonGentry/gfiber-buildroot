@@ -1,0 +1,29 @@
+From 4351469af3fc371b2978be5ed851be7d0c18b177 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 28 Aug 2012 15:05:27 -0400
+Subject: [PATCH] Makefile: INSTALL targets should be .PHONY
+
+Without this patch, if /bin/ps had a newer timestamp than the ps binary
+built by this package, 'make install' would fail to install it.  That sounds
+right, but it's not what people expect when they type 'make install'.  In
+particular, if /bin/ps was provided by something like busybox, we really do
+want to replace it with the procps version.
+---
+ Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 280e079..deb4aa7 100644
+--- a/Makefile
++++ b/Makefile
+@@ -169,6 +169,7 @@ CLEAN := $(notdir $(BINFILES))
+ DIRS :=
+ 
+ INSTALL := $(BINFILES) $(MANFILES)
++.PHONY: $(INSTALL)
+ 
+ # want this rule first, use := on ALL, and ALL not filled in yet
+ all: do_all
+-- 
+1.7.9.dirty
+
