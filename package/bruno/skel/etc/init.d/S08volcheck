@@ -14,8 +14,8 @@ DATA_UBI_NO=1
 USER_NAME=user
 CONFIG_NAME=config
 
-USER_SIZE=320MiB
-CONFIG_SIZE=0
+CONFIG_SIZE=16MiB
+USER_SIZE=0
 BADBLOCK_FILE=/tmp/gpio/ledcontrol/flash_bad_blocks
 
 
@@ -110,11 +110,11 @@ mount_volumes()
   # $2 - UBI device number
 
   if [ $1 -eq ${DATA_MTD_NO} ]; then
-    # mount UBI 'user' volume
-    mount_volume ${USER_NAME} $2 ${USER_SIZE} || return 1
-
     # mount UBI 'config' volume
     mount_volume ${CONFIG_NAME} $2 ${CONFIG_SIZE} || return 1
+
+    # mount UBI 'user' volume
+    mount_volume ${USER_NAME} $2 ${USER_SIZE} || return 1
   fi
 }
 
