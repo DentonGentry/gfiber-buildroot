@@ -58,8 +58,6 @@ define BRUNO_INSTALL_TARGET_CMDS
 	PYTHONPATH=$(TARGET_PYTHONPATH) \
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
 
-	cp -f $(@D)/startupvideo/startupvideo $(TARGET_DIR)/usr/sv/
-
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/
