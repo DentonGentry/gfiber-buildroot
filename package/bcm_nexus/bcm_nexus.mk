@@ -7,6 +7,21 @@ BCM_NEXUS_INSTALL_TARGET=YES
 BCM_NEXUS_STAGING_PATH=usr/lib/nexus
 
 
+ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
+define BCM_NEXUS_BUILD_TEST_CMDS
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/app/standby all
+endef
+define BCM_NEXUS_INSTALL_TEST_TARGET_CMDS
+	$(INSTALL) -m 755 -D $(@D)/../BSEAV/app/standby/active_standby $(TARGET_DIR)/home/test/active_standby
+	$(INSTALL) -m 755 -D $(@D)/../BSEAV/app/standby/standby $(TARGET_DIR)/home/test/standby
+endef
+else
+define BCM_NEXUS_BUILD_TEST_CMDS
+endef
+define BCM_NEXUS_INSTALL_TEST_TARGET_CMDS
+endef
+endif
+
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
@@ -14,6 +29,7 @@ define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/utils all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples apps install
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/os
+	$(BCM_NEXUS_BUILD_TEST_CMDS)
 	cd $(@D)/../BSEAV/lib/playbackdevice && $(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) NEXUS_MGR_DIR=$(@D)/../BSEAV/lib/playbackdevice/nexusMgr/ $(MAKE) $(BCM_MAKEFLAGS) all
 endef
 
@@ -35,6 +51,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
+	$(BCM_NEXUS_INSTALL_TEST_TARGET_CMDS)
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
 	$(call BCM_NEXUS_INSTALL_LIBS,$(TARGET_DIR))
 endef
