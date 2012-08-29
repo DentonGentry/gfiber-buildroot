@@ -6,9 +6,7 @@ BRUNO_SITE=repo://vendor/google/platform
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
 BRUNO_INSTALL_IMAGES=YES
-
-BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus python py-setuptools
-
+BRUNO_DEPENDENCIES=humax_misc python py-setuptools
 BRUNO_STAGING_PATH=usr/lib/bruno
 
 define BRUNO_BUILD_CMDS
