@@ -21,7 +21,12 @@ mkdir -p /tmp/gpio
 leds 4 0  # blink activity while booting
 echo 30 >/tmp/gpio/fanpercent  # low fan at first
 ulimit -c 49152
-babysit 300 gpio-mailbox 2>&1 | logos gpio-mailbox &
+if [ -x /usr/bin/gpio-mailbox ]; then
+  babysit 300 gpio-mailbox 2>&1 | logos gpio-mailbox &
+else
+  # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
+  : >/var/run/gpio-mailbox
+fi
 
 if is-storage-box; then
   hostname GFiberStorage
