@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# The placeholder for recovery procedures
+#TODO(kedong): The placeholder for recovery procedures
 #
 
 echo "The future recovery procedure here..."

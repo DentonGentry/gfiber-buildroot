@@ -26,8 +26,13 @@ define SIMPLERAMFS_BUILD_CMDS
 	done
 
 	# the initramfs /init script, executed by the kernel by default
-	ln -f fs/simpleramfs/init fs/simpleramfs/recover \
-		fs/simpleramfs/mounts-sys fs/simpleramfs/mounts-root $(@D)/fs/
+	ln -f \
+		fs/simpleramfs/init \
+		fs/simpleramfs/recover \
+		fs/simpleramfs/mounts-sys \
+		fs/simpleramfs/mounts-root \
+		fs/simpleramfs/helpers.sh \
+		$(@D)/fs/
 
 	# the checksum file base content (to be search-and-replaced later as
 	# part of ginstall signing)

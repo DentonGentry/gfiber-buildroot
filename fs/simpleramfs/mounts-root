@@ -4,18 +4,8 @@
 # quickly mount the basic kernel filesystems.  It mounts them, but doesn't
 # switch_root.
 #
-log()
-{
-  echo "$*" >&2
-}
 
-
-die()
-{
-  log "$*"
-  exit 1
-}
-
+. /helpers.sh
 
 # Finds the *last* /dev/mtd* device with the given realname
 find_mtd()
@@ -33,26 +23,7 @@ find_mtd()
 }
 
 
-ROOTDEV=
-ROOTFSTYPE=
-NFSROOT=
-UBI_MTD=
-INIT=
-DEBUG=
-
-set $(cat /proc/cmdline)
-for i in "$@"; do
-  key=${i%%=*}
-  value=${i#*=}
-  case "$key" in
-    root) ROOTDEV=$value ;;
-    rootfstype) ROOTFSTYPE=$value ;;
-    nfsroot) NFSROOT=$value ;;
-    ubi.mtd) UBI_MTD=$value ;;
-    init) INIT=$value ;;
-    debug|login) DEBUG=1 ;;
-  esac
-done
+read_cmdline
 
 # NOTE on ubi.mtd= vs. root=
 #
@@ -147,7 +118,5 @@ mount -t tmpfs none /rootfs/tmp
 
 DEBUG=1  #TODO(apenwarr): remove once cwmp supports toggling this setting.
 [ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
-
-echo "$INIT" >/tmp/initcmd
 
 exit 0

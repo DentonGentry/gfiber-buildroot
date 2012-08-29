@@ -4,38 +4,26 @@
 # the root filesystem and mount it if possible.
 #
 mknod /dev/kmsg c 1 11
-exec >/dev/kmsg 2>&1
+exec 9>&1 >/dev/kmsg 2>&1
 
 echo "---- initramfs ('$0')"
 echo "To bypass this script, use rdinit=/bin/sh"
 
+. /helpers.sh
 
-log()
-{
-  echo "$*" >&2
-}
-
-
-die()
-{
-  log "$*"
-  exit 1
-}
-
-
-trap 'log EXITED; sh' EXIT
+trap 'log FATAL - INIT EXITED - Rebooting.; reboot >&9 2>&1 9>&-' EXIT
 
 
 # Mount /dev, /proc, /sys
 /mounts-sys || die "couldn't mount special purpose directories"
 
-INIT=$(cat /tmp/initcmd)
-
 log 'Disable repartitioning'
-echo 1 > /proc/sys/dev/repartition/disable
+echo 1 >/proc/sys/dev/repartition/disable
 
 # Mount /rootfs
 /mounts-root || die "couldn't mount root filesystems"
+
+read_cmdline
 
 log 'Looking for init in rootfs.  To bypass this, use init=/bin/sh'
 for init in "$INIT" /sbin/init /linuxrc /bin/sh; do
@@ -47,6 +35,7 @@ for init in "$INIT" /sbin/init /linuxrc /bin/sh; do
     *) args= ;;
   esac
   cd /rootfs
+  [ -n "$INIT" ] && exec >&9 2>&1 9>&-  # probably a shell; bring back tty
   exec switch_root /rootfs "$init" $args
 done
 
