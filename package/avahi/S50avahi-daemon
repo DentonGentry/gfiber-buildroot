@@ -2,19 +2,18 @@
 #
 # avahi-daemon init script
 
-DAEMON=/usr/sbin/avahi-daemon
 case "$1" in
-    start)
-	$DAEMON -c || $DAEMON -D
-	;;
-    stop)
-	$DAEMON -c && $DAEMON -k
-	;;
-    reload)
-	$DAEMON -c && $DAEMON -r
-	;;
-    *)
-	echo "Usage: S50avahi-daemon {start|stop|reload}" >&2
-	exit 1
-	;;
+  start)
+    babysit 60 avahi-daemon 2>&1 | logger -t avahi &
+    ;;
+  stop)
+    avahi-daemon -c && avahi-daemon -k
+    ;;
+  reload)
+    avahi-daemon -c && avahi-daemon -r
+    ;;
+  *)
+    echo "Usage: S50avahi-daemon {start|stop|reload}" >&2
+    exit 1
+    ;;
 esac

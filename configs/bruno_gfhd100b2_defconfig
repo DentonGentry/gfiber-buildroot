@@ -686,7 +686,9 @@ BR2_PACKAGE_EXPAT=y
 # Networking applications
 #
 # BR2_PACKAGE_ARGUS is not set
-# BR2_PACKAGE_AVAHI is not set
+BR2_PACKAGE_AVAHI=y
+# BR2_PACKAGE_AVAHI_AUTOIPD is not set
+BR2_PACKAGE_AVAHI_DAEMON=y
 # BR2_PACKAGE_AXEL is not set
 # BR2_PACKAGE_BOA is not set
 # BR2_PACKAGE_BIND is not set
@@ -796,10 +798,7 @@ BR2_PACKAGE_SAMBA_SMBSTATUS=y
 #
 # Samba support selection
 #
-
-#
-# support avahi - disabled (requires avahi-daemon/dbus)
-#
+# BR2_PACKAGE_SAMBA_AVAHI is not set
 
 #
 # support gamin - disabled (requires gamin)
