@@ -247,6 +247,8 @@ def RunClient(conn, cmdline):
 
 
 def main():
+  with open('/dev/null') as new_stdin:
+    os.dup2(new_stdin.fileno(), 0)
   if len(sys.argv) < 2:
     sys.stderr.write('Usage: %s <command line>\n' % sys.argv[0])
   port = int(os.environ.get('LOGLINEAR_PORT', 0))
