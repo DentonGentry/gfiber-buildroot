@@ -1,64 +1,33 @@
 #!/bin/sh
 
-# Check that smb.conf exists.
-[ -f /etc/samba/smb.conf ] || exit 0
+[ -e /etc/samba/smb.conf ] || exit 0
 
-# Make directories.
-mkdir -p /var/cache/samba
-mkdir -p /var/log/samba
-mkdir -p /var/lock/subsys
-mkdir -p /tmp/samba/sockets
-
-start() {
-	if [ -d /var/media/videos ]; then
-		echo -n "Starting SMB service"
-		smbd -S -F 2>&1 </dev/null | logger -t smbd &
-
-		echo -n "Starting NMB service"
-		nmbd -S -F 2>&1 </dev/null | logger -t nmbd &
-	fi
-	return 0
-}
-
-stop() {
-	echo -n "Shutting down SMB service"
-	kill -9 `pidof smbd`
-	rm -f /var/run/smbd.pid
-
-	echo -n "Shutting down NMB service"
-	kill -9 `pidof nmbd`
-	rm -f /var/run/nmbd.pid
-
-	return 0
-}
-
-restart() {
-	stop
-	start
-}
-
-reload() {
-	echo -n "Reloading smb.conf file"
-	kill -HUP `pidof smbd`
-	return 0
-}
+mkdir -p /var/cache/samba /var/lock/subsys /tmp/samba/sockets
 
 case "$1" in
   start)
-	start
-	;;
+    if [ -d /var/media/videos ]; then
+      babysit 60 smbd -F -D -S 2>&1 | logger -t smbd &
+      babysit 60 nmbd -F -D -S 2>&1 | logger -t nmbd &
+    fi
+    ;;
   stop)
-	stop
-	;;
+    # we have to kill the babysitter too, because smbd eats the SIGTERM
+    # exit code and returns 1 instead, so babysit thinks it needs to
+    # restart.
+    pkillwait -f 'babysit 60 smbd'
+    pkillwait -f 'babysit 60 nmbd'
+    pkillwait -x smbd
+    pkillwait -x nmbd
+    ;;
   restart)
-	restart
-	;;
+    $0 stop; $0 start
+    ;;
   reload)
-	reload
-	;;
+    pids=$(pgrep -x smbd)
+    [ -n "$pids" ] && kill -1 $pids
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart|reload}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart|reload}"
+    exit 1
 esac
-
-exit $?
