@@ -1,6 +1,20 @@
 #!/bin/sh
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
+# We might need to call this for YTLB as well for V4
+verify_drm_state()
+{
+  # If the certificate has changed we must remove all drm files
+  [ -e /user/drm/drmcert ] && read drmcert </user/drm/drmcert
+  # Bruno's sha1sum doesn't have check support
+  fscert=$(sha1sum /usr/local/licenses/playready.bin)
+  if [ "$drmcert" != "$fscert" ]; then
+    echo Certificate doesn\'t match current state, clearing files
+    rm -rf /user/drm/*
+    echo $fscert > /user/drm/drmcert
+  fi
+}
+
 read appname opts </tmp/runappold
 
 hdsd_mode=1
@@ -33,6 +47,7 @@ case $appname in
     export NF_DEV_VIDEOPROFILE=PLAYREADY
     # Bruno startup will extract the idfile from flash and store it in /tmp
     export NF_IDFILE=/tmp/idfile.secure
+    verify_drm_state
     netflix $opts 2>&1 | logger -t netflix
     ;;
   youtube)
