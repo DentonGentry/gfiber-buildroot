@@ -64,11 +64,19 @@ define HOST_GOOGLE_SIGNING_INSTALL_CMDS
 	mkdir -p $(HOST_DIR)/usr/sbin/
 	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py \
 		$(HOST_DIR)/usr/sbin/repack.py
+	$(INSTALL) -D -m 0755 $(@D)/signing/signserial.py \
+		$(HOST_DIR)/usr/sbin/signserial.py
 endef
 
 define HOST_GOOGLE_SIGNING_TEST_CMDS
 	(cd $(@D)/signing && $(HOST_DIR)/usr/bin/python repacktest.py)
 endef
+
+sign_sn: sn.txt
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
+		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/signserial.py \
+		-o $(HOST_DIR) -b $(BINARIES_DIR) -f $<; \
+		$(HOST_GOOGLE_SIGNING_CLEANUP))
 
 $(eval $(call GENTARGETS))
 $(eval $(call GENTARGETS,host))
