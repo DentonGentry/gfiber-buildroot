@@ -563,6 +563,8 @@ external-deps:
 show-targets:
 	@echo $(TARGETS)
 
+show-depends: $(addsuffix -show-depends,$(TARGETS))
+
 remove-stamps:
 	@rm -rf $(TARGET_DIR) $(BINARIES_DIR)
 	@rm -f $(STAMP_DIR)/*installed $(BUILD_DIR)/.root \
