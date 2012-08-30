@@ -211,6 +211,11 @@ case "$1" in
       sleep 30
       rm -f /user/rw/overheating
     fi
+
+    if [ -e /config/DEBUG ]; then
+      echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
+      echo >/tmp/DEBUG
+    fi
     ;;
   stop)
     # Get MTD partition number
