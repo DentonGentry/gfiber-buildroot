@@ -58,7 +58,12 @@ while :; do
       mv /tmp/runapp /tmp/runappold
       rm -f /tmp/gpio/ledcontrol/waitpower
       ./run-app
-      mode=miniclient
+      if [ -e /tmp/poweroff ] ; then
+        mode=waitpower
+        rm -f /tmp/poweroff
+      else
+        mode=miniclient
+      fi
       ;;
     waitpower)
       echo > /tmp/gpio/ledcontrol/waitpower
