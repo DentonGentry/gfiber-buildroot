@@ -2,8 +2,8 @@
 
 case "$1" in
   start)
-	# remove detritus from previous mfg burnin support
 	if [ -f /var/media/.mfgmedia ] ; then
+		# remove detritus from previous mfg burnin support
 		rm -f /var/media/videos/GoogleFiber.mov
 		rm -f /var/media/videos/Samples/GoogleFiber.mov
 		rm -f /var/media/videos/Samples/GoogleFiber1.mov
@@ -12,8 +12,18 @@ case "$1" in
 		fi
 		rm -f /var/media/.mfgmedia
 	fi
-	if [ -d /var/media/videos ] && [ ! -f /var/media/ManufacturingBurnin.mov ] ; then
+	if [ ! -f /var/media/.mfgmedia2 ] ; then
 		cp /usr/lib/media/GoogleFiber.mov /var/media/ManufacturingBurnin.mov
+
+		mkdir -p /var/media/pictures/Landscapes
+		cd /usr/lib/media/landscapes/
+		for file in *
+		do
+		  cp "$file" /var/media/pictures/Landscapes
+		  chmod 555 /var/media/pictures/Landscapes/"$file"
+		done
+
+		echo done >/var/media/.mfgmedia2
 	fi
 	;;
   stop)
