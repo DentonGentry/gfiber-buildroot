@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device's platform string starts with GFMS,
+# (ie. Google Fiber Media Server) and 1 (false) otherwise.  A GFMS
+# has a hard drive and should act as a storage server.
+#
+# This might be extended later to include other model numbers.
+#
+# NOTE: Don't test for "! is-storage-box" to see if this device is a TV
+# box.  Someday there might be a storage box and a TV box combined, or
+# something, or there may be some third kind of box that's for neither
+# storage nor TV.  Use "is-tv-box" instead for TV features.
+#
+read plat </etc/platform
+if [ "$plat" != "${plat#GFMS}" ]; then
+  exit 0
+else
+  exit 1
+fi

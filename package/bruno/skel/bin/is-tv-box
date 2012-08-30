@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device's platform string starts with GFHD,
+# (ie. Google Fiber High Def) and 1 (false) otherwise.  A GFHD
+# has an HDMI port and should act as a display server.
+#
+# This might be extended later to include other model numbers.
+#
+# NOTE: Don't test for "! is-tv-box" to see if this device is a storage
+# box.  Someday there might be a storage box and a TV box combined, or
+# something, or there may be some third kind of box that's for neither
+# storage nor TV.  Use "is-storage-box" instead to detect storage features.
+#
+read plat </etc/platform
+if [ "$plat" != "${plat#GFHD}" ]; then
+  exit 0
+else
+  exit 1
+fi

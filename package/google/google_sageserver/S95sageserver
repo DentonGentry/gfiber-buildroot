@@ -1,5 +1,4 @@
 #!/bin/sh
-PLATFORM=$(cat /etc/platform)
 
 start() {
   # TODO: remove in non-test builds
@@ -11,9 +10,9 @@ start() {
   cd /app/sage
   (
     wait-until-created /tmp/ntp.synced
-    if [ "$PLATFORM" = "GFHD100" ]; then
+    if is-tv-box; then
       ./runsageclient &
-    else
+    elif is-storage-box; then
       ./runsage &
     fi
   ) 2>&1 | logger -t s &

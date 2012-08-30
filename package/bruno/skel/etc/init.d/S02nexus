@@ -10,9 +10,9 @@ if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
 fi
 
 # Populate the platform ID
-PLAT=$(hnvram -r PLATFORM_NAME)
-PLATFORM=${PLAT#PLATFORM_NAME=}
-echo $PLATFORM >/etc/platform
+PLATFORM=$(hnvram -qr PLATFORM_NAME)
+[ -n "$PLATFORM" ] &&
+echo $PLATFORM >/etc/platform &&
 chmod 444 /etc/platform
 
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
@@ -23,10 +23,12 @@ echo 30 >/tmp/gpio/fanpercent  # low fan at first
 ulimit -c 49152
 babysit 300 gpio-mailbox 2>&1 | logger -t gpio-mailbox &
 
-if [ "$PLATFORM" = "GFMS100" ]; then
+if is-storage-box; then
   hostname gfiberstorage
-else
+elif is-tv-box; then
   hostname gfibertv
+else
+  hostname gfiberunknown
 fi
 
 # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
@@ -34,4 +36,5 @@ echo -1 >/proc/sys/kernel/sched_rt_runtime_us
 
 # populate hdcp key
 echo "Getting hdcp key"
-hnvram -br HDCP_KEY >/tmp/hdcp_key
+hnvram -br HDCP_KEY >/tmp/hdcp_key.tmp
+[ -s /tmp/hdcp_key.tmp ] && mv /tmp/hdcp_key.tmp /tmp/hdcp_key

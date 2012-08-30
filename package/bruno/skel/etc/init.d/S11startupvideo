@@ -1,9 +1,9 @@
 #!/bin/sh
-PLATFORM=$(cat /etc/platform)
+[ -x /usr/sv/startupvideo ] || exit 0
 
 case "$1" in
   start)
-    if [ "$PLATFORM" = "GFHD100" ]; then
+    if is-tv-box; then
       wait-until-created /var/run/gpio-mailbox
       echo "Starting startupvideo."
       mknod /tmp/svpipe p

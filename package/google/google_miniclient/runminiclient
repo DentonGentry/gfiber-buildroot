@@ -1,5 +1,4 @@
 #!/bin/sh
-PLATFORM=$(cat /etc/platform)
 cd /app/client
 
 update_config()
@@ -24,12 +23,12 @@ ulimit -c 49152
 
 SERVER_MAC=
 opts=
-if [ "$PLATFORM" != "GFHD100" ]; then
-  opts="$opts --encodemode"
-  mode=miniclient
-else
+if is-tv-box; then
   # TV box starts in powered-off mode
   mode=waitpower
+else
+  opts="$opts --encodemode"
+  mode=miniclient
 fi
 
 SERVER=127.0.0.1
