@@ -182,7 +182,7 @@ class BuildRootBuilder(object):
     if self.opt.verbose:
       cmd += ['V=1']
     if parallel:
-      cmd += ['-j', '-l12']
+      cmd += ['-j12', '-l12']
     self.PopenAt(self.top_dir, cmd)
 
   def CleanOutputDir(self):
