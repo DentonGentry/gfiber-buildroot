@@ -9,7 +9,7 @@ case "$1" in
       rmdir /var/media/videos/Samples 2>/dev/null
       rm -f /var/media/.mfgmedia
     fi
-    if [ ! -f /var/media/.mfgmedia2 ]; then
+    if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
       cp /usr/lib/media/GoogleFiber.mov /var/media/ManufacturingBurnin.mov
 
       mkdir -p /var/media/pictures/Landscapes
@@ -17,7 +17,8 @@ case "$1" in
       for file in *
       do
         cp "$file" /var/media/pictures/Landscapes
-        chmod 555 /var/media/pictures/Landscapes/"$file"
+        chown video.video /var/media/pictures/Landscapes/"$file"
+        chmod 666 /var/media/pictures/Landscapes/"$file"
       done
 
       echo done >/var/media/.mfgmedia2
