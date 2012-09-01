@@ -187,7 +187,20 @@ case "$1" in
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
 
-    check_badblock kernel0
+    # Log bbinfo at boot
+    BBT=""
+    cat /proc/sys/dev/repartition/bbinfo |
+    while read a b ; do
+      BBT="$BBT$a$b "
+    done
+    echo "Bad Blocks: $BBT"
+
+    # MLC units *all* have two bad blocks in kernel0 (chip design flaw).
+    # Don't bother checking, they will all fail.
+    MB=$(cat /proc/sys/dev/repartition/nand_size_mb)
+    if [ $MB -ne 4096 ]; then
+      check_badblock kernel0
+    fi
     check_badblock kernel1
 
     mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
