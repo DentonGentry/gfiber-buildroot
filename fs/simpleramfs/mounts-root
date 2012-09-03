@@ -116,7 +116,6 @@ mount -t tmpfs none /rootfs/tmp
 # set up.
 [ -n "$NFSROOT" ] && echo NFS >/rootfs/tmp/NFS
 
-DEBUG=1  #TODO(apenwarr): remove once cwmp supports toggling this setting.
 [ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
 
 exit 0
