@@ -19,7 +19,7 @@ import options
 optspec = """
 upload-logs [options...] <filenames...>
 --
-s,server=          The server URL [https://gfiber-dropbox.appspot.com]
+s,server=          The server URL [https://diag.cpe.gfsvc.com]
 k,key=             Add a key/value pair (format "-k key=value")
 stdin=             Also upload stdin, with the given virtual filename
 """
@@ -45,12 +45,13 @@ def HttpDo(method, url, post_data=None, content_type=None):
     headers.append('Content-Type: %s' % content_type)
   curl = pycurl.Curl()
   curl.setopt(pycurl.WRITEFUNCTION, outdata.write)
-  curl.setopt(pycurl.VERBOSE, 1)
   curl.setopt(pycurl.FOLLOWLOCATION, 0)
   curl.setopt(pycurl.SSL_VERIFYPEER, 1)
   curl.setopt(pycurl.SSL_VERIFYHOST, 2)
-  curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
-  curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
+  if os.path.exists('/etc/ssl/private/device.key'):
+    curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
+  if os.path.exists('/etc/ssl/certs/device.pem'):
+    curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
   curl.setopt(pycurl.URL, url)
   curl.setopt(pycurl.HTTPHEADER, headers)
   if method == 'GET':

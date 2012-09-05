@@ -19,7 +19,7 @@ define BCM_NETFLIX_CONFIGURE_CMDS
 endef
 
 define BCM_NETFLIX_BUILD_CMDS
-	$(BCM_MAKE_ENV) NEXUS=${BCM_NEXUS_DIR} $(MAKE1) $(NETFLIX_MAKEFLAGS) APPLIBS_TOP=$(@D) NETFLIX_DIR=src/nrd -C $(@D)/thirdparty/netflix/3.x all
+	$(BCM_MAKE_ENV) NEXUS=${BCM_NEXUS_DIR} $(MAKE) $(NETFLIX_MAKEFLAGS) APPLIBS_TOP=$(@D) NETFLIX_DIR=src/nrd -C $(@D)/thirdparty/netflix/3.x all
 endef
 
 

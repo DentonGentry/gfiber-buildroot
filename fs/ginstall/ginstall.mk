@@ -48,10 +48,10 @@ define ROOTFS_GINSTALL_CMD
 		$(GINSTALL_UBI_UBINIZE_OPTS) \
 		$(BUILD_DIR)/rootfs_ubinize.cfg && \
 	cd $(BINARIES_DIR) && \
-	tar -czf $(value ROOTFS_GINSTALL_VERSION).gi \
+	tar -czf $(value ROOTFS_GINSTALL_VERSION)_ubinized.gi \
 		version loader.bin loader.sig vmlinuz rootfs.squashfs_ubi && \
-	ln -sf $(value ROOTFS_GINSTALL_VERSION).gi \
-		bruno_ginstall_image.tgz
+	tar -czf $(value ROOTFS_GINSTALL_VERSION).gi \
+		version loader.bin loader.sig vmlinuz rootfs.squashfs
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))

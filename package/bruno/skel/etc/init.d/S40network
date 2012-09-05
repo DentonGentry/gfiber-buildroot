@@ -3,11 +3,9 @@
 # Start the network....
 #
 SERVICE='mocad'
-PLATFORM=$(cat /etc/platform)
 
 case "$1" in
   start)
-	echo "Starting network..."
 	# create a default resolv.conf in case DHCP doesn't provide one
 	# (this is always true if using nfsroot).
 	# 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
@@ -19,6 +17,9 @@ case "$1" in
 		 echo 'nameserver 8.8.4.4') >/etc/resolv.conf
 	fi
 
+	# Prepare for DHCP ACS_URL
+	set-acs init
+
 	# configure loopback
 	ifup lo
 	if [ ! -e /tmp/NFS ]; then
@@ -28,7 +29,7 @@ case "$1" in
 		brctl stp br0 on || exit 1
 		# If fat bruno, set bridge priority to 0x7990 so that
 		# it will be used as the root for the spanning tree.
-		if [ "$PLATFORM" = "GFMS100" ]; then
+		if is-storage-box; then
 			brctl setbridgeprio br0 0x7990 || exit 1
 		fi
 		[ -e /sys/class/net/eth0/address ] && \
@@ -59,40 +60,30 @@ case "$1" in
 				brctl addif br0 $x
 			fi
 		done
-		echo -n "Bringing up the bridge... "
+		echo "Bringing up the bridge..."
 		ifup br0
-		echo "done"
 	else
 		# nfsroot; network is already up
 		upload-logs-now
 	fi
 
-	# Set up MoCA link -
-	# 1) Kill mocad and mocactl
-	# 2) Issue "mocacfg boot"
 	if [ -e /dev/bmoca0 ]; then
-		echo -n "mocacfg kill"
-		mocacfg kill
-		echo "done"
 		echo "distribute IRQ handling between cores"
 		# IRQ 62 (Serial port) & 31 (MoCA) on CPU 1.
-		echo 1 > /proc/irq/62/smp_affinity
-		echo 1 > /proc/irq/31/smp_affinity
+		echo 1 >/proc/irq/62/smp_affinity
+		echo 1 >/proc/irq/31/smp_affinity
 		# Ethernet interrupts (18-21) on CPU 2.
-		echo 2 > /proc/irq/18/smp_affinity
-		echo 2 > /proc/irq/19/smp_affinity
-		echo 2 > /proc/irq/20/smp_affinity
-		echo 2 > /proc/irq/21/smp_affinity
-		echo "done"
-		echo -n "mocacfg boot "
+		echo 2 >/proc/irq/18/smp_affinity
+		echo 2 >/proc/irq/19/smp_affinity
+		echo 2 >/proc/irq/20/smp_affinity
+		echo 2 >/proc/irq/21/smp_affinity
+		echo "mocacfg boot..."
 		mkdir -p /tmp/moca
-		mocacfg boot
-		echo "done"
+		mocacfg boot &  # a bit slow, so don't bother waiting
 	fi
 
 	;;
   stop)
-	echo -n "Stopping network..."
 	if [ ! -e /tmp/NFS ]; then
 		for x in $(ls /sys/class/net); do
 			if [ -n /sys/class/net/$x/bridge ]; then
@@ -120,7 +111,7 @@ case "$1" in
 	"$0" start
 	;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
+	echo "Usage: $0 {start|stop|restart}"
 	exit 1
 esac
 

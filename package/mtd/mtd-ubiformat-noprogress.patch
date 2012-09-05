@@ -1,0 +1,101 @@
+diff --git a/ubi-utils/libscan.c b/ubi-utils/libscan.c
+index dc47a89..e7d33e3 100644
+--- a/ubi-utils/libscan.c
++++ b/ubi-utils/libscan.c
+@@ -51,7 +51,7 @@ static int all_ff(const void *buf, int len)
+ int ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **info,
+ 	     int verbose)
+ {
+-	int eb, v = (verbose == 2), pr = (verbose == 1);
++	int eb, v = (verbose == 2), pr = (verbose == 1) && isatty(STDOUT_FILENO);
+ 	struct ubi_scan_info *si;
+ 	unsigned long long sum = 0;
+ 
+diff --git a/ubi-utils/ubiformat.c b/ubi-utils/ubiformat.c
+index f286264..e421b3f 100644
+--- a/ubi-utils/ubiformat.c
++++ b/ubi-utils/ubiformat.c
+@@ -53,6 +53,7 @@ struct args {
+ 	unsigned int force:1;
+ 	unsigned int quiet:1;
+ 	unsigned int verbose:1;
++	unsigned int interactive:1;
+ 	unsigned int override_ec:1;
+ 	unsigned int novtbl:1;
+ 	unsigned int manual_subpage;
+@@ -477,7 +478,7 @@ static int flash_image(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 		char buf[mtd->eb_size];
+ 		long long ec;
+ 
+-		if (!args.quiet && !args.verbose) {
++		if (args.interactive && !args.quiet && !args.verbose) {
+ 			printf("\r" PROGRAM_NAME ": flashing eraseblock %d -- %2lld %% complete  ",
+ 			       eb, (long long)(eb + 1) * 100 / divisor);
+ 			fflush(stdout);
+@@ -495,7 +496,7 @@ static int flash_image(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 
+ 		err = mtd_erase(libmtd, mtd, args.node_fd, eb);
+ 		if (err) {
+-			if (!args.quiet)
++			if (args.interactive && !args.quiet)
+ 				printf("\n");
+ 			sys_errmsg("failed to erase eraseblock %d", eb);
+ 
+@@ -570,7 +571,7 @@ static int flash_image(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 			break;
+ 	}
+ 
+-	if (!args.quiet && !args.verbose)
++	if (args.interactive && !args.quiet && !args.verbose)
+ 		printf("\n");
+ 	close(fd);
+ 	return eb + 1;
+@@ -601,7 +602,7 @@ static int format(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 	for (eb = start_eb; eb < mtd->eb_cnt; eb++) {
+ 		long long ec;
+ 
+-		if (!args.quiet && !args.verbose) {
++		if (args.interactive && !args.quiet && !args.verbose) {
+ 			printf("\r" PROGRAM_NAME ": formatting eraseblock %d -- %2lld %% complete  ",
+ 			       eb, (long long)(eb + 1 - start_eb) * 100 / (mtd->eb_cnt - start_eb));
+ 			fflush(stdout);
+@@ -625,7 +626,7 @@ static int format(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 
+ 		err = mtd_erase(libmtd, mtd, args.node_fd, eb);
+ 		if (err) {
+-			if (!args.quiet)
++			if (args.interactive && !args.quiet)
+ 				printf("\n");
+ 
+ 			sys_errmsg("failed to erase eraseblock %d", eb);
+@@ -658,7 +659,7 @@ static int format(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 		err = mtd_write(libmtd, mtd, args.node_fd, eb, 0, hdr,
+ 				write_size, NULL, 0, 0);
+ 		if (err) {
+-			if (!args.quiet && !args.verbose)
++			if (args.interactive && !args.quiet && !args.verbose)
+ 				printf("\n");
+ 			sys_errmsg("cannot write EC header (%d bytes buffer) to eraseblock %d",
+ 				   write_size, eb);
+@@ -680,7 +681,7 @@ static int format(libmtd_t libmtd, const struct mtd_dev_info *mtd,
+ 		}
+ 	}
+ 
+-	if (!args.quiet && !args.verbose)
++	if (args.interactive && !args.quiet && !args.verbose)
+ 		printf("\n");
+ 
+ 	if (!novtbl) {
+@@ -729,6 +730,12 @@ int main(int argc, char * const argv[])
+ 	if (err)
+ 		goto out_close_mtd;
+ 
++	args.interactive = isatty(STDOUT_FILENO);
++	if (!args.interactive && errno != EINVAL && errno != ENOTTY) {
++		sys_errmsg("cannot access stdout");
++		goto out_close_mtd;
++	}
++
+ 	err = mtd_get_info(libmtd, &mtd_info);
+ 	if (err) {
+ 		if (errno == ENODEV)

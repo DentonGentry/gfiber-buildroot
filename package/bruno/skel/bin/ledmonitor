@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# This script monitors CONTROL_PATH folder and decides which is the
+# led sequence that has to be echoed to the LEDS_FILE.
+
+# Output file.
+BASE_PATH="/tmp/gpio"
+LEDS_FILE="$BASE_PATH/leds"
+CONTROL_PATH="$BASE_PATH/ledcontrol"
+
+IPV6_FILE="$BASE_PATH/ipv6connected"
+ACS_FILE="$CONTROL_PATH/acsconnected"
+TEMP_FILE="$CONTROL_PATH/overtemperature"
+HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
+HALT_FILE="$CONTROL_PATH/halted"
+WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
+
+# Bit sequences.
+ALL_LEDS_OFF="0"
+HALT_LED_ON="1"
+HW_FAIL_LED_ON="1 0 1 0 1 0"
+ACS_LED_ON="2" # solid blue
+IPV6_LED_ON="2 0 2 0 2 0" # fast blue
+ANYTHING_ELSE="2 0" # blink blue
+
+watch-dirs $CONTROL_PATH |
+while read f; do
+  # Check if there is an ip address on the br0 interface.
+  if [ -n "$(ip -f inet6 addr show dev br0 scope global)" ]; then
+    echo "IPv6 address acquired on br0" > "$IPV6_FILE"
+  else
+    rm -f "$ACS_FILE"
+    rm -f "$IPV6_FILE"
+  fi
+
+  # Check if the overtemperature, dhcp or acs file exist.
+  if [ -f "$HALT_FILE" ]; then
+    leds $HALT_LED_ON
+  elif [ -f "$TEMP_FILE" ] || [ -f "$HDPAIRING_FILE" ] ||
+      [ -f "$BADBLOCK_FILE" ]; then
+    leds $HW_FAIL_LED_ON
+  elif [ -f "$WAITPOWER_FILE" ]; then
+    leds $ALL_LEDS_OFF
+  elif [ -f "$ACS_FILE" ]; then
+    leds $ACS_LED_ON
+  elif [ -f "$IPV6_FILE" ]; then
+    leds $IPV6_LED_ON
+  else
+    leds $ANYTHING_ELSE
+  fi
+done

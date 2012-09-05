@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# set-acs <source> ACS_URL
+# Where source can be:
+#  cwmp - ACS set ManagementServer.URL
+#  dhcp - received an ACS_URL option from DHCP/DHCP6.
+#  init - initialize /tmp/cwmp/acs_url from the best available source
+#  manual - manually instantiate an ACS URL
+
+. /etc/utils.sh
+
+usage() {
+  echo Usage: $0 '[{cwmp|dhcp|manual} ACS_URL | init | print]'
+  exit 1
+}
+
+check_for_url() {
+  if [ -z "$2" ]; then
+    usage
+  fi
+}
+
+main() {
+  mkdir -p /tmp/cwmp /config/tr69
+
+  case "$1" in
+    cwmp)
+      check_for_url $@
+      atomic /config/tr69/acs_url.cwmp "$2"
+      ;;
+    dhcp)
+      check_for_url $@
+      atomic /tmp/cwmp/acs_url.dhcp "$2"
+      ;;
+    init)
+      # Fallthrough
+      ;;
+    manual)
+      check_for_url $@
+      atomic /config/tr69/acs_url "$2"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+
+  if [ -f /config/tr69/acs_url.cwmp ]; then
+    acs=$(cat /config/tr69/acs_url.cwmp)
+    atomic /tmp/cwmp/acs_url $(cat /config/tr69/acs_url.cwmp)
+    echo using CWMP ACS "$acs"
+  elif [ -f /config/tr69/acs_url ]; then
+    acs=$(cat /config/tr69/acs_url)
+    atomic /tmp/cwmp/acs_url "$acs"
+    echo using Manual ACS "$acs"
+  elif [ -f /tmp/cwmp/acs_url.dhcp ]; then
+    acs=$(cat /tmp/cwmp/acs_url.dhcp)
+    atomic /tmp/cwmp/acs_url "$acs"
+    echo using DHCP ACS "$acs"
+  fi
+
+  if [ ! -f /tmp/cwmp/acs_url ]; then
+    # No better sources, populate a default.
+    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
+    if [ -e /etc/ssl/private/device.key -a -e /etc/ssl/certs/device.pem ]; then
+      acs=$(curl -sL --key /etc/ssl/private/device.key --cert /etc/ssl/certs/device.pem "https://config.cpe.gfsvc.com/find/$serial")
+    else
+      acs=$(curl -sL "https://config.cpe.gfsvc.com/find/$serial")
+    fi
+
+    if [ -n "$acs" ]; then
+      acs="https://acs.prod.gfsvc.com/default/cwmp"
+      echo using Default ACS "$acs"
+    else
+      echo using Findacs ACS "$acs"
+    fi
+    atomic /tmp/cwmp/acs_url "$acs"
+  fi
+}
+
+if [ x$1 = "xprint" ]; then
+  cat /tmp/cwmp/acs_url
+else
+  main "$@" 2>&1 | logger -t set-acs
+fi
+
+exit 0

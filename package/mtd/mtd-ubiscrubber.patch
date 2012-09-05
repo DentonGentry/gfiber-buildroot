@@ -1,0 +1,14 @@
+diff --git a/Makefile b/Makefile
+index 17a1216..19dba7f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -27,7 +27,8 @@ MTD_BINS = \
+ 	sumtool jffs2reader
+ UBI_BINS = \
+ 	ubiupdatevol ubimkvol ubirmvol ubicrc32 ubinfo ubiattach \
+-	ubidetach ubinize ubiformat ubirename mtdinfo ubirsvol
++	ubidetach ubinize ubiformat ubirename mtdinfo ubirsvol \
++	ubiscrubber
+ 
+ BINS = $(MTD_BINS)
+ BINS += mkfs.ubifs/mkfs.ubifs

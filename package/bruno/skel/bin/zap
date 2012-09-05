@@ -13,7 +13,7 @@ if [ "$1" != "--i-really-mean-it" ]; then
 fi
 
 leds 0 15 0 15 0 15  # noisy leds as we wipe things
-for mtdname in "data+ubi" "misc+ubi"; do
+for mtdname in "data+ubi"; do
   mtd=$(whichmtd "$mtdname")
   if [ -n "$mtd" ]; then
     echo "Wiping $mtdname ($mtd)..."

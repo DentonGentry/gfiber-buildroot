@@ -1,0 +1,16 @@
+#!/bin/sh
+while :; do
+  # If this file doesn't exist, you know a log upload is already in progress.
+  rm -f /tmp/logs-uploaded
+
+  for i in 1 2 3 4 5; do
+    upload-crash-log && break
+  done
+
+  # This tells anyone waiting for us that the logs have finished uploading.
+  # It isn't strictly true, since if upload-crash-log fails repeatedly,
+  # we'll create this file anyway.  But at least they know we tried.
+  : >/tmp/logs-uploaded
+
+  log-delay
+done

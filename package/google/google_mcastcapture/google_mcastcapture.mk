@@ -10,6 +10,8 @@ define GOOGLE_MCASTCAPTURE_INSTALL_STAGING_CMDS
         mkdir -p $(STAGING_DIR)/usr/include/pts_index
         $(INSTALL) -D -m 0444 $(@D)/pts_index/index_file.h \
           $(STAGING_DIR)/usr/include/pts_index
+        $(INSTALL) -D -m 0444 $(@D)/pts_index/verify_index.h \
+          $(STAGING_DIR)/usr/include/pts_index
 endef
 
 define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS

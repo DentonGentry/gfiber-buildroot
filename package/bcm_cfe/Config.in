@@ -1,0 +1,7 @@
+menu "Broadcom CFE"
+	config BR2_PACKAGE_BCM_CFE
+		bool "Enable Broadcom CFE (Google customized)"
+		default n
+		help
+		  Builds for Broadcom CFE (Google customized)
+endmenu

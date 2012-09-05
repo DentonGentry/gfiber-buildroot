@@ -1,0 +1,233 @@
+#!/bin/sh
+#
+# Volume check service
+#
+
+# 'data+ubi' partition
+DATA_MTD_NAME='"data+ubi"'
+DATA_MTD_NO=
+
+# 'rootfs' on /dev/ubi0
+# 'data+ubi' on /dev/ubi1
+DATA_UBI_NO=1
+
+USER_NAME=user
+CONFIG_NAME=config
+
+CONFIG_SIZE=16MiB
+USER_SIZE=0
+BADBLOCK_FILE=/tmp/gpio/ledcontrol/flash_bad_blocks
+
+
+check_mtd()
+{
+  local a b c d e
+  cat /proc/mtd |
+  while read a b c d; do
+    # convert 'mtdxx:' to 'xx'
+    e=${a%:*}
+    [ $d = $1 ] && echo "${e#mtd}"
+  done
+}
+
+
+find_badblock()
+{
+  # This routine checks for bad block of a partition name.
+  # ${1} - partition name
+  local a b c
+  cat /proc/sys/dev/repartition/bbinfo |
+  while read a b; do
+    c=${a%:*}
+    [ $c = $1 ] && echo "$b" && break
+  done
+}
+
+
+fail()
+{
+  echo "$(basename $0):" "$@" >&2
+  [ -f $BADBLOCK_FILE ] || echo "" >$BADBLOCK_FILE
+}
+
+
+check_badblock()
+{
+  local bb=$(find_badblock $1)
+  if [ "$bb" = "" ]; then
+    echo "Failed to get badblock information for $1!"
+  elif [ $bb -gt 0 ]; then
+    fail "$1 has $bb bad blocks!"
+  fi
+}
+
+
+recover_volume()
+{
+  # Format MTD device and mount UBI volumes.
+  # $1 - MTD device number
+  # $2 - UBI device number
+
+  echo "Failed to mount ubifs on mtd$1, formatting..."
+
+  # umount UBI volumes detach UBI devices
+  umount_ubifs $2
+
+  # format MTD partition
+  ubiformat /dev/mtd$1 -y
+
+  # attach UBI devices and mount UBI volumes
+  mount_ubifs $1 $2
+}
+
+
+mount_ubifs()
+{
+  # Attach MTD device to UBI device.
+  # $1 - MTD device number
+  # $2 - UBI device number
+
+  #echo "Attach mtd$1 to /dev/ubi$2"
+  # If UBI device failed to attach, return 1 to call 'recover_volume()':
+  # 1. detach UBI devices
+  # 2. erase MTD partition
+  # 3. format MTD partition
+  # 4. attach UBI devices and mount UBI volumes again
+  ubiattach -m $1 -d $2
+  if [ $? -eq 0 ]; then
+    mount_volumes $1 $2 || return 1
+  else
+    echo "Failed to attach mtd$1 to /dev/ubi$2"
+    return 1
+  fi
+}
+
+
+mount_volumes()
+{
+  # Mount UBI volumes.
+  # $1 - MTD device number
+  # $2 - UBI device number
+
+  if [ $1 -eq ${DATA_MTD_NO} ]; then
+    # mount UBI 'config' volume
+    mount_volume ${CONFIG_NAME} $2 ${CONFIG_SIZE} || return 1
+
+    # mount UBI 'user' volume
+    mount_volume ${USER_NAME} $2 ${USER_SIZE} || return 1
+  fi
+}
+
+
+mount_volume()
+{
+  # Mount UBI volume.
+  # $1 - UBI volume name
+  # $2 - UBI device number
+  # $3 - UBI volume size
+
+  # make UBI volume
+  make_volume $1 $2 $3 || return 1
+
+  # mount UBI volume
+  [ ! -d /$1 ] && mkdir -p /$1
+  if ! mount -t ubifs ubi$2:$1 /$1; then
+    echo "Failed to mount '$1' volume"
+    return 1
+  fi
+}
+
+
+make_volume()
+{
+  # Make UBI volume.
+  # $1 - UBI volume name
+  # $2 - UBI device number
+  # $3 - UBI volume size
+
+  # get UBI volume name and remove 'space' characters
+  if ubinfo -d $2 -N $1; then
+    echo "UBI volume '$1' exists"
+    return 0
+  fi
+
+  # echo "Make '$1' volume on /dev/ubi$2 (size:$3)"
+  if [ $3 -eq "0" ]; then
+    size_args="-m"
+  else
+    size_args="-s $3"
+  fi
+
+  if ! ubimkvol /dev/ubi$2 ${size_args} -N $1; then
+    echo "Failed to make '$1' volume"
+    return 1
+  fi
+}
+
+
+umount_ubifs()
+{
+  # Umount UBI volumes.
+  # $1 - UBI device number
+
+  if [ $1 -eq ${DATA_UBI_NO} ]; then
+    [ -d /${USER_NAME} ] && umount /${USER_NAME}
+    [ -d /${CONFIG_NAME} ] && umount /${CONFIG_NAME}
+  else
+    return 1
+  fi
+
+  sleep 1
+  ubidetach -d $1
+}
+
+
+case "$1" in
+  start)
+    # Get MTD partition number
+    DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
+
+    check_badblock kernel0
+    check_badblock kernel1
+
+    mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
+      recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
+
+    [ ! -d /user/rw ] && mkdir -p /user/rw
+    [ ! -d /user/bsa ] && mkdir -p /user/bsa
+    [ ! -d /user/netflix ] && mkdir -p /user/netflix
+    [ ! -d /user/drm ] && mkdir -p /user/drm
+    [ ! -d /user/widevine ] && mkdir -p /user/widevine
+    [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
+
+    # /config must be writeable by non-root
+    chown bin.sys /config
+    chmod 775 /config
+
+    # TODO: Consolidate overheating code to sysmgr.
+    # See peripheralmon.cc for detail
+    if [ -e /user/rw/overheating ]; then
+      echo "Delay 30 seconds because SOC overheating"
+      sleep 30
+      rm -f /user/rw/overheating
+    fi
+
+    if [ -e /config/DEBUG ]; then
+      echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
+      echo >/tmp/DEBUG
+    fi
+    ;;
+  stop)
+    # Get MTD partition number
+    DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
+
+    umount_ubifs ${DATA_UBI_NO}
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}" >&2
+    exit 1
+esac
+
+exit $?

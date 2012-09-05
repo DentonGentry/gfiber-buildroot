@@ -1,15 +1,41 @@
 #!/bin/sh
 
+trim() {
+  local var="$1"
+  var="${var#"${var%%[![:space:]]*}"}"
+  var="${var%"${var##*[![:space:]]}"}"
+  echo -n $var
+}
+
+hddserial () {
+  local var
+  var=$(hdparm -I /dev/sda | grep "Serial Number")
+  echo -n $(trim "${var##*:}")
+}
+
 case "$1" in
   start)
     # Mount SATA device
     if [ -e /dev/sda ]; then
+      attachedSerial=$(hddserial)
+      pairedSerial=$(hnvram -rq PAIRED_DISK)
+      echo "Attached HDD Serial:$attachedSerial, Paired HDD Serial:$pairedSerial"
+      if [ "$attachedSerial" = "$pairedSerial" ]; then
+        echo "MATCH!"
+      else
+        if [ "$pairedSerial" = "" ]; then
+          echo "NO PAIR; PAIRING:$attachedSerial"
+          $(hnvram -w PAIRED_DISK="$attachedSerial")
+        else
+          echo "NO MATCH; NO MOUNT"
+          echo 1 > /tmp/gpio/ledcontrol/hdd_bad_pair
+          exit 0;
+        fi
+      fi
       echo "Mounting SATA device"
       if [ -e /dev/sda1 ]; then
-        mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda1 /var/media
-
-        #TODO(apenwarr): /var/backup may be obsolete.  Investigate.
-        [ -e /dev/sda2 ] && mount -o noatime -t ext4 /dev/sda2 /var/backup
+        mount -o noatime,barrier=0,data=writeback,noexec,nosuid,nodev -t ext4 /dev/sda1 /var/media
+        [ -e /dev/sda2 ] && mount -o noatime,noexec,nosuid,nodev -t ext4 /dev/sda2 /var/backup
       elif [ -h /dev/sda ]; then
         mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda /var/media
       fi
@@ -18,8 +44,8 @@ case "$1" in
   stop)
     # Unmount SATA device
     echo "Unmounting SATA device"
-    mountpoint -q /var/media && umount /var/media
-    mountpoint -q /var/backup && umount /var/backup
+    umount /var/media 2>&1 >/dev/null
+    umount /var/backup 2>&1 >/dev/null
     ;;
   restart|reload)
     "$0" stop

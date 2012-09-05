@@ -2,11 +2,11 @@
 WATCHDOG=/dev/watchdog
 
 if [ ! -e "$WATCHDOG" ]; then
-  echo "$WATCHDOG does not exist; not starting watchdog." >&2
+  echo "$WATCHDOG does not exist; not starting software watchdog." >&2
   exit 0
 fi
 
 while sleep 10; do
-  hnvram -r PLATFORM_NAME  # check that hnvram isn't blocked
+  hnvram -r PLATFORM_NAME >/dev/null  # check that hnvram isn't blocked
   echo -n 'x'
 done >$WATCHDOG

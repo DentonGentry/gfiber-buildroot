@@ -24,8 +24,16 @@
 # 4. TIMEOUT not tested. ping has a flag I don't know, and I'm suspicious
 # of the $1 in its args.
 
+. /etc/utils.sh
+
 # 'ip' just looks too weird.  /sbin/ip looks less weird.
 ip=/sbin/ip
+
+wifi_ifc=eth2
+
+routable_ifc() {
+  [ "$interface" != "$wifi_ifc" ]
+}
 
 make_resolv_conf() {
   if [ x"$new_domain_name_servers" != x ]; then
@@ -68,50 +76,16 @@ make_resolv_conf() {
     mv /tmp/resolv.conf.new /tmp/resolv.conf
   fi
 
-  upload-logs-now
-}
-
-atomic() {
-  local filename="$1" newval="$2"
-  shift
-
-  # Only rewrite the file if it's different from before.  This helps avoid
-  # unnecessary flash churn.
-  if [ ! -e $filename ] || [ "$(cat $filename)" != "$newval" ]; then
-    oldval=$([ -e $filename ] && cat $filename)
-    rm -f $filename.new
-    echo "$@" >$filename.new
-    mv $filename.new $filename
+  if [ ! -f /tmp/dhclient-logs-uploaded ]; then
+    upload-logs-now
+    echo done >/tmp/dhclient-logs-uploaded
   fi
 }
 
-#TODO(apenwarr): Actually we should probably save a *list* of ACS URLs.
-# That way if cwmpd fails to connect to one, it can fall back to another one
-# itself.  We have to be careful about what conditions necessitate a fallback,
-# but it's probably not *only* DHCP server related.  In particular, if DHCP
-# doesn't provide an entry at all and we have an old one in /config, that
-# one might refuse us, and maybe we'd like to fall back to the hardcoded
-# default in that case, but that would have to be implemented in cwmpd, not
-# here.
 make_cwmp_files() {
-  mkdir -p /tmp/cwmp /config/tr69
   if [ -n "$new_cwmp_acs_url" ]; then
-    # DHCP server gave us an ACS URL, so we can discard any old ones.
-    atomic /tmp/cwmp/acs_url "$new_cwmp_acs_url"
-    atomic /config/tr69/acs_url "$new_cwmp_acs_url"
     echo cwmp dhcp acs "$new_cwmp_acs_url" 2>&1 | logger -t dhcpscript
-  elif [ -s /config/tr69/acs_url ]; then
-    # DHCP server didn't provide an ACS URL, but we have an old one persisted,
-    # so use that as a fallback.
-    atomic /tmp/cwmp/acs_url "$(cat /config/tr69/acs_url)"
-    echo cwmp stored acs "$(cat /config/tr69/acs_url)" 2>&1 | logger -t dhcpscript
-  elif [ ! -s /tmp/cwmp/acs_url ]; then
-    # No DHCP-provided entry and no fallback; use a hardcoded default and
-    # hope for the best.  Save it to /tmp, but *not* /config, since it's not
-    # a "real" config value (and if the default changes in future software
-    # versions, we want it to take effect).
-    atomic /tmp/cwmp/acs_url "https://acs.prod.gfsvc.com/default/cwmp"
-    echo cwmp default acs https://acs.prod.gfsvc.com/default/cwmp 2>&1 | logger -t dhcpscript
+    set-acs dhcp "$new_cwmp_acs_url"
   fi
   if [ -n "$new_cwmp_provisioning_code" ]; then
     atomic /tmp/cwmp/provisioning_code "$new_cwmp_provisioning_code"
@@ -129,7 +103,7 @@ make_cwmp_files() {
 
 make_etc_hosts() {
   (
-    echo "$new_ip_address    gfibertv"
+    echo "$new_ip_address    `hostname`"
     echo "127.0.0.1  localhost"
   ) >/tmp/hosts
 }
@@ -221,19 +195,21 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
       ${ip} link set dev ${interface} mtu ${new_interface_mtu}
     fi
     # Add a network route to the computed network address.
-    if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ] ; then
-       # if we've changed routers delete the old and add the new.
-      for router in $old_routers; do
-        ${ip} -4 route del via $router
+    if routable_ifc; then
+      if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ] ; then
+         # if we've changed routers delete the old and add the new.
+        for router in $old_routers; do
+          ${ip} -4 route del via $router
+        done
+      fi
+      for router in $new_routers; do
+        if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
+          ${ip} -4 route add ${router} dev $interface
+        fi
+        ${ip} -4 route add default via ${router} dev ${interface} \
+                    ${metric_arg}
       done
     fi
-    for router in $new_routers; do
-      if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
-        ${ip} -4 route add ${router} dev $interface
-      fi
-      ${ip} -4 route add default via ${router} dev ${interface} \
-                  ${metric_arg}
-    done
   fi
   if [ x$new_ip_address != x$alias_ip_address ] && [ x$alias_ip_address != x ];
    then
@@ -248,7 +224,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
   exit_with_hooks 0
 fi
 
-if [ x$reason = xEXPIRE ] || [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
+if [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
    || [ x$reason = xSTOP ]; then
   if [ x$alias_ip_address != x ]; then
     # Turn off alias interface.
@@ -277,7 +253,7 @@ if [ x$reason = xTIMEOUT ]; then
     ip link set dev ${interface} mtu ${new_interface_mtu}
   fi
   set $new_routers
-  if ping -q -c 1 $1; then
+  if routable_ifc && ping -q -c 1 $1; then
     if [ x$new_ip_address != x$alias_ip_address ] && \
 			[ x$alias_ip_address != x ]; then
       ${ip} -4 addr add ${alias_ip_address}${alias_mask} \
@@ -364,7 +340,7 @@ if [ x$reason = xDEPREF6 ] ; then
   exit_with_hooks 0
 fi
 
-if [ x$reason = xEXPIRE6 -o x$reason = xRELEASE6 -o x$reason = xSTOP6 ] ; then
+if [ x$reason = xRELEASE6 -o x$reason = xSTOP6 ] ; then
   if [ x${old_ip6_address} = x ] || [ x${old_ip6_prefixlen} = x ] ; then
     exit_with_hooks 2;
   fi

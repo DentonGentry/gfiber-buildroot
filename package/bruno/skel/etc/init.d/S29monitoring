@@ -1,0 +1,42 @@
+#!/bin/sh
+
+case "$1" in
+
+  start)
+    BASE=/tmp/cwmp/monitoring/
+    SUBDIRS='hdmi ts tcp epg dejittering'
+    failures=0
+
+    echo -n 'Creating video monitoring directories: '
+
+    for d in $SUBDIRS; do
+      mkdir -p $BASE$d
+      if [ $? -ne 0 ]; then
+        echo -e -n "\nFailed to create video monitoring directory for $d stats"
+        failures=`expr $failures + 1`
+      fi
+    done
+
+    if [ $failures -eq 0 ]; then
+      echo done
+    else
+      echo -e "\n$failures failures"
+    fi
+
+    ;;
+
+  stop)
+    ;;
+
+  restart)
+    # Don't delete the directories; Attempt to create if they don't exist yet
+    $0 start
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+
+esac
+
+exit $?

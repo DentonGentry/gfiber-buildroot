@@ -4,7 +4,6 @@ mkdir -p /tmp/cwmp
 # dhclient populates the ACS_URL in /tmp/cwmp/acs_url
 CWMP="
   /usr/catawampus/cwmpd
-      --acs-url-file=/tmp/cwmp/acs_url
       --platform=gfmedia
       --ping_ip6dev=br0
       --ca-certs=/etc/ssl/certs/ca-certificates.crt

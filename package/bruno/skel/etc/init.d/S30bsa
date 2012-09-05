@@ -1,29 +1,54 @@
 #!/bin/sh
 
-if [ ! -e /dev/btusb0 ]; then
-	exit 0
-fi
+BT_MAC_ADDR=`hnvram -rq MAC_ADDR_BT`
+BT_NAME=`hnvram -rq PLATFORM_NAME`
+
+# Time to wait (in seconds) after resetting the BT chip to allow /dev/btusb0 to
+# be created.
+BT_RESET_DELAY=1
+
+# Time to wait (in seconds) after starting bsa_server to allow the BT chip to be
+# fully initialized.
+BT_BSA_STARTUP_DELAY=2
 
 case "$1" in
   start)
-	echo -n "Starting Bluetooth service: "
+	. /etc/utils.sh
+
+	has_wifi || { echo "No WiFi."; exit 0; }
+
+	# Run the following in a sub-shell in the background to avoid
+	# impacting boot time.
+
+	$(
+	# Reset the BT chip.
+	wl reset_bt_chip 2>&1
+	sleep ${BT_RESET_DELAY}
+
+	# bsa_server cannot run without /dev/btusb0.
+	test -e /dev/btusb0 || { echo "No /dev/btusb0."; exit 0; }
+
+	# Start bsa_server.
 	cd /user/bsa
 	babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd 2>&1 \
-            | logger -t bsa &
-	echo "done"
+	    | logger -t bsa &
+	sleep ${BT_BSA_STARTUP_DELAY}
+
+	# Start app_gtv.
+	babysit 30 app_gtv -a "${BT_MAC_ADDR}" -n "${BT_NAME}" -k \
+	    2>&1 | logger -t app_gtv &
+	) &
 	;;
   stop)
-	echo -n "Shutting down Bluetooth service: "
-	pkill -x bsa_server
-	echo "done"
+	pkillwait -x app_gtv
+	pkillwait -x bsa_server
 	;;
-
   restart)
-	$0 stop; sleep 2; $0 start
+	$0 stop; $0 start
 	;;
   *)
-        echo "Usage: $0 {start|stop|restart}"
-        exit 1
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
 esac
 
 exit $?

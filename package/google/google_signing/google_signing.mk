@@ -25,8 +25,7 @@ SIGNING_FLAG=""
 ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	(mkdir -m 700 -p $(SIGNING_DIR); \
-	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem); \
-	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_public_key_signature,$(SIGNING_DIR)/gfiber_key_sig.bin))
+	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem))
 endef
 SIGNING_FLAG="-s"
 GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += \
@@ -38,14 +37,17 @@ define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 endef
 endif
 
-define HOST_GOOGLE_SIGNING_SIGN
-	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
-	$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
-		-b $(BINARIES_DIR); \
+define HOST_GOOGLE_SIGNING_CLEANUP
 	if [ -d "$(SIGNING_DIR)" ]; then \
 		shred -f -u -z -n 5 $(SIGNING_DIR)/*; \
 		rm -rf $(SIGNING_DIR); \
-	fi)
+	fi
+endef
+
+define HOST_GOOGLE_SIGNING_SIGN
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
+		$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
+		-b $(BINARIES_DIR); $(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS

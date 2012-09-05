@@ -1,37 +1,22 @@
 #!/bin/sh
-
-start() {
-  echo "Starting miniclient."
-  (
-    wait-until-created /tmp/ntp.synced
-    /app/client/runminiclient 2>&1 | logger -t miniclient &
-  ) &
-}
-
-stop() {
-  pkill runminiclient
-  pkill miniclient
-  pkill waitpower
-}
-
-restart() {
-  stop
-  start
-}
-
 case "$1" in
   start)
-    start
-  ;;
+    (
+      wait-until-created /tmp/startupvideo.done
+      /app/client/runminiclient 2>&1 | logger -t miniclient &
+    ) &
+    ;;
   stop)
-    stop
-  ;;
+    pkillwait -x runminiclient
+    pkillwait -x miniclient
+    pkillwait -x waitpower
+    pkillwait -x netflix
+    pkillwait -x browsertest
+    ;;
   restart)
-    restart
-  ;;
+    $0 stop; $0 start
+    ;;
   *)
-  echo "Usage: $0 {start|stop|restart}"
-  exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?

@@ -3,22 +3,20 @@
 case "$1" in
   start)
 	wifi="eth2"
-	wifisys=/sys/class/net/${wifi}/address
+	wifisys=/sys/class/net/$wifi/address
 
 	if [ -f $wifisys ] ; then
-	  echo -n "Initializing Wifi service: "
 	  wifimac=$(cat $wifisys)
 	  wl ap 1
 	  wl radio off
 	  wl bssid "$wifimac"
-	  echo "done"
 	fi
 	;;
   stop)
 	;;
 
   restart)
-	$0 stop; sleep 2; $0 start
+	$0 stop; $0 start
 	;;
   *)
 	echo "Usage: $0 {start|stop|restart}"
