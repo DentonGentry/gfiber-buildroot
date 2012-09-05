@@ -1,0 +1,36 @@
+#!/bin/sh
+
+ipt() {
+  iptables "$@" &&
+  ip6tables "$@"
+}
+
+case "$1" in
+  start)
+    ipt -P INPUT ACCEPT
+    ipt -P OUTPUT ACCEPT
+    ipt -P FORWARD ACCEPT
+
+    ipt -A INPUT -i lo -j ACCEPT
+
+    # Protect Jetty's control ports
+    ipt -A INPUT -p tcp --dport 6968:6976 -j REJECT
+
+    # Provide some protection to catawampus against TCP SYN flood
+    ipt -A INPUT -p tcp --syn --dport 7547 -m state --state NEW -m recent --set
+    ipt -A INPUT -p tcp --syn --dport 7547 -m state --state NEW -m recent --update --seconds 20 --hitcount 2 -j REJECT
+    ;;
+  stop)
+    ipt -F
+    ipt -X
+    ipt -P INPUT ACCEPT
+    ipt -P OUTPUT ACCEPT
+    ipt -P FORWARD ACCEPT
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
