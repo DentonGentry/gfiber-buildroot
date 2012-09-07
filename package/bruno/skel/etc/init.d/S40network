@@ -25,44 +25,49 @@ case "$1" in
 
 	# configure loopback
 	ifup lo
-	if [ ! -e /tmp/NFS ]; then
-		echo -n "Creating bridge... "
-		brctl addbr br0 || exit 1
-		brctl setfd br0 1 || exit 1
-		brctl stp br0 on || exit 1
-		# If fat bruno, set bridge priority to 0x7990 so that
-		# it will be used as the root for the spanning tree.
-		if is-storage-box; then
-			brctl setbridgeprio br0 0x7990 || exit 1
+	echo -n "Creating bridge... "
+	brctl addbr br0 || exit 1
+	brctl setfd br0 1
+	brctl stp br0 on
+	# If fat bruno, set bridge priority to 0x7990 so that
+	# it will be used as the root for the spanning tree.
+	if is-storage-box; then
+		brctl setbridgeprio br0 0x7990
+	fi
+	[ -e /sys/class/net/eth0/address ] && \
+		ip link set br0 address \
+		$(cat /sys/class/net/eth0/address)
+	echo "done"
+
+	# VLAN tag for MoCA interface
+	ip link add link eth1 name eth1.0 type vlan id 0
+	# SO_PRIORITY -> 802.1p mapping
+	for prio in 0 1 2 3 4 5 6 7; do
+		vconfig set_egress_map eth1.0 $prio $prio >/dev/null 2>&1
+	done
+
+	echo "Adding interfaces... "
+	# set up networking if we are not on an NFS rootfs
+	for x in $(ls /sys/class/net); do
+		[ $x = "lo" ] && continue
+		echo "Adding interface $x..."
+		ip link set $x up
+		ip -o -f inet addr show $x |
+		while read a b c ip junk; do
+			ip addr add $ip dev br0
+		done
+		if [ -e /sys/class/net/$x/device ]; then
+			if [ $x = eth1 ]; then
+				x=eth1.0
+			fi
+			brctl addif br0 $x
 		fi
-		[ -e /sys/class/net/eth0/address ] && \
-			ip link set br0 address \
-			$(cat /sys/class/net/eth0/address)
-		echo "done"
-
-		# VLAN tag for MoCA interface
-		ip link add link eth1 name eth1.0 type vlan id 0
-		# SO_PRIORITY -> 802.1p mapping
-		for prio in 0 1 2 3 4 5 6 7; do
-			vconfig set_egress_map eth1.0 $prio $prio >/dev/null 2>&1
+		ip -o -f inet addr show $x |
+		while read a b c ip junk; do
+			ip addr del $ip dev $x
 		done
-
-		echo "Adding interfaces... "
-		# set up networking if we are not on an NFS rootfs
-		for x in $(ls /sys/class/net); do
-			# Avoid bouncing bridge interface.
-			if [ -n /sys/class/net/$x/bridge ]; then
-				ifdown $x
-				echo "Configuring $x interface"
-				ifup $x
-			fi
-			if [ -e /sys/class/net/$x/device ]; then
-				if [ $x = eth1 ]; then
-					x=eth1.0
-				fi
-				brctl addif br0 $x
-			fi
-		done
+	done
+	if [ ! -e /tmp/NFS ]; then
 		echo "Bringing up the bridge..."
 		ifup br0
 	else
