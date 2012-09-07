@@ -20,7 +20,7 @@ case "$1" in
 	# Run the following in a sub-shell in the background to avoid
 	# impacting boot time.
 
-	$(
+	(
 	# Reset the BT chip.
 	wl reset_bt_chip 2>&1
 	sleep ${BT_RESET_DELAY}
