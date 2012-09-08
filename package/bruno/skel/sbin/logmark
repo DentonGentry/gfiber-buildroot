@@ -1,0 +1,9 @@
+#!/bin/sh
+# Print a message to /dev/kmsg every few seconds, recording the current
+# timestamp and software version.  That will help the receiver of our log
+# files keep the kernel monotonic timestamps in sync with "real" time.
+
+while :; do
+  logmark-once
+  sleep 30
+done

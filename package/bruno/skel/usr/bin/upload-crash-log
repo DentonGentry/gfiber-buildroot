@@ -108,6 +108,7 @@ def main():
   if extra:
     o.fatal('no filenames expected')
 
+  subprocess.call('logmark-once')
   Marker(MARK_START)
 
   p = subprocess.Popen(['dmesg', '-r'], stdout=subprocess.PIPE)

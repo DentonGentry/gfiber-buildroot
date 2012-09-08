@@ -1,27 +1,18 @@
 #!/bin/sh
-#
-# Start logging
-#
-[ -e /sbin/syslogd ] || exit 0
-
 case "$1" in
   start)
-	echo -n "Starting logging: "
-	start-stop-daemon -S -q -p /var/run/syslog.pid --exec /sbin/syslogd -- -m 0
-	start-stop-daemon -S -q -p /var/run/klogd.pid --exec /sbin/klogd &
-	echo "OK"
-	;;
+    syslogd -m 0
+    klogd &
+    babysit 60 logmark &
+    ;;
   stop)
-	echo -n "Stopping logging: "
-	start-stop-daemon -K -q -p /var/run/syslog.pid
-	start-stop-daemon -K -q -p /var/run/klogd.pid
-	echo "OK"
-	;;
+    pkillwait -x syslogd
+    pkillwait -x klogd
+    pkillwait -x logmark
+    ;;
   restart|reload)
-	;;
+    $0 stop; $0 start ;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?
