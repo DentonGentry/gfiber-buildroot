@@ -1,12 +1,22 @@
 #!/bin/sh
 WATCHDOG=/dev/watchdog
+DELAY=10
 
 if [ ! -e "$WATCHDOG" ]; then
   echo "$WATCHDOG does not exist; not starting software watchdog." >&2
   exit 0
 fi
 
-while sleep 10; do
-  hnvram -r PLATFORM_NAME >/dev/null  # check that hnvram isn't blocked
-  echo -n 'x'
-done >$WATCHDOG
+testpid1=
+while sleep $DELAY; do
+  [ -n "$testpid1" ] &&
+  kill -0 "$testpid1" 2>/dev/null &&
+  echo "WARNING: hnvram blocked for $DELAY sec; expect watchdog reboot." >&2 &&
+  wait
+
+  hnvram -r PLATFORM_NAME >/dev/null & # check that hnvram isn't blocked
+  testpid1=$!
+
+  # Actually prod the watchdog timer
+  echo -n 'x' >&3
+done 3>$WATCHDOG
