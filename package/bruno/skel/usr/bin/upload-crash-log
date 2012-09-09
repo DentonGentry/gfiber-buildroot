@@ -94,12 +94,21 @@ def UploadLog(server, filename, content, keys):
     raise Exception('upload-logs returned exit code %d' % retval)
 
 
+def FirstStamp(s):
+  regex = re.compile(r'^(<[0-9]+>)?\[\s*([0-9.]+\.[0-9]+)\s*\]', re.M)
+  g = re.search(regex, s)
+  if g:
+    return float(g.group(2))
+  return None
+
+
 def main():
   o = options.Options(optspec)
   (opt, flags, extra) = o.parse(sys.argv[1:])  #pylint: disable-msg=W0612
   if extra:
     o.fatal('no filenames expected')
 
+  subprocess.call('logmark-once')
   Marker(MARK_START)
 
   p = subprocess.Popen(['dmesg', '-r'], stdout=subprocess.PIPE)
@@ -129,6 +138,10 @@ def main():
     if end < 0:
       end = len(dmesg)
     dmesg = dmesg[start:end]
+    if start == 0 and FirstStamp(dmesg) != 0.0:
+      dmesg = ('\n\nWARNING: log buffer overflow.  '
+               'Some messages were lost at this position.\n\n' +
+               dmesg)
 
   if opt.stdout:
     print dmesg

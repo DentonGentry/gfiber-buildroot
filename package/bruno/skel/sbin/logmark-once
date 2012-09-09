@@ -1,0 +1,10 @@
+#!/bin/sh
+read version junk </etc/version
+
+# this two-step buffer is to ensure the entire string is written in a
+# single write() syscall, so it isn't interrupted by other logs
+x=$(printf '<7>T: %s %d %s' \
+        "$version" \
+        "$(date +%s)" \
+        "$(date +'%m/%d %H:%M:%S')")
+echo "$x" >/dev/kmsg
