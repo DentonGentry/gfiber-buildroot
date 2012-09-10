@@ -45,9 +45,10 @@ define HOST_GOOGLE_SIGNING_CLEANUP
 endef
 
 define HOST_GOOGLE_SIGNING_SIGN
-	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
-		$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
-		-b $(BINARIES_DIR); $(HOST_GOOGLE_SIGNING_CLEANUP))
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
+		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) && \
+		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
@@ -66,7 +67,7 @@ define HOST_GOOGLE_SIGNING_INSTALL_CMDS
 endef
 
 define HOST_GOOGLE_SIGNING_TEST_CMDS
-	(cd $(@D)/signing; $(HOST_DIR)/usr/bin/python repacktest.py)
+	(cd $(@D)/signing && $(HOST_DIR)/usr/bin/python repacktest.py)
 endef
 
 $(eval $(call GENTARGETS))
