@@ -601,6 +601,10 @@ source "package/bruno/Config.in"
 source "package/google/Config.in"
 endmenu
 
+menu "Prism custom build"
+source "package/prism/Config.in"
+endmenu
+
 menu "Google open source packages"
 source "package/catawampus/Config.in"
 endmenu
@@ -615,6 +619,10 @@ source "package/bcm_bluetooth/Config.in"
 source "package/bcm_drivers/Config.in"
 source "package/bcm_signing/Config.in"
 source "package/bcm_cfe/Config.in"
+endmenu
+
+menu "Marvell custom build"
+source "package/mv_app/Config.in"
 endmenu
 
 endmenu
