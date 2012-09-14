@@ -24,11 +24,11 @@ ulimit -c 49152
 babysit 300 gpio-mailbox 2>&1 | logger -t gpio-mailbox &
 
 if is-storage-box; then
-  hostname gfiberstorage
+  hostname GFiberStorage
 elif is-tv-box; then
-  hostname gfibertv
+  hostname GFiberTV
 else
-  hostname gfiberunknown
+  hostname GFiberUnknown
 fi
 
 # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted

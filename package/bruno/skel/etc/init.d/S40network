@@ -20,6 +20,9 @@ case "$1" in
 	# Prepare for DHCP ACS_URL
 	set-acs init
 
+	# Configure dhclient with the right hostname etc.
+	setup-dhclient
+
 	# configure loopback
 	ifup lo
 	if [ ! -e /tmp/NFS ]; then
