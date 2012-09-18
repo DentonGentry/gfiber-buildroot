@@ -1,0 +1,146 @@
+From c13f135fe4d745aa7b9935643f3c9af404cc3c62 Mon Sep 17 00:00:00 2001
+From: Daniel Mentz <danielmentz@google.com>
+Date: Tue, 18 Sep 2012 09:40:48 -0700
+Subject: [PATCH] Option --priority allows user to set SO_PRIORITY
+
+Add command line option --priority that allows the user to specify the
+protocol-defined priority i.e. the skb_priority which is the priority in
+the socket buffer (sk_buff). Packets with a higher priority may be
+processed first depending on the selected device queueing discipline.
+Furthermore, this value eventually maps to the Priority Code Point (PCP)
+in the 802.1q VLAN tag. The exact mapping can be found in the output of
+the following command under "egress-qos-map".
+
+ip -d link show dev eth1.0
+
+Also, look at socket(7) and search for SO_PRIORITY.
+---
+ doc/index.html       |  8 ++++++++
+ include/Settings.hpp |  1 +
+ man/iperf.1          |  3 +++
+ src/Locale.c         |  1 +
+ src/PerfSocket.cpp   | 17 +++++++++++++++++
+ src/Settings.cpp     |  8 ++++++++
+ 6 files changed, 38 insertions(+)
+
+diff --git a/doc/index.html b/doc/index.html
+index 47d213f..fcffe9d 100644
+--- a/doc/index.html
++++ b/doc/index.html
+@@ -219,6 +219,14 @@ we will try to fix them quickly. <BR>
+     <TD><TT>$IPERF_NODELAY</TT></TD>
+     <TD>Set the TCP no delay option, disabling Nagle's algorithm. Normally 
+       this is only disabled for interactive applications like telnet.</TD></TR>
++  <TR vAlign=top>
++    <TD><A name=priority></A><TT>-O, --priority</TT></TD>
++    <TD><TT>$IPERF_PRIORITY</TT></TD>
++    <TD>Set protocol-defined priority i.e. skb_priority which is the priority in
++    the socket buffer (sk_buff). Packets with a higher priority may be
++    processed first depending on the selected device queueing discipline.
++    Furthermore, this value eventually maps to the Priority Code Point (PCP)
++    in the 802.1q VLAN tag.</TD></TR>
+   <TR>
+     <TD><TT>-V </TT>(from v1.6 or higher)</TD>
+     <TD>.</TD>
+diff --git a/include/Settings.hpp b/include/Settings.hpp
+index 31de506..1713777 100644
+--- a/include/Settings.hpp
++++ b/include/Settings.hpp
+@@ -120,6 +120,7 @@ typedef struct thread_Settings {
+     // int's
+     int mThreads;                   // -P
+     int mTOS;                       // -S
++    int mPriority;                  // -O
+     int mSock;
+     int Extractor_size;
+     int mBufLen;                    // -l
+diff --git a/man/iperf.1 b/man/iperf.1
+index b6e4ce5..aaa5beb 100644
+--- a/man/iperf.1
++++ b/man/iperf.1
+@@ -67,6 +67,9 @@ set TCP maximum segment size (MTU - 40 bytes)
+ .BR -N ", " --nodelay " "
+ set TCP no delay, disabling Nagle's Algorithm
+ .TP
++.BR -O ", " --priority " "
++set protocol-defined priority i.e. skb_priority
++.TP
+ .BR -v ", " --version " "
+ print version information and quit
+ .TP
+diff --git a/src/Locale.c b/src/Locale.c
+index b5d42b1..7f94ec6 100644
+--- a/src/Locale.c
++++ b/src/Locale.c
+@@ -88,6 +88,7 @@ Client/Server:\n\
+   -C, --compatibility      for use with older versions does not sent extra msgs\n\
+   -M, --mss       #        set TCP maximum segment size (MTU - 40 bytes)\n\
+   -N, --nodelay            set TCP no delay, disabling Nagle's Algorithm\n\
++  -O, --priority           set protocol-defined priority i.e. skb_priority\n\
+   -V, --IPv6Version        Set the domain to IPv6\n\
+ \n\
+ Server specific:\n\
+diff --git a/src/PerfSocket.cpp b/src/PerfSocket.cpp
+index 3ecdbe0..c599c88 100644
+--- a/src/PerfSocket.cpp
++++ b/src/PerfSocket.cpp
+@@ -138,6 +138,23 @@ void SetSocketOptions( thread_Settings *inSettings ) {
+     }
+ #endif
+ 
++#ifdef SO_PRIORITY
++    /* From socket(7): "Set the protocol-defined priority for all
++     * packets to be sent on this socket. Linux uses this value to order
++     * the networking queues: packets with a higher priority may be
++     * processed first depending on the selected device queueing
++     * discipline. For ip(7), this also sets the IP type-of-service (TOS)
++     * field for outgoing packets. Setting a priority outside the range 0
++     * to 6 requires the CAP_NET_ADMIN capability." */
++    if ( inSettings->mPriority > 0 ) {
++        int  priority = inSettings->mPriority;
++        Socklen_t len = sizeof(priority);
++        int rc = setsockopt( inSettings->mSock, SOL_SOCKET, SO_PRIORITY,
++                             (char*) &priority, len );
++        WARN_errno( rc == SOCKET_ERROR, "setsockopt SO_PRIORITY" );
++    }
++#endif
++
+     if ( !isUDP( inSettings ) ) {
+         // set the TCP maximum segment size
+         setsock_tcp_mss( inSettings->mSock, inSettings->mMSS );
+diff --git a/src/Settings.cpp b/src/Settings.cpp
+index 6a5f092..c018418 100644
+--- a/src/Settings.cpp
++++ b/src/Settings.cpp
+@@ -113,6 +113,7 @@ const struct option long_options[] =
+ {"mss",        required_argument, NULL, 'M'},
+ {"nodelay",          no_argument, NULL, 'N'},
+ {"listenport", required_argument, NULL, 'L'},
++{"priority",   required_argument, NULL, 'O'},
+ {"parallel",   required_argument, NULL, 'P'},
+ {"remove",           no_argument, NULL, 'R'},
+ {"tos",        required_argument, NULL, 'S'},
+@@ -157,6 +158,7 @@ const struct option env_options[] =
+ {"IPERF_MSS",        required_argument, NULL, 'M'},
+ {"IPERF_NODELAY",          no_argument, NULL, 'N'},
+ {"IPERF_LISTENPORT", required_argument, NULL, 'L'},
++{"IPERF_PRIORITY",   required_argument, NULL, 'O'},
+ {"IPERF_PARALLEL",   required_argument, NULL, 'P'},
+ {"IPERF_TOS",        required_argument, NULL, 'S'},
+ {"IPERF_TTL",        required_argument, NULL, 'T'},
+@@ -629,6 +631,12 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
+             mExtSettings->mTOS = strtol( optarg, NULL, 0 );
+             break;
+ 
++        case 'O': // protocol-defined priority
++            // the zero base here allows the user to specify
++            // "0x#" hex, "0#" octal, and "#" decimal numbers
++            mExtSettings->mPriority = strtol( optarg, NULL, 0 );
++            break;
++
+         case 'T': // time-to-live for multicast
+             mExtSettings->mTTL = atoi( optarg );
+             break;
+-- 
+1.7.11.1
+
