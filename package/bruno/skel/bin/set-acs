@@ -10,7 +10,9 @@
 . /etc/utils.sh
 
 usage() {
-  echo Usage: $0 '[{cwmp|dhcp|manual} ACS_URL | init | print]'
+  echo Usage: $0 '{cwmp | dhcp | manual} {ACS_URL | clear}]'
+  echo "      $0 init"
+  echo "      $0 print"
   exit 1
 }
 
@@ -20,24 +22,46 @@ check_for_url() {
   fi
 }
 
+update_acs_file() {
+  file=$1
+  acs=$2
+  if [ "$acs" = "clear" ]; then
+    rm -f $file
+  else
+    atomic $file "$acs"
+  fi
+}
+
+# Remove ACS sources which reference the unreachable ACS
+remove_failed_acs() {
+  failed_acs=$1
+  for file in /config/tr69/acs_url.cwmp /tmp/cwmp/acs_url.dhcp; do
+    read url junk <$file && [ "$url" = "$failed_acs" ] && rm -f $file
+  done
+}
+
 main() {
   mkdir -p /tmp/cwmp /config/tr69
 
   case "$1" in
     cwmp)
       check_for_url $@
-      atomic /config/tr69/acs_url.cwmp "$2"
+      update_acs_file /config/tr69/acs_url.cwmp "$2"
       ;;
     dhcp)
       check_for_url $@
-      atomic /tmp/cwmp/acs_url.dhcp "$2"
+      update_acs_file /tmp/cwmp/acs_url.dhcp "$2"
       ;;
     init)
       # Fallthrough
       ;;
     manual)
       check_for_url $@
-      atomic /config/tr69/acs_url "$2"
+      update_acs_file /config/tr69/acs_url "$2"
+      ;;
+    timeout)
+      check_for_url $@
+      remove_failed_acs "$2"
       ;;
     *)
       usage
@@ -46,7 +70,7 @@ main() {
 
   if [ -f /config/tr69/acs_url.cwmp ]; then
     acs=$(cat /config/tr69/acs_url.cwmp)
-    atomic /tmp/cwmp/acs_url $(cat /config/tr69/acs_url.cwmp)
+    atomic /tmp/cwmp/acs_url "$acs"
     echo using CWMP ACS "$acs"
   elif [ -f /config/tr69/acs_url ]; then
     acs=$(cat /config/tr69/acs_url)
