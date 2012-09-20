@@ -9,10 +9,14 @@
 
 . /etc/utils.sh
 
+log() {
+  echo "set-acs:" "$@" >&2
+}
+
 usage() {
-  echo Usage: $0 '{cwmp | dhcp | manual} {ACS_URL | clear}]'
-  echo "      $0 init"
-  echo "      $0 print"
+  log "Usage: $0 init"
+  log "   or: $0 {cwmp | dhcp | manual} {ACS_URL | clear}]"
+  log "   or: $0 print"
   exit 1
 }
 
@@ -71,15 +75,15 @@ main() {
   if [ -f /config/tr69/acs_url.cwmp ]; then
     acs=$(cat /config/tr69/acs_url.cwmp)
     atomic /tmp/cwmp/acs_url "$acs"
-    echo using CWMP ACS "$acs"
+    log using CWMP ACS "$acs"
   elif [ -f /config/tr69/acs_url ]; then
     acs=$(cat /config/tr69/acs_url)
     atomic /tmp/cwmp/acs_url "$acs"
-    echo using Manual ACS "$acs"
+    log using Manual ACS "$acs"
   elif [ -f /tmp/cwmp/acs_url.dhcp ]; then
     acs=$(cat /tmp/cwmp/acs_url.dhcp)
     atomic /tmp/cwmp/acs_url "$acs"
-    echo using DHCP ACS "$acs"
+    log using DHCP ACS "$acs"
   fi
 
   if [ ! -f /tmp/cwmp/acs_url ]; then
@@ -91,20 +95,18 @@ main() {
       acs=$(curl -sL "https://config.cpe.gfsvc.com/find/$serial")
     fi
 
-    if [ -n "$acs" ]; then
+    if [ -z "$acs" ]; then
       acs="https://acs.prod.gfsvc.com/default/cwmp"
-      echo using Default ACS "$acs"
+      log using Default ACS "$acs"
     else
-      echo using Findacs ACS "$acs"
+      log using Findacs ACS "$acs"
     fi
     atomic /tmp/cwmp/acs_url "$acs"
   fi
 }
 
-if [ x$1 = "xprint" ]; then
+if [ "$1" = "print" ]; then
   cat /tmp/cwmp/acs_url
 else
-  main "$@" 2>&1 | logger -t set-acs
+  main "$@"
 fi
-
-exit 0
