@@ -23,17 +23,15 @@ case "$1" in
         echo : >/tmp/startupvideo.done
       ) 2>&1 | logger -t startupvideo &
     fi
-  ;;
+    ;;
   stop)
     pkillwait -x startupvideo
     rm -f /tmp/svpipe
-  ;;
+    ;;
   restart)
     $0 stop; $0 start
-  ;;
+    ;;
   *)
   echo "Usage: $0 {start|stop|restart}"
   exit 1
 esac
-
-exit $?

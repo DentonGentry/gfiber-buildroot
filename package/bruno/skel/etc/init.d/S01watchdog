@@ -1,7 +1,4 @@
 #!/bin/sh
-#
-# Start hardware watchdog
-#
 case "$1" in
   start)
     # can't use logger here because syslogd might not be running yet

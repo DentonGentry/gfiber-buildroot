@@ -7,6 +7,8 @@ export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
 # timestamped and uploaded along with the kernel messages.  We can't use
 # logger here because syslogd isn't started yet, and anyway, doing it
 # this way guarantees all our boot messages are in exactly the right order.
+# (otherwise kernel task switching could result in kernel driver messages
+# showing up before the userspace messages that triggered them)
 exec >/dev/kmsg 2>&1
 
 # TODO(apenwarr): mkdir -p seems buggy across symlinks.
@@ -35,28 +37,28 @@ case "$1" in
 esac
 
 for i in ${SCRIPTS}; do
-     # Ignore dangling symlinks (if any).
-     [ ! -f "$i" ] && continue
+  # Ignore dangling symlinks (if any).
+  [ ! -f "$i" ] && continue
 
-     # Ignore backup files (filename~) created by editors (mostly for nfsroot)
-     [ "$i" != "${i%~}" ] && continue
+  # Ignore backup files (filename~) created by editors (mostly for nfsroot)
+  [ "$i" != "${i%~}" ] && continue
 
-     echo "---- ${i##*/}" >&2
+  echo "---- ${i##*/}" >&2
 
-     case "$i" in
-	*.sh)
-	    # Source shell script for speed.
-	    (
-		trap - INT QUIT TSTP
-		set $1
-		. $i
-	    )
-	    ;;
-	*)
-	    # No sh extension, so fork subprocess.
-	    $i $1
-	    ;;
-    esac
+  case "$i" in
+    *.sh)
+      # Source shell script for speed.
+      (
+         trap - INT QUIT TSTP
+         set $1
+         . $i
+      )
+      ;;
+    *)
+      # No sh extension, so fork subprocess.
+      $i $1
+      ;;
+  esac
 done
 
 echo

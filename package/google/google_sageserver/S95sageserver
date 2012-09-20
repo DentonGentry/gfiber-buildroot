@@ -26,29 +26,21 @@ start() {
 }
 
 stop() {
-  pkill 'runsage|chsrv|sagesrv|siege'
-  pkill -f '(babysit.*)?(runsage|chsrv|sagesrv|siege)'
-  pkill -9 sagesrv  # doesn't always die happily
-}
-
-restart() {
-  stop
-  start
+  pkillwait -f '(babysit.*)(runsage|chsrv|sagesrv|siege)'
+  pkillwait -x 'runsage|chsrv|sagesrv|siege'
 }
 
 case "$1" in
   start)
     start
-  ;;
+    ;;
   stop)
     stop
-  ;;
+    ;;
   restart)
-    restart
-  ;;
+    $0 stop; $0 start
+    ;;
   *)
-  echo "Usage: $0 {start|stop|restart}"
-  exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?
