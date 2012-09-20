@@ -1,0 +1,20 @@
+#!/bin/sh
+case "$1" in
+  start)
+    # don't pipe the output through logger or logos, because they aren't
+    # running at realtime priority, so rtwatcher output would get lost
+    # exactly when it's useful.  Thus rtwatcher already formats its output
+    # appropriately for direct dumping to /dev/kmsg.
+    babysit 60 rtwatcher >/dev/kmsg 2>&1 &
+    ;;
+  stop)
+    pkillwait -x rtwatcher
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
