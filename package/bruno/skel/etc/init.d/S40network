@@ -33,6 +33,7 @@ case "$1" in
       ip link set br0 address \
       $(cat /sys/class/net/eth0/address)
     echo "done"
+    ip link set br0 up
 
     # VLAN tag for MoCA interface
     ip link add link eth1 name eth1.0 type vlan id 0
@@ -45,18 +46,19 @@ case "$1" in
     # set up networking if we are not on an NFS rootfs
     for x in $(ls /sys/class/net); do
       [ $x = "lo" ] && continue
+      [ $x = "br0" ] && continue
       echo "Adding interface $x..."
-      ip link set $x up
+      ip link set $x up &&
       ip -o -f inet addr show $x |
       while read a b c ip junk; do
         ip addr add $ip dev br0
-      done
+      done &&
       if [ -e /sys/class/net/$x/device ]; then
         if [ $x = eth1 ]; then
           x=eth1.0
         fi
         brctl addif br0 $x
-      fi
+      fi &&
       ip -o -f inet addr show $x |
       while read a b c ip junk; do
         ip addr del $ip dev $x
