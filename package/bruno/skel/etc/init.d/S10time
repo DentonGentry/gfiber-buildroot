@@ -9,7 +9,7 @@ case "$1" in
     if [ -s $ANTIROLLBACK ] ; then
         date +%s -s "$(cat $ANTIROLLBACK)"
     fi
-    babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logger -t rollback &
+    babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logos rollback &
     ;;
   stop)
     pkillwait -x antirollback

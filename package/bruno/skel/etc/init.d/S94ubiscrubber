@@ -7,7 +7,7 @@ case "$1" in
     while read node name; do
       echo "Starting ubiscrubber for $node ($name)."
       babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 |
-          logger -t "ubiscrubber ${node##*/}" &
+          logos "ubiscrubber ${node##*/}" &
     done
     ;;
   stop)

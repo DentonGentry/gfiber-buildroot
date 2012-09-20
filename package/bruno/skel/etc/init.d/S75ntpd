@@ -8,7 +8,7 @@ case "$1" in
       mount -t tmpfs none /var/empty/ntp
       chmod 500 /var/empty/ntp
     fi
-    babysit 60 ntpd -sd -w /tmp/ntp.synced 2>&1 | logger -t ntpd &
+    babysit 60 ntpd -sd -w /tmp/ntp.synced 2>&1 | logos ntpd &
     ;;
   stop)
     pkillwait -x ntpd

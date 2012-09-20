@@ -29,12 +29,12 @@ case "$1" in
       # Start bsa_server.
       cd /user/bsa
       babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd 2>&1 \
-          | logger -t bsa &
+          | logos bsa &
       sleep $BT_BSA_STARTUP_DELAY
 
       # Start app_gtv.
       babysit 30 app_gtv -a "$BT_MAC_ADDR" -n "$BT_NAME" -k 2>&1 \
-          | logger -t app_gtv &
+          | logos app_gtv &
     ) &
     ;;
   stop)

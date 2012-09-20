@@ -3,8 +3,8 @@ case "$1" in
   start)
     mkdir -p /tmp/gpio/ledcontrol
     setsid babysit 60 ipmonitor "/tmp/gpio/ledcontrol/ip.changed" 2>&1 |
-      logger -t ipmonitor &
-    setsid babysit 60 ledmonitor 2>&1 | logger -t ledmonitor &
+      logos ipmonitor &
+    setsid babysit 60 ledmonitor 2>&1 | logos ledmonitor &
     ;;
   stop)
     for pgid in $(ps -Cipmonitor -o pgid= | sort -u); do

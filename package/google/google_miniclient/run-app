@@ -48,7 +48,7 @@ case $appname in
     # Bruno startup will extract the idfile from flash and store it in /tmp
     export NF_IDFILE=/tmp/idfile.secure
     verify_drm_state
-    netflix $opts 2>&1 | logger -t netflix
+    netflix $opts 2>&1 | logos netflix
     ;;
   youtube)
     cd /usr/local/bin/browsertest
@@ -58,7 +58,7 @@ case $appname in
     # User-agent provided by broadcom [CASE#497867]
     export BRCM_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.12 Safari/535.11"
     [ -z "$opts" ] && opts='http://www.youtube.com/leanback?version=4'
-    browsertest $opts 2>&1 | logger -t youtube
+    browsertest $opts 2>&1 | logos youtube
     ;;
   *)
     echo "Unknown application." >&2

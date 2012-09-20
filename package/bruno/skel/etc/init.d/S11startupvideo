@@ -13,12 +13,12 @@ case "$1" in
           /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 \
           /usr/sv/connecting.ts 1 0 256 0
         echo : >/tmp/startupvideo.done
-      ) 2>&1 | logger -t startupvideo &
+      ) 2>&1 | logos startupvideo &
       (
         wait-until-created /var/run/gpio-mailbox
         wait-until-created /tmp/ntp.synced
         echo y >/tmp/svpipe
-      ) 2>&1 | logger -t startupvideo &
+      ) 2>&1 | logos startupvideo &
     else
       (
         # non-TV boxes don't use the startupvideo, which opens nexus,
@@ -29,7 +29,7 @@ case "$1" in
         wait-until-created /var/run/gpio-mailbox
         wait-until-created /tmp/ntp.synced
         echo : >/tmp/startupvideo.done
-      ) 2>&1 | logger -t startupvideo &
+      ) 2>&1 | logos startupvideo &
     fi
     ;;
   stop)

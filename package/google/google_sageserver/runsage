@@ -39,12 +39,12 @@ ulimit -c 49152
 
 if [ "$MODE" = "server" ]; then
   # Start up native streaming server
-  babysit 10 ./sagesrv -l6 -m | logger -t z &
+  babysit 10 ./sagesrv -l6 -m | logos z &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
     echo "Running chsrv." >&2
-    babysit 60 ./chsrv | logger -t chsrv &
+    babysit 60 ./chsrv | logos chsrv &
   fi
 fi
 
