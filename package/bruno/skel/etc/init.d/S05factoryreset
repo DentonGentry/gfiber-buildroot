@@ -1,17 +1,14 @@
 #!/bin/sh
-
 case "$1" in
   start)
-	babysit 60 zap-on-reset 2>&1 | logger -t zap-on-reset &
-	;;
+    babysit 60 zap-on-reset 2>&1 | logger -t zap-on-reset &
+    ;;
   stop)
-	pkill zap-on-reset
-	;;
+    pkillwait -x zap-on-reset
+    ;;
   restart)
-	;;
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?

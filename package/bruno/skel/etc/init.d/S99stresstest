@@ -1,5 +1,4 @@
 #!/bin/sh
-
 case "$1" in
   start)
     if [ "$(kernopt run_stresstest)" = 1 ]; then
@@ -14,7 +13,7 @@ case "$1" in
     fi
     ;;
   stop)
-    pkill stresstest
+    pkillwait -x stresstest
     ;;
   restart)
     ;;
@@ -22,5 +21,3 @@ case "$1" in
     echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
-
-exit $?

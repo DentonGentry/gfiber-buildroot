@@ -1,5 +1,4 @@
 #!/bin/sh
-
 case "$1" in
   start)
     babysit 10 softdog 2>&1 | logger -t softdog &

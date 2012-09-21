@@ -1,5 +1,4 @@
 #!/bin/sh
-
 [ -e /etc/samba/smb.conf ] || exit 0
 
 mkdir -p /var/cache/samba /var/lock/subsys /tmp/samba/sockets
