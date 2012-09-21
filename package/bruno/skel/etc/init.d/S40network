@@ -59,6 +59,14 @@ case "$1" in
         fi
         brctl addif br0 $x
       fi &&
+      ip -o -f inet route list dev $x |
+      while read dst routeinfo; do
+        if [ "$dst" = "default" ]; then
+          echo "Moving route '$dst' from $x to br0" &&
+          ip route del dev $x $dst $routeinfo &&
+          ip route add dev br0 $dst $routeinfo
+        fi
+      done &&
       ip -o -f inet addr show $x |
       while read a b c ip junk; do
         ip addr del $ip dev $x
@@ -68,7 +76,7 @@ case "$1" in
       echo "Bringing up the bridge..."
       ifup br0
     else
-      # nfsroot; network is already up
+      # nfsroot; network is already up.  ifup would normally do the following.
       upload-logs-now
     fi
 
