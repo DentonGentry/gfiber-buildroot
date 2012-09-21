@@ -7,6 +7,7 @@ case "$1" in
     ) &
     ;;
   stop)
+    pkillwait -x startupvideo  # if it's running, prevents miniclient from starting up
     pkillwait -x runminiclient
     pkillwait -x miniclient
     pkillwait -x waitpower
