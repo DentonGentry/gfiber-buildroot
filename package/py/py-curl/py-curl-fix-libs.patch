@@ -1,0 +1,9 @@
+--- a/src/Makefile	2012-09-24 14:26:37.000000000 -0700
++++ b/src/Makefile	2012-09-24 15:29:42.000000000 -0700
+@@ -4,7 +4,6 @@
+ PYINCLUDE=/usr/include/python2.2
+ CURLINCLUDE=/usr/include/curl
+ INCLUDE=-I$(PYINCLUDE) -I$(CURLINCLUDE)
+-LIBS=-L/usr/lib -lcurl
+ LDOPTS=-shared
+ CCOPTS=-g -O2 -Wall -Wstrict-prototypes -fPIC
