@@ -11,6 +11,7 @@ endef
 
 define MV_APP_INSTALL_TARGET_CMDS
 	cp -fr $(@D)/build/bin/* $(TARGET_DIR)/usr/bin/. && \
+	chmod 6750 $(TARGET_DIR)/usr/bin/clish && \
 	cp -fr $(@D)/build/lib/* $(TARGET_DIR)/usr/lib/. && \
 	mkdir -p $(TARGET_DIR)/etc/xml_commands \
 		$(TARGET_DIR)/etc/xml_default_params && \
