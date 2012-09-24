@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Start WAN ....
+#
+args=$1
+auto_mode=no
+set $(cat /proc/cmdline)
+for i in "$@"; do
+  key=${i%%=*}
+  value=${i#*=}
+  case "$key" in
+    AutomationMode) auto_mode=$value ;;
+  esac
+done
+
+case $args in
+  start)
+    echo -n "Starting WAN..."
+    if [ "$auto_mode" != "yes" ]; then
+      echo "[RCS]: Start Interface"
+      ifup pon0
+      sleep 1
+
+      echo "[RCS]: Start SFU"
+      ######################################
+      export CLISH_PATH=/etc/xml_commands
+      start
+    else
+      echo "[RCS]: Automation mode"
+      ######################################
+    fi
+    ;;
+  stop)
+    echo -n "Stopping WAN..."
+    ifdown pon0
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
+

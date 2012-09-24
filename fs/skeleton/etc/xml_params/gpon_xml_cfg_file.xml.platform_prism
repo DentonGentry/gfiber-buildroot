@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<cnfg>
+    <PON>
+        <!--  PON serial number - up to 8 symbols   -->
+        <PON_serial_num>MRVL0123</PON_serial_num>
+        <!--  PON serial source: 0 - xml, 1 - digit part is taken from MAC lower 4 bytes-->
+        <PON_serial_src>1</PON_serial_src>
+        <!--  PON password - up to 10 symbols   -->
+        <PON_passwd>1234567890</PON_passwd>
+        <!--  PON SN disabled: 0 = FALSE, 1 = TRUE    -->
+        <PON_dis_sn>0</PON_dis_sn>
+        <!--  gem reset on fiber disconnect: 0 = FALSE, 1 = TRUE    -->
+        <PON_gem_reset>0</PON_gem_reset>
+        <!--  tcont reset on fiber disconnect: 0 = FALSE, 1 = TRUE    -->
+        <PON_tcont_reset>1</PON_tcont_reset>
+        <!--  PON Dying Gasp polarity: 0 = low, 1 = high    -->
+        <PON_DG_polarity>1</PON_DG_polarity>
+        <!--  PON XVR polarity: 1 = low, 0 = high    -->
+        <PON_XVR_polarity>0</PON_XVR_polarity>
+        <!--  gem ports restore after return from State 7: 0 = FALSE, 1 = TRUE -->
+        <PON_gem_restore>1</PON_gem_restore>
+    </PON>
+
+
+</cnfg>
+

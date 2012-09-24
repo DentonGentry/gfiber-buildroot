@@ -1,0 +1,30 @@
+#!/bin/sh
+
+log()
+{
+  echo "$*" >&2
+}
+
+mount -t devtmpfs none /dev
+exec >/dev/kmsg 2>&1
+
+echo "---- initramfs ('$0')"
+mount -t proc none /proc && log "mounted /proc"
+mount -t sysfs none /sys && log "mounted /sys"
+mkdir /dev/pts /dev/shm
+mount -t devpts none /dev/pts && log "mounted /dev/pts"
+mount -t tmpfs none /dev/shm && log "mounted /dev/shm"
+
+DEBUG=
+
+set $(cat /proc/cmdline)
+for i in "$@"; do
+  key=${i%%=*}
+  value=${i#*=}
+  case "$key" in
+    debug) DEBUG=1 ;;
+  esac
+done
+
+[ -n "$DEBUG" ] && echo DEBUG >/tmp/DEBUG
+exec /sbin/init $* </dev/console >/dev/console 2>&1

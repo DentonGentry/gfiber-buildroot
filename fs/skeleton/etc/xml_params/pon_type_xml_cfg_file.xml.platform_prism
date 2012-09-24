@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<cnfg>
+    <WAN>
+        <!--  WAN_type: 0 = EPON, 1 = GPON, 2 = P2P, 3 = NONE  -->
+        <WAN_type>2</WAN_type>
+        <!--  WAN type set by "force": 0 - disabled, 1 - enabled  -->
+        <WAN_type_force>1</WAN_type_force>
+    </WAN>
+
+</cnfg>
+

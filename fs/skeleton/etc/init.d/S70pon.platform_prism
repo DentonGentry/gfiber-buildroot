@@ -1,0 +1,32 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    echo "[RCS]:  Add devices"
+    ######################################
+
+    mknod /dev/mmpdev c 10 61
+    mknod /dev/mmpevent c 10 60
+
+    echo "[RCS]: Start XPON"
+    ######################################
+
+    PON_IFN=`cat /sys/devices/platform/neta/gbe/pon_if_name`
+    if [ "${PON_IFN}" != "" ]; then
+      ip link set dev ${PON_IFN} name pon0
+    else
+      echo "[RCS]: Error - pon0 device not found"
+    fi
+    ;;
+  stop)
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
