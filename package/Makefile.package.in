@@ -890,4 +890,19 @@ $(call GENTARGETS_INNER,$(call pkgname),$(call UPPERCASE,$(call pkgname)),$(call
 endif
 endef
 
+define GENIMAGEVERSION
+	# Generate /etc/manifest and /etc/version
+	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
+	#TODO(apenwarr): 'git describe' should use all projects.
+	#  Right now it only uses buildroot.  I have a plan for this
+	#  involving git submodules, just don't want to change too much
+	#  in this code all at once.  This should work for now.
+	echo -n $$(git describe --dirty --match '$(1)-*') \
+		>$(TARGET_DIR)/etc/version
+	if [ "$(BR2_PACKAGE_PRODUCTION)" != "y" ]; then \
+		(echo -n '-'; \
+		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
+	fi
+	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
+endef
 # :mode=makefile:

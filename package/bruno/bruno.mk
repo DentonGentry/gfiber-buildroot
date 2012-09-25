@@ -42,19 +42,7 @@ BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
 endif
 
 define BRUNO_INSTALL_TARGET_CMDS
-	# Generate /etc/manifest and /etc/version
-	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
-	#TODO(apenwarr): 'git describe' should use all projects.
-	#  Right now it only uses buildroot.  I have a plan for this
-	#  involving git submodules, just don't want to change too much
-	#  in this code all at once.  This should work for now.
-	echo -n $$(git describe --dirty --match 'bruno-*') \
-		>$(TARGET_DIR)/etc/version
-	if [ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]; then \
-		(echo -n '-'; \
-		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
-	fi
-	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
+	$(call GENIMAGEVERSION,bruno)
 
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
