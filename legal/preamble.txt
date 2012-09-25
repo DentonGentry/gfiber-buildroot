@@ -1,0 +1,8 @@
+
+
+Note:
+
+Copies of all open source code used in this product can be obtained from our
+git/gerrit repository here:
+
+	https://gfiber.googlesource.com/
