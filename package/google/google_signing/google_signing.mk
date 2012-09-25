@@ -9,7 +9,7 @@ GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
 GOOGLE_SIGNING_INSTALL_TARGET=YES
 GOOGLE_SIGNING_TEST=YES
 
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 GOOGLE_SIGNING_DEPENDENCIES += bcm_signing host-bcm_signing
 endif
 
@@ -22,7 +22,7 @@ define GOOGLE_SIGNING_BUILD_CMDS
 endef
 
 SIGNING_FLAG=""
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	(mkdir -m 700 -p $(SIGNING_DIR); \
 	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem))

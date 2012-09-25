@@ -21,5 +21,19 @@ config BR2_PACKAGE_GOOGLE_PLATFORM
 
 config BR2_TARGET_GOOGLE_PLATFORM
 	string
-	default "bruno"		if BR2_PACKAGE_BRUNO
+	default "gfibertv"	if BR2_PACKAGE_BRUNO
 	default "prism"		if BR2_PACKAGE_PRISM
+
+config BR2_PACKAGE_GOOGLE_OPENBOX
+	bool "Openbox Release"
+	default n
+	help
+	  Build google openbox release.
+
+config BR2_PACKAGE_GOOGLE_PROD
+	bool "Production Release"
+	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
+	select BR2_PACKAGE_BCM_SIGNING if BR2_PACKAGE_BRUNO
+	help
+	  Build google production release.
+

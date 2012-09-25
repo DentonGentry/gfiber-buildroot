@@ -18,7 +18,7 @@ define BRUNO_BUILD_CMDS
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	CROSS_COMPILE=$(TARGET_CROSS) \
-	BRUNO_PROD_BUILD=$(BR2_PACKAGE_BRUNO_PROD) \
+	BRUNO_PROD_BUILD=$(BR2_PACKAGE_GOOGLE_PROD) \
 	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
@@ -37,33 +37,12 @@ define BRUNO_INSTALL_STAGING_CMDS
 endef
 
 define BRUNO_INSTALL_TARGET_CMDS
-	# Generate /etc/manifest, /etc/version, /etc/builddate
-	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
-	#TODO(apenwarr): 'git describe' should use all projects.
-	#  Right now it only uses buildroot.  I have a plan for this
-	#  involving git submodules, just don't want to change too much
-	#  in this code all at once.  This should work for now.
-	#
-	#  We used to use releases named bruno-<animal>-#. Now we use
-	#  gfibertv-#
-	echo -n $$(git describe --match='gfibertv-*' || \
-			git describe --match='bruno-*') \
-			>$(TARGET_DIR)/etc/version \
-			2>/dev/null
-	if [ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]; then \
-		(echo -n '-'; \
-		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
-	fi
-	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
-	(d="$$(git log --date=iso --pretty=%ad -1)"; \
-			date +%s --date="$$d"; echo "$$d") \
-			>$(TARGET_DIR)/etc/softwaredate
-
+	$(call GENIMAGEVERSION,gfibertv)
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	DESTDIR=$(TARGET_DIR) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
-	BRUNO_PROD_BUILD=$(BR2_PACKAGE_BRUNO_PROD) \
+	BRUNO_PROD_BUILD=$(BR2_PACKAGE_GOOGLE_PROD) \
 	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	$(MAKE) -C $(@D) install
 

@@ -11,7 +11,7 @@ endef
 
 ifeq ($(BR2_PACKAGE_GOOGLE_LICENSES),y)
 
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 GOOGLE_LICENSES_LICTYPE=playready_prod_license
 else
 GOOGLE_LICENSES_LICTYPE=playready_dev_license

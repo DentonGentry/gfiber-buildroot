@@ -16,9 +16,9 @@ ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
 BRUNO_CFE_DIR = ../vendor/broadcom/cfe-bin
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
-else ifeq ($(BR2_PACKAGE_BRUNO_OPENBOX),y)
+else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = cfe_signed_openbox
 else
 _BRUNO_LOADER = cfe_signed_unlocked

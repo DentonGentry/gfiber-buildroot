@@ -1,17 +1,3 @@
-config BR2_PACKAGE_BRUNO_OPENBOX
-	bool "Openbox Release"
-	default n
-	help
-	  Build bruno openbox release.
-
-config BR2_PACKAGE_BRUNO_PROD
-	bool "Production Release"
-	default n
-	depends on !BR2_PACKAGE_BRUNO_OPENBOX
-	select BR2_PACKAGE_BCM_SIGNING
-	help
-	  Build bruno production release.
-
 config BR2_PACKAGE_BRUNO_TEST
 	bool "Include Test Packages"
 	default n

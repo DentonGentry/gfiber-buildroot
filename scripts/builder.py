@@ -187,8 +187,8 @@ class BuildRootBuilder(object):
 
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
-    opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production,
-                BR2_PACKAGE_BRUNO_OPENBOX=self.opt.openbox)
+    opts = dict(BR2_PACKAGE_GOOGLE_PROD=self.opt.production,
+                BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox)
     opts.update(extra)
 
     # We append to the file because the user might have added (unrelated)

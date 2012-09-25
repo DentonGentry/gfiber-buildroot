@@ -757,11 +757,11 @@ BR2_PACKAGE_TOYBOX_CONFIG="package/toybox/toybox.config"
 #
 # BR2_PACKAGE_BRUNO is not set
 BR2_BRUNO_BCHP_VER="B2"
-# BR2_PACKAGE_BRUNO_PROD is not set
 # BR2_PACKAGE_BRUNO_TEST is not set
 # BR2_PACKAGE_BRUNO_DEBUG is not set
 # BR2_PACKAGE_BRUNO_APPS is not set
 # BR2_PACKAGE_BRUNO_DOGFOOD is not set
+# BR2_PACKAGE_GOOGLE_PROD is not set
 
 #
 # Google libraries and applications

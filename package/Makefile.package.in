@@ -923,5 +923,4 @@ else
 $(call GENTARGETS_INNER,$(call pkgname),$(call UPPERCASE,$(call pkgname)),$(call UPPERCASE,$(call pkgname)),$(call pkgparentdir),target)
 endif
 endef
-
 # :mode=makefile:
