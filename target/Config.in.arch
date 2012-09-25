@@ -69,6 +69,8 @@ config BR2_arm922t
 	bool "arm922t"
 config BR2_arm926t
 	bool "arm926t"
+config BR2_marvell_arm926t
+	bool "arm926t"
 config BR2_arm10t
 	bool "arm10t"
 config BR2_arm1136jf_s
@@ -102,6 +104,7 @@ config BR2_ARM_TYPE
 	default ARM920T		if BR2_arm920t
 	default ARM922T		if BR2_arm922t
 	default ARM926T		if BR2_arm926t
+	default ARM926T		if BR2_marvell_arm926t
 	default ARM10T		if BR2_arm10t
 	default ARM1136JF_S	if BR2_arm1136jf_s
 	default ARM1176JZ_S	if BR2_arm1176jz_s
@@ -540,7 +543,7 @@ config BR2_ENDIAN
 			    BR2_sh3eb || BR2_sh4eb || BR2_sh4aeb || BR2_sparc
 
 config BR2_GCC_TARGET_TUNE
-	string
+	string "GCC TUNE"
 	default i386		if BR2_x86_i386
 	default i486		if BR2_x86_i486
 	default i586		if BR2_x86_i586
@@ -582,6 +585,7 @@ config BR2_GCC_TARGET_TUNE
 	default arm920t		if BR2_arm920t
 	default arm922t		if BR2_arm922t
 	default arm926ej-s	if BR2_arm926t
+	default marvell-f	if BR2_marvell_arm926t
 	default arm1136j-s	if BR2_arm1136j_s
 	default arm1136jf-s	if BR2_arm1136jf_s
 	default arm1176jz-s	if BR2_arm1176jz_s
@@ -688,6 +692,7 @@ config BR2_GCC_TARGET_ARCH
 	default armv4t		if BR2_arm920t
 	default armv4t		if BR2_arm922t
 	default armv5te		if BR2_arm926t
+	default armv5te		if BR2_marvell_arm926t
 	default armv5t		if BR2_arm10t
 	default armv6j		if BR2_arm1136jf_s
 	default armv6zk		if BR2_arm1176jz_s
