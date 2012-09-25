@@ -1,3 +1,17 @@
 PRISM_SITE=repo://vendor/google/platform
 
+PRISM_INSTALL_STAGING=YES
+PRISM_INSTALL_TARGET=YES
+PRISM_INSTALL_IMAGES=YES
+
+define PRISM_BUILD_CMDS
+	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
+	$(MAKE) -C $(@D)/cmds
+endef
+
+define PRISM_INSTALL_TARGET_CMDS
+	$(call GENIMAGEVERSION,prism)
+	DESTDIR=$(TARGET_DIR) $(MAKE) -C $(@D)/cmds install
+endef
+
 $(eval $(call GENTARGETS))
