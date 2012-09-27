@@ -1,0 +1,186 @@
+From f8304189ad6536fcd7e4c058289aa30f4140cbf1 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 27 Sep 2012 07:59:18 -0400
+Subject: [PATCH] Security: drop privileges permanently at connect time.
+
+This changes smbd to setgroups(null), setuid(200), setgid(200) right away
+upon receiving a connection.  I would rather do it at startup time, but
+unfortunately it's designed to do its chroot() after the connection is
+established instead of before, and chroot() can't run unless you keep root
+privileges.  We could probably fix that someday.
+
+Anyway, this security model is much simpler than the normal smbd one where
+it keeps the root privileges available to drop back into later using
+setreuid(), and thus should have far fewer ways to have a security hole.
+---
+ source3/lib/util_sec.c  |    8 ++++++++
+ source3/printing/pcap.c |    2 ++
+ source3/smbd/process.c  |    7 +++++++
+ source3/smbd/sec_ctx.c  |    5 ++++-
+ source3/smbd/service.c  |    2 ++
+ 5 files changed, 23 insertions(+), 1 deletions(-)
+
+diff --git a/source3/lib/util_sec.c b/source3/lib/util_sec.c
+index d7984ac..65f7d0e 100644
+--- a/source3/lib/util_sec.c
++++ b/source3/lib/util_sec.c
+@@ -128,6 +128,7 @@ static void assert_gid(gid_t rgid, gid_t egid)
+ ****************************************************************************/
+ void gain_root_privilege(void)
+ {	
++#if USE_ROOT_PRIVILEGES
+ #if USE_SETRESUID
+ 	setresuid(0,0,0);
+ #endif
+@@ -149,6 +150,7 @@ void gain_root_privilege(void)
+ 	setuid(0);
+ 
+ 	assert_uid(0, 0);
++#endif
+ }
+ 
+ 
+@@ -158,6 +160,7 @@ void gain_root_privilege(void)
+ ****************************************************************************/
+ void gain_root_group_privilege(void)
+ {
++#if USE_ROOT_PRIVILEGES
+ #if USE_SETRESUID
+ 	setresgid(0,0,0);
+ #endif
+@@ -178,6 +181,7 @@ void gain_root_group_privilege(void)
+ 	setgid(0);
+ 
+ 	assert_gid(0, 0);
++#endif
+ }
+ 
+ 
+@@ -195,6 +199,7 @@ void gain_root_group_privilege(void)
+ ****************************************************************************/
+ void set_effective_uid(uid_t uid)
+ {
++#if USE_ROOT_PRIVILEGES
+ #if USE_SETRESUID
+         /* Set the effective as well as the real uid. */
+ 	if (setresuid(uid,uid,-1) == -1) {
+@@ -219,6 +224,7 @@ void set_effective_uid(uid_t uid)
+ #endif
+ 
+ 	assert_uid(-1, uid);
++#endif
+ }
+ 
+ /****************************************************************************
+@@ -227,6 +233,7 @@ void set_effective_uid(uid_t uid)
+ ****************************************************************************/
+ void set_effective_gid(gid_t gid)
+ {
++#if USE_ROOT_PRIVILEGES
+ #if USE_SETRESUID
+ 	setresgid(-1,gid,-1);
+ #endif
+@@ -244,6 +251,7 @@ void set_effective_gid(gid_t gid)
+ #endif
+ 
+ 	assert_gid(-1, gid);
++#endif
+ }
+ 
+ static uid_t saved_euid, saved_ruid;
+diff --git a/source3/printing/pcap.c b/source3/printing/pcap.c
+index 62db4f5..37d5e0d 100644
+--- a/source3/printing/pcap.c
++++ b/source3/printing/pcap.c
+@@ -130,6 +130,7 @@ void pcap_cache_reload(struct tevent_context *ev,
+ 		       void (*post_cache_fill_fn)(struct tevent_context *,
+ 						  struct messaging_context *))
+ {
++#if WE_ACTUALLY_WANT_PRINTING_SUPPORT
+ 	const char *pcap_name = lp_printcapname();
+ 	bool pcap_reloaded = False;
+ 	NTSTATUS status;
+@@ -202,6 +203,7 @@ done:
+ 	}
+ 
+ 	return;
++#endif
+ }
+ 
+ 
+diff --git a/source3/smbd/process.c b/source3/smbd/process.c
+index 5aa19cb..0b1dee5 100644
+--- a/source3/smbd/process.c
++++ b/source3/smbd/process.c
+@@ -3038,6 +3038,13 @@ void smbd_process(struct smbd_server_connection *sconn)
+ 		DEBUG(0,("Changed root to %s\n", lp_rootdir()));
+ 	}
+ 
++	if (setgroups(0, NULL) < 0) {
++		exit_server("failed to setgroups");
++	}
++	if (setgid(200) < 0 || setuid(200) < 0) {
++		exit_server("failed to setuid/setgid");
++	}
++
+ 	if (!srv_init_signing(sconn)) {
+ 		exit_server("Failed to init smb_signing");
+ 	}
+diff --git a/source3/smbd/sec_ctx.c b/source3/smbd/sec_ctx.c
+index f8c8847..c2e7e1b 100644
+--- a/source3/smbd/sec_ctx.c
++++ b/source3/smbd/sec_ctx.c
+@@ -109,7 +109,7 @@ static void gain_root(void)
+ 	if (non_root_mode()) {
+ 		return;
+ 	}
+-
++#if USE_ROOT_PRIVILEGES
+ 	if (geteuid() != 0) {
+ 		set_effective_uid(0);
+ 
+@@ -129,6 +129,7 @@ static void gain_root(void)
+ 			       "gid system\n"));
+ 		}
+ 	}
++#endif
+ }
+ 
+ /****************************************************************************
+@@ -245,11 +246,13 @@ static void set_unix_security_ctx(uid_t uid, gid_t gid, int ngroups, gid_t *grou
+ {
+ 	/* Start context switch */
+ 	gain_root();
++#if USE_ROOT_PRIVILEGES
+ #ifdef HAVE_SETGROUPS
+ 	if (sys_setgroups(gid, ngroups, groups) != 0 && !non_root_mode()) {
+ 		smb_panic("sys_setgroups failed");
+ 	}
+ #endif
++#endif
+ 	become_id(uid, gid);
+ 	/* end context switch */
+ }
+diff --git a/source3/smbd/service.c b/source3/smbd/service.c
+index 34b24f3..e32cb2a 100644
+--- a/source3/smbd/service.c
++++ b/source3/smbd/service.c
+@@ -1191,6 +1191,7 @@ connection_struct *make_connection(struct smbd_server_connection *sconn,
+ 
+ 	fstrcpy(dev, pdev);
+ 
++#if USE_ROOT_PRIVILEGES
+ 	/* This must ONLY BE CALLED AS ROOT. As it exits this function as
+ 	 * root. */
+ 	if (!non_root_mode() && (euid = geteuid()) != 0) {
+@@ -1198,6 +1199,7 @@ connection_struct *make_connection(struct smbd_server_connection *sconn,
+ 			 "(%u)\n", (unsigned int)euid ));
+ 		smb_panic("make_connection: PANIC ERROR. Called as nonroot\n");
+ 	}
++#endif
+ 
+ 	if (conn_num_open(sconn) > 2047) {
+ 		*status = NT_STATUS_INSUFF_SERVER_RESOURCES;
+-- 
+1.7.9.dirty
+

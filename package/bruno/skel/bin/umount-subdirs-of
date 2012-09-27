@@ -1,0 +1,45 @@
+#!/usr/bin/python
+"""umount any mounted subdirs of the given dir, but not that dir."""
+
+import os
+import re
+import sys
+
+
+def ReplaceOctals(s):
+  def OctalToChr(match):
+    code = int(match.group(1), 8)
+    return chr(code)
+  return re.sub(r'\\(\d\d\d)', OctalToChr, s)
+
+
+def main():
+  if len(sys.argv) != 2:
+    sys.stderr.write('usage: %s <dirname>\n' % sys.argv[0])
+    sys.exit(99)
+
+  whichdir = sys.argv[1]
+  os.chdir(whichdir)
+  realwhichdir = os.getcwd()
+  whichparts = tuple(realwhichdir.split('/'))
+
+  do_dirs = []
+  for line in open('/proc/mounts').readlines():
+    dev, path, junk = line.split(' ', 2)
+    fixpath = ReplaceOctals(path)
+    parts = tuple(fixpath.split('/'))
+    if parts[:len(whichparts)] == whichparts and parts != whichparts:
+      do_dirs.append(parts)
+
+  rv = 0
+  for parts in reversed(sorted(do_dirs)):
+    dirname = '/'.join(parts)
+    sys.stderr.write('umount %r\n' % dirname)
+    if os.spawnvp(os.P_WAIT, 'umount', ['umount', dirname]):
+      rv = 1
+
+  sys.exit(rv)
+
+
+if __name__ == '__main__':
+  main()
