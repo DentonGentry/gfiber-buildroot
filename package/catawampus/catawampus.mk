@@ -16,6 +16,14 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 	DSTDIR=$(TARGET_DIR)/usr/catawampus/ $(MAKE) -C $(@D) install
 endef
 
+define CATAWAMPUS_REMOVE_SURPLUS_FILES
+	for i in `find $(TARGET_DIR)/usr/catawampus/ -type f -name *.py` ; do \
+		rm -f $$i ; \
+	done
+endef
+
+CATAWAMPUS_POST_INSTALL_TARGET_HOOKS += CATAWAMPUS_REMOVE_SURPLUS_FILES
+
 define CATAWAMPUS_TEST_CMDS
 	$(MAKE) -C $(@D) test
 endef
