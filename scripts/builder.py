@@ -232,25 +232,8 @@ class BuildRootBuilder(object):
     self._LogDone('Building app')
 
 
-def LoasTimeLeft():
-  try:
-    loasstat = PopenAndRead(['prodcertstatus', '--check_loas'])
-  except SubprocError:
-    pass
-  else:
-    g = re.match(r'LOAS cert expires in (\d+):(\d+)', loasstat)
-    if g:
-      return int(g.group(1))
-  # otherwise returns None: no valid certificate
-
-
 def CheckLoasCertificate():
-  loas_time_left = LoasTimeLeft()
-  if not loas_time_left:
-    Error('Your LOAS certificate has expired.\n'
-          'Please use prodaccess to renew your LOAS certificate.\n')
-    sys.exit(1)
-  elif loas_time_left < 2:
+  if subprocess.call(['prodcertstatus', '--check_remaining_hours', '2']) != 0:
     Error('Your LOAS certificate is only good for less than 2 hours.\n'
           'Please use prodaccess to renew your LOAS certificate.\n')
     sys.exit(1)
