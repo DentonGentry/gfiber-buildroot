@@ -21,6 +21,7 @@ chowndirs() {
     echo "chown $uidgid $basedir" >&2
     cd "$basedir" || die "chowndirs '$2'"
     realdir=$(/bin/pwd)
+    chown "$uidgid" . || die "chown '$realdir'"
     [ "$realdir" != '/' ] && realdir="$realdir/"
     find . | while read dir; do
       (
