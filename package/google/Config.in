@@ -27,4 +27,5 @@ source "package/google/google_signing/Config.in"
 source "package/google/google_channel_srv/Config.in"
 source "package/google/google_hdhomerun_plugin/Config.in"
 source "package/google/google_hdcp/Config.in"
+source "package/google/google_platform/Config.in"
 endmenu
