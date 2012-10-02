@@ -5,3 +5,9 @@ config BR2_PACKAGE_ZSH
 	although it is also a powerful scripting language
 
 	http://zsh.sourceforge.net/
+
+config BR2_PACKAGE_ZSH_BINARIES_ONLY
+	bool "zsh binary only"
+	help
+	Only install the binary file to the target. This
+	usually will save more space.
