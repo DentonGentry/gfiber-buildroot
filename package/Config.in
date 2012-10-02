@@ -601,10 +601,6 @@ source "package/bruno/Config.in"
 source "package/google/Config.in"
 endmenu
 
-menu "Prism custom build"
-source "package/prism/Config.in"
-endmenu
-
 menu "Google open source packages"
 source "package/catawampus/Config.in"
 endmenu

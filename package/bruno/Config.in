@@ -1,9 +1,4 @@
-config BR2_PACKAGE_BRUNO
-	bool "Enable Bruno Board"
-	default y
-	help
-	  Customization for Bruno boards.
-
+if BR2_PACKAGE_BRNO
 config BR2_BRUNO_BCHP_VER
 	string "Version of 7425 chip"
 	default B2
@@ -107,3 +102,4 @@ choice
 		  Builds for Bruno GFHD100 board.
 
 endchoice
+endif

@@ -1,5 +1,0 @@
-config BR2_PACKAGE_PRISM
-	bool "Enable Prism Board"
-	default y
-	help
-	  Customization for Prism boards.
