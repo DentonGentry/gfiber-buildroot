@@ -615,6 +615,7 @@ source "package/bcm_bluetooth/Config.in"
 source "package/bcm_drivers/Config.in"
 source "package/bcm_signing/Config.in"
 source "package/bcm_cfe/Config.in"
+source "package/bcm_vudu/Config.in"
 endmenu
 
 endmenu
