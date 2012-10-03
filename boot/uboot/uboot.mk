@@ -40,7 +40,7 @@ UBOOT_MAKE_OPTS += \
 	ARCH=$(UBOOT_ARCH)
 
 ifeq ($(BR2_PACKAGE_PRISM),y)
-UBOOT_MAKE_OPTS += SPIBOOT=1 SPI=1 DDR3=1
+UBOOT_MAKE_OPTS += SPIBOOT=1 SPI=1 DDR3=1 LARGEKERNEL=1
 endif
 
 # Helper function to fill the U-Boot config.h file.
