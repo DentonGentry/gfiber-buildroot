@@ -94,6 +94,14 @@ case "$1" in
       mkdir -p /tmp/moca
       mocacfg boot &  # a bit slow, so don't bother waiting
     fi
+
+    if [ -d /sys/class/net/eth2 ]; then
+      # Partial fix for "micro-stuttering" seen in video playback.
+      # Wifi driver needs to be on cpu1 and video on cpu0 so that wifi
+      # can't lock out scheduling of the video player.
+      echo "forcing wifi onto cpu1"
+      echo 2 >/proc/irq/34/smp_affinity
+    fi
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
