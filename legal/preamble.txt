@@ -3,6 +3,6 @@
 Note:
 
 Copies of all open source code used in this product can be obtained from our
-git/gerrit repository here:
+web site.  Start here:
 
-	https://gfiber.googlesource.com/
+	https://code.google.com/p/gfiber/

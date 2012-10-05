@@ -12,20 +12,33 @@ startswith() {
 
 all_packages() {
   local stamp dir pkg
-  for stamp in $(cd $B && echo */.stamp_*); do
-    dir=$(dirname $stamp)
-    [ -L "$B/$dir" ] && continue
-    pkg=${dir%%-[0-9]*}
-    pkg=${pkg%%-HEAD}
-    pkg=${pkg%%-master}
-    pkg=${pkg%%-[svRr][0-9]*}
-    startswith "$pkg" host- && continue
-    echo "$pkg"
-  done | sort | uniq
+  (
+    for stamp in $(cd $B && echo */.stamp_* */.configured); do
+      dir=$(dirname $stamp)
+      [ -L "$B/$dir" ] && continue
+      pkg=${dir%%-[0-9]*}
+      pkg=${pkg%%-HEAD}
+      pkg=${pkg%%-master}
+      pkg=${pkg%%-[svRr][0-9]*}
+      startswith "$pkg" host- && continue
+      echo "$pkg"
+    done
+
+    # Include all .jar files from SageTV
+    for jar in $(cd $B/google_sageserver-HEAD/build/bruno && find -name '*.jar'); do
+      echo "google_sageserver/$(basename "$jar")"
+    done
+  ) | sort | uniq
 }
 
 all_packages | while read pkg; do
   found=
+  if [ "$pkg" != "${pkg#*/}" ]; then
+    # contains a slash, it's a particular filename
+    [ -e "licenses/$pkg" ] && found=1
+  fi
+
+  # it's probably just a package name, so match any file in that package.
   for d in licenses/$pkg/*; do
     [ -e "$d" ] && found=1 && break
   done

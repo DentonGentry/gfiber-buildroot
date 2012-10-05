@@ -25,6 +25,15 @@ def WalkDir(path):
   return out
 
 
+def NameSort(name):
+  leading = int(re.match(r'\d*', name).group(0) or 9999)
+  return leading, name
+
+
+def NameListSort(names):
+  return list(sorted(names, key=NameSort))
+
+
 preamble = open('preamble.txt').read()
 hash2content = {}
 hash2names = {}
@@ -44,12 +53,14 @@ for name in WalkDir('.'):
 
 print preamble
 for sha1, names in sorted(hash2names.iteritems(),
-                          key=lambda i: (-len(i[1]), list(sorted(i[1])))):
+                          key=lambda i: NameListSort(i[1])):
+  content = hash2content[sha1]
+  content = re.sub(re.compile(r'[ \t\r\x0c]+$', re.M), '', content)
+  if not content: continue
   print
   print
   print '------------------------------------------------'
   for name in sorted(names):
     print name
   print '------------------------------------------------'
-  print re.sub(re.compile(r'[\s\x0c]+$', re.M), '\n', hash2content[sha1])
-  #print sha1
+  print content
