@@ -1,5 +1,5 @@
 MV_APP_SITE=repo://vendor/marvell/application
-MV_APP_DEPENDENCIES=linux
+MV_APP_DEPENDENCIES=linux sqlite
 
 define MV_APP_CLEAN_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE) CROSS_COMPILE=$(TARGET_CROSS) -C $(@D) clean
