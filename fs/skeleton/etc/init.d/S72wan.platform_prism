@@ -4,6 +4,24 @@
 #
 args=$1
 auto_mode=no
+
+enable_hw_frwd() {
+  TPM_DIR=/sys/devices/platform/tpm
+  echo "[RCS]: Configure TPM"
+  cd ${TPM_DIR}/cfg_frwd
+  # echo [rule_name] [port_bitmap] [queue] [gem_port]  > frwd_rule_set
+  echo frwd_ds 0x40000 1 1500 > frwd_rule_set
+  echo frwd_us 0x00001 1 1500 > frwd_rule_set
+  cd ${TPM_DIR}/cfg_l2
+  # echo [owner_id] [src_port] [rule_num] [parse_rule_bm] [parse_flags_bm]
+  # [action] [next_phase] [key_name] [frwd_name] [mod_name] [pkt_mod_bm] >
+  # l2_rule_add
+  echo 1234 WAN 0 0x0000 0x0000 0x06 done l2_key_empty frwd_ds mod_empty \
+    0x0000 > l2_rule_add
+  echo 1234 UNI_ANY 1 0x0000 0x0000 0x06 done l2_key_empty frwd_us \
+    mod_empty 0x0000 > l2_rule_add
+}
+
 set $(cat /proc/cmdline)
 for i in "$@"; do
   key=${i%%=*}
@@ -20,11 +38,10 @@ case $args in
       echo "[RCS]: Start Interface"
       ifup pon0
       sleep 1
-
       echo "[RCS]: Start SFU"
       ######################################
-      export CLISH_PATH=/etc/xml_commands
-      start
+      babysit 60 start_sycl 2>&1 | logos sycl &
+      (sleep 5 && enable_hw_frwd) &
     else
       echo "[RCS]: Automation mode"
       ######################################
@@ -33,6 +50,7 @@ case $args in
   stop)
     echo -n "Stopping WAN..."
     ifdown pon0
+    pkillwait -x sycl
     ;;
   restart|reload)
     "$0" stop

@@ -13,11 +13,8 @@ define MV_APP_INSTALL_TARGET_CMDS
 	cp -fr $(@D)/build/bin/* $(TARGET_DIR)/usr/bin/. && \
 	chmod 6750 $(TARGET_DIR)/usr/bin/clish && \
 	cp -fr $(@D)/build/lib/* $(TARGET_DIR)/usr/lib/. && \
-	mkdir -p $(TARGET_DIR)/etc/xml_commands \
-		$(TARGET_DIR)/etc/xml_default_params && \
+	mkdir -p $(TARGET_DIR)/etc/xml_commands && \
 	cp -fr $(@D)/main/xml_commands/* $(TARGET_DIR)/etc/xml_commands/. && \
-	cp -fr $(@D)/main/xml_default_params/* \
-		$(TARGET_DIR)/etc/xml_default_params/. && \
 	if [ -e "$(@D)/tools/omci_tool" ]; then \
 		cp -f  $(@D)/tools/omci_tool $(TARGET_DIR)/usr/bin/.; \
 	fi
