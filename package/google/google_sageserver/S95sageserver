@@ -15,7 +15,7 @@ start() {
     elif is-storage-box; then
       ./runsage &
     fi
-  ) 2>&1 | logos s 250000 &
+  ) 2>&1 | logos s 750000 &
 
   # TODO: remove in non-test builds
   if [ -e /rw/poststartupmods ]; then
