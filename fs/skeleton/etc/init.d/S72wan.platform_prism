@@ -7,18 +7,31 @@ auto_mode=no
 
 enable_hw_frwd() {
   TPM_DIR=/sys/devices/platform/tpm
+  PON_MAC=$(cat /sys/class/net/pon0/address)
+  OWNER_ID=4090
+
   echo "[RCS]: Configure TPM"
   cd ${TPM_DIR}/cfg_frwd
   # echo [rule_name] [port_bitmap] [queue] [gem_port]  > frwd_rule_set
   echo frwd_ds 0x40000 1 1500 > frwd_rule_set
   echo frwd_us 0x00001 1 1500 > frwd_rule_set
+
   cd ${TPM_DIR}/cfg_l2
+  # echo [rule_name] [SA] [SA_mask] [DA] [DA_mask]  > l2_key_mac_addr_rule_set
+  echo mac_pon0 00:00:00:00:00:00 00:00:00:00:00:00 ${PON_MAC} \
+    FF:FF:FF:FF:FF:FF > l2_key_mac_addr_rule_set
+  echo mac_bc 00:00:00:00:00:00 00:00:00:00:00:00 FF:FF:FF:FF:FF:FF \
+    FF:FF:FF:FF:FF:FF > l2_key_mac_addr_rule_set
   # echo [owner_id] [src_port] [rule_num] [parse_rule_bm] [parse_flags_bm]
   # [action] [next_phase] [key_name] [frwd_name] [mod_name] [pkt_mod_bm] >
   # l2_rule_add
-  echo 1234 WAN 0 0x0000 0x0000 0x06 done l2_key_empty frwd_ds mod_empty \
-    0x0000 > l2_rule_add
-  echo 1234 UNI_ANY 1 0x0000 0x0000 0x06 done l2_key_empty frwd_us \
+  echo ${OWNER_ID} WAN 0 0x0001 0x0000 0x0000 done mac_pon0 frwd_empty \
+    mod_empty 0x0000 > l2_rule_add
+  echo ${OWNER_ID} WAN 1 0x0001 0x0000 0x0000 done mac_bc frwd_empty \
+    mod_empty 0x0000 > l2_rule_add
+  echo ${OWNER_ID} WAN 2 0x0000 0x0000 0x06 done l2_key_empty frwd_ds \
+    mod_empty 0x0000 > l2_rule_add
+  echo ${OWNER_ID} UNI_ANY 3 0x0000 0x0000 0x06 done l2_key_empty frwd_us \
     mod_empty 0x0000 > l2_rule_add
 }
 
