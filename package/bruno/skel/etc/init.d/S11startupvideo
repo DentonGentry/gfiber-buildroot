@@ -1,5 +1,5 @@
 #!/bin/sh
-[ -x /usr/sv/startupvideo ] || exit 0
+[ -x /usr/bin/startupvideo ] || exit 0
 
 case "$1" in
   start)
@@ -9,7 +9,7 @@ case "$1" in
       mknod /tmp/svpipe p
       (
         wait-until-created /var/run/gpio-mailbox
-        /usr/sv/startupvideo /tmp/svpipe \
+        startupvideo /tmp/svpipe \
           /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 \
           /usr/sv/connecting.ts 1 0 256 0
         # in case sv crashes early, make sure ntp is synced
