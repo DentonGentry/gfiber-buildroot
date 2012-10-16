@@ -3,12 +3,6 @@ GOOGLE_KEYSTORE_CLIENT_SOURCE=null
 GOOGLE_KEYSTORE_CLIENT_VERSION=HEAD
 LICENSE_STATIC_PATH ?= /usr/local/google/gfiber
 
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-GOOGLE_LICENSES_LICTYPE=playready_prod_license
-else
-GOOGLE_LICENSES_LICTYPE=playready_dev_license
-endif
-
 define HOST_GOOGLE_KEYSTORE_CLIENT_EXTRACT_CMDS
 	mkdir -p $(@D)
 endef
