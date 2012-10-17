@@ -35,7 +35,7 @@ MAKEFLAGS += --no-print-directory
 all	:= \$(filter-out all Makefile,\$(MAKECMDGOALS))
 
 all:
-	$1/loglinear \$(MAKE) \$(MAKEARGS) \$(all)
+	\$(MAKE) \$(MAKEARGS) \$(all)
 
 Makefile:;
 
