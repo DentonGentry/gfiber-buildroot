@@ -46,7 +46,7 @@ BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
 endif
 
 define BRUNO_INSTALL_TARGET_CMDS
-	# Generate /etc/manifest and /etc/version
+	# Generate /etc/manifest, /etc/version, /etc/builddate
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
 	#TODO(apenwarr): 'git describe' should use all projects.
 	#  Right now it only uses buildroot.  I have a plan for this
@@ -59,6 +59,9 @@ define BRUNO_INSTALL_TARGET_CMDS
 		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
 	fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
+	(d="$$(git log --date=iso --pretty=%ad -1)"; \
+			date +%s --date="$$d"; echo "$$d") \
+			>$(TARGET_DIR)/etc/softwaredate
 
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
