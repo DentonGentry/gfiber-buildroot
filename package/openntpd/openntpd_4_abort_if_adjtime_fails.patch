@@ -1,0 +1,36 @@
+From 5022a0c49d98c498a3f5d8adb8814021ad6ce03f Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Mon, 4 Jun 2012 20:18:09 -0700
+Subject: [PATCH 4/6] Abort if adjtime() fails.
+
+There's no point running an ntp daemon if it can't adjtime(); that's all it
+does.  If we abort, the process babysitter can restart it.  We previously
+tried tricks like falling back to settime() but that can cause weird
+confusion in the state machine (such as double-adding very large time
+offsets - offsets calculated for adjtime, not really for settime - by
+accident when we get two packets in rapid succession).
+---
+ ntpd.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/ntpd.c b/ntpd.c
+index 22db996..3439f3f 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -358,9 +358,10 @@ ntpd_adjtime(double d)
+ 	else
+ 		log_debug("adjusting local clock by %fs", d);
+ 	d_to_tv(d, &tv);
+-	if (adjtime(&tv, &olddelta) == -1)
+-		log_warn("adjtime failed");
+-	else if (!firstadj && olddelta.tv_sec == 0 && olddelta.tv_usec == 0)
++	if (adjtime(&tv, &olddelta) == -1) {
++		log_warn("adjtime failed, aborting");
++		exit(26);
++	} else if (!firstadj && olddelta.tv_sec == 0 && olddelta.tv_usec == 0)
+ 		synced = 1;
+ 	firstadj = 0;
+ 	return (synced);
+-- 
+1.7.7.3
+
