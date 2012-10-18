@@ -27,7 +27,7 @@ ACS_LED_ON="2" # solid blue
 IP_LED_ON="2 0 2 0 2 0" # fast blue
 ANYTHING_ELSE="2 0" # blink blue
 
-watch-dirs $CONTROL_PATH |
+watch-dir $CONTROL_PATH |
 while read f; do
   # Check if there is an ip address on the br0 interface.
   if [ -n "$(ip -f inet6 addr show dev br0 scope global)" ] ||
