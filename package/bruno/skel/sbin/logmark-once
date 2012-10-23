@@ -1,10 +1,18 @@
 #!/bin/sh
 read version junk </etc/version
 
+
+if [ -f /tmp/ntp.synced ]; then
+  ntpsynced=1
+else
+  ntpsynced=0
+fi
+
 # this two-step buffer is to ensure the entire string is written in a
 # single write() syscall, so it isn't interrupted by other logs
-x=$(printf '<7>T: %s %d %s' \
+x=$(printf '<7>T: %s %d %s ntp=%d' \
         "$version" \
         "$(date +%s)" \
-        "$(date +'%m/%d %H:%M:%S')")
+        "$(date +'%m/%d %H:%M:%S')" \
+        "$ntpsynced")
 echo "$x" >/dev/kmsg

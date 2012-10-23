@@ -9,7 +9,7 @@ start() {
 
   cd /app/sage
   (
-    wait-until-created /tmp/ntp.synced
+    wait-until-created /tmp/time.synced
     if is-tv-box; then
       ./runsageclient &
     elif is-storage-box; then
