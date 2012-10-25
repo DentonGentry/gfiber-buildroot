@@ -19,8 +19,9 @@ write()
 write $timeout_addr 32 $count_val
 write $command_addr 32 0xff00
 write $command_addr 32 0x00ff
-while sleep 5; do
+while :; do
   # This reloads the count to prevent the reset.
   write $command_addr 32 0xff00
   write $command_addr 32 0x00ff
+  sleep 5
 done
