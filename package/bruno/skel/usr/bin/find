@@ -25,14 +25,20 @@ do_find_onedir()
   local prefix="$1"
 
   # Yes, due to oddities of sh parsing rules, this loop is actually safe
-  # for filenames containing spaces.
+  # for filenames containing spaces.  (It will also work with filenames
+  # containing newlines, but find separates output lines with newline, so
+  # that's still not useful.)
   for d in * .*; do
     [ "$d" = "." ] && continue
     [ "$d" = ".." ] && continue
-    [ ! -e "$d" ] && continue  # empty dir will pass '*' and '.*'; skip them
-    echo "$prefix/$d"
+    if [ -L "$d" ] || [ -e "$d" ]; then  # skip '*' and '.*' in empty dir
+      echo "$prefix/$d"
+    fi
     if [ -d "$d" ] && [ ! -L "$d" ]; then
-      cd "$d" && { do_find_onedir "$prefix/$d"; cd ..; }
+      cd "$d" && {
+        do_find_onedir "$prefix/$d"
+        cd ..
+      }
     fi
   done
 }
@@ -41,7 +47,15 @@ do_find_onedir()
 do_find()
 {
   for d in "$@"; do
-    cd "$d" && { do_find_onedir "${d%/}"; cd ..; }
+    # Normally I would use () instead of {} here, to remove the need for
+    # the possibly-bug-inducing 'cd ..' step.  However, () requires a fork,
+    # which causes a fairly significant slowdown in this already-slow
+    # implementation of find.
+    cd "$d" && {
+      echo "$d"  # find should always print the directory itself first
+      do_find_onedir "${d%/}"
+      cd ..
+    }
   done
 }
 

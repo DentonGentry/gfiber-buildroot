@@ -1,11 +1,7 @@
 #!/bin/sh
-#
-# Start hardware watchdog
-#
 case "$1" in
   start)
-    # can't use logger here because syslogd might not be running yet
-    babysit 10 watchdog >/dev/kmsg 2>&1 &
+    babysit 10 watchdog 2>&1 | logos watchdog &
     ;;
   stop)
     pkillwait -x watchdog

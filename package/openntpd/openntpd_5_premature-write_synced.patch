@@ -1,0 +1,80 @@
+From 8c32d79bb0a10832ec59e075a47a4d3316deb252 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 17 Oct 2012 20:34:19 -0400
+Subject: [PATCH 5/6] Don't call ntpd_write_synced() if we didn't actually set
+ the time.
+
+If we have >= 1 resolved DNS name of a time server, but that server responds
+with an error (in the case we experienced, connect() gives "network
+unreachable"), ntpd calls priv_settime(0).  I'm not sure that itself is
+actually well-advised (why is failing to look up a DNS name a completely
+different failure path than looking it up but being unable to reach it?),
+but at the very least, when that happens, we don't want to call
+ntpd_write_synced() because we definitely have not *actually* synced the
+clock.
+
+Also add an error message when connect() fails, similar to the recvfrom()
+case for receiving from a time server.  Presumably the kernel ntpd was
+tested on doesn't normally have connect() return errors for UDP sockets, but
+our Linux kernel does.
+---
+ client.c |    1 +
+ ntpd.c   |   11 +++++++----
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/client.c b/client.c
+index 208672b..da6aa43 100644
+--- a/client.c
++++ b/client.c
+@@ -134,6 +134,7 @@ client_query(struct ntp_peer *p)
+ 		if (connect(p->query->fd, sa, SA_LEN(sa)) == -1) {
+ 			if (errno == ECONNREFUSED || errno == ENETUNREACH ||
+ 			    errno == EHOSTUNREACH) {
++				client_log_error(p, "connect", errno);
+ 				client_nextaddr(p);
+ 				set_next(p, error_interval());
+ 				return (-1);
+diff --git a/ntpd.c b/ntpd.c
+index 3439f3f..7cb72c9 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -299,7 +299,7 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 				fatalx("invalid IMSG_ADJTIME received");
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			n = ntpd_adjtime(d);
+-			ntpd_write_synced(conf->synced_file);
++			if (n) ntpd_write_synced(conf->synced_file);
+ 			imsg_compose(ibuf, IMSG_ADJTIME, 0, 0, &n, sizeof(n));
+ 			break;
+ 		case IMSG_SETTIME:
+@@ -310,12 +310,13 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 			log_init(conf->debug);
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			ntpd_settime(d);
+-			ntpd_write_synced(conf->synced_file);
++			/* d==0 is a special case in ntp.c */
++			if (d) ntpd_write_synced(conf->synced_file);
+ 			/* daemonize now */
+ 			if (!conf->debug)
+ 				if (daemon(1, 0))
+ 					fatal("daemon");
+-			conf->settime = 0;
++			if (d) conf->settime = 0;
+ 			break;
+ 		case IMSG_HOST_DNS:
+ 			name = imsg.data;
+@@ -375,8 +376,10 @@ ntpd_settime(double d)
+ 	time_t		tval;
+ 
+ 	/* if the offset is small, don't call settimeofday */
+-	if (d < SETTIME_MIN_OFFSET && d > -SETTIME_MIN_OFFSET)
++	if (d < SETTIME_MIN_OFFSET && d > -SETTIME_MIN_OFFSET) {
++		log_debug("ntpd_settime: offset %fs is small, ignoring", d);
+ 		return;
++	}
+ 
+ 	if (gettimeofday(&curtime, NULL) == -1) {
+ 		log_warn("gettimeofday");
+-- 
+1.7.7.3
+

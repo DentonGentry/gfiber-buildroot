@@ -6,10 +6,13 @@ BRUNO_SITE=repo://vendor/google/platform
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
 BRUNO_INSTALL_IMAGES=YES
-
-BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus python py-setuptools
-
 BRUNO_STAGING_PATH=usr/lib/bruno
+BRUNO_DEPENDENCIES=humax_misc python py-setuptools
+
+# openbox doesn't have this package, so don't depend on it if it isn't enabled
+ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
+BRUNO_DEPENDENCIES+=bcm_drivers
+endif
 
 define BRUNO_BUILD_CMDS
 	HOSTDIR=$(HOST_DIR) \
@@ -17,6 +20,7 @@ define BRUNO_BUILD_CMDS
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	CROSS_COMPILE=$(TARGET_CROSS) \
 	BRUNO_PROD_BUILD=$(BR2_PACKAGE_BRUNO_PROD) \
+	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
@@ -42,7 +46,7 @@ BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
 endif
 
 define BRUNO_INSTALL_TARGET_CMDS
-	# Generate /etc/manifest and /etc/version
+	# Generate /etc/manifest, /etc/version, /etc/builddate
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
 	#TODO(apenwarr): 'git describe' should use all projects.
 	#  Right now it only uses buildroot.  I have a plan for this
@@ -55,11 +59,16 @@ define BRUNO_INSTALL_TARGET_CMDS
 		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
 	fi
 	cp $(TARGET_DIR)/etc/version $(BINARIES_DIR)/version
+	(d="$$(git log --date=iso --pretty=%ad -1)"; \
+			date +%s --date="$$d"; echo "$$d") \
+			>$(TARGET_DIR)/etc/softwaredate
 
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	DESTDIR=$(TARGET_DIR) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
+	BRUNO_PROD_BUILD=$(BR2_PACKAGE_BRUNO_PROD) \
+	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	$(MAKE) -C $(@D) install
 
 	# registercheck

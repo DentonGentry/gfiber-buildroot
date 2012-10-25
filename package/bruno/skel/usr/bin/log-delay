@@ -1,10 +1,16 @@
-#!/bin/sh
+#!/usr/bin/zsh
 #
 # upload-crash-log spawns this as a subprocess in between log uploads.
 # Run upload-logs-now to kill this process and make upload-crash-log
 # start immediately (if it isn't already running).
 #
+read uptime idle </proc/uptime
+uptime=${uptime%%.[0123456789]*}
+
 DELAY=300
+if [ $uptime -lt 14400 ]; then
+  DELAY=$((55 + $RANDOM % 10))
+fi
 
 sleep "$DELAY" &
 pid=$!

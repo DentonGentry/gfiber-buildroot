@@ -1,27 +1,23 @@
 #!/bin/sh
-
 ANTIROLLBACK=/config/ar_clock
 
 case "$1" in
   start)
-	cp /etc/ntpd.conf.default /tmp/ntpd.conf
-	echo "UTC" > /tmp/TZ
+    cp /etc/ntpd.conf.default /tmp/ntpd.conf
+    echo "UTC" > /tmp/TZ
 
-	if [ -s $ANTIROLLBACK ] ; then
-		date +%s -s "$(cat $ANTIROLLBACK)"
-	fi
-	babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logger -t rollback &
-	;;
+    if [ -s $ANTIROLLBACK ] ; then
+        date +%s -s "$(cat $ANTIROLLBACK)"
+    fi
+    babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logos rollback &
+    ;;
   stop)
-	pkillwait -x antirollback
-	;;
+    pkillwait -x antirollback
+    ;;
   restart|reload)
-	$0 stop; $0 start
-	;;
+    $0 stop; $0 start
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-
-

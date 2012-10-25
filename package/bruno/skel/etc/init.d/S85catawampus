@@ -1,20 +1,21 @@
 #!/bin/sh
-
 case "$1" in
   start)
-	(wait-until-created /tmp/ntp.synced; babysit 60 cwmpd) 2>&1 \
-	    | logger -t cwmpd &
-	;;
+    mkdir -p /tmp/cwmp/monitoring/dejittering
+    mkdir -p /tmp/cwmp/monitoring/epg
+    mkdir -p /tmp/cwmp/monitoring/hdmi
+    mkdir -p /tmp/cwmp/monitoring/tcp
+    mkdir -p /tmp/cwmp/monitoring/ts
+    chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
+    babysit 60 cwmpd 2>&1 | logos cwmpd &
+    ;;
   stop)
-	pkill -x cwmpd
-	;;
-
+    pkillwait -x cwmpd
+    ;;
   restart)
-	$0 stop; sleep 2; $0 start
-	;;
+    $0 stop; $0 start
+    ;;
   *)
-        echo "Usage: $0 {start|stop|restart}"
-        exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?

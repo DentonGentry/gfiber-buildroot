@@ -1,15 +1,15 @@
-From 3fc368780ca6a8b4ac3c26cf1488ed379d3b6324 Mon Sep 17 00:00:00 2001
+From 364911be5e5ed5d02d947b9b8acfc568d5e4bc4d Mon Sep 17 00:00:00 2001
 From: Denton Gentry <dgentry@google.com>
 Date: Wed, 25 Apr 2012 22:59:26 -0700
-Subject: [PATCH] File based ntp_wait
+Subject: [PATCH 1/6] File based ntp_wait
 
 ---
- ntpd.c |   17 ++++++++++++++++-
+ ntpd.c |   22 +++++++++++++++++++++-
  ntpd.h |    1 +
- 3 files changed, 17 insertions(+), 2 deletions(-)
+ 2 files changed, 22 insertions(+), 1 deletions(-)
 
 diff --git a/ntpd.c b/ntpd.c
-index 66b236e..5edd064 100644
+index 66b236e..6c39af0 100644
 --- a/ntpd.c
 +++ b/ntpd.c
 @@ -45,6 +45,7 @@ int		check_child(pid_t, const char *);
@@ -55,7 +55,7 @@ index 66b236e..5edd064 100644
  			/* daemonize now */
  			if (!conf->debug)
  				if (daemon(1, 0))
-@@ -375,3 +381,12 @@ ntpd_settime(double d)
+@@ -375,3 +381,17 @@ ntpd_settime(double d)
  	    localtime(&tval));
  	log_info("set local clock to %s (offset %fs)", buf, d);
  }
@@ -64,8 +64,13 @@ index 66b236e..5edd064 100644
 +ntpd_write_synced(const char *filename) {
 +	int fd;
 +	if (filename) {
++		/* because of O_EXCL, this doesn't do anything if the file
++		 * already exists. That's intentional. */
 +		fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0444);
-+		if (fd >= 0) close(fd);
++		if (fd >= 0) {
++			log_debug("write_synced: file %s created", filename);
++			close(fd);
++		}
 +	}
 +}
 diff --git a/ntpd.h b/ntpd.h
@@ -81,5 +86,5 @@ index e501ce0..9fdae0c 100644
  
  struct buf {
 -- 
-1.7.9.4
+1.7.7.3
 
