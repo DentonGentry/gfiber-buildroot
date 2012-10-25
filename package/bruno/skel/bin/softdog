@@ -8,7 +8,7 @@ if [ ! -e "$WATCHDOG" ]; then
 fi
 
 testpid1=
-while sleep $DELAY; do
+while :; do
   [ -n "$testpid1" ] &&
   kill -0 "$testpid1" 2>/dev/null &&
   echo "WARNING: hnvram blocked for $DELAY sec; expect watchdog reboot." >&2 &&
@@ -19,4 +19,5 @@ while sleep $DELAY; do
 
   # Actually prod the watchdog timer
   echo -n 'x' >&3
+  sleep $DELAY
 done 3>$WATCHDOG
