@@ -5,7 +5,6 @@ GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
-BRUNO_INSTALL_IMAGES=YES
 BRUNO_STAGING_PATH=usr/lib/bruno
 BRUNO_DEPENDENCIES=humax_misc python py-setuptools
 
@@ -37,14 +36,6 @@ define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 endef
 
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-BRUNO_LOADER = cfe_signed_release.bin
-BRUNO_LOADER_SIG = cfe_signed_release.sig
-else
-BRUNO_LOADER = cfe_signed_unlocked.bin
-BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
-endif
-
 define BRUNO_INSTALL_TARGET_CMDS
 	# Generate /etc/manifest, /etc/version, /etc/builddate
 	repo --no-pager manifest -r -o $(TARGET_DIR)/etc/manifest
@@ -75,15 +66,6 @@ define BRUNO_INSTALL_TARGET_CMDS
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/
 	cp -rf $(@D)/registercheck $(TARGET_DIR)/home/test/
-endef
-
-define BRUNO_INSTALL_IMAGES_CMDS
-	if [ -n "$(BRUNO_LOADER)" ]; then \
-		cp -f $(@D)/cfe/$(BRUNO_LOADER) \
-			$(BINARIES_DIR)/loader.bin; \
-		cp -f $(@D)/cfe/$(BRUNO_LOADER_SIG) \
-			$(BINARIES_DIR)/loader.sig; \
-	fi
 endef
 
 $(eval $(call GENTARGETS))

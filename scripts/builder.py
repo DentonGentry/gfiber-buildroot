@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2011 Google Inc. All Rights Reserved.
+# Copyright 2012 Google Inc. All Rights Reserved.
 
 """Script for building Bruno images.
 
@@ -21,13 +21,9 @@ time you run an incremental build.
 
 import errno
 import glob
-import gzip
-import multiprocessing
 import os
-import re
 import subprocess
 import sys
-import tarfile
 import time
 import options
 
@@ -42,6 +38,7 @@ v,verbose          Increase verbosity
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
+openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 """
 
@@ -150,6 +147,7 @@ class BuildRootBuilder(object):
     print 'VERBOSE        :', self.opt.verbose
     print 'FRESH          :', self.opt.fresh
     print 'PRODUCTION     :', self.opt.production
+    print 'OPENBOX        :', self.opt.openbox
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
     print '=========================================================='
@@ -173,6 +171,7 @@ class BuildRootBuilder(object):
 
     Args:
       targets: which targets to ask make to build ([] means default)
+      parallel: true if you want make to run a parallel build.
     """
     cmd = ['make', 'O=%s' % self._Path()] + targets
     if self.opt.verbose:
@@ -188,7 +187,8 @@ class BuildRootBuilder(object):
 
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
-    opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production)
+    opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production,
+                BR2_PACKAGE_BRUNO_OPENBOX=self.opt.openbox)
     opts.update(extra)
 
     # We append to the file because the user might have added (unrelated)
