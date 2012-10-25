@@ -1,4 +1,5 @@
 #!/bin/sh
+runnable diagd || exit 0
 case "$1" in
   start)
     mkdir -p /user/diag
