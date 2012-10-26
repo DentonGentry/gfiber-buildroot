@@ -7,10 +7,7 @@
 read uptime idle </proc/uptime
 uptime=${uptime%%.[0123456789]*}
 
-DELAY=300
-if [ $uptime -lt 14400 ]; then
-  DELAY=$((55 + $RANDOM % 10))
-fi
+DELAY=$((55 + $RANDOM % 10))
 
 sleep "$DELAY" &
 pid=$!
