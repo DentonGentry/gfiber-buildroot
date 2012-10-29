@@ -10,7 +10,7 @@ case "$1" in
       rm -f /var/media/.mfgmedia
     fi
     if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
-      cp /usr/lib/media/GoogleFiber.mov /var/media/ManufacturingBurnin.mov
+      cp /usr/sv/Google_Loading_Loop_HiRes2.ts /var/media/ManufacturingBurnin.mov
 
       mkdir -p /var/media/pictures/Landscapes
       cd /usr/lib/media/landscapes/
