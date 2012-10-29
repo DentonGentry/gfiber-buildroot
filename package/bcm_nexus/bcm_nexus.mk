@@ -36,9 +36,6 @@ endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
-#	$(INSTALL) -m 755 -D $(@D)/bin/binverify $(TARGET_DIR)/home/test/binverify
-#	$(INSTALL) -m 755 -D $(@D)/bin/otpmsptest $(TARGET_DIR)/home/test/otpmsptest
-#	$(INSTALL) -m 644 -D $(@D)/examples/UserCmdTest/rsa_init_SHA1_1024k2u31_1024k1u31_1024k0u31_1024k3u0.dat $(TARGET_DIR)/home/test/rsa_init_SHA1_1024k2u31_1024k1u31_1024k0u31_1024k3u0.dat
 	$(call BCM_NEXUS_INSTALL_LIBS,$(TARGET_DIR))
 endef
 
