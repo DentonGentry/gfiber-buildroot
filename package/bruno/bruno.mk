@@ -43,8 +43,13 @@ define BRUNO_INSTALL_TARGET_CMDS
 	#  Right now it only uses buildroot.  I have a plan for this
 	#  involving git submodules, just don't want to change too much
 	#  in this code all at once.  This should work for now.
-	echo -n $$(git describe --dirty --match 'bruno-*') \
-		>$(TARGET_DIR)/etc/version
+	#
+	#  We used to use releases named bruno-<animal>-#. Now we use
+	#  gfibertv-#
+	echo -n $$(git describe --match='gfibertv-*' || \
+			git describe --match='bruno-*') \
+			>$(TARGET_DIR)/etc/version \
+			2>/dev/null
 	if [ "$(BR2_PACKAGE_BRUNO_PROD)" != "y" ]; then \
 		(echo -n '-'; \
 		 whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version; \
