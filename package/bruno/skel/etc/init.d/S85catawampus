@@ -7,7 +7,7 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/tcp
     mkdir -p /tmp/cwmp/monitoring/ts
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
-    babysit 60 cwmpd 2>&1 | logos cwmpd &
+    babysit 60 cwmpd 2>&1 | logos cwmpd 0 20000000 &
     ;;
   stop)
     pkillwait -x cwmpd
