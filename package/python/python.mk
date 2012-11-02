@@ -41,7 +41,7 @@ define HOST_PYTHON_CONFIGURE_CMDS
 		CFLAGS="$(HOST_CFLAGS)" \
 		LDFLAGS="$(HOST_LDFLAGS)" \
                 $(HOST_PYTHON_CONF_ENV) \
-		./configure \
+		$(LOGLINEAR) ./configure \
 		--prefix="$(HOST_DIR)/usr" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 		$(HOST_PYTHON_CONF_OPT) \

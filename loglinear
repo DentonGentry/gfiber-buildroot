@@ -212,6 +212,9 @@ def SimplifyCmdline(cmdline):
         while i.endswith('/'):
           i = i[:-1]
         words.append(i.split('/')[-1])
+  if not is_make and not words:
+    words.append('%s-%s' % (os.path.basename(os.getcwd()),
+                            os.path.basename(cmdline[0])))
   if words:
     return '+'.join(words).replace('\n', ' ')
 

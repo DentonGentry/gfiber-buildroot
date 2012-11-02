@@ -40,6 +40,7 @@ TOPDIR:=$(shell pwd)
 CONFIG_CONFIG_IN=Config.in
 CONFIG=support/kconfig
 DATE:=$(shell date +%Y%m%d)
+LOGLINEAR?=$(TOPDIR)/loglinear
 
 # Compute the full local version string so packages can use it as-is
 # Need to export it, so it can be got from environment in children (eg. mconf)
@@ -401,14 +402,16 @@ prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
 
 SHUFFLED_TARGETS = $(shell echo $(TARGETS) | sed 's/ /\n/g' | shuf)
-FINAL_TARGETS = $(patsubst %,%-source,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-extract,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-patch,$(SHUFFLED_TARGETS))
+PATCH_TARGETS = $(patsubst %,%-source,$(SHUFFLED_TARGETS))
+PATCH_TARGETS += $(patsubst %,%-extract,$(SHUFFLED_TARGETS))
+PATCH_TARGETS += $(patsubst %,%-patch,$(SHUFFLED_TARGETS))
+FINAL_TARGETS = $(PATCH_TARGETS)
 FINAL_TARGETS += $(patsubst %,%-configure,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(patsubst %,%-build,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(SHUFFLED_TARGETS)
 
+patchtargets: $(PATCH_TARGETS)
 finaltargets: $(FINAL_TARGETS)
 
 shuffled:
@@ -427,6 +430,7 @@ $(WORLD_STAMP):
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
+	$(MAKE) O=$O patchtargets
 	touch $@
 
 worldsetup: $(WORLD_STAMP)
