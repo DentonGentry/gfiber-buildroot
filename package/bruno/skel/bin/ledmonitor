@@ -27,6 +27,17 @@ ACS_LED_ON="2" # solid blue
 IP_LED_ON="2 0 2 0 2 0" # fast blue
 ANYTHING_ELSE="2 0" # blink blue
 
+change_state() {
+  leds $2
+  # Check if the new state is different from the previous one
+  if [ -e "$LEDSTATE_FILE" ] && [ "$(cat $LEDSTATE_FILE)" = "$1" ]; then
+    echo "same state: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+  else
+    atomic $LEDSTATE_FILE "$1"
+    echo "state changed to: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+  fi
+}
+
 watch-dir $CONTROL_PATH |
 while read f; do
   # Check if there is an ip address on the br0 interface.
@@ -39,28 +50,20 @@ while read f; do
   fi
 
   if [ -f "$HALT_FILE" ]; then
-    leds $HALT_LED_ON
-    atomic $LEDSTATE_FILE HALT
+    change_state HALT "$HALT_LED_ON"
   elif [ -f "$OVERTEMP_FILE" ]; then
-    leds $HW_FAIL_LED_ON
-    atomic $LEDSTATE_FILE OVERTEMP
+    change_state OVERTEMP "$HW_FAIL_LED_ON"
   elif [ -f "$HDPAIRING_FILE" ]; then
-    leds $HW_FAIL_LED_ON
-    atomic $LEDSTATE_FILE HDPAIR_FAIL
+    change_state HDPAIR_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$BADBLOCK_FILE" ]; then
-    leds $HW_FAIL_LED_ON
-    atomic $LEDSTATE_FILE BADBLOCK
+    change_state BADBLOCK "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
-    leds $ALL_LEDS_OFF
-    atomic $LEDSTATE_FILE POWEROFF
+    change_state POWEROFF "$ALL_LEDS_OFF"
   elif [ -f "$ACS_FILE" ]; then
-    leds $ACS_LED_ON
-    atomic $LEDSTATE_FILE ACSCONTACT
+    change_state ACSCONTACT "$ACS_LED_ON"
   elif [ -f "$IP_FILE" ]; then
-    leds $IP_LED_ON
-    atomic $LEDSTATE_FILE IPV6ACQUIRED
+    change_state IPV6ACQUIRED "$IP_LED_ON"
   else
-    leds $ANYTHING_ELSE
-    atomic $LEDSTATE_FILE OTHER
+    change_state OTHER "$ANYTHING_ELSE"
   fi
 done
