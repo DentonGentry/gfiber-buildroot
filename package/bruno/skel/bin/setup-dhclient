@@ -1,0 +1,9 @@
+#!/bin/sh
+rm -f /tmp/dhclient.conf
+cat >/tmp/dhclient.conf <<-EOF
+	retry 30;
+	request subnet-mask, broadcast-address, routers,
+		domain-name, domain-name-servers, ntp-servers;
+	send host-name "$(hostname)";
+	script "/sbin/dhclient-script";
+EOF

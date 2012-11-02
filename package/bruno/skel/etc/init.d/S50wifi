@@ -1,26 +1,23 @@
 #!/bin/sh
+. /etc/utils.sh
 
 case "$1" in
   start)
-	wifi="eth2"
-	wifisys=/sys/class/net/$wifi/address
-
-	if [ -f $wifisys ] ; then
-	  wifimac=$(cat $wifisys)
-	  wl ap 1
-	  wl radio off
-	  wl bssid "$wifimac"
-	fi
-	;;
+    if has_wifi; then
+      wifi="eth2"
+      wifisys=/sys/class/net/$wifi/address
+      wifimac=$(cat $wifisys)
+      wl ap 1
+      wl radio off
+      wl bssid "$wifimac"
+    fi
+    ;;
   stop)
-	;;
-
+    ;;
   restart)
-	$0 stop; $0 start
-	;;
+    $0 stop; $0 start
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit 0

@@ -4,8 +4,6 @@ BCM_CFE_BUILD_DIR=$(@D)/RP_7425B0_CFE/CFE/bcm97425B0/build
 
 SIGNING_DIR=$(BINARIES_DIR)/signing
 
-ifeq ($(BR2_BRUNO_BCHP_VER),"B2")
-
 define BCM_CFE_CONFIGURE_CMDS
 	( \
 		mkdir -m 700 -p $(SIGNING_DIR) && \
@@ -39,7 +37,5 @@ define BCM_CFE_BUILD_CMDS
 		$(HOST_GOOGLE_SIGNING_CLEANUP) \
 	)
 endef
-
-endif
 
 $(eval $(call GENTARGETS))

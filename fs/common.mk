@@ -34,6 +34,7 @@ ROOTFS_TARGETS:=
 
 _rootfs_base: host-fakeroot host-makedevs
 	@$(call MESSAGE,"Generating fakeroot in $(TARGET_DIR)")
+	chmod -R a+rX $(TARGET_DIR)
 	rm -f $(FAKEROOT_SCRIPT)
 	touch $(BUILD_DIR)/.fakeroot.00000
 	cat $(BUILD_DIR)/.fakeroot* > $(FAKEROOT_SCRIPT)

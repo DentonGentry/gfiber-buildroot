@@ -2,14 +2,15 @@ BCM_ROCKFORD_SITE=repo://vendor/broadcom/rockford
 BCM_ROCKFORD_DEPENDENCIES=linux bcm_nexus
 BCM_ROCKFORD_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/rockford
 BCM_ROCKFORD_INSTALL_STAGING=YES
+BCM_ROCKFORD_DEBUG=B_REFSW_DEBUG=n
 
 
 define BCM_ROCKFORD_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d -f V3DDriver.mk
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/platform/nexus -f platform_nexus.mk
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/opengles_v3d/v3d/nexus/cube
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d -f V3DDriver.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/platform/nexus -f platform_nexus.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/unittests/nexus/encoder
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/unittests/nexus/encoder
 endef
 
 define BCM_ROCKFORD_INSTALL_STAGING_CMDS

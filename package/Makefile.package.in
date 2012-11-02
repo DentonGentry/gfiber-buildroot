@@ -335,6 +335,7 @@ define DOWNLOAD
 			scp) $($(DL_MODE)_SCP) && exit ;; \
 			hg) $($(DL_MODE)_HG) && exit ;; \
 			repo) $($(DL_MODE)_REPO) && exit ;; \
+			null) exit ;; \
 			*) $(call $(DL_MODE)_WGET,$(1),$(2)) && exit ;; \
 		esac ; \
 	fi ; \

@@ -9,13 +9,13 @@ start() {
 
   cd /app/sage
   (
-    wait-until-created /tmp/ntp.synced
+    wait-until-created /tmp/time.synced
     if is-tv-box; then
       ./runsageclient &
     elif is-storage-box; then
       ./runsage &
     fi
-  ) 2>&1 | logger -t s &
+  ) 2>&1 | logos s 4000000 50000000 &
 
   # TODO: remove in non-test builds
   if [ -e /rw/poststartupmods ]; then
@@ -26,29 +26,21 @@ start() {
 }
 
 stop() {
-  pkill 'runsage|chsrv|sagesrv|siege'
-  pkill -f '(babysit.*)?(runsage|chsrv|sagesrv|siege)'
-  pkill -9 sagesrv  # doesn't always die happily
-}
-
-restart() {
-  stop
-  start
+  pkillwait -f '(babysit.*)(runsage|chsrv|sagesrv|siege)'
+  pkillwait -x 'runsage|chsrv|sagesrv|siege'
 }
 
 case "$1" in
   start)
     start
-  ;;
+    ;;
   stop)
     stop
-  ;;
+    ;;
   restart)
-    restart
-  ;;
+    $0 stop; $0 start
+    ;;
   *)
-  echo "Usage: $0 {start|stop|restart}"
-  exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?

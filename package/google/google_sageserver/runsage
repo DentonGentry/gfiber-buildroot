@@ -39,12 +39,12 @@ ulimit -c 49152
 
 if [ "$MODE" = "server" ]; then
   # Start up native streaming server
-  babysit 10 ./sagesrv -l6 -m | logger -t z &
+  babysit 10 ./sagesrv -l6 -m | logos z 0 20000000 &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
     echo "Running chsrv." >&2
-    babysit 60 ./chsrv | logger -t chsrv &
+    babysit 60 ./chsrv | logos chsrv &
   fi
 fi
 
@@ -54,10 +54,11 @@ SIEGEOPT=
 mkdir -p /rw/sage
 
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
+MOBILEAPIJARS=gftv_mobile_api_deploy.jar
 
 (
   cat Sage.properties.defaults.base
-  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver && cat Sage.properties.defaults.mobileapi
 ) >/tmp/Sage.properties.defaults
 
 export SIEGEDISABLEHEAPDUMP=1
@@ -67,7 +68,7 @@ babysit 10 ./skelmir/siege \
     -Dsage.paths.logs=/tmp/log \
     -Djava.library.path=. \
     -Dsage.paths.cache="$PATHS_CACHE" \
-    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS \
     -Xmx384m \
     -verbose:gc \
     $SIEGEOPT \

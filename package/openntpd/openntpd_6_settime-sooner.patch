@@ -1,0 +1,66 @@
+From 9d38459d08577245f170188ebde3219513f8b7a7 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 17 Oct 2012 21:08:07 -0400
+Subject: [PATCH 6/6] settime() sooner after connecting to the network.
+
+If we called priv_settime(0) because none of the NTP servers were valid,
+that would prevent future calls to settime/adjtime until 8 successful
+packets were received, which is a long time when your clock is totally
+wrong.  (It's intended to make sure adjtime() isn't called too often or with
+inaccurate values, when your clock is *mostly* right.)
+
+Change it so this delay only kicks in after the first *real* settime() call.
+Also add some log messages to make it obvious when this occurs.
+
+The symptom of this bug is that write_synced() wouldn't be called for
+several minutes after booting *if* no clock warping was required (eg. if
+you had already run ntpd an then quit it, and are now starting it again).
+---
+ ntp.c  |    7 ++++++-
+ ntpd.c |    4 +++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/ntp.c b/ntp.c
+index 9f83f1a..4c33f7e 100644
+--- a/ntp.c
++++ b/ntp.c
+@@ -462,6 +462,8 @@ priv_adjtime(void)
+ 			    &peers[offset_cnt / 2]->addr->ss)->sin_addr.s_addr;
+ 		else
+ 			conf->status.refid = conf->status.refid4;
++	} else {
++		log_debug("priv_adjtime: offset_cnt == 0");
+ 	}
+ 
+ 	free(peers);
+@@ -493,7 +495,10 @@ priv_settime(double offset)
+ 	struct ntp_peer *p;
+ 
+ 	imsg_compose(ibuf_main, IMSG_SETTIME, 0, 0, &offset, sizeof(offset));
+-	conf->settime = 0;
++	if (offset && conf->settime) {
++		log_debug("disabling settime after offset=%fs", offset);
++		conf->settime = 0;
++	}
+ 
+ 	TAILQ_FOREACH(p, &conf->ntp_peers, entry) {
+ 		if (p->next)
+diff --git a/ntpd.c b/ntpd.c
+index 7cb72c9..0d4c889 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -305,8 +305,10 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 		case IMSG_SETTIME:
+ 			if (imsg.hdr.len != IMSG_HEADER_SIZE + sizeof(d))
+ 				fatalx("invalid IMSG_SETTIME received");
+-			if (!conf->settime)
++			if (!conf->settime) {
++				log_debug("ignoring IMSG_SETTIME since !conf->settime");
+ 				break;
++			}
+ 			log_init(conf->debug);
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			ntpd_settime(d);
+-- 
+1.7.7.3
+

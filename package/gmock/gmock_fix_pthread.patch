@@ -1,0 +1,8 @@
+--- a/make/Makefile	2010-04-14 09:26:57.000000000 -0700
++++ b/make/Makefile	2012-09-07 13:51:54.068293246 -0700
+@@ -95,4 +95,4 @@
+ 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/gmock_test.cc
+ 
+ gmock_test : gmock_test.o gmock_main.a
+-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
++	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -lpthread

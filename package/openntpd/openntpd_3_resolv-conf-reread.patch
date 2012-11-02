@@ -1,7 +1,7 @@
-From a3164459eef7b5bfe85f671b780e240325064ea0 Mon Sep 17 00:00:00 2001
+From 8dbd2b1f2a4aa039c8f6edd1534bf6dea25f7cef Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Tue, 29 May 2012 04:20:19 -0400
-Subject: [PATCH] Fix two bugs preventing DNS re-resolution if resolv.conf
+Subject: [PATCH 3/6] Fix two bugs preventing DNS re-resolution if resolv.conf
  changes.
 
 First, don't call res_init(); it forces libresolv to do a one-time name
@@ -44,7 +44,7 @@ index ac94638..9f83f1a 100644
  }
  
 diff --git a/ntpd.c b/ntpd.c
-index fc9222b..000fdae 100644
+index 37dd862..22db996 100644
 --- a/ntpd.c
 +++ b/ntpd.c
 @@ -100,7 +100,12 @@ main(int argc, char *argv[])
@@ -59,8 +59,8 @@ index fc9222b..000fdae 100644
 +	 */
 +	//res_init();		/* XXX */
  
-         
+ 
  	while ((ch = getopt(argc, argv, "b:df:sSw:")) != -1) {
 -- 
-1.7.9.dirty
+1.7.7.3
 

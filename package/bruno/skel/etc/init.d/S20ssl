@@ -16,7 +16,6 @@ case "$1" in
     ;;
   stop)
     ;;
-
   restart)
     $0 stop; $0 start
     ;;

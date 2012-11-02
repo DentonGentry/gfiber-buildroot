@@ -1,32 +1,17 @@
 #!/bin/sh
-
-start() {
-  mkdir -p /user/diag
-  babysit 60 diagd  2>&1 | logger -t diagd &
-}
-
-stop() {
-  pkill -x diagd
-}
-
-restart() {
-  stop
-  start
-}
-
+runnable diagd || exit 0
 case "$1" in
   start)
-    start
-  ;;
+    mkdir -p /user/diag
+    babysit 60 diagd 2>&1 | logos diagd &
+    ;;
   stop)
-    stop
-  ;;
+    pkillwait -x diagd
+    ;;
   restart)
-    restart
-  ;;
+    $0 start; $0 stop
+    ;;
   *)
     echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
-
-exit

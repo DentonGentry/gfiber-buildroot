@@ -17,7 +17,7 @@ HOST_GOOGLE_SIGNING_TEST=YES
 SIGNING_DIR=$(BINARIES_DIR)/signing
 
 define GOOGLE_SIGNING_BUILD_CMDS
-	HOST_DIR=$(HOST_DIR) CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C \
+	HOSTDIR=$(HOST_DIR) CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) -C \
 		 $(@D)/signing
 endef
 
@@ -45,29 +45,38 @@ define HOST_GOOGLE_SIGNING_CLEANUP
 endef
 
 define HOST_GOOGLE_SIGNING_SIGN
-	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
-		$(HOST_DIR)/usr/sbin/repack.py -o $(HOST_DIR) $(SIGNING_FLAG) \
-		-b $(BINARIES_DIR); $(HOST_GOOGLE_SIGNING_CLEANUP))
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
+		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) && \
+		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
-	$(MAKE) HOST_DIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
+	$(MAKE) HOSTDIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
 		INSTALL=$(INSTALL) -C $(@D)/signing install
 endef
 
 define GOOGLE_SIGNING_TEST_CMDS
-	$(MAKE) HOST_DIR=$(HOST_DIR) -C $(@D)/signing test
+	$(MAKE) HOSTDIR=$(HOST_DIR) -C $(@D)/signing test
 endef
 
 define HOST_GOOGLE_SIGNING_INSTALL_CMDS
 	mkdir -p $(HOST_DIR)/usr/sbin/
 	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py \
 		$(HOST_DIR)/usr/sbin/repack.py
+	$(INSTALL) -D -m 0755 $(@D)/signing/signserial.py \
+		$(HOST_DIR)/usr/sbin/signserial.py
 endef
 
 define HOST_GOOGLE_SIGNING_TEST_CMDS
-	(cd $(@D)/signing; $(HOST_DIR)/usr/bin/python repacktest.py)
+	(cd $(@D)/signing && $(HOST_DIR)/usr/bin/python repacktest.py)
 endef
+
+sign_sn: sn.txt
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY); \
+		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/signserial.py \
+		-o $(HOST_DIR) -b $(BINARIES_DIR) -f $<; \
+		$(HOST_GOOGLE_SIGNING_CLEANUP))
 
 $(eval $(call GENTARGETS))
 $(eval $(call GENTARGETS,host))

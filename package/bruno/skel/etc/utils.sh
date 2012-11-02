@@ -20,5 +20,5 @@ atomic() {
 #
 has_wifi() {
   WIFI_IF="eth2"
-  return $(test -f "/sys/class/net/$WIFI_IF/address")
+  test -f "/sys/class/net/$WIFI_IF/address"
 }

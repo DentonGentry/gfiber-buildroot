@@ -1,4 +1,4 @@
-SIMPLERAMFS_SITE=/dev
+SIMPLERAMFS_SITE=null
 SIMPLERAMFS_SOURCE=null
 SIMPLERAMFS_VERSION=HEAD
 
@@ -33,16 +33,6 @@ define SIMPLERAMFS_BUILD_CMDS
 		fs/simpleramfs/mounts-root \
 		fs/simpleramfs/helpers.sh \
 		$(@D)/fs/
-
-	# the checksum file base content (to be search-and-replaced later as
-	# part of ginstall signing)
-	rm -f $(@D)/fs/rootfs.sum
-	( \
-		echo "---ROOTFS-SUM-START---"; \
-		perl -e 'print " " x 1024'; \
-		echo; \
-		echo "---ROOTFS-SUM-END-----"; \
-	) >$(@D)/fs/rootfs.sum
 
 	# toolbox/toybox symlinks
 	#TODO(apenwarr): not sure we're actually using toolbox in simpleramfs.

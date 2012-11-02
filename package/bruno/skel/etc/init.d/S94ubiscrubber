@@ -1,16 +1,17 @@
 #!/bin/sh
-
 case "$1" in
   start)
     # Start ubiscrubber for every ubi volume we can find.
     # Use ubinfo to get a list of such volumes.
-    lsubi | while read node name; do
+    lsubi |
+    while read node name; do
       echo "Starting ubiscrubber for $node ($name)."
-      babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 | logger -t "ubiscrubber ${node##*/}" &
+      babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 |
+          logos "ubiscrubber ${node##*/}" &
     done
     ;;
   stop)
-    pkill -x ubiscrubber
+    pkillwait -x ubiscrubber
     ;;
   restart|reload)
     ;;

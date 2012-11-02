@@ -1,14 +1,14 @@
-From 81e42d858d4b80740612b5222600c628193b0f3b Mon Sep 17 00:00:00 2001
+From 89bac36ee08625a2ff97185506c7902d5e3defe1 Mon Sep 17 00:00:00 2001
 From: Denton Gentry <dgentry@google.com>
 Date: Wed, 23 May 2012 22:36:36 -0700
-Subject: [PATCH] Add argument to set the settime_timeout.
+Subject: [PATCH 2/6] Add argument to set the settime_timeout.
 
 ---
  ntpd.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/ntpd.c b/ntpd.c
-index 5edd064..fc9222b 100644
+index 6c39af0..37dd862 100644
 --- a/ntpd.c
 +++ b/ntpd.c
 @@ -91,6 +91,7 @@ main(int argc, char *argv[])
@@ -24,7 +24,7 @@ index 5edd064..fc9222b 100644
  	res_init();		/* XXX */
  
 -	while ((ch = getopt(argc, argv, "df:sSw:")) != -1) {
-+        
++
 +	while ((ch = getopt(argc, argv, "b:df:sSw:")) != -1) {
  		switch (ch) {
 +		case 'b':
@@ -54,5 +54,5 @@ index 5edd064..fc9222b 100644
  	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pipe_chld) == -1)
  		fatal("socketpair");
 -- 
-1.7.9.4
+1.7.7.3
 

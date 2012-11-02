@@ -1,0 +1,8 @@
+--- a/make/Makefile	2010-04-13 22:34:38.000000000 -0700
++++ b/make/Makefile	2012-09-06 16:36:42.655591091 -0700
+@@ -77,4 +77,4 @@
+ 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1_unittest.cc
+ 
+ sample1_unittest : sample1.o sample1_unittest.o gtest_main.a
+-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
++	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -lpthread

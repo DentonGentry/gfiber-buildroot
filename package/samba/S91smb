@@ -1,80 +1,118 @@
 #!/bin/sh
-#
-# Stolen from RedHat FC5.
-#
 
-# Check that smb.conf exists.
-[ -f /etc/samba/smb.conf ] || exit 0
+die() {
+  echo "fatal error ($1), aborting." >&2
+  exit 1
+}
 
-# Make directories.
-mkdir -p /var/cache/samba
-mkdir -p /var/log/samba
-mkdir -p /var/lock/subsys
 
-RETVAL=0
+startswith() {
+  [ "$1" != "${1#$2}" ]
+}
 
-start() {
-	echo -n "Starting SMB services: "
-	smbd -D
-	RETVAL=$?
-	echo "done"
 
-	echo -n "Starting NMB services: "
-	nmbd -D
-	RETVAL2=$?
-	echo "done"
+# chown -R would be easier than this, but toolbox chown doesn't support it.
+# Plus I don't know if I can trust it to not follow symlinks accidentally.  So
+# let's do it the slow, paranoid way instead.  We'll also chmod while we're
+# here.
+fixdirs() {
+  (
+    uidgid="$1"
+    basedir="$2"
+    echo "chown $uidgid $basedir" >&2
+    cd "$basedir" || die "chowndirs '$2'"
+    realdir=$(/bin/pwd)
+    chown "$uidgid" . || die "chown '$realdir'"
+    chmod 775 . || die "chmod '$realdir'"
+    [ "$realdir" != '/' ] && realdir="$realdir/"
+    find . | while read dir; do
+      (
+        # cd followed by 'chown .' avoids race conditions, although it's
+        # slower.
+        [ -L "$dir" ] && continue
+        [ -d "$dir" ] || continue
+        cd "$dir" || die "chowndirs '$dir'"
+        curdir=$(/bin/pwd)
+        if startswith "$curdir" "$realdir" || [ "$dir" = "." ]; then
+          chown "$uidgid" . || die "chown '$curdir'"
+          chmod 775 . || die "chmod '$curdir'"
+        else
+          echo "'$dir' = '$curdir' -> skipping chown" >&2
+        fi
+      )
+    done
+  )
+}
 
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || \
-	   RETVAL=1
-	return $RETVAL
-}	
 
-stop() {
-	echo -n "Shutting down SMB services: "
-	kill -9 `pidof smbd`
-	RETVAL=$?
-	rm -f /var/run/smbd.pid
-	echo "done"
+# Carefully try to clean up the directory structures we create for samba.
+# We go through extra contortions here to minimize the chances that a bug
+# (or a deliberate security attack) will cause us to accidentally rm -rf
+# important stuff or start with special files in the wrong places.
+cleanup() {
+  (
+    echo "cleaning up /var/media."
+    cd /var/media || die 'cd /var/media'
+    random=$(
+      dd if=/dev/urandom bs=20 count=1 2>/dev/null |
+      sha1sum |
+      { read sum junk; echo "$sum"; }
+    )
+    D=clean.$random.$(date +%s).$$
+    mkdir "$D"
+    for d in tmp var etc; do
+      [ -e "$d" ] && mv "$d" "$D"
+    done
+    umount-subdirs-of "$D" || die umount
+    rm -rf "$D" || die rm-rf
+    for d in tmp var etc; do
+      [ -e "$d" ] && die "/var/media/$d could not be deleted"
+    done
+    return 0
+  )
+}
 
-	echo -n "Shutting down NMB services: "
-	kill -9 `pidof nmbd`
-	RETVAL2=$?
-	rm -f /var/run/nmbd.pid
-
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb
-	echo "done"
-	return $RETVAL
-}	
-
-restart() {
-	stop
-	start
-}	
-
-reload() {
-        echo -n "Reloading smb.conf file: "
-	kill -HUP `pidof smbd`
-	RETVAL=$?
-	echo "done"
-	return $RETVAL
-}	
 
 case "$1" in
   start)
-  	start
-	;;
+    if is-storage-box; then
+      cleanup || die 'start cleanup failed'
+      cd /var/media && (
+        mkdir -p tmp var/lock/subsys etc /tmp/samba/sockets
+        chown video.video tmp
+        chmod 775 tmp var var/lock etc
+        mount -o bind /var/lock/subsys var/lock/subsys
+        cp /etc/samba/etc/* etc/
+        chmod 0444 etc/*
+        fixdirs video.video videos
+        fixdirs video.video pictures
+        fixdirs video.video music
+        chmod 775 videos pictures music
+      )
+      babysit 60 smbd -F -D -S 2>&1 | logos smbd &
+      babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
+    fi 2>&1 | logos smbd &  # run in background to avoid slowing boot
+    ;;
   stop)
-  	stop
-	;;
+    # we have to kill the babysitter too, because smbd eats the SIGTERM
+    # exit code and returns 1 instead, so babysit thinks it needs to
+    # restart.
+    pkillwait -f 'babysit 60 smbd'
+    pkillwait -f 'babysit 60 nmbd'
+    pkillwait -x smbd
+    pkillwait -x nmbd
+    if is-storage-box; then
+      cleanup
+    fi
+    ;;
   restart)
-  	restart
-	;;
+    $0 stop; $0 start
+    ;;
   reload)
-  	reload
-	;;
+    pids=$(pgrep -x smbd)
+    [ -n "$pids" ] && kill -1 $pids
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart|reload}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart|reload}"
+    exit 1
 esac
-
-exit $?

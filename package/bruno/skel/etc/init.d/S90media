@@ -1,38 +1,34 @@
 #!/bin/sh
-
 case "$1" in
   start)
-	if [ -f /var/media/.mfgmedia ] ; then
-		# remove detritus from previous mfg burnin support
-		rm -f /var/media/videos/GoogleFiber.mov
-		rm -f /var/media/videos/Samples/GoogleFiber.mov
-		rm -f /var/media/videos/Samples/GoogleFiber1.mov
-		if [ -d /var/media/videos/Samples ]; then
-			rmdir /var/media/videos/Samples
-		fi
-		rm -f /var/media/.mfgmedia
-	fi
-	if [ ! -f /var/media/.mfgmedia2 ] ; then
-		cp /usr/lib/media/GoogleFiber.mov /var/media/ManufacturingBurnin.mov
+    if [ -f /var/media/.mfgmedia ] ; then
+      # remove detritus from previous mfg burnin support
+      rm -f /var/media/videos/GoogleFiber.mov
+      rm -f /var/media/videos/Samples/GoogleFiber.mov
+      rm -f /var/media/videos/Samples/GoogleFiber1.mov
+      rmdir /var/media/videos/Samples 2>/dev/null
+      rm -f /var/media/.mfgmedia
+    fi
+    if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
+      cp /usr/sv/Google_Loading_Loop_HiRes2.ts /var/media/ManufacturingBurnin.mov
 
-		mkdir -p /var/media/pictures/Landscapes
-		cd /usr/lib/media/landscapes/
-		for file in *
-		do
-		  cp "$file" /var/media/pictures/Landscapes
-		  chmod 555 /var/media/pictures/Landscapes/"$file"
-		done
+      mkdir -p /var/media/pictures/Landscapes
+      cd /usr/lib/media/landscapes/
+      for file in *
+      do
+        cp "$file" /var/media/pictures/Landscapes
+        chown video.video /var/media/pictures/Landscapes/"$file"
+        chmod 666 /var/media/pictures/Landscapes/"$file"
+      done
 
-		echo done >/var/media/.mfgmedia2
-	fi
-	;;
+      echo done >/var/media/.mfgmedia2
+    fi
+    ;;
   stop)
-	;;
+    ;;
   restart)
-	;;
+    ;;
   *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
 esac
-
-exit $?
