@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HUMAX_MISC
+	bool "humax_misc"
+	help
+	  Library for manipulating humax data structures

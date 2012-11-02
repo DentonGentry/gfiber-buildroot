@@ -1,4 +1,6 @@
 config BR2_PACKAGE_BCM_NEXUS
 	bool "bcm_nexus"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_MAGNUM
 	help
 	  Builds bcm_nexus for Broadcom boards

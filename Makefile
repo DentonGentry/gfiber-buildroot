@@ -414,12 +414,15 @@ finaltargets: $(FINAL_TARGETS)
 shuffled:
 	@echo $(SHUFFLED_TARGETS)
 
+depcheck: $(patsubst %,%-depcheck,$(SHUFFLED_TARGETS))
+
 dirs: prepare
 dependencies: dirs
 
 WORLD_STAMP = $O/.stamp.world-setup
 
 $(WORLD_STAMP):
+	$(MAKE) O=$O depcheck
 	$(MAKE) O=$O source
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
@@ -452,7 +455,7 @@ $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	$(BASE_TARGETS) $(TARGETS) $(TARGETS_ALL) \
 	$(TARGETS_CLEAN) $(TARGETS_DIRCLEAN) $(TARGETS_SOURCE) \
 	$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
-	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR) $(WORLD_STAMP)
+	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
 
 #############################################################
 #
@@ -718,6 +721,12 @@ what-targets:
 
 patches: $(patsubst %,%-patch,$(TARGETS))
 %-patch:   # default for targets that don't have any patches
+	@
+
+%-is-enabled:
+	@
+
+%-depcheck:
 	@
 
 %-configure:

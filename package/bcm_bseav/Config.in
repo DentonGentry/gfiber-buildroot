@@ -1,4 +1,5 @@
 config BR2_PACKAGE_BCM_BSEAV
 	bool "bcm_bseav"
+	select BR2_PACKAGE_BCM_COMMON
 	help
 	  Builds bcm_bseav for Broadcom boards
