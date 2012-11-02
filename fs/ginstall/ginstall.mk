@@ -48,7 +48,7 @@ define ROOTFS_GINSTALL_CMD
 		export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 	) && \
 	cd $(BINARIES_DIR) && \
-	tar -czf $(value ROOTFS_GINSTALL_VERSION).gi \
+	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
 		version $(value BRUNO_LOADERS) vmlinuz rootfs.squashfs
 endef
 
