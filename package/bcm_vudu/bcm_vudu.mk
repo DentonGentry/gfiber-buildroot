@@ -25,8 +25,7 @@ define BCM_VUDU_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0700 $(VUDU_SRC)/vudu-bcm7231-example $(TARGET_DIR)/usr/local/bin/
 	$(INSTALL) -m 0700 $(VUDU_SRC)/vudu-bcm7231-multimedia-driver-test $(TARGET_DIR)/usr/local/bin/
 	$(INSTALL) -m 0700 $(VUDU_SRC)/start $(TARGET_DIR)/usr/local/bin/
-	mkdir -p $(TARGET_DIR)/usr/local/lib/vudu && \
-	cp -pr $(VUDU_DIR)/lib/* $(TARGET_DIR)/usr/local/lib/vudu
+	cp -pr $(VUDU_DIR)/lib/* $(TARGET_DIR)/usr/lib
 	mkdir -p $(TARGET_DIR)/etc/cert && \
 	cp -pr $(VUDU_DIR)/etc/cert/* $(TARGET_DIR)/etc/cert
 endef
