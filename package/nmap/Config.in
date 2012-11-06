@@ -1,6 +1,8 @@
 config BR2_PACKAGE_NMAP
 	bool "nmap"
 	default n
+	select BR2_PACKAGE_PCRE
+	select BR2_PACKAGE_LUA
 	help
 	  Install the nmap package
 

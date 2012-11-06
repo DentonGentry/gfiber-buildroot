@@ -1,11 +1,17 @@
 menu "Broadcom Drivers"
+	config BR2_PACKAGE_BCM_DRIVERS
+		bool "Enable Broadcom driver base"
+		select BR2_PACKAGE_BCM_COMMON
+		default n
 	config BR2_PACKAGE_BCM_DRIVER_MOCA
 		bool "Enable Broadcom MoCA Driver"
+		select BR2_PACKAGE_BCM_COMMON
 		default n
 		help
 		  Builds for Broadcom MoCA Driver
 	config BR2_PACKAGE_BCM_DRIVER_WIFI
 		bool "Enable Broadcom WiFi Driver"
+		select BR2_PACKAGE_BCM_COMMON
 		default n
 		help
 		  Builds for Broadcom WiFi Driver

@@ -1,4 +1,5 @@
 config BR2_PACKAGE_LIBPROJECTM
 	bool "libprojectM"
+	select BR2_PACKAGE_BCM_ROCKFORD
 	help
 	  Builds the ProjectM music visualization shared library.

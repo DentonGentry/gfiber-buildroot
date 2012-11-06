@@ -21,7 +21,7 @@ define ZLIB_CONFIGURE_CMDS
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_OPTS) \
 		CFLAGS="$(TARGET_CFLAGS) $(ZLIB_PIC)" \
-		./configure \
+		$(LOGLINEAR) ./configure \
 		$(ZLIB_SHARED) \
 		--prefix=/usr \
 	)
@@ -31,7 +31,7 @@ define HOST_ZLIB_CONFIGURE_CMDS
 	(cd $(@D); rm -rf config.cache; \
 		$(HOST_CONFIGURE_ARGS) \
 		$(HOST_CONFIGURE_OPTS) \
-		./configure \
+		$(LOGLINEAR) ./configure \
 		--prefix="$(HOST_DIR)/usr" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 	)

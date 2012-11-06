@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_LICENSES
 	bool "google_licenses"
+	select BR2_PACKAGE_GOOGLE_KEYSTORE_CLIENT
 	help
 	  Fetch licenses to install for Bruno

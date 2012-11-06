@@ -599,6 +599,7 @@ endmenu
 menu "Bruno custom build"
 source "package/bruno/Config.in"
 source "package/google/Config.in"
+source "package/humax_misc/Config.in"
 endmenu
 
 menu "Google open source packages"
@@ -606,7 +607,11 @@ source "package/catawampus/Config.in"
 endmenu
 
 menu "Broadcom custom build"
+source "package/netflix_nrd/Config.in"
+source "package/bcm_common/Config.in"
 source "package/bcm_bseav/Config.in"
+source "package/bcm_magnum/Config.in"
+source "package/bcm_rockford/Config.in"
 source "package/bcm_nexus/Config.in"
 source "package/bcm_directfb/Config.in"
 source "package/bcm_webkit/Config.in"

@@ -164,7 +164,7 @@ define FFMPEG_CONFIGURE_CMDS
 	$(TARGET_CONFIGURE_OPTS) \
 	$(TARGET_CONFIGURE_ARGS) \
 	$(FFMPEG_CONF_ENV) \
-	./configure \
+	$(LOGLINEAR) ./configure \
 		--enable-cross-compile	\
 		--cross-prefix=$(TARGET_CROSS) \
 		--sysroot=$(STAGING_DIR) \
