@@ -2,7 +2,7 @@ GOOGLE_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
 GOOGLE_MINICLIENT_DEPENDENCIES=\
 	linux \
 	bcm_nexus bcm_rockford \
-	google_pullreader google_swscale google_widevine google_hdcp \
+	google_pullreader google_swscale google_widevine google_hdcp bruno \
 	openssl libcurl tiff zlib libpng libungif libprojectM libxml2
 
 define GOOGLE_MINICLIENT_BUILD_CMDS
