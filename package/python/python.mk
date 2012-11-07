@@ -26,7 +26,6 @@ HOST_PYTHON_CONF_OPT += 	\
 	--disable-gdbm		\
 	--disable-bsddb		\
 	--disable-test-modules	\
-	--disable-bz2		\
 	--disable-ssl
 
 HOST_PYTHON_MAKE_ENV = \
