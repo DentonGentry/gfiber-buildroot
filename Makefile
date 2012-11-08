@@ -577,7 +577,8 @@ remove-stamps:
 	@rm -f $(STAMP_DIR)/*installed $(BUILD_DIR)/.root \
 		$(BUILD_DIR)/*/.stamp_tested \
 		$(BUILD_DIR)/*/.stamp_images_installed \
-		$(BUILD_DIR)/*/.stamp_target_installed
+		$(BUILD_DIR)/*/.stamp_target_installed \
+		$(WORLD_STAMP)
 
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
