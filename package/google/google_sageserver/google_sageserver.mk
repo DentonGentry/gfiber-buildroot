@@ -1,6 +1,5 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
-GOOGLE_SAGESERVER_DEPENDENCIES = google_skelmir
-GOOGLE_SAGESERVER_CL=$(subst files/,,$(shell readlink /google/src/head))
+GOOGLE_SAGESERVER_DEPENDENCIES = google_skelmir google_mobile_api
 
 define GOOGLE_SAGESERVER_BUILD_CMDS
 	cd $(@D)/build/bruno/sage && \
@@ -41,10 +40,6 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/sage/Sage.properties.defaults
 	$(INSTALL) -m 0755 -D package/google/google_sageserver/S95sageserver \
 		$(TARGET_DIR)/etc/init.d/S95sageserver
-	cp -af $(@D)/build/bruno/sage/plugin.properties \
-		$(TARGET_DIR)/app/sage/Sage.properties.defaults.mobileapi
-        cp -af $(@D)/build/bruno/sage/gftv_mobile_api_deploy.jar \
-		$(TARGET_DIR)/app/sage/
 endef
 
 $(eval $(call GENTARGETS))
