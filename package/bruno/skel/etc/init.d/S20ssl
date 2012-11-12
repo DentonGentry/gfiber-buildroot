@@ -13,6 +13,9 @@ case "$1" in
     (mkdir -p /tmp/ssl/private && chmod 0550 /tmp/ssl/private) || exit 1
     get_if_nonblank GOOGLE_SSL_CRT /tmp/ssl/certs/device.pem
     get_if_nonblank GOOGLE_SSL_PEM /tmp/ssl/private/device.key
+    if [ -f /tmp/ssl/certs/device.pem ]; then
+      cat /tmp/ssl/certs/device.pem | logos certlog
+    fi
     ;;
   stop)
     ;;
