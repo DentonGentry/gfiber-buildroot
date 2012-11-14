@@ -2,11 +2,17 @@
 case "$1" in
   start)
     mkdir -p /tmp/gpio/ledcontrol
-    setsid babysit 60 ipmonitor "/tmp/gpio/ledcontrol/ip.changed" 2>&1 |
+    setsid babysit 60 linkmonitor /tmp/gpio/ledcontrol/ip.changed 2>&1 |
+      logos linkmonitor &
+    setsid babysit 60 ipmonitor /tmp/gpio/ledcontrol/ip.changed 2>&1 |
       logos ipmonitor &
     setsid babysit 60 ledmonitor 2>&1 | logos ledmonitor &
     ;;
   stop)
+
+    for pgid in $(ps -Clinkmonitor -o pgid= | sort -u); do
+      pkillwait -g $pgid
+    done
     for pgid in $(ps -Cipmonitor -o pgid= | sort -u); do
       pkillwait -g $pgid
     done
