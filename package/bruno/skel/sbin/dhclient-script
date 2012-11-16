@@ -83,6 +83,10 @@ make_resolv_conf() {
   fi
 }
 
+set_acs() {
+  [ -x /bin/set-acs ] && /bin/set-acs network_up
+}
+
 make_cwmp_files() {
   if [ -n "$new_cwmp_acs_url" ]; then
     echo cwmp dhcp acs "$new_cwmp_acs_url" 2>&1 | logger -t dhcpscript
@@ -222,6 +226,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
   make_resolv_conf
   make_cwmp_files
   make_etc_hosts
+  set_acs
   exit_with_hooks 0
 fi
 
