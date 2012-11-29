@@ -410,9 +410,11 @@ FINAL_TARGETS += $(patsubst %,%-configure,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(patsubst %,%-build,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(SHUFFLED_TARGETS)
+TEST_TARGETS = $(patsubst %,%-test,$(SHUFFLED_TARGETS))
 
 patchtargets: $(PATCH_TARGETS)
 finaltargets: $(FINAL_TARGETS)
+test: $(TEST_TARGETS)
 
 shuffled:
 	@echo $(SHUFFLED_TARGETS)
@@ -732,6 +734,9 @@ patches: $(patsubst %,%-patch,$(TARGETS))
 	@
 
 %-depcheck:
+	@
+
+%-test:
 	@
 
 %-configure:
