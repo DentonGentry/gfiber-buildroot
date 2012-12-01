@@ -1,0 +1,30 @@
+From ea67ec5b83f96bc27ba456beea702e9ab3e94926 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 30 Nov 2012 22:21:14 -0500
+Subject: [PATCH] Change SETTIME_MIN_OFFSET from 180 to 10.
+
+If we're more than a little bit off, let's jump the clock right away.  We
+don't want to be too crazy (since that could result in time jumps during
+runtime, long after booting) but 10 seconds should be plenty of margin for
+error.  3 minutes is way too long and could have a significant impact on
+real-life event scheduling.
+---
+ ntpd.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/ntpd.h b/ntpd.h
+index 9fdae0c..3bda1ec 100644
+--- a/ntpd.h
++++ b/ntpd.h
+@@ -56,7 +56,7 @@
+ 
+ #define	QUERYTIME_MAX		15	/* single query might take n secs max */
+ #define	OFFSET_ARRAY_SIZE	8
+-#define	SETTIME_MIN_OFFSET	180	/* min offset for settime at start */
++#define	SETTIME_MIN_OFFSET	10	/* min offset for settime at start */
+ #define	SETTIME_TIMEOUT		15	/* max seconds to wait with -s */
+ #define	LOG_NEGLIGEE		128	/* negligible drift to not log (ms) */
+ 
+-- 
+1.7.9.dirty
+
