@@ -24,17 +24,17 @@ BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
 ALL_LEDS_OFF="0"
 HALT_LED_ON="1"
 HW_FAIL_LED_ON="1" # solid red
-ACS_LED_ON="2" # solid blue
-IP_LED_ON="2 0 2 0 2 0" # fast blue
+ACS_LED_ON="4" # solid blue
+IP_LED_ON="4 0 4 0 4 0" # fast blue
 LINK_DOWN_LED_ON="1 0" # blink red
-ANYTHING_ELSE="2 0" # blink blue
+ANYTHING_ELSE="4 0" # blink blue
 
 change_state() {
-  leds $2
   # Check if the new state is different from the previous one
   if [ -e "$LEDSTATE_FILE" ] && [ "$(cat $LEDSTATE_FILE)" = "$1" ]; then
     echo "same state: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
   else
+    leds $2
     atomic $LEDSTATE_FILE "$1"
     echo "state changed to: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
   fi
