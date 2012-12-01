@@ -17,7 +17,7 @@ wait-until-created /tmp/gpio/ready
 retval=1  # not pressed
 while [ -e /tmp/gpio/reset_button_msecs ]; do
   # reset button is pressed at boot time; wait to see if the user
-  # holds it for > 4 secs
+  # holds it for $1 msec
   msleep 100
   if [ -e /tmp/gpio/reset_button_msecs ]; then
     msecs=

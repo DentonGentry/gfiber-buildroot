@@ -12,12 +12,19 @@ while :; do
   # gpio-mailbox creates reset_button_msecs when ready.
   wait-until-created /tmp/gpio/reset_button_msecs
   log "reset button pressed!  waiting for button release."
-  if reset-button-held 4000; then
-    log "factory reset requested."
-    leds 0 15 0 15 0 15  # noisy leds to indicate we acknowledged the command
-    zap --i-really-mean-it
-    log "rebooting in 10 seconds..."
-    sleep 10
+  if reset-button-held 2000; then
+    log "reset button activated."
+    leds 0 1 0 1 0 0  # blinky red light to indicate initial reset mode
+    if reset-button-held 10000; then
+      log "factory reset requested."
+      leds 0 15 0 15 0 15  # noisy leds to indicate full on factory reset
+      zap --i-really-mean-it
+      log "factory reset: rebooting in 10 seconds..."
+      sleep 10
+    else
+      log "reset button: rebooting..."
+    fi
+    leds 0
     reboot
   fi
 done
