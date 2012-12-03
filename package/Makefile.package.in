@@ -98,6 +98,7 @@ GIT:=$(call qstrip,$(BR2_GIT))
 HG:=$(call qstrip,$(BR2_HG)) $(QUIET)
 SCP:=$(call qstrip,$(BR2_SCP)) $(QUIET)
 SSH:=$(call qstrip,$(BR2_SSH)) $(QUIET)
+MPM:=$(call qstrip,$(BR2_MPM)) $(QUIET)
 LOCALFILES:=$(call qstrip,$(BR2_LOCALFILES))
 
 # Default spider mode is 'DOWNLOAD'. Other possible values are 'SOURCE_CHECK'
@@ -279,6 +280,22 @@ define SHOW_EXTERNAL_DEPS_HG
   echo $($(PKG)_SOURCE)
 endef
 
+define DOWNLOAD_MPM
+	test -e $(DL_DIR)/$($(PKG)_SOURCE) || \
+	(pushd $(DL_DIR) > /dev/null && \
+        $(MPM) fetch -a -v $($(PKG)_VERSION) $(call stripurischeme,$(call qstrip,$(1))) $($(PKG)_BASE_NAME) && \
+	$(TAR) chf $($(PKG)_SOURCE) $($(PKG)_BASE_NAME)/ && \
+	rm -rf $($(PKG)_BASE_NAME) $($(PKG)_BASE_NAME).mpm && \
+	popd > /dev/null)
+endef
+
+define SOURCE_CHECK_MPM
+	$(MPM) packageinfo -b $($(PKG)_VERSION) $(call stripurischeme,$(call qstrip,$(1)))
+endef
+
+define SHOW_EXTERNAL_DEPS_MPM
+	echo $(2)
+endef
 
 define DOWNLOAD_WGET
 	test -e $(DL_DIR)/$(2) || \
@@ -335,6 +352,7 @@ define DOWNLOAD
 			scp) $($(DL_MODE)_SCP) && exit ;; \
 			hg) $($(DL_MODE)_HG) && exit ;; \
 			repo) $($(DL_MODE)_REPO) && exit ;; \
+			mpm) $($(DL_MODE)_MPM) && exit ;; \
 			null) exit ;; \
 			*) $(call $(DL_MODE)_WGET,$(1),$(2)) && exit ;; \
 		esac ; \
@@ -779,6 +797,22 @@ endif
 
 $(1)-show-depends: $(patsubst %,%-show-depends,$($(2)_DEPENDENCIES))
 			@echo $(1) : $$($(2)_DEPENDENCIES)
+
+$(1)-is-enabled:
+	@echo "is-enabled: $(1): '$$(BR2_PACKAGE_$(2))'"
+	$(Q) \
+	[ "$(1)" = linux ] || \
+	[ "$(1)" = automake ] || \
+	[ "$(1)" = autoconf ] || \
+	[ "$(1)" = libtool ] || \
+	[ "$(1)" = cmake ] || \
+	[ "$(1)" = gdb_target ] || \
+	if [ "$$(BR2_PACKAGE_$(2))" != 'y' ]; then \
+		echo "error: $(1) is depended on but BR2_PACKAGE_$(2) not set" >&2; \
+		exit 1; \
+	fi
+
+$(1)-depcheck:		$$(filter-out host-%,$$(patsubst %,%-is-enabled,$$($(2)_DEPENDENCIES)))
 
 $(1)-uninstall:		$(1)-configure $$($(2)_TARGET_UNINSTALL)
 

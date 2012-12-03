@@ -5,7 +5,7 @@ define HOST_CMAKE_CONFIGURE_CMDS
  (cd $(@D); \
 	LDFLAGS="$(HOST_LDFLAGS)" \
 	CFLAGS="$(HOST_CFLAGS)" \
-	./bootstrap --prefix=$(HOST_DIR)/usr --parallel=$(BR2_JLEVEL) \
+	$(LOGLINEAR) ./bootstrap --prefix=$(HOST_DIR)/usr --parallel=$(BR2_JLEVEL) \
  )
 endef
 

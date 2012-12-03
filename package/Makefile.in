@@ -4,7 +4,7 @@ endif
 ifndef HOSTMAKE
 HOSTMAKE=$(MAKE)
 endif
-HOSTMAKE:=$(TOPDIR)/loglinear $(shell which $(HOSTMAKE) || type -p $(HOSTMAKE) || echo make)
+HOSTMAKE:=$(LOGLINEAR) $(shell which $(HOSTMAKE) || type -p $(HOSTMAKE) || echo make)
 
 MAKE1:=$(HOSTMAKE) -j1
 MAKE:=$(HOSTMAKE)

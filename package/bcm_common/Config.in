@@ -1,0 +1,2 @@
+config BR2_PACKAGE_BCM_COMMON
+	bool "Build Broadcom common package"

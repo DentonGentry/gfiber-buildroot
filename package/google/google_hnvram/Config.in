@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_HNVRAM
 	bool "google_hnvram"
+	select BR2_PACKAGE_HUMAX_MISC
 	help
 	  NVRAM manipulation utility for Google platforms.

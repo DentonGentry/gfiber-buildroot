@@ -1,5 +1,18 @@
 #!/bin/sh
 # This script uses the ip utility to monitor all the ipv6 addresses. Any change
-# that occurs will trigger an echo to the file received as argument.
+# that occurs will trigger an echo to stdout or the file received as argument,
+# if there is any
 
-ip -6 -oneline monitor address | while read line; do : >"$1" ; done
+if [ $# -gt 1 ]; then
+  echo "Usage: $("basename $0") [output_filename]"
+  exit 1
+fi
+
+ip -oneline monitor address |
+while read line; do
+  if [ $# = 1 ]; then
+    echo >"$1"
+  else
+    echo "ip monitor triggered"
+  fi
+done

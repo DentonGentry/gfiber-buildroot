@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_MOBILE_API
+	bool "google_mobile_api"
+	help
+	  GFTV remote API plug-in for Android and iOS apps

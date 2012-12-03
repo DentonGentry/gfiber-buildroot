@@ -40,6 +40,7 @@ TOPDIR:=$(shell pwd)
 CONFIG_CONFIG_IN=Config.in
 CONFIG=support/kconfig
 DATE:=$(shell date +%Y%m%d)
+LOGLINEAR?=$(TOPDIR)/loglinear
 
 # Compute the full local version string so packages can use it as-is
 # Need to export it, so it can be got from environment in children (eg. mconf)
@@ -401,18 +402,22 @@ prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
 
 SHUFFLED_TARGETS = $(shell echo $(TARGETS) | sed 's/ /\n/g' | shuf)
-FINAL_TARGETS = $(patsubst %,%-source,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-extract,$(SHUFFLED_TARGETS))
-FINAL_TARGETS += $(patsubst %,%-patch,$(SHUFFLED_TARGETS))
+PATCH_TARGETS = $(patsubst %,%-source,$(SHUFFLED_TARGETS))
+PATCH_TARGETS += $(patsubst %,%-extract,$(SHUFFLED_TARGETS))
+PATCH_TARGETS += $(patsubst %,%-patch,$(SHUFFLED_TARGETS))
+FINAL_TARGETS = $(PATCH_TARGETS)
 FINAL_TARGETS += $(patsubst %,%-configure,$(SHUFFLED_TARGETS))
+FINAL_TARGETS += $(patsubst %,%-depends,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(patsubst %,%-build,$(SHUFFLED_TARGETS))
 FINAL_TARGETS += $(SHUFFLED_TARGETS)
 
+patchtargets: $(PATCH_TARGETS)
 finaltargets: $(FINAL_TARGETS)
 
 shuffled:
 	@echo $(SHUFFLED_TARGETS)
+
+depcheck: $(patsubst %,%-depcheck,$(SHUFFLED_TARGETS))
 
 dirs: prepare
 dependencies: dirs
@@ -420,10 +425,12 @@ dependencies: dirs
 WORLD_STAMP = $O/.stamp.world-setup
 
 $(WORLD_STAMP):
+	$(MAKE) O=$O depcheck
 	$(MAKE) O=$O source
 	$(MAKE) O=$O dependencies
 	$(MAKE) O=$O compiler
 	$(MAKE) O=$O cross
+	$(MAKE) O=$O patchtargets
 	touch $@
 
 worldsetup: $(WORLD_STAMP)
@@ -452,7 +459,7 @@ $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	$(BASE_TARGETS) $(TARGETS) $(TARGETS_ALL) \
 	$(TARGETS_CLEAN) $(TARGETS_DIRCLEAN) $(TARGETS_SOURCE) \
 	$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
-	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR) $(WORLD_STAMP)
+	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
 
 #############################################################
 #
@@ -570,7 +577,8 @@ remove-stamps:
 	@rm -f $(STAMP_DIR)/*installed $(BUILD_DIR)/.root \
 		$(BUILD_DIR)/*/.stamp_tested \
 		$(BUILD_DIR)/*/.stamp_images_installed \
-		$(BUILD_DIR)/*/.stamp_target_installed
+		$(BUILD_DIR)/*/.stamp_target_installed \
+		$(WORLD_STAMP)
 
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
@@ -718,6 +726,12 @@ what-targets:
 
 patches: $(patsubst %,%-patch,$(TARGETS))
 %-patch:   # default for targets that don't have any patches
+	@
+
+%-is-enabled:
+	@
+
+%-depcheck:
 	@
 
 %-configure:

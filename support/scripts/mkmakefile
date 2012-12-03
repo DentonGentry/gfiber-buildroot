@@ -29,13 +29,14 @@ MAKEARGS := -C $1
 MAKEARGS += O=\$(if \$(patsubst /%,,\$(makedir)),\$(CURDIR)/)\$(patsubst %/,%,\$(makedir))
 
 MAKEFLAGS += --no-print-directory
+LOGLINEAR ?= $1/loglinear
 
 .PHONY: all \$(MAKECMDGOALS)
 
 all	:= \$(filter-out all Makefile,\$(MAKECMDGOALS))
 
 all:
-	$1/loglinear \$(MAKE) \$(MAKEARGS) \$(all)
+	\$(LOGLINEAR) \$(MAKE) \$(MAKEARGS) LOGLINEAR=\$(LOGLINEAR) \$(all)
 
 Makefile:;
 

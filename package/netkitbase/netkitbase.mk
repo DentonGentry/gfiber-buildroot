@@ -28,7 +28,7 @@ $(NETKITBASE_DIR)/.unpacked: $(DL_DIR)/$(NETKITBASE_SOURCE)
 $(NETKITBASE_DIR)/.configured: $(NETKITBASE_DIR)/.unpacked
 	(cd $(NETKITBASE_DIR); rm -f config.cache; \
 	 PATH=$(TARGET_PATH) CC="$(TARGET_CC)" \
-	./configure --installroot=$(TARGET_DIR) --with-c-compiler="$(TARGET_CC)" \
+	$(LOGLINEAR) ./configure --installroot=$(TARGET_DIR) --with-c-compiler="$(TARGET_CC)" \
 	)
 	touch $(NETKITBASE_DIR)/.configured
 

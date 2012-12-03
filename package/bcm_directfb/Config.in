@@ -1,5 +1,7 @@
 config BR2_PACKAGE_BCM_DIRECTFB
 	bool "broadcom's directfb"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD
 	help
 	  http://www.directfb.org/
 

@@ -14,7 +14,7 @@ define LIBPLAYER_CONFIGURE_CMDS
 	(cd $(@D) && rm -rf config.cache && \
 	$(TARGET_CONFIGURE_OPTS) \
 	$(TARGET_CONFIGURE_ARGS) \
-	./configure \
+	$(LOGLINEAR) ./configure \
 		--prefix=/usr \
 		--cross-compile \
 		$(SHARED_STATIC_LIBS_OPTS) \
