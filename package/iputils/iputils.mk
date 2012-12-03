@@ -16,8 +16,8 @@ IPUTILS_CMDS = ping tracepath tracepath6 traceroute6
 #IPUTILS_CMDS += arping
 #IPUTILS_DEPENDENCIES += libsysfs
 
-#IPUTILS_CMDS += ping6
-#IPUTILS_BUILD_FLAGS = VPATH="$(STAGING_DIR)/usr/lib"
+IPUTILS_CMDS += ping6
+IPUTILS_BUILD_FLAGS = VPATH="$(STAGING_DIR)/usr/lib"
 
 define IPUTILS_BUILD_CMDS
 	$(MAKE) $(IPUTILS_BUILD_FLAGS) CC="$(TARGET_CC)" -C $(@D) $(IPUTILS_CMDS)

@@ -79,10 +79,6 @@ should_never_die()
 
 main()
 {
-  # Network setup: we hardcode the IP address of fat vs. thin brunos
-  # so they can find each other without hassle.  The downside is this means
-  # you can only run one fat and one thin bruno per LAN segment for now.
-  #
   # We originally tried to stress *both* ethernet and MoCA here, but that's
   # too hard if the bridge device is configured (which is the normal case).
   # So let's just send packets out the bridge interface, if it exists, or
@@ -90,19 +86,22 @@ main()
   # MoCA if the thin bruno is connected over MoCA, or ethernet if it's
   # connected over ethernet, which is a lot like what should happen in real
   # life.
-  pkillwait -x dhclient
-
   if is_fat; then
     log "Fat bruno: operating in server mode."
     label should_never_die iperf -s &
     label should_never_die iperf -s -u &
   else
-    while :; do
-      log "Thin bruno: broadcasting for servers..."
-      SERVERS=$(find-servers)
-      [ -n "$SERVERS" ] && break
-    done
-    log "Found servers: " $SERVERS
+    if [ -z "$SERVER_IP" ]; then
+      while :; do
+        log "Thin bruno: broadcasting for servers..."
+        SERVERS=$(find-servers)
+        [ -n "$SERVERS" ] && break
+      done
+      log "Found servers: " $SERVERS
+    else
+      SERVERS=$SERVER_IP
+      log "Hardcoded \$SERVER_IP: $SERVERS"
+    fi
 
     for server in $SERVERS; do
       while ! nc $server 5001 </dev/null; do

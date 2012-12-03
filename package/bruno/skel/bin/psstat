@@ -27,10 +27,132 @@ freemem()
 }
 
 
+carriers()
+{
+  ip link show | {
+    out=
+    while IFS=': ' read n ifc flags smtu mtu sdisc disc sstate state junk; do
+      if [ "$smtu $sdisc $sstate" = "mtu qdisc state" ]; then
+        out="$out$ifc($state) "
+      fi
+    done
+    echo "$1 $out"
+  }
+}
+
+
+contains()
+{
+  [ "$1" != "${1#.*$2}" ]
+}
+
+
+ip_only()
+{
+  while read ip junk; do
+    contains "$ip" ":" || echo "$ip" "$junk"
+  done
+}
+
+
+ip6_only()
+{
+  while read ip junk; do
+    contains "$ip" ":" && echo "$ip" "$junk"
+  done
+}
+
+
+nameservers()
+{
+  grep '^nameserver' /etc/resolv.conf | while read ns ip junk; do
+    echo "$ip"
+  done
+}
+
+
+defaultroutes()
+{
+  ip "$@" route list | while read a b c d; do
+    if [ "$a $b" = "default via" ]; then
+      echo "$c"
+    fi
+  done
+}
+
+
+do_ping()
+{
+  ping$1 -n -c1 -w5 $2 2>&1 | {
+    while read nbytes bytes from ip serial ttl time ms; do
+      if [ "$bytes $from $ms" = "bytes from ms" ]; then
+        echo "${time#time=}ms/${ttl#ttl=}ttl"
+        exit
+      fi
+    done
+    echo "ERR"
+  }
+}
+
+
+pings()
+{
+  out=
+  for ip in \
+      127.0.0.1 \
+      $(defaultroutes) \
+      $(nameservers | ip_only) \
+      gstatic.com
+  do
+    out="$out$ip($(do_ping "" $ip)) "
+  done
+  echo "$1 $out"
+}
+
+
+pings6()
+{
+  out=
+  for ip in \
+      ::1 \
+      $(defaultroutes -6) \
+      $(nameservers | ip6_only) \
+      gstatic.com
+  do
+    out="$out$ip($(do_ping "6" $ip)) "
+  done
+  echo "$1 $out"
+}
+
+
+gstatics()
+{
+  gs=$(gstatic)
+  rv=$?
+  echo "$gs" | while read ip stat; do
+    echo -n "$ip($stat) "
+  done
+  echo
+  return $rv
+}
+
+
 while :; do
   printstat "cputop:" ps --no-headers -e -o cputime,comm,cmd
   printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
+  echo "loadavg: $(cat /proc/loadavg)"
   freemem "mem:"
+  carriers "carriers:"
+
+  # these can cause network activity, so /tmp/disable_pings is a way to
+  # stop it if it's getting annoying or causing trouble.
+  if [ ! -e /tmp/disable_pings ]; then
+    echo "gstatic: $(gstatics)"
+    pings "ping:" "$gs_retval"
+    pings6 "ping6:" "$gs_retval"
+    echo "find-servers: $(find-servers)"
+  fi
+
   if [ -n "$DELAY" ]; then
     sleep "$DELAY" || exit 1
   else
