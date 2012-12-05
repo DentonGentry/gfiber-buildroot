@@ -1,8 +1,9 @@
 #!/bin/sh
 
+# Use mocap instead of mocactl in MoCA 2.0
 INTERFACE="default"
 CFG_FILE="/etc/moca/moca.conf.${INTERFACE}"
-MOCACTL="/bin/mocactl"
+MOCAP="/bin/mocap"
 MOCAD="/bin/mocad"
 
 parse_opts()
@@ -36,7 +37,7 @@ parse_opts()
 				PARSING_CFG=0
 				PARSING_INIT=1
 				PARSING_MOCAD_PARAMS=0
-                                ;;
+				;;
 			-p)
 				PARSING_TRACE=0
 				PARSING_CFG=0
@@ -78,7 +79,7 @@ is-storage-box && INIT_TIME="$INIT_TIME --preferredNC on"
 cmd="$1"
 shift
 
-if [ ! -e $MOCACTL ]; then
+if [ ! -e $MOCAP ]; then
 	echo "$0: MoCA utilities are not installed"
 	exit 1
 fi
@@ -100,10 +101,8 @@ case "$cmd" in
 	boot)
 		echo "Starting mocad"
 		$MOCAD $MOCAD_PARAMS
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		$MOCAP set $INIT_TIME
+		exec $MOCAP set --start
 		exit 1
 		;;
 
@@ -114,24 +113,19 @@ case "$cmd" in
 		;;
 
 	start)
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		$MOCAP set $INIT_TIME
+		exec $MOCAP set --start
 		exit 1
 		;;
 	
 	restart)
-		$MOCACTL stop
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		$MOCAP set $INIT_TIME
+		exec $MOCAP set --restart
 		exit 1
 		;;
 	
 	stop)
-		exec $MOCACTL stop
+		exec $MOCAP set --stop
 		exit 1
 		;;
 esac
