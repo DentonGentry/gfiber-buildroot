@@ -69,7 +69,7 @@ babysit 10 ./skelmir/siege \
     -Dsage.paths.logs=/tmp/log \
     -Djava.library.path=. \
     -Dsage.paths.cache="$PATHS_CACHE" \
-    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
     -Xmx384m \
     -verbose:gc \
     $SIEGEOPT \
