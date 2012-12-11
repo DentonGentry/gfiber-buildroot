@@ -1,0 +1,66 @@
+#!/bin/sh
+#
+# A handy command to start/stop/restart daemons using scripts in /etc/init.d.
+#
+mode=$(basename "$0")
+
+log() {
+  echo "$@" >&2
+}
+
+usage() {
+  log "Usage: start|stop|restart <programs...>"
+  exit 99
+}
+
+endswith() {
+  [ "$1" != "${1%$2}" ]
+}
+
+suggestions() {
+  local prog="$1" d
+  for d in /etc/init.d/S??*; do
+    if { echo "$d"; cat "$d"; } | grep "$prog" >/dev/null; then
+      echo "${d#/etc/init.d/S??}(${d#/etc/init.d/})"
+    fi
+  done
+}
+
+
+case "$mode" in
+  start|stop|restart) ;;
+  *) usage ;;
+esac
+
+rv=0
+any=
+for prog in "$@"; do
+  prog=$(basename "$prog")
+  prog=${prog#S??}
+  lockfile-create --use-pid /var/run/startstop.$prog
+  any=1
+  found=
+  for script in /etc/init.d/S??$prog /etc/init.d/S??$prog.sh; do
+    if [ -x "$script" ]; then
+      found=1
+      $script $mode || rv=1
+      break
+    elif [ -e "$script" ] && endswith "$script" .sh; then
+      found=1
+      . $script $mode || rv=1
+      break
+    fi
+  done
+  if [ -z "$found" ]; then
+    log "Error: no /etc/init.d script matches '$prog'" >&2
+    log "Error: suggestion:" $(suggestions "$prog")
+    rv=1
+  fi
+  lockfile-remove /var/run/startstop.$prog
+done
+
+if [ -z "$any" ]; then
+  usage
+fi
+
+exit $rv
