@@ -40,7 +40,9 @@ def HttpDo(method, url, post_data=None, content_type=None):
   assert proto.lower() in ('http', 'https')
   assert method in ('GET', 'POST')
   outdata = StringIO.StringIO()
-  headers = ['User-Agent: upload-logs']
+  # The log upload server does not take kindly to Expect: 100-continue
+  # so remove that.
+  headers = ['User-Agent: upload-logs', 'Expect:']
   if content_type:
     headers.append('Content-Type: %s' % content_type)
   curl = pycurl.Curl()
