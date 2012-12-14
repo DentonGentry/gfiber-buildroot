@@ -74,7 +74,7 @@ ANY_TIME=""
 TRACE=""
 MOCAD_PARAMS=""
 [ -e $CFG_FILE ] && . $CFG_FILE
-is-storage-box && INIT_TIME="$INIT_TIME --preferredNC on"
+is-storage-box && INIT_TIME="$INIT_TIME --nc_mode 1"
 
 cmd="$1"
 shift
