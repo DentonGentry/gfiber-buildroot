@@ -81,9 +81,10 @@ def UploadFile(url, filename, fileobj, keys):
   """Actually upload the given file to the server."""
   while filename.startswith('/'):
     filename = filename[1:]
-  upload_url = os.path.join(url, 'upload', filename)
+  start_url = os.path.join(url, 'upload', filename)
   if keys:
-    upload_url += '?' + urllib.urlencode(keys)
+    start_url += '?' + urllib.urlencode(keys)
+  upload_url = HttpDo('GET', start_url)
 
   splitter = 'foo-splitter-%f' % time.time()
   content_type = 'multipart/form-data; boundary=%s' % splitter
@@ -104,9 +105,12 @@ def UploadFile(url, filename, fileobj, keys):
   try:
     HttpDo('POST', upload_url, attachment, content_type)
   except HttpError, e:
-    # Accept a 302, this is what blobstore used to send.
-    if e.status != 302:
+    if e.status == 302:
+      pass
+    else:
       raise
+  else:
+    raise Exception('expected http response code 302')
 
 
 def main():
