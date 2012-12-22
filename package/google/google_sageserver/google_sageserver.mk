@@ -1,5 +1,5 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
-GOOGLE_SAGESERVER_DEPENDENCIES = google_skelmir google_mobile_api google_sage_analytics_plugin
+GOOGLE_SAGESERVER_DEPENDENCIES = google_skelmir google_mobile_api
 
 define GOOGLE_SAGESERVER_BUILD_CMDS
 	cd $(@D)/build/bruno/sage && \
