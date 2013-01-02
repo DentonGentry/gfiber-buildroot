@@ -1,0 +1,32 @@
+#!/bin/sh
+# Simple script to switch wan interface
+
+usage()
+{
+  echo "Usage: $0 <wan> [lan]" >&2
+  echo "  This program has no options." >&2
+}
+
+
+switch_port()
+{
+  wan_port=$1
+  lan_port=$2
+
+  /etc/init.d/S40lan stop
+  /etc/init.d/S72wan stop
+  echo $wan_port > /etc/config/wanport
+  echo $lan_port > /etc/config/lanport
+  if [ "x${lan_port}" != "x" ]; then
+    /etc/init.d/S40lan start
+  fi
+  /etc/init.d/S72wan start
+}
+
+
+if [ $# -lt 1 ]; then
+  usage
+  exit 1
+fi
+
+switch_port $@

@@ -4,36 +4,8 @@
 #
 args=$1
 auto_mode=no
-
-enable_hw_frwd() {
-  TPM_DIR=/sys/devices/platform/tpm
-  PON_MAC=$(cat /sys/class/net/pon0/address)
-  OWNER_ID=4090
-
-  echo "[RCS]: Configure TPM"
-  cd ${TPM_DIR}/cfg_frwd
-  # echo [rule_name] [port_bitmap] [queue] [gem_port]  > frwd_rule_set
-  echo frwd_ds 0x40000 1 1500 > frwd_rule_set
-  echo frwd_us 0x00001 1 1500 > frwd_rule_set
-
-  cd ${TPM_DIR}/cfg_l2
-  # echo [rule_name] [SA] [SA_mask] [DA] [DA_mask]  > l2_key_mac_addr_rule_set
-  echo mac_pon0 00:00:00:00:00:00 00:00:00:00:00:00 ${PON_MAC} \
-    FF:FF:FF:FF:FF:FF > l2_key_mac_addr_rule_set
-  echo mac_bc 00:00:00:00:00:00 00:00:00:00:00:00 FF:FF:FF:FF:FF:FF \
-    FF:FF:FF:FF:FF:FF > l2_key_mac_addr_rule_set
-  # echo [owner_id] [src_port] [rule_num] [parse_rule_bm] [parse_flags_bm]
-  # [action] [next_phase] [key_name] [frwd_name] [mod_name] [pkt_mod_bm] >
-  # l2_rule_add
-  echo ${OWNER_ID} WAN 0 0x0001 0x0000 0x0000 done mac_pon0 frwd_empty \
-    mod_empty 0x0000 > l2_rule_add
-  echo ${OWNER_ID} WAN 1 0x0001 0x0000 0x0000 done mac_bc frwd_empty \
-    mod_empty 0x0000 > l2_rule_add
-  echo ${OWNER_ID} WAN 2 0x0000 0x0000 0x06 done l2_key_empty frwd_ds \
-    mod_empty 0x0000 > l2_rule_add
-  echo ${OWNER_ID} UNI_ANY 3 0x0000 0x0000 0x06 done l2_key_empty frwd_us \
-    mod_empty 0x0000 > l2_rule_add
-}
+wan_port=$(cat /etc/config/wanport)
+lan_port=$(cat /etc/config/lanport)
 
 set $(cat /proc/cmdline)
 for i in "$@"; do
@@ -49,12 +21,14 @@ case $args in
     echo -n "Starting WAN..."
     if [ "$auto_mode" != "yes" ]; then
       echo "[RCS]: Start Interface"
-      ifup pon0
-      sleep 1
-      echo "[RCS]: Start SFU"
-      ######################################
-      babysit 60 start_sycl 2>&1 | logos sycl &
-      (sleep 5 && enable_hw_frwd) &
+      ifup $wan_port
+      echo "[RCS]: Configure Data Path"
+      if [ "x" = "x${lan_port}" ]; then
+        lan_arg=""
+      else
+        lan_arg="-l $lan_port"
+      fi
+      (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
     else
       echo "[RCS]: Automation mode"
       ######################################
@@ -62,8 +36,7 @@ case $args in
     ;;
   stop)
     echo -n "Stopping WAN..."
-    ifdown pon0
-    pkillwait -x sycl
+    ifdown $wan_port
     ;;
   restart|reload)
     "$0" stop

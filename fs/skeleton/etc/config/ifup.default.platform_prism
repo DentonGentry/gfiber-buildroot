@@ -1,2 +1,26 @@
 iface=$1
 ip link set dev ${iface} up
+if [ $(cat /etc/config/wanport) = $1 ]; then
+	sleep 1
+        start_sycl & 2>&1 | logos sycl &
+	lock=/var/run/dhclient.${iface}.lock
+	lockfile-create ${lock}
+	pidfile=/var/run/dhclient.${iface}.pid
+	if [ -e ${pidfile} ]; then
+		kill $(cat ${pidfile}) 2>&1 > /dev/null
+		rm -f ${pidfile}
+	fi
+	/usr/sbin/dhclient ${iface} -nw -v -pf ${pidfile} \
+		-lf /var/run/dhclient.${iface}.lease \
+		-cf /etc/dhclient.conf 2>&1 | logger -t dhclient &
+	pidfile=/var/run/dhclient-v6.${iface}.pid
+	if [ -e ${pidfile} ]; then
+		kill $(cat ${pidfile}) 2>&1 > /dev/null
+		rm -f ${pidfile}
+	fi
+	/usr/sbin/dhclient ${iface} -6 -S -nw -v -pf ${pidfile} \
+		-lf /var/run/dhclient-v6.${iface}.lease \
+		-cf /etc/dhclient6.conf \
+	    --never-gonna-give-you-up 900 2>&1 | logger -t dhclient6 &
+	lockfile-remove ${lock}
+fi

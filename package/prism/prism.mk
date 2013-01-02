@@ -11,13 +11,13 @@ define PRISM_BUILD_CMDS
 	$(MAKE) -C $(@D)/cmds && \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	HOSTDIR=$(HOST_DIR) \
-	$(MAKE) -C $(@D)/sfmodule
+	$(MAKE) -C $(@D)/prism
 endef
 
 define PRISM_TEST_CMDS
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	HOSTDIR=$(HOST_DIR) \
-	$(MAKE) -C $(@D)/sfmodule test
+	$(MAKE) -C $(@D)/prism test
 endef
 
 define PRISM_INSTALL_TARGET_CMDS
@@ -25,7 +25,7 @@ define PRISM_INSTALL_TARGET_CMDS
 	DESTDIR=$(TARGET_DIR) $(MAKE) -C $(@D)/cmds install && \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	HOSTDIR=$(HOST_DIR) \
-	DESTDIR=$(TARGET_DIR) $(MAKE) -C $(@D)/sfmodule install
+	DESTDIR=$(TARGET_DIR) $(MAKE) -C $(@D)/prism install
 endef
 
 $(eval $(call GENTARGETS))
