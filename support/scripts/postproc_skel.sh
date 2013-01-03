@@ -1,9 +1,12 @@
 #!/bin/sh
 set -x
-TARGET_SKELETON=$1
 TARGET_DIR=$2
+TARGET_SKELETON=$1
 PLATFORM_SUFFIX=$3
 
+# Some skeleton files are overwritten by installed packages. Recover them to
+# the customized skeleton files.
+cp -alf ${TARGET_SKELETON}/. ${TARGET_DIR}/
 if [ "$PLATFORM_SUFFIX" != "" ]; then
 	find $TARGET_SKELETON -name "*.platform_*" | sort | while read line
 	do
