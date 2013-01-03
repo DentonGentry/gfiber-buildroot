@@ -2,18 +2,17 @@
 #
 # Start LAN ....
 #
-lan_port=$(cat /etc/config/lanport)
 
 case "$1" in
   start)
     echo -n "Starting LAN..."
     ifup lo
-    ifup $lan_port
+    ifup eth0
     ;;
   stop)
     echo -n "Stopping LAN..."
     ifdown lo
-    ifdown $lan_port
+    ifdown eth0
     ;;
   restart|reload)
     "$0" stop
