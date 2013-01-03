@@ -48,6 +48,8 @@ case $args in
   start)
     echo -n "Starting WAN..."
     if [ "$auto_mode" != "yes" ]; then
+      # Configure dhclient with the right hostname etc.
+      setup-dhclient
       echo "[RCS]: Start Interface"
       ifup pon0
       sleep 1
