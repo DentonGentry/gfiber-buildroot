@@ -9,9 +9,10 @@ case "$1" in
       rmdir /var/media/videos/Samples 2>/dev/null
       rm -f /var/media/.mfgmedia
     fi
-    if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
+    if [ -w /var/media ] && [ ! -f /var/media/ManufacturingBurnin.mov ]; then
       cp /usr/sv/Google_Loading_Loop_HiRes2.ts /var/media/ManufacturingBurnin.mov
-
+    fi
+    if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
       mkdir -p /var/media/pictures/Landscapes
       cd /usr/lib/media/landscapes/
       for file in *
