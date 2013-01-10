@@ -1,0 +1,25 @@
+choice
+	prompt "google platform"
+	default BR2_PACKAGE_BRUNO
+	help
+	  Set the debug level for gcc
+
+config BR2_PACKAGE_BRUNO
+	bool "Enable Bruno Board"
+	help
+	  Customization for Bruno boards.
+
+config BR2_PACKAGE_PRISM
+	bool "Enable Prism Board"
+	help
+	  Customization for Prism boards.
+endchoice
+
+config BR2_PACKAGE_GOOGLE_PLATFORM
+	bool
+	default y
+
+config BR2_TARGET_GOOGLE_PLATFORM
+	string
+	default "bruno"		if BR2_PACKAGE_BRUNO
+	default "prism"		if BR2_PACKAGE_PRISM
