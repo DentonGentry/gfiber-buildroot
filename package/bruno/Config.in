@@ -1,9 +1,3 @@
-config BR2_PACKAGE_BRUNO
-	bool "Enable Bruno Board"
-	default y
-	help
-	  Customization for Bruno boards.
-
 config BR2_PACKAGE_BRUNO_OPENBOX
 	bool "Openbox Release"
 	default n
