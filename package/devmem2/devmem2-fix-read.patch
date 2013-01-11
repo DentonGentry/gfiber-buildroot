@@ -1,0 +1,20 @@
+--- a/devmem2.c
++++ b/devmem2.c
+@@ -57,7 +57,7 @@
+ 
+ int main(int argc, char **argv) {
+     int fd;
+-    void *map_base, *virt_addr; 
++    volatile void *map_base, *virt_addr; 
+ 	unsigned long read_result, writeval;
+ 	off_t target;
+ 	int access_type = 'w';
+@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
+ 			fprintf(stderr, "Illegal data type '%c'.\n", access_type);
+ 			exit(2);
+ 	}
+-    printf("Value at address 0x%X (%p): 0x%X\n", target, virt_addr, read_result); 
++    printf("Value at address 0x%llX (%p): 0x%X\n", target, virt_addr, read_result); 
+     fflush(stdout);
+ 
+ 	if(argc > 3) {
