@@ -13,7 +13,7 @@ echo -n "Stopping $*: " >&2
 pkill "$@"
 for d in $(seq 20); do
   pgrep "$@" >/dev/null || { echo done >&2; exit 0; }
-  msleep 100
+  usleep 100000
   echo -n "." >&2
 done
 pkill -9 "$@"

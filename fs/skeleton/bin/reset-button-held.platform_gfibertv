@@ -18,7 +18,7 @@ retval=1  # not pressed
 while [ -e /tmp/gpio/reset_button_msecs ]; do
   # reset button is pressed at boot time; wait to see if the user
   # holds it for $1 msec
-  msleep 100
+  usleep 100000
   if [ -e /tmp/gpio/reset_button_msecs ]; then
     msecs=
     read msecs </tmp/gpio/reset_button_msecs
