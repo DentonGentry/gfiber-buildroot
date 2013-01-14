@@ -1,0 +1,18 @@
+#!/bin/sh
+# This script uses the p utility to monitor all the interfaces for any
+# link level change. Any change that occurs will trigger an echo to
+# stdout or to the file received as argument, if there is any.
+
+if [ $# -gt 1 ]; then
+  echo "Usage: $("basename $0") [output_filename]"
+  exit 1
+fi
+
+ip -oneline monitor link |
+while read line; do
+  if [ $# = 1 ]; then
+    echo >"$1"
+  else
+    echo "link monitor triggered"
+  fi
+done

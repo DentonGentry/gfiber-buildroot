@@ -9,13 +9,13 @@ start() {
 
   cd /app/sage
   (
-    wait-until-created /tmp/ntp.synced
+    wait-until-created /tmp/time.synced
     if is-tv-box; then
       ./runsageclient &
     elif is-storage-box; then
       ./runsage &
     fi
-  ) 2>&1 | logos s 250000 &
+  ) 2>&1 | logos s 4000000 50000000 &
 
   # TODO: remove in non-test builds
   if [ -e /rw/poststartupmods ]; then

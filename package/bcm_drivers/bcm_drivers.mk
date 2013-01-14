@@ -15,19 +15,16 @@ define BCM_DRIVERS_BUILD_MOCA
 endef
 
 define BCM_DRIVERS_INSTALL_STAGING_MOCA
-	$(INSTALL) -D -m 0644 $(@D)/moca/lib/libmoca.a $(STAGING_DIR)/usr/lib/libmoca.a
-	$(INSTALL) -D -m 0644 $(@D)/moca/util/libmocactl.a $(STAGING_DIR)/usr/lib/libmocactl.a
+	$(INSTALL) -D -m 0644 $(@D)/moca/bin/libmoca.a $(STAGING_DIR)/usr/lib/libmoca.a
 	mkdir -p $(STAGING_DIR)/usr/include/moca && \
 	cp -pr $(@D)/moca/include/* $(STAGING_DIR)/usr/include/moca
+	cp -pr $(@D)/moca/lib/*.h $(STAGING_DIR)/usr/include/moca
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	$(INSTALL) -m 0700 $(@D)/moca/bin/mocad $(TARGET_DIR)/bin/
-	$(INSTALL) -m 0700 $(@D)/moca/bin/mocactl $(TARGET_DIR)/bin/
-	$(INSTALL) -m 0700 $(@D)/moca/bin/soapserver $(TARGET_DIR)/bin/
-	$(INSTALL) -D -m 0600 $(@D)/moca/mocacore-gen1.bin $(TARGET_DIR)/etc/moca/mocacore-gen1.bin
-	$(INSTALL) -D -m 0600 $(@D)/moca/mocacore-gen2.bin $(TARGET_DIR)/etc/moca/mocacore-gen2.bin
-	$(INSTALL) -D -m 0600 $(@D)/moca/mocacore-gen3.bin $(TARGET_DIR)/etc/moca/mocacore-gen3.bin
+	$(INSTALL) -m 0700 $(@D)/moca/bin/mocap $(TARGET_DIR)/bin/
+	$(INSTALL) -D -m 0600 $(@D)/moca/moca20core-gen1.bin $(TARGET_DIR)/etc/moca/moca20core-gen1.bin
 endef
 endif
 

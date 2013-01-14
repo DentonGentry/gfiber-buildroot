@@ -48,6 +48,10 @@ config BR2_HG
 	string "Mercurial (hg) command"
 	default "hg"
 
+config BR2_MPM
+	string "Midas Package Manager (mpm) command"
+	default "mpm"
+
 config BR2_ZCAT
 	string "zcat command"
 	default "gzip -d -c"

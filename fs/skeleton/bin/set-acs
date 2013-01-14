@@ -4,10 +4,15 @@
 # Where source can be:
 #  cwmp - ACS set ManagementServer.URL
 #  dhcp - received an ACS_URL option from DHCP/DHCP6.
-#  init - initialize /tmp/cwmp/acs_url from the best available source
+#  init - deprecated
 #  manual - manually instantiate an ACS URL
+#  network_up - retry querying find-acs
 
 . /etc/utils.sh
+
+do_curl() {
+  curl -sSgfL --retry 3 --retry-max-time 60 "$@"
+}
 
 log() {
   echo "set-acs:" "$@" >&2
@@ -15,15 +20,27 @@ log() {
 
 usage() {
   log "Usage: $0 init"
-  log "   or: $0 {cwmp | dhcp | manual} {ACS_URL | clear}]"
+  log "   or: $0 {cwmp | dhcp | manual} {ACS_URL | clear}"
+  log "   or: $0 timeout ACS_URL"
   log "   or: $0 print"
+  log "   or: $0 network_up"
   exit 1
 }
 
+is_http_url() {
+  [ "${1#http://}" != "$1" ] ||
+  [ "${1#https://}" != "$1" ]
+}
+
+valid_acs_file() {
+  urlfile="$1"
+  [ -e "$urlfile" ] &&
+  read url junk <"$urlfile" &&
+  is_http_url "$url" && echo "$url"
+}
+
 check_for_url() {
-  if [ -z "$2" ]; then
-    usage
-  fi
+  is_http_url "$1" || [ "$1" = "clear" ] || usage
 }
 
 update_acs_file() {
@@ -42,71 +59,134 @@ remove_failed_acs() {
   for file in /config/tr69/acs_url.cwmp /tmp/cwmp/acs_url.dhcp; do
     read url junk <$file && [ "$url" = "$failed_acs" ] && rm -f $file
   done
+  if read url junk </tmp/cwmp/acs_url.find-acs  &&
+  [ "$url" = "$failed_acs" ]; then
+    rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
+  fi
+}
+
+# Do not try to access find-acs for $1 seconds
+hold_off() {
+  if [ $1 -gt 0 ]; then
+    now=$(date +%s)
+    hold_off=$(( $now  + $1))
+    atomic /tmp/cwmp/find-acs_hold_off $hold_off
+  else
+    rm -f /tmp/cwmp/find-acs_hold_off
+  fi
+}
+
+# Is it ok to try accessing find-acs now?
+holding_off() {
+  now=$(date +%s)
+  hold_off=0
+  [ -e /tmp/cwmp/find-acs_hold_off ] &&
+  read hold_off junk < /tmp/cwmp/find-acs_hold_off
+  if ! [ "$hold_off" -gt 0 ]; then
+    hold_off=0
+  fi
+  [ $now -lt $hold_off ]
+}
+
+do_network_up() {
+  # A previously failed HTTP request might be successful now.
+  hold_off 0
+}
+
+update_find_acs_url() {
+  atomic /tmp/cwmp/acs_url.find-acs "$1"
+  atomic /tmp/cwmp/acs_url.find-acs.timestamp $(date +%s)
+}
+
+# Let URLs we received from find-acs expire after 48 hours
+rm_old_find_acs_url() {
+  now=$(date +%s)
+  t=0
+  [ -e /tmp/cwmp/acs_url.find-acs.timestamp ] &&
+  read t junk </tmp/cwmp/acs_url.find-acs.timestamp
+  if [ $now -gt $((t + 48 * 60 * 60)) ]; then
+    rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
+  fi
+}
+
+find_acs() {
+  rm_old_find_acs_url
+  if ! holding_off; then
+    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
+    if [ -e /etc/ssl/private/device.key -a -e /etc/ssl/certs/device.pem ]; then
+      tmp=$(do_curl --key /etc/ssl/private/device.key \
+        --cert /etc/ssl/certs/device.pem \
+        "https://config.cpe.gfsvc.com/find/$serial")
+    else
+      tmp=$(do_curl "https://config.cpe.gfsvc.com/find/$serial")
+    fi
+    if [ $? -eq 0 ]; then
+      hold_off $(( 60*60*24 ))
+      if is_http_url "$tmp"; then
+        update_find_acs_url "$tmp"
+      else
+        rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
+      fi
+    else
+      hold_off $(( 5*60 ))
+    fi
+  fi
+}
+
+do_print() {
+  url=
+  src=
+  if url=$(valid_acs_file /config/tr69/acs_url.cwmp); then
+    src="CWMP ACS"
+  elif url=$(valid_acs_file /config/tr69/acs_url); then
+    src="Manual ACS"
+  elif url=$(valid_acs_file /tmp/cwmp/acs_url.dhcp); then
+    src="DHCP ACS"
+  elif find_acs ; url=$(valid_acs_file /tmp/cwmp/acs_url.find-acs); then
+    src="find-acs ACS"
+  else
+    url="https://acs.prod.gfsvc.com/default/cwmp"
+    src="Default ACS"
+  fi
+  log Using "$src" at "$url"
+  echo "$url"
 }
 
 main() {
   mkdir -p /tmp/cwmp /config/tr69
+  cmd="$1"
+  url="$2"
 
-  case "$1" in
+  case "$cmd" in
     cwmp)
-      check_for_url $@
-      update_acs_file /config/tr69/acs_url.cwmp "$2"
+      check_for_url "$url"
+      update_acs_file /config/tr69/acs_url.cwmp "$url"
       ;;
     dhcp)
-      check_for_url $@
-      update_acs_file /tmp/cwmp/acs_url.dhcp "$2"
+      check_for_url "$url"
+      update_acs_file /tmp/cwmp/acs_url.dhcp "$url"
       ;;
     init)
-      # Fallthrough
+      # No op
       ;;
     manual)
-      check_for_url $@
-      update_acs_file /config/tr69/acs_url "$2"
+      check_for_url "$url"
+      update_acs_file /config/tr69/acs_url "$url"
       ;;
     timeout)
-      check_for_url $@
-      remove_failed_acs "$2"
+      check_for_url "$url"
+      remove_failed_acs "$url"
+      ;;
+    network_up)
+      do_network_up
+      ;;
+    print)
+      do_print
       ;;
     *)
       usage
       ;;
   esac
-
-  if [ -f /config/tr69/acs_url.cwmp ]; then
-    acs=$(cat /config/tr69/acs_url.cwmp)
-    atomic /tmp/cwmp/acs_url "$acs"
-    log using CWMP ACS "$acs"
-  elif [ -f /config/tr69/acs_url ]; then
-    acs=$(cat /config/tr69/acs_url)
-    atomic /tmp/cwmp/acs_url "$acs"
-    log using Manual ACS "$acs"
-  elif [ -f /tmp/cwmp/acs_url.dhcp ]; then
-    acs=$(cat /tmp/cwmp/acs_url.dhcp)
-    atomic /tmp/cwmp/acs_url "$acs"
-    log using DHCP ACS "$acs"
-  fi
-
-  if [ ! -f /tmp/cwmp/acs_url ]; then
-    # No better sources, populate a default.
-    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
-    if [ -e /etc/ssl/private/device.key -a -e /etc/ssl/certs/device.pem ]; then
-      acs=$(curl -sL --key /etc/ssl/private/device.key --cert /etc/ssl/certs/device.pem "https://config.cpe.gfsvc.com/find/$serial")
-    else
-      acs=$(curl -sL "https://config.cpe.gfsvc.com/find/$serial")
-    fi
-
-    if [ -z "$acs" ]; then
-      acs="https://acs.prod.gfsvc.com/default/cwmp"
-      log using Default ACS "$acs"
-    else
-      log using Findacs ACS "$acs"
-    fi
-    atomic /tmp/cwmp/acs_url "$acs"
-  fi
 }
 
-if [ "$1" = "print" ]; then
-  cat /tmp/cwmp/acs_url
-else
-  main "$@"
-fi
+main "$@"

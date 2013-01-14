@@ -1,0 +1,3 @@
+The libav code is used in our media player firmware as a demultiplexer for
+non-MPEG container formats.  Due to the integration with our libPullReader
+library, the libPullreader created by us is also under LGPL v2.1.

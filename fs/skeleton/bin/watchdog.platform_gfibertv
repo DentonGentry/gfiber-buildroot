@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# Program the hardware watchdog counter.
+#
+# The watch counter.  It counts at a clock rate of 27Mhz,
+# so the largest timeout we can program is 159s.
+# That's unnecessarily long, so let's use 80s instead (a bit longer than
+# the software watchdog, which is currently at 70s.)
+#
+count_val=2160000000  # 80 seconds
+command_addr=0x104067ec
+timeout_addr=0x104067e8
+
+write()
+{
+  devmem "$@" >/dev/null
+}
+
+write $timeout_addr 32 $count_val
+write $command_addr 32 0xff00
+write $command_addr 32 0x00ff
+while :; do
+  # This reloads the count to prevent the reset.
+  write $command_addr 32 0xff00
+  write $command_addr 32 0x00ff
+  sleep 5
+done

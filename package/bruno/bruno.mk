@@ -5,18 +5,21 @@ GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 BRUNO_SITE=repo://vendor/google/platform
 BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
-BRUNO_INSTALL_IMAGES=YES
-
-BRUNO_DEPENDENCIES=linux humax_misc bcm_drivers bcm_nexus python py-setuptools
-
 BRUNO_STAGING_PATH=usr/lib/bruno
+BRUNO_DEPENDENCIES=humax_misc python py-setuptools
+
+# openbox doesn't have this package, so don't depend on it if it isn't enabled
+ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
+BRUNO_DEPENDENCIES+=bcm_drivers
+endif
 
 define BRUNO_BUILD_CMDS
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	CROSS_COMPILE=$(TARGET_CROSS) \
-	BRUNO_PROD_BUILD=$(BR2_PACKAGE_BRUNO_PROD) \
+	BRUNO_PROD_BUILD=$(BR2_PACKAGE_GOOGLE_PROD) \
+	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
@@ -33,36 +36,20 @@ define BRUNO_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(BRUNO_STAGING_PATH)
 endef
 
-ifeq ($(BR2_PACKAGE_BRUNO_PROD),y)
-BRUNO_LOADER = cfe_signed_release.bin
-BRUNO_LOADER_SIG = cfe_signed_release.sig
-else
-BRUNO_LOADER = cfe_signed_unlocked.bin
-BRUNO_LOADER_SIG = cfe_signed_unlocked.sig
-endif
-
 define BRUNO_INSTALL_TARGET_CMDS
-	$(call GENIMAGEVERSION,bruno)
-
+	$(call GENIMAGEVERSION,gfibertv)
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
 	DESTDIR=$(TARGET_DIR) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
+	BRUNO_PROD_BUILD=$(BR2_PACKAGE_GOOGLE_PROD) \
+	HAS_MOCA=$(BR2_PACKAGE_BCM_DRIVER_MOCA) \
 	$(MAKE) -C $(@D) install
 
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/
 	cp -rf $(@D)/registercheck $(TARGET_DIR)/home/test/
-endef
-
-define BRUNO_INSTALL_IMAGES_CMDS
-	if [ -n "$(BRUNO_LOADER)" ]; then \
-		cp -f $(@D)/cfe/$(BRUNO_LOADER) \
-			$(BINARIES_DIR)/loader.bin; \
-		cp -f $(@D)/cfe/$(BRUNO_LOADER_SIG) \
-			$(BINARIES_DIR)/loader.sig; \
-	fi
 endef
 
 $(eval $(call GENTARGETS))

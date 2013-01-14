@@ -1,0 +1,29 @@
+#!/bin/sh
+
+get_if_nonblank()
+{
+  v=$(hnvram -qr "$1")
+  [ -n "$v" ] && echo "$v" >"$2"
+}
+
+
+case "$1" in
+  start)
+    (mkdir -p /tmp/ssl/certs && chmod 0555 /tmp/ssl/certs) || exit 1
+    (mkdir -p /tmp/ssl/private && chmod 0550 /tmp/ssl/private) || exit 1
+    get_if_nonblank GOOGLE_SSL_CRT /tmp/ssl/certs/device.pem
+    get_if_nonblank GOOGLE_SSL_PEM /tmp/ssl/private/device.key
+    if [ -f /tmp/ssl/certs/device.pem ]; then
+      cat /tmp/ssl/certs/device.pem | logos certlog
+    fi
+    ;;
+  stop)
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

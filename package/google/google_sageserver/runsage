@@ -39,7 +39,7 @@ ulimit -c 49152
 
 if [ "$MODE" = "server" ]; then
   # Start up native streaming server
-  babysit 10 ./sagesrv -l6 -m | logos z &
+  babysit 10 ./sagesrv -l6 -m5 | logos z 0 20000000 &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
@@ -55,6 +55,7 @@ mkdir -p /rw/sage
 
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 MOBILEAPIJARS=gftv_mobile_api_deploy.jar
+ANALYTICSJARS=proto-program-event.jar
 
 (
   cat Sage.properties.defaults.base
@@ -68,7 +69,7 @@ babysit 10 ./skelmir/siege \
     -Dsage.paths.logs=/tmp/log \
     -Djava.library.path=. \
     -Dsage.paths.cache="$PATHS_CACHE" \
-    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
     -Xmx384m \
     -verbose:gc \
     $SIEGEOPT \

@@ -13,4 +13,5 @@ ifeq ($(BR2_PACKAGE_NCURSES),y)
 ZSH_DEPENDENCIES += ncurses
 endif
 
+
 $(eval $(call AUTOTARGETS))

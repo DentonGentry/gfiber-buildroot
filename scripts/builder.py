@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2011 Google Inc. All Rights Reserved.
+# Copyright 2012 Google Inc. All Rights Reserved.
 
 """Script for building Bruno images.
 
@@ -21,13 +21,9 @@ time you run an incremental build.
 
 import errno
 import glob
-import gzip
-import multiprocessing
 import os
-import re
 import subprocess
 import sys
-import tarfile
 import time
 import options
 
@@ -37,13 +33,12 @@ __author__ = 'kedong@google.com (Ke Dong)'
 optspec = """
 builder.py [options...] [output-directory]
 --
-p,product-family=  Product family (eg. bruno, bcm7425) [bruno]
-m,model=           Model name [gfhd100]
-c,chip-revision=   Chip revision [b2]
+C,config=          buildroot config file [bruno_gfhd100b2_defconfig]
 v,verbose          Increase verbosity
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
+openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 """
 
@@ -148,12 +143,11 @@ class BuildRootBuilder(object):
   def PrintOptions(self):
     """Print the currently-selected options."""
     print '=========================================================='
-    print 'CHIP REVISION  :', self.opt.chip_revision
-    print 'MODEL          :', self.opt.model
-    print 'PRODUCT FAMILY :', self.opt.product_family
+    print 'CONFIG         :', self.opt.config
     print 'VERBOSE        :', self.opt.verbose
     print 'FRESH          :', self.opt.fresh
     print 'PRODUCTION     :', self.opt.production
+    print 'OPENBOX        :', self.opt.openbox
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
     print '=========================================================='
@@ -177,12 +171,13 @@ class BuildRootBuilder(object):
 
     Args:
       targets: which targets to ask make to build ([] means default)
+      parallel: true if you want make to run a parallel build.
     """
     cmd = ['make', 'O=%s' % self._Path()] + targets
     if self.opt.verbose:
       cmd += ['V=1']
     if parallel:
-      cmd += ['-j', '-l12']
+      cmd += ['-j12', '-l12']
     self.PopenAt(self.top_dir, cmd)
 
   def CleanOutputDir(self):
@@ -192,7 +187,8 @@ class BuildRootBuilder(object):
 
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
-    opts = dict(BR2_PACKAGE_BRUNO_PROD=self.opt.production)
+    opts = dict(BR2_PACKAGE_GOOGLE_PROD=self.opt.production,
+                BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox)
     opts.update(extra)
 
     # We append to the file because the user might have added (unrelated)
@@ -216,12 +212,8 @@ class BuildRootBuilder(object):
     if self.opt.fresh >= 2:
       self.CleanOutputDir()
     self._LogStart('Building app')
-    config_file = ('%s_%s%s_defconfig'
-                   % (self.opt.product_family,
-                      self.opt.model,
-                      self.opt.chip_revision))
-    Info('app: config file is %r', config_file)
-    self.BuildConfig(config_file,
+    Info('app: config file is %r', self.opt.config)
+    self.BuildConfig(self.opt.config,
                      BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
     if self.opt.fresh >= 1:
       self.RemoveStamps()
@@ -232,25 +224,8 @@ class BuildRootBuilder(object):
     self._LogDone('Building app')
 
 
-def LoasTimeLeft():
-  try:
-    loasstat = PopenAndRead(['prodcertstatus', '--check_loas'])
-  except SubprocError:
-    pass
-  else:
-    g = re.match(r'LOAS cert expires in (\d+):(\d+)', loasstat)
-    if g:
-      return int(g.group(1))
-  # otherwise returns None: no valid certificate
-
-
 def CheckLoasCertificate():
-  loas_time_left = LoasTimeLeft()
-  if not loas_time_left:
-    Error('Your LOAS certificate has expired.\n'
-          'Please use prodaccess to renew your LOAS certificate.\n')
-    sys.exit(1)
-  elif loas_time_left < 2:
+  if subprocess.call(['prodcertstatus', '--check_remaining_hours', '2']) != 0:
     Error('Your LOAS certificate is only good for less than 2 hours.\n'
           'Please use prodaccess to renew your LOAS certificate.\n')
     sys.exit(1)
@@ -260,6 +235,12 @@ def main():
   os.chdir(os.path.dirname(sys.argv[0]) + '/..')
   o = options.Options(optspec)
   (opt, _, extra) = o.parse(sys.argv[1:])
+  if '/' in opt.config:
+    o.fatal('--config must be a filename in %s/configs' % os.getcwd())
+  if not os.path.exists(os.path.join('configs', opt.config)):
+    o.fatal('--config %r does not exist' % opt.config)
+  if not opt.platform_only and not os.path.exists('../vendor/sagetv'):
+    o.fatal('../vendor/sagetv not available; you probably need to use -x')
   if extra:
     if len(extra) > 1:
       o.fatal('at most one output directory expected')

@@ -3,10 +3,11 @@ case "$1" in
   start)
     (
       wait-until-created /tmp/startupvideo.done
-      /app/client/runminiclient 2>&1 | logos miniclient 100000 &
+      /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
     ) &
     ;;
   stop)
+    pkillwait -x startupvideo  # if it's running, prevents miniclient from starting up
     pkillwait -x runminiclient
     pkillwait -x miniclient
     pkillwait -x waitpower

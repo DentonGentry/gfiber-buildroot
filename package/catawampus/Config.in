@@ -1,4 +1,5 @@
 config BR2_PACKAGE_CATAWAMPUS
 	bool "catawampus"
+	select BR2_PACKAGE_PY_CURL
 	help
 	  tr-69 management agent.

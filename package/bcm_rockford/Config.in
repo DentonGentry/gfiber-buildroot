@@ -1,4 +1,5 @@
 config BR2_PACKAGE_BCM_ROCKFORD
 	bool "bcm_rockford"
+	select BR2_PACKAGE_BCM_COMMON
 	help
 	  Builds bcm_rockford for Broadcom boards

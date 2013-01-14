@@ -24,6 +24,10 @@ config BR2_PACKAGE_PY_HTTPLIB2
 	bool "HTTPLib2"
 	select BR2_PACKAGE_PY_SETUPTOOLS
 
+config BR2_PACKAGE_PY_CURL
+	bool "py-curl"
+	select BR2_PACKAGE_PY_SETUPTOOLS
+
 source "package/py/py-monotime/Config.in"
 source "package/py/py-yaml/Config.in"
 

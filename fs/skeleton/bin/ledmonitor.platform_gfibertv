@@ -1,0 +1,91 @@
+#!/bin/sh
+#
+# This script monitors CONTROL_PATH folder and decides which is the
+# led sequence that has to be echoed to the LEDS_FILE.
+
+. /etc/utils.sh
+
+# Output file.
+BASE_PATH="/tmp/gpio"
+LEDS_FILE="$BASE_PATH/leds"
+CONTROL_PATH="$BASE_PATH/ledcontrol"
+
+LEDSTATE_FILE="$BASE_PATH/ledstate"
+IP_FILE="$BASE_PATH/ipconnected"
+LINK_DOWN_FILE="$BASE_PATH/link_down"
+ACS_FILE="$CONTROL_PATH/acsconnected"
+OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
+HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
+HALT_FILE="$CONTROL_PATH/halted"
+WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
+
+# Bit sequences.
+ALL_LEDS_OFF="0"
+HALT_LED_ON="1"
+HW_FAIL_LED_ON="1" # solid red
+ACS_LED_ON="4" # solid blue
+IP_LED_ON="4 0 4 0 4 0" # fast blue
+LINK_DOWN_LED_ON="1 0" # blink red
+ANYTHING_ELSE="x2 4 0" # slow blink blue
+
+change_state() {
+  # Check if the new state is different from the previous one
+  if [ -e "$LEDSTATE_FILE" ] && [ "$(cat $LEDSTATE_FILE)" = "$1" ]; then
+    echo "same state: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+  else
+    leds $2
+    atomic $LEDSTATE_FILE "$1"
+    echo "state changed to: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+  fi
+}
+
+is_interface_up() {
+  [ -n "$(ip link show $1 | grep LOWER_UP)" ]
+}
+
+has_ip_address() {
+  [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
+    [ -n "$(ip -f inet addr show dev $1 scope global)" ]
+}
+
+is_link_up() {
+  # Check eth0 (ethernet interface) for storage and tv boxes too, and
+  # eth1 (MoCA interface) only for tv boxes.
+  is_interface_up eth0 || (is-tv-box && is_interface_up eth1)
+}
+
+watch-dir $CONTROL_PATH |
+while read f; do
+
+  if is_link_up; then
+    rm -f "$LINK_DOWN_FILE"
+    if has_ip_address br0; then
+      echo "IP address acquired on br0" >"$IP_FILE"
+    else
+      rm -f "$ACS_FILE" "$IP_FILE"
+    fi
+  else
+    echo "Link down" >"$LINK_DOWN_FILE"
+  fi
+
+  if [ -f "$HALT_FILE" ]; then
+    change_state HALT "$HALT_LED_ON"
+  elif [ -f "$OVERTEMP_FILE" ]; then
+    change_state OVERTEMP "$HW_FAIL_LED_ON"
+  elif [ -f "$HDPAIRING_FILE" ]; then
+    change_state HDPAIR_FAIL "$HW_FAIL_LED_ON"
+  elif [ -f "$BADBLOCK_FILE" ]; then
+    change_state BADBLOCK "$HW_FAIL_LED_ON"
+  elif [ -f "$WAITPOWER_FILE" ]; then
+    change_state POWEROFF "$ALL_LEDS_OFF"
+  elif [ -f "$LINK_DOWN_FILE" ]; then
+    change_state LINKDOWN "$LINK_DOWN_LED_ON"
+  elif [ -f "$ACS_FILE" ]; then
+    change_state ACSCONTACT "$ACS_LED_ON"
+  elif [ -f "$IP_FILE" ]; then
+    change_state IPV6ACQUIRED "$IP_LED_ON"
+  else
+    change_state OTHER "$ANYTHING_ELSE"
+  fi
+done

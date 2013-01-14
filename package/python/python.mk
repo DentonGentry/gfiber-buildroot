@@ -26,7 +26,6 @@ HOST_PYTHON_CONF_OPT += 	\
 	--disable-gdbm		\
 	--disable-bsddb		\
 	--disable-test-modules	\
-	--disable-bz2		\
 	--disable-ssl
 
 HOST_PYTHON_MAKE_ENV = \
@@ -41,7 +40,7 @@ define HOST_PYTHON_CONFIGURE_CMDS
 		CFLAGS="$(HOST_CFLAGS)" \
 		LDFLAGS="$(HOST_LDFLAGS)" \
                 $(HOST_PYTHON_CONF_ENV) \
-		./configure \
+		$(LOGLINEAR) ./configure \
 		--prefix="$(HOST_DIR)/usr" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 		$(HOST_PYTHON_CONF_OPT) \

@@ -3,7 +3,7 @@ pid=$1
 signal=$2
 exe=$3
 
-# TODO(kedong) need to specify different size and location based on platform.
+# TODO(kedong) need to specify different size based on platform.
 out=/user/core.gz
 outdir=$(dirname "$out")
 

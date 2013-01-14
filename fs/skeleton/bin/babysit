@@ -14,6 +14,10 @@ until "$@"; do
     # SIGTERM means someone asked for it to die.
     echo "SIGTERM: '$1' was killed explicitly.  Not retrying." >&2
     exit $RV
+  elif [ "$RV" = 137 ]; then
+    # SIGKILL means someone asked for it to die.
+    echo "SIGKILL: '$1' was killed explicitly.  Not retrying." >&2
+    exit $RV
   fi
   echo "Error: '$1' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2
   sleep $RETRY_TIMEOUT || sleep 1  # just in case $RETRY_TIMEOUT is invalid

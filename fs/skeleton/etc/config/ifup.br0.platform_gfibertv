@@ -1,0 +1,28 @@
+iface=$1
+
+ip link set dev $iface up
+lock=/var/run/dhclient.$iface.lock
+lockfile-create --use-pid $lock
+
+run_dhclient() {
+  local suffix="$1" xargs="$2"
+  local pidfile="/var/run/dhclient$suffix.$iface"
+  local leasefile="/var/run/dhclient$suffix.$iface.lease"
+  local conffile="/etc/dhclient$suffix.conf"
+
+  if [ -e "$pidfile" ]; then
+    kill $(cat "$pidfile") >/dev/null 2>&1
+    rm -f "$pidfile"
+  fi
+  dhclient "$iface" $xargs \
+      -d \
+      -pf "$pidfile" \
+      -lf "$leasefile" \
+      -cf "$conffile" \
+      2>&1 | logos "dhclient$suffix" &
+}
+
+run_dhclient "" ""
+run_dhclient "6" "-6 -S --never-gonna-give-you-up 900"
+
+lockfile-remove $lock

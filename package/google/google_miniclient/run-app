@@ -60,6 +60,9 @@ case $appname in
     [ -z "$opts" ] && opts='http://www.youtube.com/leanback?version=4'
     browsertest $opts 2>&1 | logos youtube
     ;;
+  waitpower)
+    echo 1 > /tmp/poweroff
+    ;;
   *)
     echo "Unknown application." >&2
     exit 1

@@ -1,0 +1,55 @@
+From dc2ffcc925bf51eabc53f1195fa0e3f001c808ed Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 11 Dec 2012 01:42:54 -0500
+Subject: [PATCH] If logging to stderr, don't also log to syslog.
+
+Otherwise we get the same messages twice when we use -v or -d.  This change
+makes dhclient work like other daemons, which log *only* to stderr in -d
+mode.
+---
+ omapip/errwarn.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/omapip/errwarn.c b/omapip/errwarn.c
+index 722c3fc..f459214 100644
+--- a/omapip/errwarn.c
++++ b/omapip/errwarn.c
+@@ -65,7 +65,7 @@ void log_fatal (const char * fmt, ... )
+   va_end (list);
+ 
+ #ifndef DEBUG
+-  syslog (log_priority | LOG_ERR, "%s", mbuf);
++  if (!log_perror) syslog (log_priority | LOG_ERR, "%s", mbuf);
+ #endif
+ 
+   /* Also log it to stderr? */
+@@ -114,7 +114,7 @@ int log_error (const char * fmt, ...)
+   va_end (list);
+ 
+ #ifndef DEBUG
+-  syslog (log_priority | LOG_ERR, "%s", mbuf);
++  if (!log_perror) syslog (log_priority | LOG_ERR, "%s", mbuf);
+ #endif
+ 
+   if (log_perror) {
+@@ -141,7 +141,7 @@ int log_info (const char *fmt, ...)
+   va_end (list);
+ 
+ #ifndef DEBUG
+-  syslog (log_priority | LOG_INFO, "%s", mbuf);
++  if (!log_perror) syslog (log_priority | LOG_INFO, "%s", mbuf);
+ #endif
+ 
+   if (log_perror) {
+@@ -168,7 +168,7 @@ int log_debug (const char *fmt, ...)
+   va_end (list);
+ 
+ #ifndef DEBUG
+-  syslog (log_priority | LOG_DEBUG, "%s", mbuf);
++  if (!log_perror) syslog (log_priority | LOG_DEBUG, "%s", mbuf);
+ #endif
+ 
+   if (log_perror) {
+-- 
+1.7.9.dirty
+
