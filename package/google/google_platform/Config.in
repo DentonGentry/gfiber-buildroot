@@ -22,7 +22,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM
 config BR2_TARGET_GOOGLE_PLATFORM
 	string
 	default "gfibertv"	if BR2_PACKAGE_BRUNO
-	default "prism"		if BR2_PACKAGE_PRISM
+	default "gfiberlt"	if BR2_PACKAGE_PRISM
 
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
