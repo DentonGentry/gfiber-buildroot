@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
+	bool "google_sage_analytics_plugin"
+	help
+	  Sage plug-in for Google Fiber Analytics usage logging.
