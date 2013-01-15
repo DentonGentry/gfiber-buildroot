@@ -15,7 +15,6 @@ UBOOT_SITE    = $(dir $(UBOOT_TARBALL))
 UBOOT_SOURCE  = $(notdir $(UBOOT_TARBALL))
 else ifeq ($(BR2_TARGET_UBOOT_CUSTOM_GIT),y)
 UBOOT_SITE        = $(call qstrip,$(BR2_TARGET_UBOOT_CUSTOM_GIT_REPO_URL))
-UBOOT_SITE_METHOD = git
 else
 # Handle stable official U-Boot versions
 UBOOT_SITE    = ftp://ftp.denx.de/pub/u-boot
@@ -40,6 +39,10 @@ UBOOT_MAKE_OPTS += \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
 	ARCH=$(UBOOT_ARCH)
 
+ifeq ($(BR2_PACKAGE_PRISM),y)
+UBOOT_MAKE_OPTS += SPIBOOT=1 SPI=1 DDR3=1 LARGEKERNEL=1
+endif
+
 # Helper function to fill the U-Boot config.h file.
 # Argument 1: option name
 # Argument 2: option value
@@ -62,6 +65,7 @@ UBOOT_POST_PATCH_HOOKS += UBOOT_APPLY_CUSTOM_PATCHES
 endif
 
 define UBOOT_CONFIGURE_CMDS
+	$(if $(BR2_PACKAGE_PRISM), $(MAKE) -C $(@D) $(UBOOT_MAKE_OPTS) mrproper)
 	$(TARGET_CONFIGURE_OPTS) $(UBOOT_CONFIGURE_OPTS) 	\
 		$(MAKE) -C $(@D) $(UBOOT_MAKE_OPTS)		\
 		$(UBOOT_BOARD_NAME)_config

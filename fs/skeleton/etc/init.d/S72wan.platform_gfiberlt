@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Start WAN ....
+#
+args=$1
+auto_mode=no
+wan_port=$(cat /etc/config/wanport)
+lan_port=$(cat /etc/config/lanport)
+
+set $(cat /proc/cmdline)
+for i in "$@"; do
+  key=${i%%=*}
+  value=${i#*=}
+  case "$key" in
+    AutomationMode) auto_mode=$value ;;
+  esac
+done
+
+case $args in
+  start)
+    echo -n "Starting WAN..."
+    if [ "$auto_mode" != "yes" ]; then
+      # Configure dhclient with the right hostname etc.
+      setup-dhclient
+      echo "[RCS]: Start Interface"
+      ifup $wan_port
+      echo "[RCS]: Configure Data Path"
+      if [ "x" = "x${lan_port}" ]; then
+        lan_arg=""
+      else
+        lan_arg="-l $lan_port"
+      fi
+      (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    else
+      echo "[RCS]: Automation mode"
+      ######################################
+    fi
+    ;;
+  stop)
+    echo -n "Stopping WAN..."
+    ifdown $wan_port
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
+

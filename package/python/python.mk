@@ -153,6 +153,17 @@ define PYTHON_REMOVE_DEVFILES
 	rm -f $(TARGET_DIR)/usr/bin/python-config
 endef
 
+#
+# Disutils files removal
+#
+define PYTHON_REMOVE_DISTUTILS_FILES
+	rm -rf $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/distutils
+endef
+
+ifneq ($(BR2_PACKAGE_PYTHON_DISTUTILS),y)
+PYTHON_POST_INSTALL_TARGET_HOOKS += PYTHON_REMOVE_DISTUTILS_FILES
+endif
+
 ifneq ($(BR2_HAVE_DEVFILES),y)
 PYTHON_POST_INSTALL_TARGET_HOOKS += PYTHON_REMOVE_DEVFILES
 endif

@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Start LAN ....
+#
+lan_port=$(cat /etc/config/lanport)
+
+case "$1" in
+  start)
+    echo -n "Starting LAN..."
+    ifup lo
+    ifup $lan_port
+    ;;
+  stop)
+    echo -n "Stopping LAN..."
+    ifdown lo
+    ifdown $lan_port
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
+
