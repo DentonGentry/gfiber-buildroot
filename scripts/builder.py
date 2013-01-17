@@ -213,8 +213,11 @@ class BuildRootBuilder(object):
       self.CleanOutputDir()
     self._LogStart('Building app')
     Info('app: config file is %r', self.opt.config)
-    self.BuildConfig(self.opt.config,
-                     BR2_PACKAGE_BRUNO_APPS=not self.opt.platform_only)
+    if self.opt.platform_only:
+      self.BuildConfig(self.opt.config,
+                       BR2_PACKAGE_BRUNO_APPS=False)
+    else:
+      self.BuildConfig(self.opt.config)
     if self.opt.fresh >= 1:
       self.RemoveStamps()
     if self.opt.build:
