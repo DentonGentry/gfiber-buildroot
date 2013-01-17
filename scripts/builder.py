@@ -33,7 +33,7 @@ __author__ = 'kedong@google.com (Ke Dong)'
 optspec = """
 builder.py [options...] [output-directory]
 --
-C,config=          buildroot config file [bruno_gfhd100b2_defconfig]
+C,config=          buildroot config file [gftv100_defconfig]
 v,verbose          Increase verbosity
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
