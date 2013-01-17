@@ -19,9 +19,11 @@ HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
 HALT_FILE="$CONTROL_PATH/halted"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
+SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
+UNSECUREBOOT_LED_ON="5" # solid purple
 HALT_LED_ON="1"
 HW_FAIL_LED_ON="1" # solid red
 ACS_LED_ON="4" # solid blue
@@ -55,6 +57,18 @@ is_link_up() {
   is_interface_up eth0 || (is-tv-box && is_interface_up eth1)
 }
 
+is_manufactured_recently() {
+  # Check if the device is made within or after 2013 by checking serial number.
+  hnvram_serial=$(hnvram -r 1ST_SERIAL_NUMBER)
+  serial="${hnvram_serial#1ST_SERIAL_NUMBER=}"
+
+  # Serial number format: GABCYWWSSSSS.
+  # Check if the serial number matches this format (starting from G)
+  # and YWWSSSSS >= 30000000
+  date_manufactured=${serial#G???}
+  [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
+}
+
 watch-dir $CONTROL_PATH |
 while read f; do
 
@@ -69,7 +83,9 @@ while read f; do
     echo "Link down" >"$LINK_DOWN_FILE"
   fi
 
-  if [ -f "$HALT_FILE" ]; then
+  if is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
+    change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
+  elif [ -f "$HALT_FILE" ]; then
     change_state HALT "$HALT_LED_ON"
   elif [ -f "$OVERTEMP_FILE" ]; then
     change_state OVERTEMP "$HW_FAIL_LED_ON"
