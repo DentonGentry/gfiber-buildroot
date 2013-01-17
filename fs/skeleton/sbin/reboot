@@ -1,1 +1,7 @@
-halt
+#!/bin/sh
+# A wrapper for the reboot command that actually logs who called it.
+# We can recover that information later from the persistent log.
+echo "called by: $(psback)" 2>&1 | logos reboot
+# don't put the following inside the logos pipe, or we might reboot
+# before it has processed all its input.
+toolbox reboot

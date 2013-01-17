@@ -1,0 +1,12 @@
+#!/bin/sh
+# Trace the list of parent processes from here back to 'init'.
+pid=$PPID
+out=
+while [ "$pid" -gt 0 ]; do
+  read ppid cmd <<-EOF
+	$(ps -o ppid=,comm= $pid)
+	EOF
+  out=$cmd.$out
+  pid=$ppid
+done
+echo "${out%.}"
