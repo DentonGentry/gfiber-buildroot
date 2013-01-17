@@ -1,0 +1,19 @@
+#!/bin/sh
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+WVSTART "find-acs"
+
+serial=
+WVPASS find-acs TEST
+WVPASSEQ $(find-acs TEST) "http://example.com"
+
+WVPASS find-acs TEST-NON-EXIST
+WVPASS [ -z "$(./find-acs TEST-NON-EXIST)" ]
+
+WVFAIL find-acs ""   # deliberately blank serial number
+if ./runnable hnvram; then
+  WVPASS find-acs  # default system serial number
+fi

@@ -1,13 +1,13 @@
 #!/bin/bash
-
 # Useful shell utility functions.
 
+# Atomically rewrite a file by writing to a temp file and then renaming it.
+# Only rewrites the file if it's different from before.  This helps avoid
+# unnecessary flash churn.
 atomic() {
   local filename="$1" newval="$2"
   shift
 
-  # Only rewrite the file if it's different from before.  This helps avoid
-  # unnecessary flash churn.
   if [ ! -e $filename ] || [ "$(cat $filename)" != "$newval" ]; then
     rm -f $filename.new
     echo "$@" >$filename.new
@@ -15,10 +15,21 @@ atomic() {
   fi
 }
 
-#
-# Check whether the system has wifi.
-#
+
+# Returns true if the system has wifi.
 has_wifi() {
   WIFI_IF="eth2"
   test -f "/sys/class/net/$WIFI_IF/address"
+}
+
+
+# Returns true if the string $1 starts with the string $2.
+startswith() {
+  [ "${1#$2}" != "$1" ]
+}
+
+
+# Returns true if the string $1 ends with the string $2.
+endswith() {
+  [ "${1%$2}" != "$1" ]
 }

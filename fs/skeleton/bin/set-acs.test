@@ -1,0 +1,162 @@
+#!/bin/sh
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+WVSTART "set-acs"
+
+runnable mktemp &&
+tmpdir=$(mktemp -d set-acsXXXXXXXXXX) ||
+tmpdir=/tmp/set-acs.$$
+mkdir -p "$tmpdir"
+cleanup() {
+  echo "Temp files:" >&2
+  find "$tmpdir" | while read name; do
+    [ -f "$name" ] && echo "$name: $(cat $name)" >&2
+  done
+  echo "---" >&2
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+export configdir="$tmpdir/conf" cwmpdir="$tmpdir/cwmp" find_acs=false
+export DEFAULT_URL=https://acs.prod.gfsvc.com/default/cwmp
+
+wipe() {
+  rm -rf "$configdir" "$cwmpdir"
+}
+
+wipe
+WVFAIL set-acs cwmp bork
+WVFAIL set-acs dhcp bork
+WVFAIL set-acs manual bork
+
+# If the find-acs service fails and there are no other configured URLs,
+# we shouldn't even assume the hardcoded default ACS URL - something
+# fishy is going on, and we should probably wait until it sorts itself out.
+export nowcmd='echo 0'
+export find_acs='false'
+WVFAIL set-acs print
+WVPASSEQ "$(set-acs print)" ""
+
+export find_acs='printf http://fake-find-acs'
+WVPASS set-acs bounce
+WVPASSEQ "$(set-acs print)" http://fake-find-acs
+
+export find_acs='printf http://spork'
+WVPASSEQ "$(set-acs print)" http://fake-find-acs  # cached
+
+WVPASS set-acs bounce
+WVPASSEQ "$(set-acs print)" http://spork
+
+export find_acs='false'  # pretend the server is not responding
+WVPASSEQ "$(set-acs print)" http://spork  # cached
+
+export nowcmd='echo 1000'  # short time passes
+WVPASSEQ "$(set-acs print)" http://spork  # still cached
+
+export nowcmd='echo 10000'  # hold time passes, cache not expired
+WVPASSEQ "$(set-acs print)" http://spork  # failure doesn't overwrite cache
+
+export nowcmd='echo 20000'  # hold time passes, cache not expired
+export find_acs='printf http://spork2'
+WVPASSEQ "$(set-acs print)" http://spork2  # cache refreshed
+
+export nowcmd='echo 2000000'  # long time passes
+export find_acs='true'
+WVPASSEQ "$(set-acs print)" "$DEFAULT_URL"  # cache expired
+
+export find_acs='printf https://quark'
+WVPASSEQ "$(set-acs print)" "$DEFAULT_URL"  # hold time not expired
+
+export nowcmd='echo 2005000'  # short time passes
+WVPASSEQ "$(set-acs print)" "https://quark"
+
+export find_acs='printf http://bork'
+WVPASSEQ "$(set-acs print)" "https://quark"
+
+echo -n http://dhcp >$configdir/acs_url.dhcp
+WVPASSEQ "$(set-acs print)" http://dhcp
+
+WVPASS set-acs dhcp http://dhcp2
+WVPASSEQ "$(set-acs print)" http://dhcp2
+
+WVPASS set-acs manual http://manual
+WVPASSEQ "$(set-acs print)" http://manual
+
+WVPASS set-acs bless http://manual
+WVPASS set-acs cwmp http://cwmp
+WVPASSEQ "$(set-acs print)" http://cwmp
+
+WVPASS set-acs timeout http://dhcp2
+WVPASSEQ "$(set-acs print)" http://cwmp
+
+WVPASS set-acs timeout http://cwmp
+WVPASSEQ "$(set-acs print)" http://manual
+
+WVPASS set-acs timeout http://manual  # manual setting never times out
+WVPASSEQ "$(set-acs print)" http://manual
+
+WVPASS set-acs manual clear
+WVPASSEQ "$(set-acs print)" https://quark
+
+WVPASS set-acs bounce
+WVPASSEQ "$(set-acs print)" http://bork
+
+wipe
+
+WVPASS set-acs dhcp http://1
+WVPASSEQ "$(set-acs print)" http://1
+
+WVPASS set-acs bless http://1
+WVPASS set-acs cwmp http://2
+WVPASSEQ "$(set-acs print)" http://2
+
+WVPASS set-acs timeout http://2
+WVPASSEQ "$(set-acs print)" http://1
+
+WVPASS set-acs timeout http://1
+WVPASSEQ "$(set-acs print)" http://1  # can't timeout a blessed URL
+
+WVPASS set-acs cwmp http://1a
+WVPASSEQ "$(set-acs print)" http://1a
+
+WVPASS set-acs cwmp http://1b
+WVPASSEQ "$(set-acs print)" http://1b
+
+WVPASS set-acs bless http://1b  # implicitly blesses http://1
+WVPASSEQ "$(set-acs print)" http://1b
+
+WVPASS set-acs cwmp http://2
+WVPASSEQ "$(set-acs print)" http://2
+
+WVPASS set-acs bless http://2  # overwrites http://1b
+WVPASS set-acs cwmp http://3   # 2 redirects to 3
+WVPASS set-acs dhcp http://4   # dhcp delivers a new setting: takes precedence
+WVPASSEQ "$(set-acs print)" http://4
+
+WVPASS set-acs dhcp6 http://x1  # dhcp6 is even higher precedence
+WVPASSEQ "$(set-acs print)" http://x1
+
+WVPASS set-acs timeout http://x1  # dhcp6 didn't work
+WVPASSEQ "$(set-acs print)" http://4
+
+WVPASS set-acs timeout http://4  # dhcp new setting didn't work, fall back
+WVPASSEQ "$(set-acs print)" http://3
+
+WVPASS set-acs timeout http://3  # prior redirect also didn't work
+WVPASSEQ "$(set-acs print)" http://2
+
+WVPASS set-acs timeout http://2  # can't timeout a blessed URL
+WVPASSEQ "$(set-acs print)" http://2
+
+WVPASS set-acs dhcp clear
+WVPASSEQ "$(set-acs print)" http://bork
+
+WVPASS set-acs timeout http://bork  # now *everything* timed out: auto reset
+WVPASSEQ "$(set-acs print)" http://x1  # restarts at the top
+
+WVPASS set-acs timeout http://x1
+WVPASSEQ "$(set-acs print)" http://bork
+
