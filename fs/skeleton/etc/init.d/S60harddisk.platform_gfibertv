@@ -33,11 +33,23 @@ case "$1" in
         fi
       fi
       echo "Mounting SATA device"
+      failure_media=0
+      failure_backup=0
       if [ -e /dev/sda1 ]; then
         mount -o noatime,barrier=0,data=writeback,noexec,nosuid,nodev -t ext4 /dev/sda1 /var/media
-        [ -e /dev/sda2 ] && mount -o noatime,noexec,nosuid,nodev -t ext4 /dev/sda2 /var/backup
+        failure_media="$?"
+        if [ -e /dev/sda2 ]; then
+          mount -o noatime,noexec,nosuid,nodev -t ext4 /dev/sda2 /var/backup
+          failure_backup="$?"
+        fi
       elif [ -h /dev/sda ]; then
         mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda /var/media
+        failure_media="$?"
+      fi
+      if [ "$failure_media" != 0 ] || [ "$failure_backup" != 0 ]; then
+        echo "HDD mounting error."
+        echo 1 > /tmp/gpio/ledcontrol/hdd_mount_err
+        exit 0;
       fi
     fi
     ;;
