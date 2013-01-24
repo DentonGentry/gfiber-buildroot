@@ -33,7 +33,7 @@ repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 echo -n $(git describe --match=''"$PLATFORM_SUFFIX"'-*') \
   >"$TARGET_DIR/etc/version" 2>/dev/null
 if [ "$PROD" != "y" ]; then
-  (echo -n '-'; whoami | cut -c1-2) >>$(TARGET_DIR)/etc/version;
+  (echo -n '-'; whoami | cut -c1-2) >>$TARGET_DIR/etc/version;
 fi
 cp "$TARGET_DIR/etc/version" "$BINARIES_DIR/version"
 (d="$(git log --date=iso --pretty=%ad -1)"; date +%s --date="$d"; echo "$d") \
