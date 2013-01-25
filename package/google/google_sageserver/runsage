@@ -71,7 +71,7 @@ babysit 10 ./skelmir/siege \
     -Djava.library.path=. \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
-    -Xmx384m \
+    -Xmx512m \
     -verbose:gc \
     $SIEGEOPT \
     sage.Sage 0 0 "$CONNECT_STRING" \
