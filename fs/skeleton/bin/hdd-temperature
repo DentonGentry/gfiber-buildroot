@@ -1,0 +1,37 @@
+#!/bin/sh
+
+
+# First try the Hitachi-specific SENSE CONDITION, which does
+# not perturb the drive operation.
+temperature=$(
+  hdparm -H $1 2>/dev/null | (
+    while IFS=":" read text temperature junk; do
+      if [ "${text#*celsius}" != "$text" ]; then
+        # trim "    55"  down to just "55".
+        echo "$temperature" | (IFS=" " read temp junk; echo "$temp")
+      fi
+    done
+  )
+)
+if [ -n "$temperature" ]; then
+  echo "$temperature"
+  exit 0
+fi
+
+# Fall back to reading the SMART data if SENSE CONDITION does not work.
+temperature=$(
+  smartctl -l scttempsts $1 2>/dev/null | (
+    while IFS=":" read text temperature junk; do
+      if [ "$text" = "Current Temperature" ]; then
+        # trim "    55 Celsius"  down to just "55".
+        echo "$temperature" | (IFS=" " read temp junk; echo "$temp")
+      fi
+    done
+  )
+)
+if [ -n "$temperature" ]; then
+  echo "$temperature"
+  exit 0
+fi
+
+exit 1
