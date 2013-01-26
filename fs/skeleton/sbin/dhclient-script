@@ -44,6 +44,10 @@ routable_ifc() {
   [ "$interface" != "$wifi_ifc" ]
 }
 
+is_ipv6() {
+  endswith "$reason" "6"
+}
+
 merge_resolv_conf() {
     # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
     # and then also add /tmp/resolv.conf.dhclient6
@@ -91,14 +95,14 @@ make_resolv_conf() {
   fi
 }
 
-set_acs() {
-  [ -x /bin/set-acs ] && /bin/set-acs network_up
-}
-
 make_cwmp_files() {
   if [ -n "$new_cwmp_acs_url" ]; then
     log "cwmp dhcp acs '$new_cwmp_acs_url'"
-    set-acs dhcp "$new_cwmp_acs_url"
+    if is_ipv6; then
+      set-acs dhcp6 "$new_cwmp_acs_url"
+    else
+      set-acs dhcp "$new_cwmp_acs_url"
+    fi
   fi
   if [ -n "$new_cwmp_provisioning_code" ]; then
     atomic /tmp/cwmp/provisioning_code "$new_cwmp_provisioning_code"
@@ -265,7 +269,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
   make_resolv_conf
   make_cwmp_files
   make_etc_hosts
-  set_acs
+  set-acs bounce
   exit_with_hooks 0
 fi
 

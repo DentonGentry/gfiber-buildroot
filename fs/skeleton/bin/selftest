@@ -1,0 +1,9 @@
+#!/bin/sh
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+
+WVSTART "selftest"
+for d in ./*.test; do
+  WVPASS "$d"
+done

@@ -1,191 +1,425 @@
 #!/bin/sh
+#
+# This script implements the rules for choosing a CWMP ACS URL from among
+# the several possibilities. It may not strictly comply with the CWMP specs,
+# because we're aiming higher than they are in terms of reliability.
+#
+# Principles:
+#  - In the field, reproduceability is the most important thing. Given a
+#    choice between an URL that seems not to work and one that's known to
+#    work, we give up quickly on the one that seems not to work, and don't
+#    come back.  We must avoid bouncing back and forth ("flapping") at all
+#    costs, and really, the number of devices that will a) need to switch
+#    ACS URLs, and b) do so while the new server is down, is very low.
+#  - You can't trust the DHCP server, but it might provide useful hints.
+#  - Other than manual overrides, no URL is trustworthy until we've
+#    successfully made a session with it.
+#  - Other than possibly resetting some half-finished timeouts, rebooting
+#    should not change the behaviour.
+#
+# Terminology:
+#  - A "timed out" URL is one that cwmpd tried, but wasn't able to establish
+#    a session for a "long time."
+#  - A "blessed" URL is one that cwmpd tells us definitely worked. Once an URL
+#    is blessed, it can never be timed out or unblessed (unless it is
+#    replaced by a different blessed URL).
+#
+# Config files:
+#  for $source in ('acs_url' + ['', '.dhcp6', '.dhcp', 'find-acs']):
+#  - $source - a non-timed-out, non-blessed URL
+#  - $source.blessed - a blessed URL
+#  - $source.timed_out - a timed-out URL
+#  - $source.redir - the most recent not-yet-blessed hop in the chain
+#      starting at the not-yet-blessed $source.
+#  - $source.blessed.redir - the most recent not-yet-blessed hop in the chain
+#      starting at $source.blessed.
+#  - $source.blessed.redir.blessed - the most recent blessed hop in the chain
+#      starting at $source.blessed.
+#
+# Precedence (most to least important):
+#  1. CWMP redirect (set ManagementServer.URL) that isn't timed out and
+#     which redirects one of the URLs from the following steps.
+#  2. Manual override.
+#  3. DHCP6 URL that isn't timed out.
+#  4. DHCP6 URL that is blessed.
+#  5. DHCP4 URL that isn't timed out.
+#  6. DHCP4 URL that is blessed.
+#  7. (find-acs or default) URL.
+#  8. If all else fails, un-timeout all URLs and start over.
+#
+# Use cases that must work:
+#  1. Flakey DHCP server that alternates between working and non-working URLs.
+#       -- we lock onto the working one and start ignoring the non-working.
+#  2. DHCP6 and DHCP4 servers that disagree on the URL.
+#       -- DHCP6 gets precedence, but if it's wrong, we use DHCP4.
+#  3. Moving a box from one network to another
+#       -- keep the old ACS URL, unless the new network specifies another
+#          one explicitly *and* the new one actually works.
+#  4. A server is working, but redirects us elsewhere and then dies.
+#       -- We must remember the new URL forever, even if the original was
+#          a manual override or DHCP or find-acs URL.
+#  5. A server redirects us elsewhere, but elsewhere doesn't work.
+#       -- We must fall back to the un-redirected URL.
+#  6. A server from find-acs redirects us elsewhere, then DHCP starts
+#     providing a new URL.
+#       -- DHCP takes precedence over find-acs, so we try it out.  But if
+#          the DHCP URL times out, we need to fall back to the already-
+#          redirected find-acs URL.
+#  7. An ACS URL that used to be valid is no longer accepted by a newer
+#     version of cwmpd. (This happened when we started disallowing http://
+#     URLs in an update.)
+#       -- set-acs can't fix this; it would be wrong to abandon a blessed URL
+#          just because it doesn't work right now, and we don't know *why*
+#          it doesn't work right now; since it worked before, we must assume
+#          the problem is transient.  The correct behaviour is to reject the
+#          software update and fall back to the old version, because it's a
+#          bug if the new version can't handle the old ACS.  (More
+#          generally, it's a bug if you could talk to the ACS before, and
+#          upgrading breaks it.) Then, once the system is working again,
+#          the ACS can provide a new software version with an intentional
+#          workaround, whatever that may be.
+#
+# See? Totally obvious.
+#
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/utils.sh
 
-# set-acs <source> ACS_URL
-# Where source can be:
-#  cwmp - ACS set ManagementServer.URL
-#  dhcp - received an ACS_URL option from DHCP/DHCP6.
-#  init - deprecated
-#  manual - manually instantiate an ACS URL
-#  network_up - retry querying find-acs
+# If find-acs fails to respond, retry it frequently.
+FINDACS_FAIL_HOLDOFF=$((5*60))
 
-. /etc/utils.sh
+# If find-acs responds, we don't need to retry for a while.
+FINDACS_OK_HOLDOFF=$((59*60))
 
-do_curl() {
-  curl -sSgfL --retry 3 --retry-max-time 60 "$@"
+
+[ -n "$configdir" ] || configdir=/config/tr69
+[ -n "$cwmpdir" ] || cwmpdir=/tmp/cwmp
+[ -n "$find_acs" ] || find_acs=find-acs
+[ -n "$nowcmd" ] || nowcmd='date +%s'
+
+qlog() {
+  echo "$@" >&2
 }
 
 log() {
-  echo "set-acs:" "$@" >&2
+  qlog "set-acs:" "$@" >&2
 }
 
 usage() {
-  log "Usage: $0 init"
-  log "   or: $0 {cwmp | dhcp | manual} {ACS_URL | clear}"
-  log "   or: $0 timeout ACS_URL"
-  log "   or: $0 print"
-  log "   or: $0 network_up"
+  local exe="$(basename "$0")"
+  qlog "Usage: $exe print                   -- print the current best ACS URL"
+  qlog "   or: $exe printall                -- print all known ACS URLs"
+  qlog "   or: $exe timeout ACS_URL         -- indicate this URL timed out"
+  qlog "   or: $exe bless ACS_URL           -- confirm this URL really works"
+  qlog "   or: $exe cwmp <ACS_URL|clear>    -- ACS set ManagementServer.URL"
+  qlog "   or: $exe manual <ACS_URL|clear>  -- manually force an ACS URL"
+  qlog "   or: $exe dhcp6 <ACS_URL|clear>   -- DHCPv6 provided URL"
+  qlog "   or: $exe dhcp <ACS_URL|clear>    -- DHCPv4 provided URL"
+  qlog "   or: $exe bounce                  -- network bounced, retry find-acs"
   exit 1
 }
 
 is_http_url() {
-  [ "${1#http://}" != "$1" ] ||
-  [ "${1#https://}" != "$1" ]
-}
-
-valid_acs_file() {
-  urlfile="$1"
-  [ -e "$urlfile" ] &&
-  read url junk <"$urlfile" &&
-  is_http_url "$url" && echo "$url"
+  startswith "$1" "http://" ||
+  startswith "$1" "https://"
 }
 
 check_for_url() {
-  is_http_url "$1" || [ "$1" = "clear" ] || usage
+  # Abort if $1 is not a valid URL.
+  local url="$1"
+  is_http_url "$url" || [ "$url" = "clear" ] || {
+    log "invalid url: '$url'"
+    exit 1
+  }
+}
+
+readword() {
+  # Read the first word in a file and echo it to stdout, including a newline.
+  # Returns 0 (true) if the word was nonempty, else nonzero (false).
+  local file="$1" word= junk=
+  [ -e "$file" ] &&
+  read word junk <"$file"
+  [ -n "$word" ] && echo "$word"
+  # if $word is empty, returns nonzero (false)
+}
+
+source_list() {
+  echo "manual" "$configdir/acs_url"  # backward compat: no .manual extension
+  echo "dhcp6" "$configdir/acs_url.dhcp6"
+  echo "dhcp" "$configdir/acs_url.dhcp"
+  echo "find-acs" "$configdir/acs_url.find-acs"
+}
+
+find_source_for_url() {
+  # echo the name and filename of the first source that matches the given URL.
+  local wanturl="$1"
+  source_list | {
+    while read name file; do
+      url=$(readword "$file" ||
+            readword "$file.redir" ||
+            readword "$file.blessed.redir" ||
+            readword "$file.blessed.redir.blessed" ||
+            readword "$file.blessed" ||
+            readword "$file.timed_out") &&
+      [ "$wanturl" = "$url" ] &&
+      echo "$name" "$file" &&
+      exit 0
+    done
+    exit 1  # no match
+  }
+}
+
+set_timed_out() {
+  # we intentionally do not support timing out blessed URLs, because blessing
+  # is permanent.
+  local url="$1"
+  log "finding source for '$url'"
+  find_source_for_url "$url" | while read name file; do
+    log "timeout: $name=$file"
+    if [ "$(readword "$file")" = "$url" ]; then
+      mv "$file" "$file.timed_out"
+    elif [ "$(readword "$file.redir")" = "$url" ]; then
+      # If a redirect from an ACS URL doesn't work, we just forget it;
+      # we don't store the fact that it was timed out. That's because we'll
+      # fall back to the original ACS URL, which will probably just try to
+      # redirect us again, and we'll have to obey, even if it times out
+      # repeatedly. (If the redirected-to URL is permanently broken,
+      # probably the redirecting-from URL will stop pointing us there sooner
+      # or later, but that's not for us to decide.)
+      rm -f "$file.redir"
+    elif [ "$(readword "$file.blessed.redir")" = "$url" ]; then
+      rm -f "$file.blessed.redir"
+    fi
+  done
+}
+
+set_all_not_timed_out() {
+  source_list | while read name file; do
+    [ -e "$file.timed_out" ] &&
+    [ ! -e "$file" ] &&
+    mv "$file.timed_out" "$file"
+  done
+}
+
+bless() {
+  # declare that we have successfully connected to this URL.  From now on it
+  # can never time out, and lower-priority URLs will never be tried.
+  local url="$1"
+  find_source_for_url "$url" | while read name file; do
+    log "bless: $name=$url"
+    if [ "$(readword "$file.redir")" = "$url" ]; then
+      # blessing a redirect from unblessed base URL.  This blesses both
+      # the source and destination URLs, since we know they must have both
+      # worked at least well enough to get this far.
+      mv "$file.redir" "$file.blessed.redir.blessed"
+      mv "$file" "$file.blessed"
+    elif [ "$(readword "$file.blessed.redir")" = "$url" ]; then
+      # blessing a redirect from a blessed base URL.
+      rm -f "$file" "$file.redir"
+      mv "$file.blessed.redir" "$file.blessed.redir.blessed"
+    elif [ "$(readword "$file.blessed")" != "$url" ]; then
+      # blessing a fresh non-redirected URL
+      rm -f "$file" "$file.redir" \
+          "$file.blessed.redir" "$file.blessed.redir.blessed"
+      atomic "$file.blessed" "$url"
+    fi
+  done
 }
 
 update_acs_file() {
-  file=$1
-  acs=$2
-  if [ "$acs" = "clear" ]; then
-    rm -f $file
-  else
-    atomic $file "$acs"
-  fi
-}
-
-# Remove ACS sources which reference the unreachable ACS
-remove_failed_acs() {
-  failed_acs=$1
-  for file in /config/tr69/acs_url.cwmp /tmp/cwmp/acs_url.dhcp; do
-    read url junk <$file && [ "$url" = "$failed_acs" ] && rm -f $file
+  # set a new value for the given source name.
+  # If the URL was previously neither timed out nor blessed as an URL for
+  # that source, then it's added as a new one to try.
+  local wantname="$1" url="$2"
+  check_for_url "$url"
+  source_list | while read name file; do
+    if [ "$wantname" = "$name" ]; then
+      if [ "$url" = "clear" ]; then
+        # only humans are expected to ever try to clear an URL... so it's
+        # okay to just clear it out completely, including blessed URLs.
+        log "clearing $name"
+        rm -f "$file" "$file.timed_out" "$file.blessed" "$file.redir" \
+            "$file.blessed.redir" "$file.blessed.redir.blessed"
+      elif [ "$name" = "manual" ]; then
+        # manual URLs are always blessed
+        atomic "$file.blessed" "$url"
+      elif [ "$(readword $file.blessed)" != "$url" ] &&
+           [ "$(readword $file)" != "$url" ] &&
+           [ "$(readword $file.timed_out)" != "$url" ]; then
+        rm -f "$file.redir"
+        atomic "$file" "$url"
+      fi
+    fi
   done
-  if read url junk </tmp/cwmp/acs_url.find-acs  &&
-  [ "$url" = "$failed_acs" ]; then
-    rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
-  fi
 }
 
 # Do not try to access find-acs for $1 seconds
 hold_off() {
-  if [ $1 -gt 0 ]; then
-    now=$(date +%s)
-    hold_off=$(( $now  + $1))
-    atomic /tmp/cwmp/find-acs_hold_off $hold_off
+  if [ "$1" -gt 0 ]; then
+    now=$($nowcmd)
+    hold_off=$(($now  + $1))
+    atomic $cwmpdir/find-acs_hold_off "$hold_off"
   else
-    rm -f /tmp/cwmp/find-acs_hold_off
+    rm -f $cwmpdir/find-acs_hold_off
   fi
 }
 
 # Is it ok to try accessing find-acs now?
 holding_off() {
-  now=$(date +%s)
-  hold_off=0
-  [ -e /tmp/cwmp/find-acs_hold_off ] &&
-  read hold_off junk < /tmp/cwmp/find-acs_hold_off
+  now=$($nowcmd)
+  hold_off=$(readword "$cwmpdir/find-acs_hold_off" || echo 0)
   if ! [ "$hold_off" -gt 0 ]; then
     hold_off=0
   fi
   [ $now -lt $hold_off ]
 }
 
-do_network_up() {
+do_bounce() {
   # A previously failed HTTP request might be successful now.
   hold_off 0
 }
 
-update_find_acs_url() {
-  atomic /tmp/cwmp/acs_url.find-acs "$1"
-  atomic /tmp/cwmp/acs_url.find-acs.timestamp $(date +%s)
-}
-
-# Let URLs we received from find-acs expire after 48 hours
-rm_old_find_acs_url() {
-  now=$(date +%s)
-  t=0
-  [ -e /tmp/cwmp/acs_url.find-acs.timestamp ] &&
-  read t junk </tmp/cwmp/acs_url.find-acs.timestamp
-  if [ $now -gt $((t + 48 * 60 * 60)) ]; then
-    rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
-  fi
-}
-
-find_acs() {
-  rm_old_find_acs_url
+maybe_find_acs() {
+  # try the find-acs service if we haven't tried it too recently already.
   if ! holding_off; then
-    serial=$(hnvram -br 1ST_SERIAL_NUMBER)
-    if [ -e /etc/ssl/private/device.key -a -e /etc/ssl/certs/device.pem ]; then
-      tmp=$(do_curl --key /etc/ssl/private/device.key \
-        --cert /etc/ssl/certs/device.pem \
-        "https://config.cpe.gfsvc.com/find/$serial")
-    else
-      tmp=$(do_curl "https://config.cpe.gfsvc.com/find/$serial")
-    fi
-    if [ $? -eq 0 ]; then
-      hold_off $(( 60*60*24 ))
+    local tmp=
+    if tmp="$($find_acs)"; then
+      # server succeeded, so we can wait longer before the next try. The
+      # answer would only change in case of an actual reconfiguration.
+      hold_off "$FINDACS_OK_HOLDOFF"
+
       if is_http_url "$tmp"; then
-        update_find_acs_url "$tmp"
+        update_acs_file "find-acs" "$tmp"
       else
-        rm -f /tmp/cwmp/acs_url.find-acs /tmp/cwmp/acs_url.find-acs.timestamp
+        # we didn't get a valid URL from the server, so let's use the
+        # default one.
+        #
+        # we intentionally store the default URL in the config file, which
+        # seems redundant since it's hardcoded anyway, but it's actually
+        # important in this case.  If the hardcoded default ever changes in
+        # a different version of the software, we want to prevent
+        # accidentally jumping to a new ACS immediately upon upgrading, so
+        # we have to record which one we had been using previously, so it
+        # can be blessed.  If the find-acs code suggests a new value, we
+        # will still try it, but fall back to the prior blessed one in case
+        # it times out.
+        update_acs_file "find-acs" "https://acs.prod.gfsvc.com/default/cwmp"
       fi
     else
-      hold_off $(( 5*60 ))
+      # server actually failed (as opposed to just a blank entry).  That
+      # means we have to try again sooner rather than later.
+      hold_off "$FINDACS_FAIL_HOLDOFF"
     fi
   fi
 }
 
-do_print() {
-  url=
-  src=
-  if url=$(valid_acs_file /config/tr69/acs_url.cwmp); then
-    src="CWMP ACS"
-  elif url=$(valid_acs_file /config/tr69/acs_url); then
-    src="Manual ACS"
-  elif url=$(valid_acs_file /tmp/cwmp/acs_url.dhcp); then
-    src="DHCP ACS"
-  elif find_acs ; url=$(valid_acs_file /tmp/cwmp/acs_url.find-acs); then
-    src="find-acs ACS"
-  else
-    url="https://acs.prod.gfsvc.com/default/cwmp"
-    src="Default ACS"
+check_redirects() {
+  # Consider if there are any CWMP ManagementServer.URL redirects from the
+  # given URL to another one - possibly including chains of redirects from
+  # server A, to B, to C, and so on.
+  local name="$1" file="$2" url="$3" redirect_to=
+  if [ ! -e "$configdir/acs_url.cwmp.migrated" ] &&
+     [ -e "$configdir/acs_url.cwmp" ]; then
+    # acs_url.cwmp is old-style.  We have to leave it in place for backward
+    # compatibility, but we no longer create it, and we can't trust it
+    # completely, because it's flawed: it doesn't correctly support redirect
+    # chains, and it doesn't specify which url it redirects *from*, so if it
+    # redirected from a low-priority URL (like find-acs) and a higher-priority
+    # one appears (like DHCP) it's impossible to know whether it's okay to
+    # use the new DHCP one. Thus, we do a one-time migration of the old
+    # value to the new style, assuming that it was redirecting the highest-
+    # priority current URL (which is probably true).
+    redirect_to=$(readword "$configdir/acs_url.cwmp")
+    atomic "$file.redir" "$redirect_to"
+    atomic "$configdir/acs_url.cwmp.migrated" "done"
   fi
-  log Using "$src" at "$url"
-  echo "$url"
+
+  # even if the original $stat is blessed, the url in $file.redir
+  # is one we're still trying out. (it's a redirect from a blessed or non-
+  # blessed URL to a definitely non-blessed one)
+  redirect_to=$(readword "$file.redir") &&
+  echo "try $redirect_to"
+
+  redirect_to=$(readword "$file.redir.blessed") &&
+  echo "blessed $redirect_to"
+}
+
+_consider() {
+  # See if we can find an url in the given filename.
+  local stat="$1" name="$2" fileext="$3" url=
+  if url=$(readword "$fileext"); then
+    check_redirects "$name" "$fileext" "$url" |
+    while read to_stat to_url; do
+      log "Redirect: $to_stat/$name=$to_url"
+      echo "$to_stat" "$name" "$fileext" "$to_url"
+    done
+    echo "$stat" "$name" "$fileext" "$url"
+    log "Available: $stat/$name=$url"
+    return 0
+  fi
+  return 1
+}
+
+all_urls() {
+  source_list | {
+    any=
+    while read name file; do
+      if [ "$name" = "find-acs" ] && [ -z "$any" ]; then
+        maybe_find_acs
+      fi
+      _consider "try" "$name" "$file" && any=1
+      _consider "blessed" "$name" "$file.blessed" && any=1
+    done
+    if [ -z "$any" ]; then
+      set_all_not_timed_out
+      source_list | while read name file; do
+        _consider "try" "$name" "$file"
+        _consider "blessed" "$name" "$file.blessed"
+      done
+    fi
+  }
+}
+
+best_url() {
+  all_urls | {
+    while read stat name file url; do
+      # flush output so all_urls can finish logging results
+      while read junk; do :; done
+      log "Using: $stat/$name=$url"
+      echo "$url"
+      exit 0
+    done
+    exit 1  # no matches
+  }
+}
+
+redirect_current_url_to() {
+  # TODO(apenwarr): redirects should specify $from also, not just $to
+  #  Otherwise we create potential race conditions where we end up
+  #  redirecting from the wrong url.
+  local redirect_to="$1"
+  check_for_url "$redirect_to"
+  all_urls | while read stat name file url; do
+    atomic "$file.redir" "$redirect_to"
+    break
+  done
 }
 
 main() {
-  mkdir -p /tmp/cwmp /config/tr69
-  cmd="$1"
-  url="$2"
+  mkdir -p "$cwmpdir" "$configdir"
+  local cmd="$1" url="$2"
 
   case "$cmd" in
-    cwmp)
-      check_for_url "$url"
-      update_acs_file /config/tr69/acs_url.cwmp "$url"
-      ;;
-    dhcp)
-      check_for_url "$url"
-      update_acs_file /tmp/cwmp/acs_url.dhcp "$url"
-      ;;
-    init)
-      # No op
-      ;;
-    manual)
-      check_for_url "$url"
-      update_acs_file /config/tr69/acs_url "$url"
-      ;;
-    timeout)
-      check_for_url "$url"
-      remove_failed_acs "$url"
-      ;;
-    network_up)
-      do_network_up
-      ;;
-    print)
-      do_print
-      ;;
-    *)
-      usage
-      ;;
+    cwmp) redirect_current_url_to "$url" ;;
+    dhcp6) update_acs_file "dhcp6" "$url" ;;
+    dhcp) update_acs_file "dhcp" "$url" ;;
+    manual) update_acs_file "manual" "$url" ;;
+    timeout) set_timed_out "$url" ;;
+    bless) bless "$url" ;;
+    bounce) do_bounce ;;
+    printall) all_urls ;;
+    print) best_url ;;
+    *) usage ;;
   esac
 }
 

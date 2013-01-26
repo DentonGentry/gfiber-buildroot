@@ -1,0 +1,39 @@
+#!/bin/sh
+# Query the find-acs service for this serial number to see if there is a
+# suggested ACS URL to use.
+mydir=$(dirname "$0")
+cd "$mydir"
+PATH=$PATH:.
+
+if [ "$#" -ge 1 ]; then
+  serial=$1
+elif [ -z "$serial" ]; then
+  serial=$(serial)
+fi
+
+usage() {
+  echo "Usage: $0 [serial]" >&2
+  echo "  If no serial number is given, uses this device's serial number." >&2
+  exit 1
+}
+
+do_curl() {
+  local keyargs=
+  if [ -e /etc/ssl/private/device.key -a \
+       -e /etc/ssl/certs/device.pem ]; then
+    keyargs="
+      --key /etc/ssl/private/device.key \
+      --cert /etc/ssl/certs/device.pem
+    "
+  fi
+  curl -sSgfL --retry 3 --retry-max-time 60 $keyargs "$@"
+}
+
+out=$(do_curl "https://config.cpe.gfsvc.com/find/$serial")
+if [ "$?" = 0 ]; then
+  echo "$out"
+  exit 0  # success
+else
+  echo "$out" >&2
+  exit 1  # error, and no stdout produced
+fi
