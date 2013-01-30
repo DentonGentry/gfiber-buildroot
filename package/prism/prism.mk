@@ -11,6 +11,7 @@ define PRISM_BUILD_CMDS
 	$(MAKE) -C $(@D)/cmds && \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	HOSTDIR=$(HOST_DIR) \
+	CROSS_COMPILE=$(TARGET_CROSS) \
 	$(MAKE) -C $(@D)/prism
 endef
 
