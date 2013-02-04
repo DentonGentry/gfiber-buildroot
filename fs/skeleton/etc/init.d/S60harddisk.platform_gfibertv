@@ -35,15 +35,16 @@ case "$1" in
       echo "Mounting SATA device"
       failure_media=0
       failure_backup=0
+      FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
       if [ -e /dev/sda1 ]; then
-        mount -o noatime,barrier=0,data=writeback,noexec,nosuid,nodev -t ext4 /dev/sda1 /var/media
+        mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
         failure_media="$?"
         if [ -e /dev/sda2 ]; then
-          mount -o noatime,noexec,nosuid,nodev -t ext4 /dev/sda2 /var/backup
+          mount -o "$FLAGS" -t ext4 /dev/sda2 /var/backup
           failure_backup="$?"
         fi
       elif [ -h /dev/sda ]; then
-        mount -o noatime,barrier=0,data=writeback -t ext4 /dev/sda /var/media
+        mount -o "$FLAGS" -t ext4 /dev/sda /var/media
         failure_media="$?"
       fi
       if [ "$failure_media" != 0 ] || [ "$failure_backup" != 0 ]; then
