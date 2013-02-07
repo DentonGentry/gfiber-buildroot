@@ -16,6 +16,7 @@ LINK_DOWN_FILE="$BASE_PATH/link_down"
 ACS_FILE="$CONTROL_PATH/acsconnected"
 OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
 HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
+HDMOUNT_FILE="$CONTROL_PATH/hdd_mount_err"
 HALT_FILE="$CONTROL_PATH/halted"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
@@ -91,6 +92,8 @@ while read f; do
     change_state OVERTEMP "$HW_FAIL_LED_ON"
   elif [ -f "$HDPAIRING_FILE" ]; then
     change_state HDPAIR_FAIL "$HW_FAIL_LED_ON"
+  elif [ -f "$HDMOUNT_FILE" ]; then
+    change_state HDMOUNT_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$BADBLOCK_FILE" ]; then
     change_state BADBLOCK "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
