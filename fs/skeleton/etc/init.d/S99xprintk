@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Nothing good comes of printing stuff to the console. The UART is so
+# slow that it noticeably impacts the rest of the system.
+# Only panics, KERN_EMERG, and KERN_ALERT will be printed to console.
+dmesg -n 1
