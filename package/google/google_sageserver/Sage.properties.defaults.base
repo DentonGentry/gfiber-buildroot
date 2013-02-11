@@ -382,3 +382,4 @@ remove_padding_on_back_to_back_favorites=false
 enable_hotplug_storage_detector=false
 use_nio_transfers=false
 cc/708/advanced_options/enabled=true
+fiber/HDMI_disconnect_detection/enabled=false
