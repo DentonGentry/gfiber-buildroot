@@ -3,9 +3,12 @@
 # poco
 #
 #############################################################
-POCO_VERSION = 1.4.2p1
+POCO_VERSION_MAJOR = 1.4.6
+POCO_VERSION = $(POCO_VERSION_MAJOR)
 POCO_SOURCE = poco-$(POCO_VERSION)-all.tar.gz
-POCO_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/poco
+POCO_SITE = http://downloads.sourceforge.net/project/poco/sources/poco-$(POCO_VERSION_MAJOR)
+POCO_LICENSE = Boost-v1.0
+POCO_LICENSE_FILES = LICENSE
 POCO_INSTALL_STAGING = YES
 
 POCO_DEPENDENCIES = zlib pcre					\
