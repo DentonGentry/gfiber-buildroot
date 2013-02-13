@@ -1,0 +1,35 @@
+From 3ec66bf4f803a3be8c2eaeeae55f899e56b31869 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Tue, 12 Feb 2013 13:47:29 -0800
+Subject: [PATCH] Add POCO_NO_STD_COPYSIGNF
+
+copysignf() is not in the std:: namespace with uclibc.
+---
+ Foundation/include/Poco/FPEnvironment_DUMMY.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Foundation/include/Poco/FPEnvironment_DUMMY.h b/Foundation/include/Poco/FPEnvironment_DUMMY.h
+index 65a1b36..6238955 100644
+--- a/Foundation/include/Poco/FPEnvironment_DUMMY.h
++++ b/Foundation/include/Poco/FPEnvironment_DUMMY.h
+@@ -131,7 +131,7 @@ inline bool FPEnvironmentImpl::isNaNImpl(long double value)
+ 
+ inline float FPEnvironmentImpl::copySignImpl(float target, float source)
+ {
+-#if defined(__APPLE__) || defined(POCO_ANDROID)
++#if defined(__APPLE__) || defined(POCO_ANDROID) || defined(POCO_NO_STD_COPYSIGNF)
+ 	return copysignf(target, source);
+ #else
+ 	return std::copysignf(target, source);
+@@ -141,7 +141,7 @@ inline float FPEnvironmentImpl::copySignImpl(float target, float source)
+ 
+ inline double FPEnvironmentImpl::copySignImpl(double target, double source)
+ {
+-#if defined(__APPLE__) || defined(POCO_ANDROID)
++#if defined(__APPLE__) || defined(POCO_ANDROID) || defined(POCO_NO_STD_COPYSIGNF)
+ 	return copysign(target, source);
+ #else
+ 	return std::copysign(target, source);
+-- 
+1.7.9.4
+

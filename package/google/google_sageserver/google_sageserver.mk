@@ -38,6 +38,8 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/sage/
 	ln -sf	/tmp/Sage.properties.defaults \
 		$(TARGET_DIR)/app/sage/Sage.properties.defaults
+	ln -sf /bin/dir-monitor \
+		$(TARGET_DIR)/app/sage/dir-monitor-sagetv
 	$(INSTALL) -m 0755 -D package/google/google_sageserver/S95sageserver \
 		$(TARGET_DIR)/etc/init.d/S95sageserver
 endef

@@ -209,9 +209,11 @@ case "$1" in
     [ ! -d /user/rw ] && mkdir -p /user/rw
     [ ! -d /user/bsa ] && mkdir -p /user/bsa
     [ ! -d /user/netflix ] && mkdir -p /user/netflix
+    [ ! -d /user/vudu ] && mkdir -p /user/vudu
     [ ! -d /user/drm ] && mkdir -p /user/drm
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
+    [ ! -d /tmp/vudu ] && mkdir -p /tmp/vudu
 
     # /config must be writeable by non-root
     chown bin.sys /config
