@@ -12,6 +12,10 @@ fi
 exec >&2
 
 echo "<1>poweroff:" "$@" >/dev/kmsg
+if [ -e /config/NO-POWEROFF ]; then
+  echo "<1>poweroff: disabled by /config/NO-POWEROFF." >/dev/kmsg
+  exit 0
+fi
 
 # This runs just in case we encounter trouble during the next steps.
 # This background task is double-nested so that it doesn't count toward
