@@ -1,0 +1,25 @@
+From cf17d8f92f54cc1934e5ca647251004cedd418d5 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 16 Feb 2013 12:16:35 -0800
+Subject: [PATCH] Allow CROSS to be a full path.
+
+---
+ default.rules |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/default.rules b/default.rules
+index cc3bdf8..9424ebb 100644
+--- a/default.rules
++++ b/default.rules
+@@ -67,7 +67,7 @@ cross_stamp = .cross:
+ else
+ cross_stamp = $(cross_stamp_file)
+ endif
+-new_stamp = .cross:$(subst $(empty) ,:,$(CROSS))
++new_stamp = .cross:$(subst $(empty) ,:,$(notdir $(CROSS)))
+ ifneq ($(cross_stamp),$(new_stamp))
+ 
+ $(OBJS): force
+-- 
+1.7.9.4
+
