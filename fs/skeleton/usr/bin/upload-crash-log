@@ -111,7 +111,7 @@ def main():
   subprocess.call('logmark-once')
   Marker(MARK_START)
 
-  p = subprocess.Popen(['dmesg', '-r'], stdout=subprocess.PIPE)
+  p = subprocess.Popen(['toolbox', 'dmesg'], stdout=subprocess.PIPE)
   dmesg = p.stdout.read()
   retval = p.wait()
   if retval:
