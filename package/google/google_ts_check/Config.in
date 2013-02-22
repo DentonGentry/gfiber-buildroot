@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_TS_CHECK
+        bool "google_ts_check"
+        help
+          Builds the ts stream checking and monitoring tool 
