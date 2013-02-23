@@ -29,6 +29,8 @@ def main():
   s2 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
   s2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
   addrs = IPv4Broadcasts()
+  if not addrs:
+    sys.stderr.write('Warning: no IPv4 broadcast addresses found.\n')
   answers = set()
 
   r = None
@@ -37,7 +39,7 @@ def main():
       for addr in addrs:
         s1.sendto(msg, (addr, 31100))
       s2.sendto(msg, ('ff02::1', 31100))
-    r, _, _ = select.select([s1,s2], [], [], 0.5)
+    r, _, _ = select.select([s1, s2], [], [], 0.5)
     if r:
       for i in r:
         buf, addr = i.recvfrom(1024)

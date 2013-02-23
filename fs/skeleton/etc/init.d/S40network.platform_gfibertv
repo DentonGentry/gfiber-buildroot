@@ -47,8 +47,8 @@ case "$1" in
       echo "Adding interface $x..."
       ip link set $x up &&
       ip -o -f inet addr show $x |
-      while read a b c ip junk; do
-        ip addr add $ip dev br0
+      while read a b c ip d brd junk; do
+        ip addr add $ip broadcast $brd dev br0
       done &&
       if [ -e /sys/class/net/$x/device ]; then
         if [ $x = eth1 ]; then
