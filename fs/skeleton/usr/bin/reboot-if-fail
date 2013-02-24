@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Run a process with a deadman switch. If the process dies, reboot the
+# box after carefully logging what happened.
+#
+
+"$@"
+
+RV=$?
+if [ "$RV" = 143 ] || [ "$RV" = 137 ]; then
+  # SIGTERM or SIGKILL means someone killed it deliberately.
+  echo "RV=$RV '$@' was killed explicitly.  Not rebooting." >&2
+  exit $RV
+fi
+echo "Error: '$@' exited with code $RV. Rebooting." >&2
+
+# process exited. This is fatal, reboot the system.
+exec >&2
+
+echo "<1>rebooting: '$@' exited" >/dev/kmsg
+
+# This runs just in case we encounter trouble during the next steps.
+# This background task is double-nested so that it doesn't count toward
+# the 'wait' command below.
+(
+  (
+    sleep 30
+    echo "Timed out; rebooting immediately."
+    reboot
+  ) &
+)
+
+echo "Waiting for LEDs and logs to sync."
+(
+  : >/tmp/gpio/ledcontrol/halted
+  leds-and-wait 1  # red
+  echo "LEDs set."
+) &
+(
+  upload-logs-and-wait
+  echo "Logs uploaded."
+) &
+wait
+
+echo "Rebooting"
+reboot
