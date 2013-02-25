@@ -7,6 +7,7 @@ __author__ = 'apenwarr@google.com (Avery Pennarun)'
 
 
 import os.path
+import random
 import signal
 import StringIO
 import sys
@@ -23,6 +24,12 @@ s,server=          The server URL [https://diag.cpe.gfsvc.com]
 k,key=             Add a key/value pair (format "-k key=value")
 stdin=             Also upload stdin, with the given virtual filename
 """
+
+# Initial retry time for the exponential backoff retry loop.
+# This will create a backoff retry, with times centered at:
+# 30, 60, 120, 240, 480, 480
+RETRY_INIT_DELAY = 30
+RETRY_MAX_DELAY = 480
 
 
 class HttpError(Exception):
@@ -102,24 +109,41 @@ def UploadFile(url, filename, fileobj, keys):
                        filename=filename,
                        data=basecontent))
 
-  try:
-    HttpDo('POST', upload_url, attachment, content_type)
-  except HttpError, e:
-    if e.status == 302:
-      pass
+  # Retry upload forever until success.
+  # Each iteration increase the delay which should give the server
+  # more time to digest whatever data is has already received.
+  i = 0
+  while True:
+    try:
+      HttpDo('POST', upload_url, attachment, content_type)
+    except HttpError, e:
+      # This is the success case.
+      if e.status == 302:
+        break
+
+      # If the server is overloaded, retry after some random delay.
+      print "upload-logs failed: %s" % e.status
+
+      # Retry interval is maximum of 5 minutes, with a random delay
+      # of +/- 50% of the retry interval.
+      delay = min(RETRY_MAX_DELAY, RETRY_INIT_DELAY * 2**i)
+      rand_offset = random.uniform(-delay*0.5, delay*0.5)
+      time.sleep(delay + rand_offset)
+      i = min(i+1, 10)
     else:
-      raise
-  else:
-    raise Exception('expected http response code 302')
+      # http code 200 case.
+      raise Exception('expected http response code 302')
 
 
 def main():
   # set an alarm, in case our HTTP client (or anything else) hangs
   # for any reason
   signal.alarm(60)
+  # Sending USR1 should now interrupt time.sleep()
+  signal.signal(signal.SIGUSR1, lambda signum, frame: 0)
 
   o = options.Options(optspec)
-  (opt, flags, extra) = o.parse(sys.argv[1:])  #pylint: disable-msg=W0612
+  (opt, flags, extra) = o.parse(sys.argv[1:])  # pylint: disable-msg=W0612
   if not extra and not opt.stdin:
     o.fatal('at least one filename and/or --stdin expected')
   keys = []
