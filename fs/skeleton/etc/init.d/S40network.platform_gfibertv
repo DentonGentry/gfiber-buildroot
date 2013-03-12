@@ -18,6 +18,10 @@ case "$1" in
     # Configure dhclient with the right hostname etc.
     setup-dhclient
 
+    # Enable hardware offloads
+    ethtool -K eth0 rx on tx on sg on gso on gro on
+    ethtool -K eth1 rx on tx on sg on gso on gro on
+
     # configure loopback
     ifup lo
     echo -n "Creating bridge... "
