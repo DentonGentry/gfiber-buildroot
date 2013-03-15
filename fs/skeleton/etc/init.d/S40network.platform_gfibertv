@@ -18,10 +18,6 @@ case "$1" in
     # Configure dhclient with the right hostname etc.
     setup-dhclient
 
-    # Enable hardware offloads
-    ethtool -K eth0 rx on tx on sg on gso on gro on
-    ethtool -K eth1 rx on tx on sg on gso on gro on
-
     # configure loopback
     ifup lo
     echo -n "Creating bridge... "
@@ -106,6 +102,12 @@ case "$1" in
       echo "forcing wifi onto cpu1"
       echo 2 >/proc/irq/34/smp_affinity
     fi
+
+    # Enable hardware offloads, do this at the end to avoid
+    # invalid access caused by powered down core
+    ethtool -K eth0 rx on tx on sg on gso on gro on
+    ethtool -K eth1 rx on tx on sg on gso on gro on
+
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
