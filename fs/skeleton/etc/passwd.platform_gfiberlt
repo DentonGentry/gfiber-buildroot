@@ -7,4 +7,3 @@ nobody:*:99:99:Nobody:/:/dev/null
 rpcuser:x:29:29:RPC Service User:/var/tmp:/dev/null
 _ntp:x:30:30:OpenNTP Daemon:/var/empty/ntp:/dev/null
 nfsnobody:x:65534:65534:Anonymous NFS User:/var/tmp:/dev/null
-prism:$1$fufhpwhn$eAwIc7tGVHqELSV1MnPP91:100:0:Prism User:/var/prism:/usr/bin/clish
