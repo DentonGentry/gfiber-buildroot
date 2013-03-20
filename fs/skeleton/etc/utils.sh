@@ -33,3 +33,10 @@ startswith() {
 endswith() {
   [ "${1%$2}" != "$1" ]
 }
+
+
+# Checks if the string $1 is appears in file $2
+filecontains() {
+  grep "$1" $2 >/dev/null
+  [ $? -eq 0 ]
+}

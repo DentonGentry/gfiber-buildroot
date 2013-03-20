@@ -3,6 +3,7 @@
 # /usr should take precedence over /
 export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
 
+
 # Send our output (and that of our child processes) to /dev/kmsg so it'll be
 # timestamped and uploaded along with the kernel messages.  We can't use
 # logger here because syslogd isn't started yet, and anyway, doing it
@@ -19,6 +20,8 @@ mkdir /tmp/run
 (cd /var/lock)
 (cd /var/cache)
 (cd /var/log)
+
+. /etc/utils.sh
 
 # Start all init scripts in /etc/init.d
 # executing them in numerical order.
@@ -37,6 +40,12 @@ case "$1" in
 esac
 
 for i in ${SCRIPTS}; do
+  # Ignore if the file is in /config
+  if filecontains "$i" /config/init_skiplist; then
+    echo "Skipping $i"
+    continue
+  fi
+
   # Ignore dangling symlinks (if any).
   [ ! -f "$i" ] && continue
 
