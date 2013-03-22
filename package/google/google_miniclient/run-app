@@ -50,6 +50,11 @@ case $appname in
     verify_drm_state
     netflix $opts 2>&1 | logos netflix
     ;;
+  vudu)
+    cd /usr/local/bin
+    export PATH=$PWD:$PATH
+    vudu $opts 2>&1 | logos vudu
+    ;;
   youtube)
     cd /usr/local/bin/browsertest
     export PATH=$PWD:$PATH
