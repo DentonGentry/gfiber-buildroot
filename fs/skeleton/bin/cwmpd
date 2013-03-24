@@ -1,9 +1,18 @@
 #!/bin/sh
 mkdir -p /tmp/cwmp
 
+if [ -e /etc/platform ]; then
+    BOARDTYPE="$(cat /etc/platform)"
+else
+    BOARDTYPE="gfmedia"
+fi
+
+#Convert to lower case: no tr command and bash 4.0 support
+BOARDTYPE="$(python convert.py lower $BOARDTYPE)"
+
 CWMP="
   /usr/catawampus/cwmpd
-      --platform=gfmedia
+      --platform=$BOARDTYPE
       --ping_ip6dev=br0
       --ca-certs=/etc/ssl/certs/ca-certificates.crt
       --restrict-acs-hosts=gfiber-acs-staging.appspot.com,gfiber-acs-prod.appspot.com,gfiber-acs-canary.appspot.com,gfiber-acs-boss.appspot.com,.gfsvc.com,.google.com
