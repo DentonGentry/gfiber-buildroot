@@ -388,3 +388,5 @@ enable_hotplug_storage_detector=false
 use_nio_transfers=false
 cc/708/advanced_options/enabled=true
 fiber/HDMI_disconnect_detection/enabled=false
+ui/final_rendering_thread_priority_offset=4
+
