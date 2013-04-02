@@ -10,6 +10,7 @@ BCM_NEXUS_STAGING_PATH=usr/lib/nexus
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
+	$(BCM_MAKE_ENV) NEXUS_MODE=client $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples pkg-config
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/utils all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples apps install
@@ -26,6 +27,7 @@ define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/libcmndrm.so $1/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/local/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
+	$(INSTALL) -D $(@D)/bin/libnexus_client.so $1/usr/lib/libnexus_client.so
 endef
 
 define BCM_NEXUS_INSTALL_STAGING_CMDS
@@ -36,6 +38,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
+	mkdir -p $(TARGET_DIR)/shared
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
 	$(call BCM_NEXUS_INSTALL_LIBS,$(TARGET_DIR))
 endef
