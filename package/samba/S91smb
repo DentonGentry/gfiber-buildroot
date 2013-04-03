@@ -84,10 +84,11 @@ case "$1" in
         mount -o bind /var/lock/subsys var/lock/subsys
         cp /etc/samba/etc/* etc/
         chmod 0444 etc/*
+        fixdirs video.video tv
         fixdirs video.video videos
         fixdirs video.video pictures
         fixdirs video.video music
-        chmod 775 videos pictures music
+        chmod 775 tv videos pictures music
       )
       babysit 60 smbd -F -D -S 2>&1 | logos smbd &
       babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
