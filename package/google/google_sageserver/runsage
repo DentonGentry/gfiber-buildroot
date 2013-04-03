@@ -39,7 +39,9 @@ ulimit -c 49152
 
 if [ "$MODE" = "server" ]; then
   # Start up native streaming server
-  babysit 10 ./sagesrv -l6 -m5 | logos z 0 20000000 &
+  SAGESRV_UID=$(id -u video)
+  SAGESRV_GID=$(id -g video)
+  babysit 10 ./sagesrv -l6 -m5 -U $SAGESRV_UID -G $SAGESRV_GID | logos z 0 20000000 &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
