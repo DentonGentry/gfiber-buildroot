@@ -40,8 +40,10 @@ case "$1" in
 esac
 
 for i in ${SCRIPTS}; do
-  # Ignore if the file is in /config
-  if filecontains "$i" /config/init_skiplist; then
+
+  # Ignore if /config/init_skiplist exists and contains the name of the file
+  if [ -e /config/init_skiplist ] &&
+     filecontains "$i" /config/init_skiplist; then
     echo "Skipping $i"
     continue
   fi
