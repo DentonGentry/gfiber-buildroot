@@ -74,9 +74,15 @@ def EnableWanProfile(wan_port, lan_port):
     rule_num = 0
     tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0001, 0x0000, 0x0000, 'done',
                  L2_KEY_MAC_WAN, FRWD_EMPTY, MOD_EMPTY, 0x0000)
-    rule_num += 1
-    tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0001, 0x0000, 0x0000, 'done',
-                 L2_KEY_MAC_BC, FRWD_EMPTY, MOD_EMPTY, 0x0000)
+    # TODO(kedong) Marvell's current TPM can only be configured to either take
+    # all broadcast traffic to CPU or forward to GE. But it make more sense for
+    # broadcast to reach both GE and CPU. This is reported to marvell as 479564.
+    # For now, we don't need any broadcast traffic to be processed in CPU until
+    # we have to deal with non-standard DHCP setup which broadcast DHCP offer
+    # in broadcast.
+    #rule_num += 1
+    #tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0001, 0x0000, 0x0000, 'done',
+    #             L2_KEY_MAC_BC, FRWD_EMPTY, MOD_EMPTY, 0x0000)
 
     # If LAN port is not defined, spare media converting rules.
     if lan_port:
