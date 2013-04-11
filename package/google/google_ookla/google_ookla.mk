@@ -11,7 +11,7 @@ endif
 
 define GOOGLE_OOKLA_INSTALL_TARGET_CMDS
 	cp -af $(@D)/$(OOKLA_ARCH)/OoklaClient $(TARGET_DIR)/usr/bin
-	ln -s /tmp/ookla/settings.xml $(TARGET_DIR)/usr/bin
+	ln -sf /tmp/ookla/settings.xml $(TARGET_DIR)/usr/bin
 endef
 
 $(eval $(call GENTARGETS))
