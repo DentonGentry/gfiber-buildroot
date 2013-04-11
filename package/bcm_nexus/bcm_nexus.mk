@@ -24,7 +24,7 @@ define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $1/usr/lib/libnexusMgr.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/bcrypt/lib/libbcrypt.so $1/usr/lib/libbcrypt.so
-	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/7425/libcmndrm.so $1/usr/lib/libcmndrm.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/40nm/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/local/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
 	$(INSTALL) -D $(@D)/bin/libnexus_client.so $1/usr/lib/libnexus_client.so
