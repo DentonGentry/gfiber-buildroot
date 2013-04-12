@@ -7,7 +7,7 @@ BRUNO_INSTALL_STAGING=YES
 BRUNO_INSTALL_TARGET=YES
 BRUNO_STAGING_PATH=usr/lib/bruno
 BRUNO_DEPENDENCIES=humax_misc python py-setuptools
-BRUNO_DEPENDENCIES=host-python-crypto
+BRUNO_DEPENDENCIES+=host-python-crypto
 
 # openbox doesn't have this package, so don't depend on it if it isn't enabled
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
