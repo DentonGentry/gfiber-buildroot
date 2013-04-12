@@ -1,8 +1,6 @@
 iface=$1
-ip link set dev $iface up
-if [ $(cat /etc/config/wanport) = $1 ]; then
-	sleep 1
-        start_sycl & 2>&1 | logos sycl &
+
+start_dhcp() {
 	lock=/var/run/dhclient.${iface}.lock
 	lockfile-create $lock
 	pidfile=/var/run/dhclient.${iface}.pid
@@ -23,4 +21,16 @@ if [ $(cat /etc/config/wanport) = $1 ]; then
 		-cf /etc/dhclient6.conf \
 	    --never-gonna-give-you-up 900 2>&1 | logger -t dhclient6 &
 	lockfile-remove $lock
+}
+
+ip link set dev $iface up
+if [ $(cat /etc/config/wanport) = $iface ]; then
+	sleep 1
+	start_sycl & 2>&1 | logos sycl &
+	# start dhcp if no management vlan is assigned.
+	if [ "x$(cat /etc/config/mgmtvlan)" = "x" ]; then
+		start_dhcp
+	fi
+elif [ "man" = "$iface" ]; then
+	start_dhcp
 fi

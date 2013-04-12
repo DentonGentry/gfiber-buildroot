@@ -4,6 +4,7 @@
 #
 wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
+mgmt_vlan=$(cat /etc/config/mgmtvlan)
 
 case $1 in
   start)
@@ -13,15 +14,26 @@ case $1 in
     echo "[RCS]: Start Interface"
     ifup $wan_port
     echo "[RCS]: Configure Data Path"
-    if [ "x" = "x${lan_port}" ]; then
+    if [ "x" = "x$lan_port" ]; then
       lan_arg=""
     else
       lan_arg="-l $lan_port"
     fi
-    (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    if [ "x" = "x$mgmt_vlan" ]; then
+      (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    else
+      (sleep 3 && tpmadm -w $wan_port $lan_arg -m $mgmt_vlan -v) &
+      ip link add link $wan_port name man type \
+        vlan id $mgmt_vlan
+      ifup man
+    fi
     ;;
   stop)
     echo -n "Stopping WAN..."
+    if [ "x" != "x$mgmt_vlan" ]; then
+      ifdown man
+      ip link del man
+    fi
     ifdown $wan_port
     ;;
   restart|reload)
@@ -34,4 +46,3 @@ case $1 in
 esac
 
 exit $?
-

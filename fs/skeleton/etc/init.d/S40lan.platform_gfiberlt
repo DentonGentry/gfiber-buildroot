@@ -8,12 +8,16 @@ case "$1" in
   start)
     echo -n "Starting LAN..."
     ifup lo
-    ifup $lan_port
+    if [ "x$lan_port" != "x" ]; then
+      ifup $lan_port
+    fi
     ;;
   stop)
     echo -n "Stopping LAN..."
     ifdown lo
-    ifdown $lan_port
+    if [ "x$lan_port" != "x" ]; then
+      ifdown $lan_port
+    fi
     ;;
   restart|reload)
     "$0" stop
