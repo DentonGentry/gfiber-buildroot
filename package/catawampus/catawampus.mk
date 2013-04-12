@@ -4,7 +4,7 @@
 #
 #############################################################
 CATAWAMPUS_SITE=repo://vendor/google/catawampus
-CATAWAMPUS_DEPENDENCIES=python py-curl
+CATAWAMPUS_DEPENDENCIES=python py-curl host-py-mox host-python
 CATAWAMPUS_INSTALL_STAGING=NO
 CATAWAMPUS_INSTALL_TARGET=YES
 
@@ -26,8 +26,8 @@ endef
 CATAWAMPUS_POST_INSTALL_TARGET_HOOKS += CATAWAMPUS_REMOVE_SURPLUS_FILES
 
 define CATAWAMPUS_TEST_CMDS
-	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
-	HOSTDIR=$(HOST_DIR) \
+	PYTHONPATH=$(HOST_PYTHONPATH) \
+	PYTHON=$(HOST_DIR)/usr/bin/python \
 	$(MAKE) -C $(@D) test
 endef
 

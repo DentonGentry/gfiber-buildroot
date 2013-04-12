@@ -1,12 +1,11 @@
 #!/bin/sh
 case "$1" in
   start)
-    babysit 10 softdog 2>&1 | logos softdog &
+    babysit 60 memwatcher 2>&1 | logos memwatcher &
     ;;
   stop)
-    pkillwait -x softdog
+    pkillwait -x memwatcher
     ;;
-
   restart)
     $0 stop; $0 start
     ;;

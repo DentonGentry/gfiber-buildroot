@@ -32,8 +32,6 @@ echo "res='$res'"
 
 export hdsd_mode
 export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
-# Until we figure out the bug when using the hardware decoder
-export sw_picture_decode=y
 
 # Install DFB /dev/input/event nodes
 /usr/local/bin/directfb/1.4/rundfb.sh install
@@ -51,6 +49,11 @@ case $appname in
     export NF_IDFILE=/tmp/idfile.secure
     verify_drm_state
     netflix $opts 2>&1 | logos netflix
+    ;;
+  vudu)
+    cd /usr/local/bin
+    export PATH=$PWD:$PATH
+    vudu $opts 2>&1 | logos vudu
     ;;
   youtube)
     cd /usr/local/bin/browsertest

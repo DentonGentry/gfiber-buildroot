@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# read configuration parameters
+CFG_FILE="/etc/moca/moca.conf.default"
+MOCAD_PARAMS=""
+[ -e $CFG_FILE ] && . $CFG_FILE
+
+mocad $MOCAD_PARAMS &
+mocad_pid=$!
+for i in $(seq 20); do
+  msleep 250
+  if mocacfg start; then
+    echo "mocad started!"
+    wait $mocad_pid
+    exit $?  # return mocad exit code
+  fi
+done
+exit $?

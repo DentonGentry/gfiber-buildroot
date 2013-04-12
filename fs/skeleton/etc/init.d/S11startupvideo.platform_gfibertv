@@ -3,36 +3,63 @@ runnable startupvideo || exit 0
 
 case "$1" in
   start)
-    if is-tv-box; then
-      echo "Starting startupvideo."
-      rm -f /tmp/svpipe
-      mknod /tmp/svpipe p
-      (
-        wait-until-created /var/run/gpio-mailbox
-        startupvideo /tmp/svpipe \
-          /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 \
-          /usr/sv/connecting.ts 1 0 256 0
-        # in case sv crashes early, make sure ntp is synced
-        wait-until-created /tmp/time.synced
-        echo : >/tmp/startupvideo.done
-      ) 2>&1 | logos startupvideo &
-      (
-        wait-until-created /var/run/gpio-mailbox
-        wait-until-created /tmp/time.synced
-        echo y >/tmp/svpipe
-      ) 2>&1 | logos startupvideo &
-    else
-      (
-        # non-TV boxes don't use the startupvideo, which opens nexus,
-        # and so theoretically we don't need to wait for gpio-mailbox
-        # to be ready (since it also opens nexus).  However, people
-        # use the startupvideo.done flag to mean "nexus has been released"
-        # so let's make sure that remains true.
-        wait-until-created /var/run/gpio-mailbox
-        wait-until-created /tmp/time.synced
-        echo : >/tmp/startupvideo.done
-      ) 2>&1 | logos startupvideo &
-    fi
+    (
+      if is-tv-box; then
+        echo "Starting startupvideo."
+        rm -f /tmp/svpipe
+        mknod /tmp/svpipe p
+
+        # sv monitor process
+        (
+          wait-until-created /var/run/gpio-mailbox
+          # Sleep and then write svpipe to terminate startupvideo, if we haven't
+          # been killed.
+          sleep 7200
+          echo "Startupvideo reaches timeout. Finishing startupvideo."
+
+          # Kill startupvideo
+          pid_startupvideo=$(pgrep -f "startupvideo /tmp/svpipe")
+          if [ "$pid_startupvideo" -gt 1 ]; then
+            kill -TERM "$pid_startupvideo"
+          fi
+        ) &
+        alarm=$!
+
+        (
+         wait-until-created /var/run/gpio-mailbox
+         startupvideo /tmp/svpipe \
+           /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 \
+           /usr/sv/connecting.ts 1 0 256 0
+
+         # in case sv crashes early, make sure ntp is synced
+         wait-until-created /tmp/time.synced
+
+         if [ -d /proc/"$alarm" ] && [ "$alarm" -gt 1 ]; then
+           # If the alarm process is still alive, sv exits within timeout
+           # (normal case). We need to clean it up.
+           kill -TERM "$alarm"
+         fi
+         echo : >/tmp/startupvideo.done
+       ) &
+
+       (
+         wait-until-created /var/run/gpio-mailbox
+         wait-until-created /tmp/time.synced
+         echo y >/tmp/svpipe
+       ) &
+     else
+       (
+         # non-TV boxes don't use the startupvideo, which opens nexus,
+         # and so theoretically we don't need to wait for gpio-mailbox
+         # to be ready (since it also opens nexus).  However, people
+         # use the startupvideo.done flag to mean "nexus has been released"
+         # so let's make sure that remains true.
+         wait-until-created /var/run/gpio-mailbox
+         wait-until-created /tmp/time.synced
+         echo : >/tmp/startupvideo.done
+       ) &
+     fi
+    ) 2>&1 | logos startupvideo &
     ;;
   stop)
     pkillwait -x startupvideo

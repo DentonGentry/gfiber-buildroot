@@ -23,6 +23,8 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
           $(TARGET_DIR)/app/sage/lib/libstreamer.so
         $(INSTALL) -D -m 0755 $(@D)/libptsindex.so \
           $(TARGET_DIR)/app/sage/lib/libptsindex.so
+        $(INSTALL) -D -m 0755 $(@D)/libtvformat.so \
+          $(TARGET_DIR)/app/sage/lib/libtvformat.so
 endef
 
 $(eval $(call GENTARGETS))

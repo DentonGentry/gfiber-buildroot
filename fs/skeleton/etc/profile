@@ -11,3 +11,7 @@ TERM_FIRST_LETTER=${TERM%${TERM_END}}
 if [ ! -e "/usr/lib/terminfo/$TERM_FIRST_LETTER/$TERM" ]; then
   export TERM=xterm-color
 fi
+
+if runnable serial; then
+  export PS1="$(serial)# "
+fi

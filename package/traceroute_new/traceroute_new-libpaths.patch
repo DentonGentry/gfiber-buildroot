@@ -1,0 +1,26 @@
+From fc91460b813542af919fa8d62e873d4db438cb3e Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 16 Feb 2013 13:18:59 -0800
+Subject: [PATCH] Add library include paths.
+
+Developer appears to have installed their shared library and links against that.
+---
+ default.rules |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/default.rules b/default.rules
+index 0fc90aa..696a8be 100644
+--- a/default.rules
++++ b/default.rules
+@@ -156,7 +156,7 @@ endif
+ all: $(TARGET)
+ 
+ $(TARGET): $(OBJS) $(MOD_OBJS) $(LIBDEPS)
+-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(MOD_OBJS) $(LIBS)
++	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(MOD_OBJS) $(subst :, -L, $(LIBRARY_PATH)) $(LIBS)
+ 
+ install_what = $(wildcard $(TARGET))
+ install_dir = $(if $(filter $(TARGET),$(SBINUSERS)),$(sbindir),$(bindir))
+-- 
+1.7.9.4
+

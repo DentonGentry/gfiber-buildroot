@@ -1,0 +1,8 @@
+config BR2_PACKAGE_GOOGLE_OOKLA
+    bool "google_ookla"
+    select BR2_PACKAGE_POCO
+    select BR2_PACKAGE_POCO_UTIL
+    select BR2_PACKAGE_POCO_NET
+    select BR2_PACKAGE_POCO_XML
+    help
+      Installs the Ookla Speedtest

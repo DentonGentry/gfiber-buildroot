@@ -1,0 +1,6 @@
+config BR2_PACKAGE_FREEGREP
+	bool "freegrep"
+	help
+	  The OpenBSD-derived free implementation of grep.
+
+	  https://github.com/howardjp/freegrep

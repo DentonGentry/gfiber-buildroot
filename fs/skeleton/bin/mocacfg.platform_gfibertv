@@ -1,9 +1,6 @@
 #!/bin/sh
 
-INTERFACE="default"
-CFG_FILE="/etc/moca/moca.conf.${INTERFACE}"
-MOCACTL="/bin/mocactl"
-MOCAD="/bin/mocad"
+CFG_FILE="/etc/moca/moca.conf.default"
 
 parse_opts()
 {
@@ -68,6 +65,12 @@ parse_opts()
 # MAIN
 #
 
+if ! runnable mocactl; then
+	echo "$0: MoCA utilities are not installed"
+	exit 1
+fi
+
+# read configuration parameters
 INIT_TIME=""
 ANY_TIME=""
 TRACE=""
@@ -77,11 +80,6 @@ is-storage-box && INIT_TIME="$INIT_TIME --preferredNC on"
 
 cmd="$1"
 shift
-
-if [ ! -e $MOCACTL ]; then
-	echo "$0: MoCA utilities are not installed"
-	exit 1
-fi
 
 case "$cmd" in
 	set)
@@ -99,11 +97,7 @@ case "$cmd" in
 	
 	boot)
 		echo "Starting mocad"
-		$MOCAD $MOCAD_PARAMS
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		babysit 30 runmoca 2>&1 | logos mocad &
 		exit 1
 		;;
 
@@ -114,24 +108,24 @@ case "$cmd" in
 		;;
 
 	start)
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		mocactl restore_defaults
+		mocactl trace $TRACE
+		mocactl config $ANY_TIME
+		exec mocactl start $INIT_TIME
 		exit 1
 		;;
 	
 	restart)
-		$MOCACTL stop
-		$MOCACTL restore_defaults
-		$MOCACTL trace $TRACE
-		$MOCACTL config $ANY_TIME
-		exec $MOCACTL start $INIT_TIME
+		mocactl stop
+		mocactl restore_defaults
+		mocactl trace $TRACE
+		mocactl config $ANY_TIME
+		exec mocactl start $INIT_TIME
 		exit 1
 		;;
 	
 	stop)
-		exec $MOCACTL stop
+		exec mocactl stop
 		exit 1
 		;;
 esac

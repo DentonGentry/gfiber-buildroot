@@ -1,3 +1,14 @@
 #!/bin/sh
 # See log-delay script for explanation.
+#
+# There are two kills to log-delay here.  In the common case log-loop
+# will be waiting in sleep.  In the uncommon case an upload happening,
+# and taking a long time for example if the server is busy.  In tis
+# case we will kill the pending upload, then we wait a bit to make
+# sure that the log loop has gotten to its sleep call, and then we
+# kick the log-loop again to make sure the latest logs are uploaded.
+# Worst case we upload logs 2x.
+pkill -x upload-logs
+pkill -x log-delay
+sleep 1
 pkill -x log-delay

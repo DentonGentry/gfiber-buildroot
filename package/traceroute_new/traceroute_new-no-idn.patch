@@ -1,0 +1,33 @@
+From 682efcaa9e69d5569a3e0f7e803f696cdf193e3e Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sun, 17 Feb 2013 06:45:08 -0800
+Subject: [PATCH] uclibc does not support IDN for DNS.
+
+---
+ traceroute/traceroute.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/traceroute/traceroute.c b/traceroute/traceroute.c
+index 1912d65..5155e80 100644
+--- a/traceroute/traceroute.c
++++ b/traceroute/traceroute.c
+@@ -186,7 +186,6 @@ static int getaddr (const char *name, sockaddr_any *addr) {
+ 
+ 	memset (&hints, 0, sizeof (hints));
+ 	hints.ai_family = af;
+-	hints.ai_flags = AI_IDN;
+ 
+ 	ret = getaddrinfo (name, NULL, &hints, &res);
+ 	if (ret) {
+@@ -691,7 +690,7 @@ static void print_addr (sockaddr_any *res) {
+ 
+ 	    buf[0] = '\0';
+ 	    getnameinfo (&res->sa, sizeof (*res), buf, sizeof (buf),
+-							    0, 0, NI_IDN);
++							    0, 0, 0);
+ 	    printf (" %s (%s)", buf[0] ? buf : str, str);
+ 	}
+ 
+-- 
+1.7.9.4
+

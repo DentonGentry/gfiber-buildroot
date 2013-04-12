@@ -1,0 +1,37 @@
+From 5a616e586a9804fd25f84dad74c6b7a136580d2e Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 15 Mar 2013 12:57:51 -0400
+Subject: [PATCH] ntpd_write_synced even if adjtime() isn't perfectly synced.
+
+If adjtime() doesn't actually abort, that means it's close enough that the
+kernel will be slewing to the right time eventually.  That's good enough for
+our purposes.
+---
+ ntpd.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/ntpd.c b/ntpd.c
+index 0d4c889..f95449f 100644
+--- a/ntpd.c
++++ b/ntpd.c
+@@ -299,7 +299,16 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 				fatalx("invalid IMSG_ADJTIME received");
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			n = ntpd_adjtime(d);
+-			if (n) ntpd_write_synced(conf->synced_file);
++			/* the n flag means adjtime believes the kernel clock
++			 * is now perfectly synced, to the nearest usec.
++			 * That's more precise than the synced_file implies;
++			 * if ntpd_adjtime didn't abort, that's good enough.
++			 * So we write the synced_file regardless of 'n'.
++			 * But we won't change the meaning of 'n' because
++			 * the other process cares if we're *really* synced
++			 * or not.
++			 */
++			ntpd_write_synced(conf->synced_file);
+ 			imsg_compose(ibuf, IMSG_ADJTIME, 0, 0, &n, sizeof(n));
+ 			break;
+ 		case IMSG_SETTIME:
+-- 
+1.7.9.dirty
+

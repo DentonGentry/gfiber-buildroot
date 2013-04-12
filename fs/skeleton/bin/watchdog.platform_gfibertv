@@ -3,20 +3,35 @@
 # Program the hardware watchdog counter.
 #
 # The watch counter.  It counts at a clock rate of 27Mhz,
-# so the largest timeout we can program is 159s.
-# That's unnecessarily long, so let's use 80s instead (a bit longer than
-# the software watchdog, which is currently at 70s.)
-#
-count_val=2160000000  # 80 seconds
+# so the largest timeout we can program is 159s.  The watchdog timer triggers
+# an NMI midway which as at approx. 79.5s.  Our custom NMI handler in the
+# kernel dumps the CPU registers and calls panic() i.e. reboots the box. If,
+# for some reason, this fails, the watchdog timer will eventually assert a chip
+# reset event after another 79.5s.  (The software watchdog is currently at 70s)
+
+count_val=0xFFFFFFFF # 159.072862778 seconds (an NMI is triggered halfway
+                     # through)
 command_addr=0x104067ec
 timeout_addr=0x104067e8
+timer_wdctrl=0x104067fc
+wd_event_mode=0x2 # NMI asserted when WD timer is midway, chip reset asserted
+                  # when WD timer expires
+timer_wdchiprst_cnt=0x104067f0
+wdchiprst_cnt_value=0x3FFFFFF
+
 
 write()
 {
   devmem "$@" >/dev/null
 }
 
+# Stop sequence command
+write $command_addr 32 0xee00
+write $command_addr 32 0x00ee
 write $timeout_addr 32 $count_val
+write $timer_wdctrl 32 $wd_event_mode
+write $timer_wdchiprst_cnt 32 $wdchiprst_cnt_value
+# Start sequence command
 write $command_addr 32 0xff00
 write $command_addr 32 0x00ff
 while :; do

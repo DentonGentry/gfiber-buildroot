@@ -1,7 +1,7 @@
 #!/bin/sh
 case "$1" in
   start)
-    # create a default resolv.conf in case DHCP doesn't provide one
+    # create a default resolv.conf and /etc/hosts in case DHCP doesn't.
     # (this is always true if using nfsroot).
     # 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
     # that can be used from anywhere, so it makes a good place to start.
@@ -10,6 +10,9 @@ case "$1" in
       #TODO(apenwarr): add IPv6 DNS once our uClibc can handle it.
       (echo 'nameserver 8.8.8.8';
        echo 'nameserver 8.8.4.4') >/etc/resolv.conf
+    fi
+    if [ ! -r /etc/hosts ]; then
+      echo "127.0.0.1 localhost $(hostname)" >/etc/hosts
     fi
 
     # Configure dhclient with the right hostname etc.
@@ -47,8 +50,8 @@ case "$1" in
       echo "Adding interface $x..."
       ip link set $x up &&
       ip -o -f inet addr show $x |
-      while read a b c ip junk; do
-        ip addr add $ip dev br0
+      while read a b c ip d brd junk; do
+        ip addr add $ip broadcast $brd dev br0
       done &&
       if [ -e /sys/class/net/$x/device ]; then
         if [ $x = eth1 ]; then
@@ -99,6 +102,12 @@ case "$1" in
       echo "forcing wifi onto cpu1"
       echo 2 >/proc/irq/34/smp_affinity
     fi
+
+    # Enable hardware offloads, do this at the end to avoid
+    # invalid access caused by powered down core
+    ethtool -K eth0 rx on tx on sg on gso on gro on
+    ethtool -K eth1 rx on tx on sg on gso on gro on
+
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
