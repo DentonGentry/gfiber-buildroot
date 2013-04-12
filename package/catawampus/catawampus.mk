@@ -4,7 +4,7 @@
 #
 #############################################################
 CATAWAMPUS_SITE=repo://vendor/google/catawampus
-CATAWAMPUS_DEPENDENCIES=python py-curl host-py-mox host-python
+CATAWAMPUS_DEPENDENCIES=python py-curl host-py-mox host-python host-py-yaml
 CATAWAMPUS_INSTALL_STAGING=NO
 CATAWAMPUS_INSTALL_TARGET=YES
 

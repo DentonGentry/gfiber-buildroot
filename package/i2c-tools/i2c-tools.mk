@@ -35,4 +35,14 @@ define I2C_TOOLS_INSTALL_TARGET_CMDS
 		--prefix=$(TARGET_DIR)/usr)
 endef
 
+define HOST_I2C_TOOLS_BUILD_CMDS
+	$(MAKE) $(HOST_CONFIGURE_OPTS) EXTRA="py-smbus" -C $(@D)
+endef
+
+define HOST_I2C_INSTALL_CMDS
+	$(HOST_MAKE_ENV) \
+	$(MAKE) PREFIX=$(HOST_DIR)/usr -C $(@D) install
+endef
+
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
