@@ -1,4 +1,7 @@
 #!/bin/sh
+
+. /etc/utils.sh
+
 DELAY="$1"  # if empty, run only once
 
 printstat()
@@ -73,9 +76,14 @@ nameservers()
 
 defaultroutes()
 {
-  ip "$@" route list | while read a b c d; do
+  ip "$@" route list | while read a b IP c IF d; do
     if [ "$a $b" = "default via" ]; then
-      echo "$c"
+      if startswith "$IP" "fe80:"; then
+        # IPV6 link-local address, return IP and interface
+        echo "$IP,$IF"
+      else
+        echo "$IP"
+      fi
     fi
   done
 }
@@ -83,7 +91,10 @@ defaultroutes()
 
 do_ping()
 {
-  ping$1 -n -c1 -w5 $2 2>&1 | {
+  VER=$1
+  IP=$2
+  shift 2
+  ping$VER -n -c1 -w5 "$@" $IP 2>&1 | {
     while read nbytes bytes from ip serial ttl time ms; do
       if [ "$bytes $from $ms" = "bytes from ms" ]; then
         echo "${time#time=}ms/${ttl#ttl=}ttl"
@@ -113,13 +124,19 @@ pings()
 pings6()
 {
   out=
-  for ip in \
+  for ip_if in \
       ::1 \
       $(defaultroutes -6) \
       $(nameservers | ip6_only) \
       gstatic.com
   do
-    out="$out$ip($(do_ping "6" $ip)) "
+    out=$out$(echo "$ip_if" | while IFS=, read ip if; do
+      if [ -n "$if" ]; then
+        echo "$ip($(do_ping "6" $ip -I $if)) "
+      else
+        echo "$ip($(do_ping "6" $ip)) "
+      fi
+    done)
   done
   echo "$1 $out"
 }
