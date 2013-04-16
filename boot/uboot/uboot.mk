@@ -29,7 +29,7 @@ UBOOT_BIN          = u-boot.ldr
 else ifeq ($(BR2_TARGET_UBOOT_FORMAT_NAND_BIN),y)
 UBOOT_BIN          = u-boot-nand.bin
 else ifeq ($(BR2_PACKAGE_PRISM),y)
-UBOOT_BIN          = u-boot*.bin
+UBOOT_BIN          = u-boot-spi.bin
 else
 UBOOT_BIN          = u-boot.bin
 endif
