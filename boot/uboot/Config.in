@@ -82,6 +82,9 @@ config BR2_TARGET_UBOOT_FORMAT_BIN
 config BR2_TARGET_UBOOT_FORMAT_NAND_BIN
 	bool "u-boot-nand.bin"
 
+config BR2_TARGET_UBOOT_FORMAT_SPI_BIN
+	bool "u-boot-spi.bin"
+
 config BR2_TARGET_UBOOT_FORMAT_KWB
 	depends on BR2_arm
 	bool "u-boot.kwb (Marvell)"
