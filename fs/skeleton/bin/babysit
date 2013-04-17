@@ -1,22 +1,30 @@
 #!/bin/sh
 RETRY_TIMEOUT=$1
 
+echo -500 >/proc/$$/oom_score_adj
+
 shift
 if [ -z "$RETRY_TIMEOUT" -o -z "$*" ]; then
   echo "Usage: $0 <retry_timeout> <program> [args...]" >&2
   exit 1
 fi
 
+run() {
+  "$@" &
+  local pid=$!
+  echo 0 >/proc/$pid/oom_score_adj
+  wait $pid
+}
+
 # Run until the program manages to exit successfully.
-until "$@"; do
+until run "$@"; do
   RV=$?
   if [ "$RV" = 143 ]; then
     # SIGTERM means someone asked for it to die.
+    # We can't treat SIGKILL the same way because it might have been
+    # caused by the kernel OOM killer, in which case we definitely want to
+    # restart the task.
     echo "SIGTERM: '$1' was killed explicitly.  Not retrying." >&2
-    exit $RV
-  elif [ "$RV" = 137 ]; then
-    # SIGKILL means someone asked for it to die.
-    echo "SIGKILL: '$1' was killed explicitly.  Not retrying." >&2
     exit $RV
   fi
   echo "Error: '$1' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2

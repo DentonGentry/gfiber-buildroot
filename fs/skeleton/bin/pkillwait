@@ -10,11 +10,24 @@ if [ "$#" = 0 ]; then
 fi
 
 echo -n "Stopping $*: " >&2
+
+if [ -n "$2" ]; then
+  baby=$2
+else
+  baby=$1
+fi
+babysitter="babysit [0-9]+ ($baby)\$"
+
+pkill "$babysitter"
 pkill "$@"
 for d in $(seq 20); do
-  pgrep "$@" >/dev/null || { echo done >&2; exit 0; }
+  if ! { pgrep -f "$babysitter" || pgrep "$@"; } >/dev/null; then
+    echo done >&2
+    exit 0
+  fi
   usleep 100000
   echo -n "." >&2
 done
+pkill -9 "$babysitter"
 pkill -9 "$@"
 echo done >&2

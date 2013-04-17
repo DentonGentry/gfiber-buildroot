@@ -19,6 +19,8 @@ wd_event_mode=0x2 # NMI asserted when WD timer is midway, chip reset asserted
 timer_wdchiprst_cnt=0x104067f0
 wdchiprst_cnt_value=0x3FFFFFF
 
+echo -1000 >/proc/$$/oom_score_adj
+
 
 write()
 {
