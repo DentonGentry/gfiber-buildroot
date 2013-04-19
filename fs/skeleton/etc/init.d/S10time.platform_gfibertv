@@ -11,14 +11,16 @@ case "$1" in
         date +%s -s "$(cat $ANTIROLLBACK)"
     fi
 
-    dmesg | grep T: | (
+    toolbox dmesg | grep ' T: ' | (
       lasttime=0
-      while IFS='[] ' read space level service version timestamp humandate humantime ntpsync junk; do
+      while IFS='[] ' read level uptime service version \
+                           timestamp humandate humantime ntpsync junk; do
         if [ "$service" = "T:" ] && [ "$ntpsync" = "ntp=1" ]; then
           lasttime=$timestamp
         fi
       done
       if [ "$lasttime" -gt 0 ]; then
+        echo "Approximate time carried from last boot: $lasttime"
         date +%s -s $lasttime
       fi
       #TODO(irinams): create the TIME_FILE only when we have a way to approximate
