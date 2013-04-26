@@ -2,39 +2,23 @@
 #
 # Start WAN ....
 #
-args=$1
-auto_mode=no
 wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 
-set $(cat /proc/cmdline)
-for i in "$@"; do
-  key=${i%%=*}
-  value=${i#*=}
-  case "$key" in
-    AutomationMode) auto_mode=$value ;;
-  esac
-done
-
-case $args in
+case $1 in
   start)
     echo -n "Starting WAN..."
-    if [ "$auto_mode" != "yes" ]; then
-      # Configure dhclient with the right hostname etc.
-      setup-dhclient
-      echo "[RCS]: Start Interface"
-      ifup $wan_port
-      echo "[RCS]: Configure Data Path"
-      if [ "x" = "x${lan_port}" ]; then
-        lan_arg=""
-      else
-        lan_arg="-l $lan_port"
-      fi
-      (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    # Configure dhclient with the right hostname etc.
+    setup-dhclient
+    echo "[RCS]: Start Interface"
+    ifup $wan_port
+    echo "[RCS]: Configure Data Path"
+    if [ "x" = "x${lan_port}" ]; then
+      lan_arg=""
     else
-      echo "[RCS]: Automation mode"
-      ######################################
+      lan_arg="-l $lan_port"
     fi
+    (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
     ;;
   stop)
     echo -n "Stopping WAN..."
