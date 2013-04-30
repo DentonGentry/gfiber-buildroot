@@ -1,0 +1,32 @@
+Index: proc/sysinfo.c
+===================================================================
+RCS file: /cvsroot/procps/procps/proc/sysinfo.c,v
+retrieving revision 1.40
+diff -u -p -r1.40 sysinfo.c
+--- a/proc/sysinfo.c	24 Mar 2008 04:41:26 -0000	1.40
++++ b/proc/sysinfo.c	3 Nov 2010 06:18:54 -0000
+@@ -209,7 +209,7 @@ static int check_for_privs(void){
+   return !!rc;
+ }
+
+-static void init_libproc(void) __attribute__((constructor));
++static void init_libproc(void) __attribute__((constructor(200)));
+ static void init_libproc(void){
+   have_privs = check_for_privs();
+   // ought to count CPUs in /proc/stat instead of relying
+Index: proc/version.c
+===================================================================
+RCS file: /cvsroot/procps/procps/proc/version.c,v
+retrieving revision 1.7
+diff -u -p -r1.7 version.c
+--- a/proc/version.c	9 Feb 2003 07:27:16 -0000	1.7
++++ b/proc/version.c	3 Nov 2010 06:18:54 -0000
+@@ -33,7 +33,7 @@ void display_version(void) {
+
+ int linux_version_code;
+
+-static void init_Linux_version(void) __attribute__((constructor));
++static void init_Linux_version(void) __attribute__((constructor(100)));
+ static void init_Linux_version(void) {
+     static struct utsname uts;
+     int x = 0, y = 0, z = 0;	/* cleared in case sscanf() < 3 */
