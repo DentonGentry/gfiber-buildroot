@@ -8,21 +8,7 @@ BINARIES_DIR=$TARGET_DIR/../images
 
 # Some skeleton files are overwritten by installed packages. Recover them to
 # the customized skeleton files.
-cp -alf "$TARGET_SKELETON/." "$TARGET_DIR/"
-if [ "$PLATFORM_SUFFIX" != "" ]; then
-  find "$TARGET_SKELETON" -name "*.platform_*" | sort | while read line; do
-    ORIG_TARGET_FILE=$(echo $line | sed 's#'"$TARGET_SKELETON"'#'"$TARGET_DIR"'#')
-    NEW_TARGET_FILE=$(echo $ORIG_TARGET_FILE | sed 's#.platform_'"$PLATFORM_SUFFIX"'##g')
-    if [ "$ORIG_TARGET_FILE" != "$NEW_TARGET_FILE" ]; then
-      if [ -d "$ORIG_TARGET_FILE" ]; then
-        mkdir -p "$NEW_TARGET_FILE"
-      else
-        cp -alf "$line" "$NEW_TARGET_FILE"
-      fi
-    fi
-    rm -rf "$ORIG_TARGET_FILE"
-  done
-fi
+support/scripts/copy-skeleton.sh "$TARGET_DIR" "$TARGET_SKELETON" "$PLATFORM_SUFFIX"
 
 # Generate /etc/manifest, /etc/version, /etc/softwaredate
 repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
