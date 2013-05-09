@@ -61,14 +61,9 @@ case $appname in
     vudu $opts 2>&1 | logos vudu
     ;;
   youtube)
-    cd /usr/local/bin/browsertest
-    export PATH=$PWD:$PATH
-    export FONTCONFIG_FILE=/usr/local/bin/browsertest/fonts.conf
-    export FLASH_BYPASS_BROWSER_INVALIDATES=1
-    # User-agent provided by broadcom [CASE#497867]
-    export BRCM_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.12 Safari/535.11"
-    [ -z "$opts" ] && opts='http://www.youtube.com/leanback?version=4'
-    browsertest $opts 2>&1 | logos youtube
+    cd /usr/local/bin/webkitGl2
+    [ -z "$opts" ] && opts='http://www.youtube.com/tv'
+    ./start $opts 2>&1 | logos youtube
     ;;
   waitpower)
     echo 1 > /tmp/poweroff
