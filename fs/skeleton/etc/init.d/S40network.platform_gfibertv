@@ -82,14 +82,25 @@ case "$1" in
 
     if [ -e /dev/bmoca0 ]; then
       echo "distribute IRQ handling between cores"
-      # IRQ 62 (Serial port) & 31 (MoCA) on CPU 1.
+      # IRQ 62 (Serial port) on CPU 1.
       echo 1 >/proc/irq/62/smp_affinity
-      echo 1 >/proc/irq/31/smp_affinity
-      # Ethernet interrupts (18-21) on CPU 2.
-      echo 2 >/proc/irq/18/smp_affinity
-      echo 2 >/proc/irq/19/smp_affinity
-      echo 2 >/proc/irq/20/smp_affinity
-      echo 2 >/proc/irq/21/smp_affinity
+      if is-storage-box; then
+        # Storage Box serves MoCA and Ethernet simultaneously,
+        # so we move them to different CPUs.
+        # TV Box mostly uses MoCA *or* Ethernet, and keeps
+        # CPU1 free to handle the video interrupts.
+        mocacpu=1
+        eth0cpu=2
+      else
+        mocacpu=2
+        eth0cpu=2
+      fi
+      echo $eth0cpu >/proc/irq/18/smp_affinity
+      echo $eth0cpu >/proc/irq/19/smp_affinity
+      echo $mocacpu >/proc/irq/20/smp_affinity
+      echo $mocacpu >/proc/irq/21/smp_affinity
+      echo $mocacpu >/proc/irq/31/smp_affinity
+
       echo "mocacfg boot..."
       mkdir -p /tmp/moca
       mocacfg boot &  # a bit slow, so don't bother waiting
