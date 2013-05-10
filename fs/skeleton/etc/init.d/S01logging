@@ -1,13 +1,9 @@
 #!/bin/sh
 case "$1" in
   start)
-    syslogd -m 0
-    klogd &
     babysit 60 logmark &
     ;;
   stop)
-    pkillwait -x syslogd
-    pkillwait -x klogd
     pkillwait -x logmark
     ;;
   restart|reload)
