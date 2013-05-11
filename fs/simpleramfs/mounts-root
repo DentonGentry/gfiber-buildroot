@@ -52,13 +52,21 @@ if [ -n "$UBI_MTD" ]; then
   fi
 fi
 
+
 replacefirst() {
   local left right
   # same as sed -e 's/$2/$3/' $1
-  right=${1#*${2}}
-  left=${1%%${2}*}
-  echo ${left}${3}${right}
+  right=${1#*$2}
+  left=${1%%$2*}
+  echo "$left$3$right"
 }
+
+
+# Returns true if the string $1 starts with the string $2.
+startswith() {
+  [ "${1#$2}" != "$1" ]
+}
+
 
 # host:path format in root= means we should do an NFS root
 if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
@@ -71,39 +79,45 @@ if [ -n "$NFSROOT" ]; then
   mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -n "$ROOTDEV" ]; then
-  KERNELDEV=$(replacefirst ${ROOTDEV} rootfs kernel)
-  mtd=/dev/mtd$(find_mtd "$ROOTDEV")
-  if [ -n "$mtd" ]; then
-    log "Found root='$ROOTDEV': $mtd"
-    # In this build, the rootdev mtd is always an UBI device.
-    ubidetach -p "$mtd"  # Just in case kernel automounted it somewhere
-    ubiattach -p "${mtd}ro"
-    # In this build, the newly-found mtd is always named 'rootfs'
-    ubi_mtd=$(find_mtd "rootfs")
-    [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
-    ROOTDEV=/dev/mtdblock${ubi_mtd}
+  if startswith "$ROOTDEV" /dev; then
+    mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
+        die "root='$ROOTDEV' mount failed"
+    log "Mounted root='$ROOTDEV'"
   else
-    cat /proc/mtd
-    log "root='$ROOTDEV' is not an mtd device."
-  fi
-  KERNELDEV=/dev/mtdblock$(find_mtd "${KERNELDEV}")
-  args=$(readverity ${KERNELDEV})
-  args=$(replacefirst "${args}" ROOT_DEV "${ROOTDEV}")
-  args=$(replacefirst "${args}" HASH_DEV "${KERNELDEV}")
-  if ! dmsetup create -r vroot --table "${args}"; then
-    read x y z platform junk </proc/cpuinfo
-    if [ "$platform" = "BCM7425B0" ]; then
-      log 'dmsetup failed: platform is old B0 device, continuing anyway.'
-      mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
-          die "root='$ROOTDEV' mount failed"
-      log "Mounted root='$ROOTDEV'"
+    KERNELDEV=$(replacefirst $ROOTDEV rootfs kernel)
+    mtd=/dev/mtd$(find_mtd "$ROOTDEV")
+    if [ -n "$mtd" ]; then
+      log "Found root='$ROOTDEV': $mtd"
+      # In this build, the rootdev mtd is always an UBI device.
+      ubidetach -p "$mtd"  # Just in case kernel automounted it somewhere
+      ubiattach -p "${mtd}ro"
+      # In this build, the newly-found mtd is always named 'rootfs'
+      ubi_mtd=$(find_mtd "rootfs")
+      [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
+      ROOTDEV=/dev/mtdblock$ubi_mtd
     else
-      die "dmsetup failed"
+      cat /proc/mtd
+      log "root='$ROOTDEV' is not an mtd device."
     fi
-  else
-    mount -o ro -t squashfs /dev/mapper/vroot /rootfs ||
-        die "root='$ROOTDEV' mount failed (verity)"
-    log "Mounted root='$ROOTDEV' (verity)"
+    KERNELDEV=/dev/mtdblock$(find_mtd "$KERNELDEV")
+    args=$(readverity $KERNELDEV)
+    args=$(replacefirst "$args" ROOT_DEV "$ROOTDEV")
+    args=$(replacefirst "$args" HASH_DEV "$KERNELDEV")
+    if ! dmsetup create -r vroot --table "$args"; then
+      read x y z platform junk </proc/cpuinfo
+      if [ "$platform" = "BCM7425B0" ]; then
+        log 'dmsetup failed: platform is old B0 device, continuing anyway.'
+        mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
+            die "root='$ROOTDEV' mount failed"
+        log "Mounted root='$ROOTDEV'"
+      else
+        die "dmsetup failed"
+      fi
+    else
+      mount -o ro -t squashfs /dev/mapper/vroot /rootfs ||
+          die "root='$ROOTDEV' mount failed (verity)"
+      log "Mounted root='$ROOTDEV' (verity)"
+    fi
   fi
 else
   die "No root= or nfsroot= provided."
