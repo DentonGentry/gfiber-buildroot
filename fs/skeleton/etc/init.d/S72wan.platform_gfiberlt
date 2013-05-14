@@ -5,6 +5,7 @@
 wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 mgmt_vlan=$(cat /etc/config/mgmtvlan)
+platform=$(cat /etc/platform)
 
 case $1 in
   start)
@@ -19,13 +20,17 @@ case $1 in
     else
       lan_arg="-l $lan_port"
     fi
-    if [ "x" = "x$mgmt_vlan" ]; then
-      (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    if [ "GFLT200" = "$platform" ]; then
+      if [ "x" = "x$mgmt_vlan" ]; then
+        (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+      else
+        (sleep 3 && tpmadm -w $wan_port $lan_arg -m $mgmt_vlan -v) &
+        ip link add link $wan_port name man type \
+          vlan id $mgmt_vlan
+        ifup man
+      fi
     else
-      (sleep 3 && tpmadm -w $wan_port $lan_arg -m $mgmt_vlan -v) &
-      ip link add link $wan_port name man type \
-        vlan id $mgmt_vlan
-      ifup man
+      echo "Do gpon bringup."
     fi
     ;;
   stop)

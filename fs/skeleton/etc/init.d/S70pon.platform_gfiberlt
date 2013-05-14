@@ -1,12 +1,16 @@
 #!/bin/sh
 
+platform=$(cat /etc/platform)
+
 case "$1" in
   start)
     echo "[RCS]:  Add devices"
     ######################################
 
-    mknod /dev/mmpdev c 10 61
-    mknod /dev/mmpevent c 10 60
+    if [ "GFLT200" = "$platform" ]; then
+      mknod /dev/mmpdev c 10 61
+      mknod /dev/mmpevent c 10 60
+    fi
 
     echo "[RCS]: Start XPON"
     ######################################

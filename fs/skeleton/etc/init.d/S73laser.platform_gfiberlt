@@ -3,6 +3,11 @@
 #TODO(zixia): change be placed between S70pon and S72wan
 #Pending 802.3ah OAM implementation
 
+platform=$(cat /etc/platform)
+if [ "GFLT200" != "$platform" ]; then
+  exit
+fi
+
 case "$1" in
   start)
     echo "Starting laser."

@@ -1,5 +1,15 @@
 #!/bin/sh
 
+platform=$(cat /etc/platform)
+if [ $platform != "GFLT200" ]; then
+  # For GFLT200 leave the config files in their default state.
+  # For other platforms switch to gpon mode.
+  echo "[RCS]: Switching to GPON mode."
+  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml /etc/xml_params/pon_type_xml_cfg_file.xml
+  cp -sf /etc/xml_params/gpon_xml_cfg_file.xml /etc/xml_params/pon_xml_cfg_file.xml
+  cp -sf /etc/xml_params/tpm_xml_cfg_file_gpon.xml /etc/xml_params/tpm_xml_cfg_file.xml
+fi
+
 case "$1" in
   start)
     echo "[RCS]: Start Data Configuration"
