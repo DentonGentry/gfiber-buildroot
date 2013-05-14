@@ -4,6 +4,11 @@ choice
 	help
 	  Set the debug level for gcc
 
+config BR2_PACKAGE_NOPLATFORM
+	bool "No particular board support"
+	help
+	  No support for any particular board.
+
 config BR2_PACKAGE_BRUNO
 	bool "Enable Bruno Board"
 	help
@@ -23,6 +28,7 @@ config BR2_TARGET_GOOGLE_PLATFORM
 	string
 	default "gfibertv"	if BR2_PACKAGE_BRUNO
 	default "gfiberlt"	if BR2_PACKAGE_PRISM
+	default "noplatform"	if BR2_PACKAGE_NOPLATFORM
 
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"

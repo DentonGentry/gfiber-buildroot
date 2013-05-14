@@ -486,12 +486,8 @@ endif
 
 $(BUILD_DIR)/.root:
 	mkdir -p $(TARGET_DIR)
-	if [ -d "$(TARGET_SKELETON)" ]; then \
-		cp -fla $(TARGET_SKELETON)/* $(TARGET_DIR)/; \
-	fi
+	support/scripts/copy-skeleton.sh $(TARGET_DIR) $(TARGET_SKELETON) $(BR2_TARGET_GOOGLE_PLATFORM)
 	touch $(STAGING_DIR)/.fakeroot.00000;
-	-find $(TARGET_DIR) -type d -name CVS -print0 -o -name .svn -print0 | xargs -0 rm -rf
-	-find $(TARGET_DIR) -type f \( -name .empty -o -name '*~' \) -print0 | xargs -0 rm -rf
 	touch $@
 
 $(TARGET_DIR): $(BUILD_DIR)/.root

@@ -1,0 +1,39 @@
+From 050ff895323862fe5eac7c1dc3cd5de93848803f Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 24 Apr 2013 05:02:20 -0400
+Subject: [PATCH] Support cross compiling.
+
+---
+ makefile |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/makefile b/makefile
+index 78a93e4..eec6089 100644
+--- a/makefile
++++ b/makefile
+@@ -1,17 +1,17 @@
+ all: crashme pddet
+ 
+ crashme:	crashme.o
+-	cc -o crashme crashme.o
++	$(CC) -o crashme crashme.o
+ crashme.o: crashme.c
+-	cc -c crashme.c
++	$(CC) -c crashme.c
+ 
+ pddet:	pddet.o
+-	cc -o pddet pddet.o
++	$(CC) -o pddet pddet.o
+ pddet.o: pddet.c
+-	cc -c pddet.c
++	$(CC) -c pddet.c
+ 
+ clean:
+-	-rm crashme pddet *.o core crashme.txt crashme.zip \
++	$(RM) crashme pddet *.o core crashme.txt crashme.zip \
+             crashme.tgz
+ 
+ # create for dist for people without nroff
+-- 
+1.7.9.dirty
+

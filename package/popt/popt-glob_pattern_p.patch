@@ -1,11 +1,64 @@
---- popt-orig/poptconfig.c	2012-06-09 09:59:20.924022079 -0700
-+++ popt-1.16/poptconfig.c	2012-06-09 09:58:17.052273915 -0700
-@@ -42,7 +42,7 @@
+From 19cadd47fe2afa0fa67a136c216b04f75cb2df20 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 10 May 2013 20:28:24 -0400
+Subject: [PATCH] Different uClibc versions have different glob_pattern_p
+ defs.
+
+Just always use ours, since samba's options apparently have trouble with
+some variants of the uClibc one.
+---
+ poptconfig.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/poptconfig.c b/poptconfig.c
+index 7840d0c..1e1f2d0 100644
+--- a/poptconfig.c
++++ b/poptconfig.c
+@@ -36,17 +36,14 @@ extern int glob (const char *__pattern, int __flags,
+ extern void globfree (/*@only@*/ glob_t *__pglob)
+ 	/*@modifies *__pglob @*/;
+ 
+-/* XXX _GNU_SOURCE ifdef and/or retrofit is needed for portability. */
+-extern int glob_pattern_p (const char *__pattern, int __quote)
+         /*@*/;
  /*@=declundef =exportheader =incondefs =protoparammatch =redecl =type @*/
  #endif	/* __LCLINT__ */
  
 -#if !defined(__GLIBC__)
-+#if !defined(__GLIBC__) || defined(__UCLIBC__)
  /* Return nonzero if PATTERN contains any metacharacters.
     Metacharacters can be quoted with backslashes if QUOTE is nonzero.  */
  static int
+-glob_pattern_p (const char * pattern, int quote)
++my_glob_pattern_p (const char * pattern, int quote)
+ 	/*@*/
+ {
+     const char * p;
+@@ -72,7 +69,6 @@ glob_pattern_p (const char * pattern, int quote)
+     }
+     return 0;
+ }
+-#endif	/* !defined(__GLIBC__) */
+ 
+ /*@unchecked@*/
+ static int poptGlobFlags = 0;
+@@ -105,7 +101,7 @@ static int poptGlob(/*@unused@*/ UNUSED(poptContext con), const char * pattern,
+ 	pat++;
+ 
+ #if defined(HAVE_GLOB_H)
+-    if (glob_pattern_p(pat, 0)) {
++    if (my_glob_pattern_p(pat, 0)) {
+ 	glob_t _g, *pglob = &_g;
+ 
+ 	if (!glob(pat, poptGlobFlags, poptGlob_error, pglob)) {
+@@ -245,7 +241,7 @@ static int configAppMatch(poptContext con, const char * s)
+ 	return rc;
+ 
+ #if defined(HAVE_GLOB_H) && defined(HAVE_FNMATCH_H)
+-    if (glob_pattern_p(s, 1)) {
++    if (my_glob_pattern_p(s, 1)) {
+ /*@-bitwisesigned@*/
+ 	static int flags = FNM_PATHNAME | FNM_PERIOD;
+ #ifdef FNM_EXTMATCH
+-- 
+1.7.9.dirty
+

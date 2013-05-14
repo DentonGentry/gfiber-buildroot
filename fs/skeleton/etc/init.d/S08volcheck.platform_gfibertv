@@ -31,34 +31,10 @@ check_mtd()
 }
 
 
-find_badblock()
-{
-  # This routine checks for bad block of a partition name.
-  # ${1} - partition name
-  local a b c
-  cat /proc/sys/dev/repartition/bbinfo |
-  while read a b; do
-    c=${a%:*}
-    [ $c = $1 ] && echo "$b" && break
-  done
-}
-
-
 fail()
 {
   echo "$(basename $0):" "$@" >&2
   [ -f $BADBLOCK_FILE ] || echo "" >$BADBLOCK_FILE
-}
-
-
-check_badblock()
-{
-  local bb=$(find_badblock $1)
-  if [ "$bb" = "" ]; then
-    echo "Failed to get badblock information for $1!"
-  elif [ $bb -gt 0 ]; then
-    fail "$1 has $bb bad blocks!"
-  fi
 }
 
 
@@ -195,14 +171,6 @@ case "$1" in
     done
     echo "Bad Blocks: $BBT"
 
-    # MLC units *all* have two bad blocks in kernel0 (chip design flaw).
-    # Don't bother checking, they will all fail.
-    MB=$(cat /proc/sys/dev/repartition/nand_size_mb)
-    if [ $MB -ne 4096 ]; then
-      check_badblock kernel0
-    fi
-    check_badblock kernel1
-
     mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
       recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
 
@@ -214,6 +182,8 @@ case "$1" in
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
     [ ! -d /tmp/vudu ] && mkdir -p /tmp/vudu
+
+    rm -rf /user/diag/diagdb.bin /user/diag/*.tmp /user/diag/log
 
     # /config must be writeable by non-root
     chown bin.sys /config

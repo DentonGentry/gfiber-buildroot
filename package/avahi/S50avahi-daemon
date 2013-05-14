@@ -4,7 +4,7 @@
 
 case "$1" in
   start)
-    babysit 60 avahi-daemon 2>&1 | logger -t avahi &
+    babysit 60 avahi-daemon 2>&1 | logos avahi &
     ;;
   stop)
     avahi-daemon -c && avahi-daemon -k

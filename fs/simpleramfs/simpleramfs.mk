@@ -12,8 +12,12 @@ SIMPLERAMFS_DEPENDENCIES= \
 	util-linux \
 	lvm2 \
 	google_signing \
-	mtd \
-	google_hnvram
+	mtd
+
+ifeq ($(BR2_PACKAGE_BRUNO),y)
+SIMPLERAMFS_DEPENDENCIES+=google_hnvram
+HNVRAM_BIN=$(TARGET_DIR)/usr/bin/hnvram
+endif
 
 define SIMPLERAMFS_EXTRACT_CMDS
 	mkdir -p $(@D)
@@ -58,7 +62,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/usr/sbin/dmsetup \
 		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
-		$(TARGET_DIR)/usr/bin/hnvram \
+		$(HNVRAM_BIN) \
 		$(@D)/fs/bin/
 
 	# strip all the binaries

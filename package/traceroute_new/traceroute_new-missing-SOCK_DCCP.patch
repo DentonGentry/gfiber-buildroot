@@ -1,0 +1,31 @@
+From a8d2dbf49f1669ac7aa9a1ec51bdf3197d3c9e6a Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 10 May 2013 20:13:45 -0400
+Subject: [PATCH] Some libc versions don't support SOCK_DCCP.
+
+If it's missing, just don't compile the DCCP module.
+---
+ traceroute/mod-dccp.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/traceroute/mod-dccp.c b/traceroute/mod-dccp.c
+index 744e3e6..5a917b5 100644
+--- a/traceroute/mod-dccp.c
++++ b/traceroute/mod-dccp.c
+@@ -17,6 +17,7 @@
+ 
+ #include "traceroute.h"
+ 
++#ifdef SOCK_DCCP
+ 
+ #define DEF_SERVICE_CODE 	1885957735
+ 
+@@ -288,3 +289,5 @@ static tr_module dccp_ops = {
+ };
+ 
+ TR_MODULE (dccp_ops);
++
++#endif /* SOCK_DCCP */
+-- 
+1.7.9.dirty
+

@@ -12,14 +12,20 @@ PYTHON_NETIFACES_DEPENDENCIES = python host-python-setuptools host-python-distut
 
 define PYTHON_NETIFACES_BUILD_CMDS
 	(cd $(@D); \
+		CC="$(TARGET_CC)"		\
+		CFLAGS="$(TARGET_CFLAGS)" 	\
+		LDSHARED="$(TARGET_CC) -shared" \
+		LDFLAGS="$(TARGET_LDFLAGS)" 	\
+	$(HOST_DIR)/usr/bin/python setup.py build_ext \
+	--include-dirs=$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR))
+	(cd $(@D); \
 		PYTHONXCPREFIX="$(STAGING_DIR)/usr/" \
 		LDFLAGS="-L$(STAGING_DIR)/lib -L$(STAGING_DIR)/usr/lib" \
 	$(HOST_DIR)/usr/bin/python setup.py build -x)
 endef
 
 define PYTHON_NETIFACES_INSTALL_TARGET_CMDS
-	(cd $(@D); PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
-	$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
+	cp $(@D)/build/lib.*/netifaces.so $(TARGET_DIR)/usr/lib/python2.7/site-packages/
 endef
 
 $(eval $(call GENTARGETS))

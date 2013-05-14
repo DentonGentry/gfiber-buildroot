@@ -108,6 +108,13 @@ def main():
   subprocess.call('logmark-once')
   Marker(MARK_START)
 
+  # In case the system crashes after we finish uploading but before the next
+  # time this script runs, we want to make sure there's at least one logmark
+  # in the *next* segment as well.  Otherwise the server won't be able to
+  # feel certain about what version that segment came from.  So add it again
+  # now.
+  subprocess.call('logmark-once')
+
   p = subprocess.Popen(['toolbox', 'dmesg'], stdout=subprocess.PIPE)
   dmesg = p.stdout.read()
   retval = p.wait()

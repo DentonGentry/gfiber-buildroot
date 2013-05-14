@@ -1,0 +1,8 @@
+config BR2_PACKAGE_CRASHME
+	bool "crashme"
+	help
+	  A simple program for testing operating system robustness.
+	  It invokes random data as if it were a procedure, then catches
+	  fatal signals and tries to continue.
+
+	  http://people.delphiforums.com/gjc/crashme.html
