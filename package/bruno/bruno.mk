@@ -9,6 +9,14 @@ BRUNO_STAGING_PATH=usr/lib/bruno
 BRUNO_DEPENDENCIES=humax_misc python py-setuptools
 BRUNO_DEPENDENCIES+=host-python-crypto
 
+ifeq      ($(BR2_arm),y)
+BRUNO_ARCH   := arm
+else ifeq ($(BR2_mips),y)
+BRUNO_ARCH   := mips
+else ifeq ($(BR2_mipsel),y)
+BRUNO_ARCH   := mips
+endif
+
 define BRUNO_BUILD_CMDS
 	HOSTDIR=$(HOST_DIR) \
 	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
@@ -19,6 +27,7 @@ define BRUNO_BUILD_CMDS
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
 	PKG_CONFIG_PATH="$(@D)/base:$(STAGING_DIR)/usr/lib/pkgconfig:$(PKG_CONFIG_PATH)" \
+	BRUNO_ARCH=$(BRUNO_ARCH) \
 	$(MAKE) -C $(@D)
 endef
 
@@ -38,6 +47,7 @@ define BRUNO_INSTALL_TARGET_CMDS
 	DESTDIR=$(TARGET_DIR) \
 	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
 	BRUNO_PROD_BUILD=$(BR2_PACKAGE_GOOGLE_PROD) \
+	BRUNO_ARCH=$(BRUNO_ARCH) \
 	$(MAKE) -C $(@D) install
 
 	# registercheck
