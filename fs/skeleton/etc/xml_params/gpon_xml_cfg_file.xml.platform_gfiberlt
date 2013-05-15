@@ -2,7 +2,7 @@
 <cnfg>
     <PON>
         <!--  PON serial number - up to 8 symbols   -->
-        <PON_serial_num>MRVL0123</PON_serial_num>
+        <PON_serial_num>MRVL00010203</PON_serial_num>
         <!--  PON serial source: 0 - xml, 1 - digit part is taken from MAC lower 4 bytes-->
         <PON_serial_src>1</PON_serial_src>
         <!--  PON password - up to 10 symbols   -->
@@ -15,10 +15,20 @@
         <PON_tcont_reset>1</PON_tcont_reset>
         <!--  PON Dying Gasp polarity: 0 = low, 1 = high    -->
         <PON_DG_polarity>1</PON_DG_polarity>
-        <!--  PON XVR polarity: 1 = low, 0 = high    -->
+        <!--  PON XVR Burst Enable Polarity: 0 - high; 1 - low    -->
+        <PON_XVR_burst_enable_polarity>0</PON_XVR_burst_enable_polarity>
+        <!--  PON XVR Polarity: 0 - high; 1 - low    -->
         <PON_XVR_polarity>0</PON_XVR_polarity>
+        <!--  P2P XVR burst enable polarity: 0 - high; 1 - low    -->
+        <P2P_XVR_burst_enable_polarity>1</P2P_XVR_burst_enable_polarity>
+        <!--  P2P XVR Polarity: 0 - high; 1 - low    -->
+        <P2P_XVR_polarity>0</P2P_XVR_polarity>
         <!--  gem ports restore after return from State 7: 0 = FALSE, 1 = TRUE -->
         <PON_gem_restore>1</PON_gem_restore>
+        <!--  Psa FEC Ind Bit Hyst: number of fram 1-4 -->
+        <PON_fec_hyst>1</PON_fec_hyst>
+        <!--  Coupling Mode: 0 = DC, 1 = AC -->
+        <PON_coupling_mode>1</PON_coupling_mode>
     </PON>
 
 

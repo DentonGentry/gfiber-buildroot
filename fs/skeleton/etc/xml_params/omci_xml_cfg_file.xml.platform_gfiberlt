@@ -15,11 +15,13 @@
         <!--  The ONT supports VLAN mod in cust flow = true.  -->
         <custVlanMod       enabled="true"  />
         <!--  The action for OMCI default rules come from OMCI itself.  0:pass all packet, 1:discard all packet -->
-        <defaultAction     type="1"  />        
+        <defaultAction     type="0"  />
         <!--  Enable or disable MAC add learning in switch UNI port -->
-        <macLearn          enabled="true"  />    
+        <macLearn          enabled="true"  />
         <!--  Enable or disable multicast flooding  -->
-        <mcFlooding        enabled="true"  />         
+        <mcFlooding        enabled="false"  />
+        <!--  Enable or disable setting PPTP UNI MTU size -->
+        <uniMtu            enabled="false"  />
         <!--  The ONT supports voice application = true.  -->
         <voiceSupport      enabled="false"  />
         <!--  The ONT supports VoIP = true.  -->
@@ -31,41 +33,44 @@
         <!--  VoIP configuration is done by OMCI = true. Reported in VoIP Config Data ME.  -->
         <voipConfigByOmci  enabled="true"  />
 
-        <!--  ONT Type, 0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU.  -->
-        <ontType               type="0"  />
+        <!--  ONT Type, 0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU   -->
+        <!-- <ontType               type="0"  /> -->
+        <ontType               type="6"  />
         <!--  Native HGU mode: true = OMCI standard; else false.  -->
         <nativeHguMode         enabled="true"  />
         <!--  Standard VEIP numbering: true = OMCI standard; else false.  -->
         <standardVeipNumbering enabled="false"  />
 
         <!--  Eth UNI port isolation: true = isolated; Not isolated.  -->
-        <ethPortIsolated enabled="true"  />        
+        <ethPortIsolated enabled="false"  />
 
         <!--  Multicast service package table: true = OMCI standard; else false.  -->
-        <mcastServicePackageG988 enabled="true"  />        
+        <mcastServicePackageG988 enabled="true"  />
         <!--  CTC parametes                                                                                      -->
         <!--  enabled: whether report CTC MEs, true: report,false:do not report                                  -->
         <!--  version: 0: CTC GPON 2.0, 1: CTC GPON 2.0 Amd1                                                     -->
-        <!--  xrvType: 0: do not support control optical TR/RX, 1: support setting TX, 2: Support setting TX/RX  -->        
+        <!--  xrvType: 0: do not support control optical TR/RX, 1: support setting TX, 2: Support setting TX/RX  -->
         <ctcParameter      enabled="true"  version="1"  xrvType="2"  />
         <!--  CTC LOID authentification, MAX length: operator(4bytes), loid(24bytes), password(12bytes) .  -->
-        <ctcLOIDAuth       operator="CTC" loid="MARVELL123" password="123456" />   
-       
+        <ctcLOIDAuth       operator="CTC" loid="MARVELL123" password="123456" />
+
         <!--  OMCI frame capture in VBS format  -->
         <omciCellCap       enabled="true"  />
 
         <!--  The number of Ethernet ports. Usually 4.  -->
-	<ethernetInfo      numPorts="1" />
+        <ethernetInfo      numPorts="1" />
         <!--  The number of POTS ports. Usually 2.  -->
-	<potsInfo          numPorts="0" />
+        <potsInfo          numPorts="0" />
 
-        <!--  The slot number for Ethernet ports. Usually 1. Must be different from POTS, ANI, VEIP slot numbers -->
+        <!--  The slot number for Ethernet ports. Usually 1. Must be different from POTS, WIFI, ANI, VEIP slot numbers -->
         <ethernetSlotInfo  slotNumber="1" />
-        <!--  The slot number for POTS ports. Usually 2. Must be different from Ethernet, ANI, VEIP slot numbers -->
+        <!--  The slot number for POTS ports. Usually 2. Must be different from Ethernet, WIFI, ANI, VEIP slot numbers -->
         <potsSlotInfo      slotNumber="2" />
-        <!--  The slot number for ANI ports. Usually 128 (0x80). Must be different from Ethernet, POTS, VEIP slot numbers -->
+        <!--  The slot number for WIFI ports. Usually 6. Must be different from Ethernet, POTS, ANI, VEIP slot numbers -->
+        <wifiSlotInfo      slotNumber="6" />
+        <!--  The slot number for ANI ports. Usually 128 (0x80). Must be different from Ethernet, WIFI, POTS, VEIP slot numbers -->
         <aniSlotInfo       slotNumber="128" />
-        <!--  The slot number for VEIP ports. Usually 14. Must be different from Ethernet, POTS, ANI slot numbers -->
+        <!--  The slot number for VEIP ports. Usually 14. Must be different from Ethernet, WIFI, POTS, ANI slot numbers -->
         <veipSlotInfo       slotNumber="14" />
 
         <!--  The expected Ethernet plug-in unit type is used in Cardholder ME expected plug-in unit type attribute,  -->
@@ -80,11 +85,6 @@
         <!--  The number of the first non OMCI T-CONT. Usually tcontId = 1 (0x8001, 0x8002.. numbering)  -->
         <!--  Occasionally tcontId = 0 (0x8000, 0x8001.. numbering) is used.  -->
         <firstNonOmciTcontInfo tcontId="1" />
-
-        <!--  Enabled - APM enables PM on relevant MEs, PM are called. Disabled - Enabled - APM disables PM on relevant MEs, PM are not called.  -->
-        <apmPMActivation enabled="false" />
-        <!--  Enabled - APM enables alarms on relevant MEs, alarms are called. Disabled - Enabled - APM disables alarms on relevant MEs, alarms are not called.  -->
-        <apmAlarmActivation enabled="true" />
 
         <!--  virtualQueue : Virtual TX queue created and reported by OMCI   -->
         <!--  id           : GMAC number, 0:GMAC0, 2:T-CONT0, 3:T-CONT1, ...9:T-CONT7, currently does not support GMAC1  -->
@@ -125,11 +125,11 @@
     </OMCI_DEBUG>
 
     <OMCI_IOT>
-    
+
         <me name="ONU-G" instance="0">
             <attrib enabled="false"  name="vendorId" value="IAMB" />
-            <attrib enabled="false"  name="version" value="SDK_2.6.75_33" />   
-            <attrib enabled="false"  name="trafficOption" value="1" />               
+            <attrib enabled="false"  name="version" value="SDK_2.6.25_1" />
+            <attrib enabled="false"  name="trafficOption" value="1" />
             <attrib enabled="false" name="onuSurvivalTime"  value="210" />
         </me>
 
