@@ -5,7 +5,8 @@ case "$1" in
       # This takes a half-second or so to start, so wait in the background
       # in order to speed up booting.
       wait-until-created /var/run/gpio-mailbox
-      babysit 5 sysmgr --interval 15000 2>&1 | logos sysmgr &
+      babysit 5 sysmgr --interval 15000 --hdd_temp_interval 300000 2>&1 \
+        | logos sysmgr &
     ) &
     ;;
   stop)
