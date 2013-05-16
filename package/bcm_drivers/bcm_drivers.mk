@@ -31,11 +31,9 @@ endif
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI),y)
 
-ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
+# NOTE(apenwarr): this could also be set to 'nodebug'.
+#  But I don't know what difference that makes.
 WIFI_CONFIG_PREFIX=debug
-else
-WIFI_CONFIG_PREFIX=nodebug
-endif
 
 define BCM_DRIVERS_BUILD_WIFI
 	$(TARGET_MAKE_ENV) $(MAKE1) \

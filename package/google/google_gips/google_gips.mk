@@ -8,12 +8,6 @@ GOOGLE_GIPS_DEPENDENCIES=bruno host-scons host-swtoolkit google_vc
 GOOGLE_GIPS_INSTALL_STAGING=YES
 GOOGLE_GIPS_INSTALL_TARGET=YES
 
-ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
-define GOOGLE_GIPS_INSTALL_TEST_TARGET_CMDS
-	$(INSTALL) -D -m 0555 $(@D)/applications/voice_engine/engine/4.0/test/LinuxTest/test $(TARGET_DIR)/home/test/gips_test
-endef
-endif
-
 define GOOGLE_GIPS_BUILD_CMDS
 	PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
@@ -28,7 +22,7 @@ define GOOGLE_GIPS_INSTALL_STAGING_CMDS
 endef
 
 define GOOGLE_GIPS_INSTALL_TARGET_CMDS
-	$(GOOGLE_GIPS_INSTALL_TEST_TARGET_CMDS)
+	$(INSTALL) -D -m 0555 $(@D)/applications/voice_engine/engine/4.0/test/LinuxTest/test $(TARGET_DIR)/home/test/gips_test
 endef
 
 $(eval $(call GENTARGETS))

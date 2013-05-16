@@ -1,5 +1,4 @@
 # Until we add a proper java package
-# :TODO: (by kedong, update BR2_GCC_SHARED_LIBGCC when new toolchain is setup)
 GOOGLE_JAVA_HOME=/usr/local/buildtools/java/jdk
 
 BRUNO_SITE=repo://vendor/google/platform
@@ -15,6 +14,8 @@ else ifeq ($(BR2_mips),y)
 BRUNO_ARCH   := mips
 else ifeq ($(BR2_mipsel),y)
 BRUNO_ARCH   := mips
+else ifeq ($(BR2_i386),y)
+BRUNO_ARCH   := i386
 endif
 
 define BRUNO_BUILD_CMDS

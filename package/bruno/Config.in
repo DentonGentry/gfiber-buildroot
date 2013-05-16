@@ -23,13 +23,6 @@ config BR2_PACKAGE_BRUNO_TEST
 	help
 	  Enable packages for test.
 
-config BR2_PACKAGE_BRUNO_DEBUG
-	bool "Bruno Debug Build"
-	default n
-	select BR2_ENABLE_DEBUG
-	help
-	  Enable debug code.
-
 config BR2_PACKAGE_BRUNO_APPS
 	bool "Bruno Applications (ie. SageTV)"
 	default n
