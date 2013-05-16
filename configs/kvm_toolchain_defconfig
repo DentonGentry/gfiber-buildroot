@@ -2,6 +2,7 @@ BR2_DL_DIR="${TOPDIR}/../vendor/opensource/tarballs"
 BR2_CCACHE=y
 BR2_ENABLE_DEBUG=y
 BR2_OPTIMIZE_2=y
+BR2_UCLIBC_CONFIG="toolchain/uClibc/bruno.config"
 BR2_BINUTILS_VERSION_2_21=y
 BR2_PACKAGE_GDB_HOST=y
 BR2_GDB_VERSION_7_2=y

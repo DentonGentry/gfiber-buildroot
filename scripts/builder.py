@@ -215,7 +215,7 @@ class BuildRootBuilder(object):
     Info('app: config file is %r', self.opt.config)
     if self.opt.platform_only:
       self.BuildConfig(self.opt.config,
-                       BR2_PACKAGE_BRUNO_APPS=False)
+                       BR2_PACKAGE_GOOGLE_PLATFORM_ONLY=True)
     else:
       self.BuildConfig(self.opt.config)
     if self.opt.fresh >= 1:

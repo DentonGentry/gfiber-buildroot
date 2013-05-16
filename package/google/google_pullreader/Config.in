@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_PULLREADER
         bool "google_pullreader"
+        select BR2_PACKAGE_GOOGLE_FFMPEG
         help
           Builds the SageTV pullreader

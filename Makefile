@@ -674,15 +674,15 @@ defconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 
 %_defconfig: $(BUILD_DIR)/buildroot-config/conf $(TOPDIR)/configs/%_defconfig outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config
-	@$(COMMON_CONFIG_ENV) $< --defconfig=$(TOPDIR)/configs/$@ $(CONFIG_CONFIG_IN)
-
-%_defconfig_rebuild:  $(BUILD_DIR)/buildroot-config/conf outputmakefile
-	@make ${EXTRAMAKEARGS} $*_defconfig
-	@if [[ -e $(CONFIG_DIR)/.localconfig ]]; then \
-		cat $(CONFIG_DIR)/.localconfig >> $(CONFIG_DIR)/.config; \
-		rm $(CONFIG_DIR)/.localconfig; \
+	@cp $(TOPDIR)/configs/$@ $(BUILD_DIR)/buildroot-config/defconfig.in
+	@if [ -e $(CONFIG_DIR)/.localconfig ]; then \
+		cat $(CONFIG_DIR)/.localconfig \
+			>>$(BUILD_DIR)/buildroot-config/defconfig.in; \
 	fi
-	@$(COMMON_CONFIG_ENV) $< --defconfig=$(CONFIG_DIR)/.config $(CONFIG_CONFIG_IN)
+	@$(COMMON_CONFIG_ENV) $< --defconfig=$(BUILD_DIR)/buildroot-config/defconfig.in $(CONFIG_CONFIG_IN)
+
+%_defconfig_rebuild:
+	@make ${EXTRAMAKEARGS} $*_defconfig
 
 savedefconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config

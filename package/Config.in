@@ -600,7 +600,6 @@ endif
 endmenu
 
 menu "Bruno custom build"
-source "package/bruno/Config.in"
 source "package/google/Config.in"
 source "package/humax_misc/Config.in"
 endmenu

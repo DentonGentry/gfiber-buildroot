@@ -14,7 +14,7 @@ SIMPLERAMFS_DEPENDENCIES= \
 	google_signing \
 	mtd
 
-ifeq ($(BR2_PACKAGE_BRUNO),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_HNVRAM),y)
 SIMPLERAMFS_DEPENDENCIES+=google_hnvram
 HNVRAM_BIN=$(TARGET_DIR)/usr/bin/hnvram
 endif
