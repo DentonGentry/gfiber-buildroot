@@ -29,6 +29,8 @@ define GOOGLE_FFMPEG_CONFIGURE_CMDS
                 --arch=$(BR2_ARCH) \
                 --target-os=linux \
                 --extra-cflags='-fPIC -DEM8622' \
+                --disable-mmx \
+                --disable-mmx2 \
                 --disable-muxers \
                 --disable-encoders \
                 --disable-shared \
