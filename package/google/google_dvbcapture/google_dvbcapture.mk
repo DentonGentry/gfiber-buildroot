@@ -1,5 +1,5 @@
 GOOGLE_DVBCAPTURE_SITE=repo://vendor/google/dvbcapture
-GOOGLE_DVBCAPTURE_DEPENDENCIES=linux google_tvstreamparser
+GOOGLE_DVBCAPTURE_DEPENDENCIES=google_tvstreamparser
 
 define GOOGLE_DVBCAPTURE_BUILD_CMDS
         TVSTREAMPARSER_PATH=$(GOOGLE_TVSTREAMPARSER_DIR)/tvstreamparser/ \

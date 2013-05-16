@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_LIBJINGLE_SITE=repo://vendor/opensource/libjingle
-GOOGLE_LIBJINGLE_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit google_gips google_webrtc
+GOOGLE_LIBJINGLE_DEPENDENCIES=bruno bcm_alsa host-scons host-swtoolkit google_gips google_webrtc
 
 PATH_TO_SWTOOLKIT=$(HOST_DIR)/usr/lib/swtoolkit
 

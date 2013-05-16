@@ -1,5 +1,5 @@
 GOOGLE_IMAGELOADJNI_SITE=repo://vendor/google/imageloadjni
-GOOGLE_IMAGELOADJNI_DEPENDENCIES=linux libpng jpeg libungif tiff
+GOOGLE_IMAGELOADJNI_DEPENDENCIES=libpng jpeg libungif tiff
 
 define GOOGLE_IMAGELOADJNI_BUILD_CMDS
         PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \

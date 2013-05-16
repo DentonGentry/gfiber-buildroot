@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_WEBRTC_SITE=repo://vendor/opensource/webrtc
-GOOGLE_WEBRTC_DEPENDENCIES=linux bruno bcm_alsa host-scons host-swtoolkit google_vc
+GOOGLE_WEBRTC_DEPENDENCIES=bruno bcm_alsa host-scons host-swtoolkit google_vc
 GOOGLE_WEBRTC_INSTALL_STAGING=YES
 GOOGLE_WEBRTC_INSTALL_TARGET=NO
 
