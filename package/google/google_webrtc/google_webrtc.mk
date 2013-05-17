@@ -9,11 +9,9 @@ GOOGLE_WEBRTC_INSTALL_STAGING=YES
 GOOGLE_WEBRTC_INSTALL_TARGET=NO
 
 
-ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
-	BUILD_TYPE=Debug
-else
-	BUILD_TYPE=Release
-endif
+# NOTE(apenwarr): This could also be set to 'Release'.
+#  But I don't know what difference that makes.
+BUILD_TYPE=Debug
 
 # "make merged_lib" creates the library. "make" creates all the binary test files
 define GOOGLE_WEBRTC_BUILD_CMDS
