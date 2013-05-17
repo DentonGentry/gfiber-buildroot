@@ -4,7 +4,8 @@
 #
 #############################################################
 GOOGLE_GIPS_SITE=repo://vendor/google/gips
-GOOGLE_GIPS_DEPENDENCIES=bruno host-scons host-swtoolkit google_vc
+GOOGLE_GIPS_DEPENDENCIES=bruno host-scons host-swtoolkit host-pkg-config \
+	google_vc
 GOOGLE_GIPS_INSTALL_STAGING=YES
 GOOGLE_GIPS_INSTALL_TARGET=YES
 

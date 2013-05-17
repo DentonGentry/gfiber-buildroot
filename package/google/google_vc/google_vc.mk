@@ -6,7 +6,7 @@
 GOOGLE_VC_SITE=repo://vendor/google/telepresence
 GOOGLE_VC_INSTALL_STAGING=YES
 
-GOOGLE_VC_DEPENDENCIES=bcm_nexus
+GOOGLE_VC_DEPENDENCIES=bcm_nexus host-pkg-config
 GOOGLE_VC_INSTALL_STAGING=YES
 
 GOOGLE_VC_STAGING_PATH=usr/lib/vc
