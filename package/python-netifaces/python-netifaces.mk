@@ -8,7 +8,7 @@ PYTHON_NETIFACES_VERSION = 0.7
 PYTHON_NETIFACES_SOURCE  = netifaces-$(PYTHON_NETIFACES_VERSION).tar.gz
 PYTHON_NETIFACES_SITE    = http://alastairs-place.net/projects/netifaces
 
-PYTHON_NETIFACES_DEPENDENCIES = python host-python-setuptools host-python-distutilscross
+PYTHON_NETIFACES_DEPENDENCIES = python py-setuptools host-py-setuptools host-py-distutilscross
 
 define PYTHON_NETIFACES_BUILD_CMDS
 	(cd $(@D); \
@@ -21,7 +21,7 @@ define PYTHON_NETIFACES_BUILD_CMDS
 	(cd $(@D); \
 		PYTHONXCPREFIX="$(STAGING_DIR)/usr/" \
 		LDFLAGS="-L$(STAGING_DIR)/lib -L$(STAGING_DIR)/usr/lib" \
-	$(HOST_DIR)/usr/bin/python setup.py build -x)
+	$(HOST_DIR)/usr/bin/python setup.py build)
 endef
 
 define PYTHON_NETIFACES_INSTALL_TARGET_CMDS
