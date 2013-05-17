@@ -259,7 +259,6 @@ source "package/python-mad/Config.in"
 source "package/python-netifaces/Config.in"
 source "package/python-pygame/Config.in"
 source "package/python-serial/Config.in"
-source "package/python-setuptools/Config.in"
 endmenu
 endif
 source "package/ruby/Config.in"
