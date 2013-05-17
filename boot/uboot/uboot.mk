@@ -41,9 +41,11 @@ UBOOT_MAKE_OPTS += \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
 	ARCH=$(UBOOT_ARCH)
 
-ifeq ($(BR2_PACKAGE_PRISM),y)
+# Options added for prism
+# TODO(apenwarr): consider making a buildroot config option for this.
+#  Currently it only applies to prism devices, not necessarily all the devices
+#  we use that might want uboot.
 UBOOT_MAKE_OPTS += SPIBOOT=1 SPI=1 DDR3=1 LARGEKERNEL=1
-endif
 
 # Helper function to fill the U-Boot config.h file.
 # Argument 1: option name
@@ -67,7 +69,6 @@ UBOOT_POST_PATCH_HOOKS += UBOOT_APPLY_CUSTOM_PATCHES
 endif
 
 define UBOOT_CONFIGURE_CMDS
-	$(if $(BR2_PACKAGE_PRISM), $(MAKE) -C $(@D) $(UBOOT_MAKE_OPTS) mrproper)
 	$(TARGET_CONFIGURE_OPTS) $(UBOOT_CONFIGURE_OPTS) 	\
 		$(MAKE) -C $(@D) $(UBOOT_MAKE_OPTS)		\
 		$(UBOOT_BOARD_NAME)_config
