@@ -83,6 +83,11 @@ elif [ -n "$ROOTDEV" ]; then
     mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
         die "root='$ROOTDEV' mount failed"
     log "Mounted root='$ROOTDEV'"
+  elif startswith "$ROOTDEV" 9p:; then
+    fsdev="${ROOTDEV#9p:}"
+    mount -t 9p -o trans=virtio,version=9p2000.L "$fsdev" /rootfs ||
+        die "root='$fsdev' (9p) mount failed"
+    log "Mounted root='$fsdev' (9p)"
   else
     KERNELDEV=$(replacefirst $ROOTDEV rootfs kernel)
     mtd=/dev/mtd$(find_mtd "$ROOTDEV")

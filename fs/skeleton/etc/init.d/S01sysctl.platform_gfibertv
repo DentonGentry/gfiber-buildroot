@@ -6,6 +6,7 @@ case "$1" in
     sysctl net.core.rmem_max=524288
     # Panic everytime there is a kernel oops
     sysctl kernel.panic_on_oops=1
+    echo >/proc/sys/kernel/modprobe
     ;;
   stop)
     ;;
