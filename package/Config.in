@@ -263,6 +263,7 @@ endmenu
 endif
 source "package/ruby/Config.in"
 source "package/tcl/Config.in"
+source "package/openjdk-bin/Config.in"
 endmenu
 
 menu "Libraries"
