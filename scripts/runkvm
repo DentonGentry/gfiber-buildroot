@@ -1,0 +1,59 @@
+#!/bin/sh
+
+die() {
+  echo "fatal:" "$@" >&2
+  exit 99
+}
+
+if [ -n "$1" ]; then
+  outdir=$1
+else
+  outdir=$(dirname "$0")/../../kvm
+fi
+shift
+
+echo "Using outdir='$outdir'"
+
+if [ ! -d "$outdir" ]; then
+  echo "$outdir: not a directory" >&2
+  echo
+  echo "Usage: $0 [output-directory] [kernel args...]" >&2
+  exit 1
+fi
+
+imgdir=$outdir/images
+kernel=$outdir/build/linux-HEAD/arch/x86/boot/bzImage
+rootfs=$imgdir/rootfs.squashfs
+rootfsdir=$outdir/target
+flashimg=$imgdir/flash.img
+
+if [ ! -e "$flashimg" ]; then
+  dd if=/dev/zero of="$flashimg" bs=1024k count=1024  # 1GB flash
+fi
+
+[ -r "$kernel" ] || die "kernel image '$kernel' unreadable"
+[ -r "$rootfs" ] || die "rootfs image '$rootfs' unreadable"
+[ -r "$flashimg" ] || die "flash image '$flashimg' unreadable"
+[ -d "$rootfsdir" ] || die "rootfs dir '$rootfsdir' missing"
+mkdir -p /tmp/varmedia
+
+append='
+    console=ttyS0
+    debug
+    root=9p:rootfs
+    mediafs=9p:mediafs
+    block2mtd=/dev/vdb,65536
+    mtdparts=block2mtd/dev/vdb:2048k(cfe),1472k(hnvram),64k(reserved0),64k(reserved1),64k(reserved2),64k(reserved3),64k(reserved4),64k(drmregion0),64k(drmregion1),128k(nvram),32M(kernel0),32M(kernel1),256M(rootfs0),256M(rootfs1),200M(data+ubi),200M(misc+ubi)
+'
+kvm \
+    -kernel "$kernel" \
+    -m 1G \
+    -serial stdio \
+    -drive if=virtio,file="$rootfs" \
+    -drive if=virtio,file="$flashimg" \
+    -virtfs local,mount_tag=rootfs,path="$rootfsdir",security_model=none,readonly \
+    -virtfs local,mount_tag=mediafs,path="/tmp/varmedia",security_model=none \
+    -net nic,model=virtio \
+    -net user \
+    -machine type=pc,accel=kvm \
+    -append "$append $*"
