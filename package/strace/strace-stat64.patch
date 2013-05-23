@@ -1,0 +1,26 @@
+From 34c16d7221e792602e642a7184df06308c99095e Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 21 May 2013 00:44:58 -0400
+Subject: [PATCH] Fix x86_64 defines.
+
+This fixes compilation with gcc-4.5.3 on glibc-2.9.
+---
+ file.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/file.c b/file.c
+index 854548f..9b41fb3 100644
+--- a/file.c
++++ b/file.c
+@@ -1007,7 +1007,7 @@ printstat(struct tcb *tcp, long addr)
+ }
+ #endif	/* !HAVE_LONG_LONG_OFF_T */
+ 
+-#if !defined HAVE_STAT64 && defined LINUX && defined X86_64
++#if defined HAVE_STAT64 && defined linux && defined __x86_64
+ /*
+  * Linux x86_64 has unified `struct stat' but its i386 biarch needs
+  * `struct stat64'.  Its <asm-i386/stat.h> definition expects 32-bit `long'.
+-- 
+1.7.9.dirty
+

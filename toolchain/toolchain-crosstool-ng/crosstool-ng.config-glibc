@@ -17,7 +17,7 @@ CT_MODULES=y
 # crosstool-NG behavior
 #
 # CT_OBSOLETE is not set
-# CT_EXPERIMENTAL is not set
+CT_EXPERIMENTAL=y
 
 #
 # Paths
@@ -168,17 +168,17 @@ CT_BUILD_SUFFIX=""
 #
 CT_KERNEL_SUPPORTS_SHARED_LIBS=y
 CT_KERNEL="linux"
-CT_KERNEL_VERSION="3.0.4"
+CT_KERNEL_VERSION="2.6.37.6"
 CT_KERNEL_linux=y
 CT_KERNEL_linux_AVAILABLE=y
-CT_KERNEL_V_3_0_4=y
+# CT_KERNEL_V_3_0_4 is not set
 # CT_KERNEL_V_3_0_3 is not set
 # CT_KERNEL_V_3_0_2 is not set
 # CT_KERNEL_V_3_0_1 is not set
 # CT_KERNEL_V_3_0 is not set
 # CT_KERNEL_V_2_6_39_4 is not set
 # CT_KERNEL_V_2_6_38_8 is not set
-# CT_KERNEL_V_2_6_37_6 is not set
+CT_KERNEL_V_2_6_37_6=y
 # CT_KERNEL_V_2_6_36_4 is not set
 # CT_KERNEL_V_2_6_35_14 is not set
 # CT_KERNEL_V_2_6_34_10 is not set
@@ -230,9 +230,16 @@ CT_BINUTILS_EXTRA_CONFIG_ARRAY=""
 # C compiler
 #
 CT_CC="gcc"
-CT_CC_VERSION="4.4.6"
+CT_CC_VERSION="4.5.3"
 CT_CC_gcc=y
-CT_CC_V_4_4_6=y
+# CT_CC_GCC_SHOW_LINARO is not set
+# CT_CC_V_4_6_1 is not set
+# CT_CC_V_4_6_0 is not set
+CT_CC_V_4_5_3=y
+# CT_CC_V_4_5_2 is not set
+# CT_CC_V_4_5_1 is not set
+# CT_CC_V_4_5_0 is not set
+# CT_CC_V_4_4_6 is not set
 # CT_CC_V_4_4_5 is not set
 # CT_CC_V_4_4_4 is not set
 # CT_CC_V_4_4_3 is not set
@@ -249,12 +256,17 @@ CT_CC_V_4_4_6=y
 # CT_CC_V_4_2_2 is not set
 CT_CC_GCC_4_2_or_later=y
 CT_CC_GCC_4_3_or_later=y
-CT_CC_GCC_4_4=y
 CT_CC_GCC_4_4_or_later=y
+CT_CC_GCC_4_5=y
+CT_CC_GCC_4_5_or_later=y
 CT_CC_GCC_HAS_GRAPHITE=y
+CT_CC_GCC_HAS_LTO=y
 CT_CC_GCC_HAS_PKGVERSION_BUGURL=y
+CT_CC_GCC_HAS_BUILD_ID=y
 CT_CC_GCC_USE_GMP_MPFR=y
 CT_CC_GCC_USE_PPL_CLOOG=y
+CT_CC_GCC_USE_MPC=y
+CT_CC_GCC_USE_LIBELF=y
 # CT_CC_LANG_FORTRAN is not set
 CT_CC_SUPPORT_CXX=y
 CT_CC_SUPPORT_FORTRAN=y
@@ -332,7 +344,7 @@ CT_LIBC_ADDONS_LIST=""
 # CT_LIBC_GLIBC_KERNEL_VERSION_NONE is not set
 CT_LIBC_GLIBC_KERNEL_VERSION_AS_HEADERS=y
 # CT_LIBC_GLIBC_KERNEL_VERSION_CHOSEN is not set
-CT_LIBC_GLIBC_MIN_KERNEL="2.6.39.4"
+CT_LIBC_GLIBC_MIN_KERNEL="2.6.37.6"
 
 #
 # glibc other options

@@ -26,8 +26,8 @@ start() {
 }
 
 stop() {
-  pkillwait -f '(babysit.*)(runsage|chsrv|sagesrv|siege)'
-  pkillwait -x 'runsage|chsrv|sagesrv|siege'
+  pkillwait -f '(babysit.*)(runsage|chsrv|sagesrv|sage.Sage)'
+  pkillwait -x 'runsage|chsrv|sagesrv|siege|java'
 }
 
 case "$1" in
