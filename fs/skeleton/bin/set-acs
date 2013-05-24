@@ -169,6 +169,12 @@ find_source_for_url() {
   }
 }
 
+clear_source() {
+  file=$1
+  rm -f "$file" "$file.timed_out" "$file.blessed" "$file.redir" \
+     "$file.blessed.redir" "$file.blessed.redir.blessed"
+}
+
 set_timed_out() {
   # we intentionally do not support timing out blessed URLs, because blessing
   # is permanent.
@@ -238,8 +244,7 @@ update_acs_file() {
         # only humans are expected to ever try to clear an URL... so it's
         # okay to just clear it out completely, including blessed URLs.
         log "clearing $name"
-        rm -f "$file" "$file.timed_out" "$file.blessed" "$file.redir" \
-            "$file.blessed.redir" "$file.blessed.redir.blessed"
+        clear_source $file
       elif [ "$name" = "manual" ]; then
         # manual URLs are always blessed
         atomic "$file.blessed" "$url"
@@ -400,7 +405,12 @@ redirect_current_url_to() {
   local redirect_to="$1"
   check_for_url "$redirect_to"
   all_urls | while read stat name file url; do
-    atomic "$file.redir" "$redirect_to"
+    if [ "$redirect_to" = "clear" ]; then
+      echo "clearing $file"
+      clear_source $file
+    else
+      atomic "$file.redir" "$redirect_to"
+    fi
     break
   done
 }

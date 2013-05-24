@@ -160,3 +160,23 @@ WVPASSEQ "$(set-acs print)" http://x1  # restarts at the top
 WVPASS set-acs timeout http://x1
 WVPASSEQ "$(set-acs print)" http://bork
 
+wipe
+# Testing only the set-acs cwmp clear command
+
+WVPASS set-acs cwmp http://2
+WVPASS set-acs bless http://2
+WVPASS set-acs cwmp http://4
+WVPASSEQ "$(set-acs print)" http://4
+WVPASS set-acs cwmp clear
+WVPASSEQ "$(set-acs print)" ""
+
+wipe
+
+WVPASS set-acs cwmp http://2
+WVPASS set-acs cwmp http://4
+WVPASS set-acs bless http://4
+WVPASS set-acs dhcp http://5   # dhcp delivers a new setting: takes precedence
+WVPASSEQ "$(set-acs print)" http://5
+WVPASS set-acs cwmp clear
+WVPASSEQ "$(set-acs print)" http://4
+
