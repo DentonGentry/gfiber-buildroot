@@ -26,7 +26,13 @@ start_dhcp() {
 ip link set dev $iface up
 if [ $(cat /etc/config/wanport) = $iface ]; then
 	sleep 1
-	start_sycl & 2>&1 | logos sycl &
+	# For GFLT110 defer running sycl until after the
+	# the data path is initialized in /etc/init.d/S71data
+	# There is some issue with doing it here.
+	# TODO(jnewlin): Check if this if fixed in the latest SDK.
+	if [ $(cat /etc/platform) != "GFLT110" ]; then
+		start_sycl & 2>&1 | logos sycl &
+	fi
 	# start dhcp if no management vlan is assigned.
 	if [ "x$(cat /etc/config/mgmtvlan)" = "x" ]; then
 		start_dhcp

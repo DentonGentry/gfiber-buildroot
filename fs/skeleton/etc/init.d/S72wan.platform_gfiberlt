@@ -29,8 +29,9 @@ case $1 in
           vlan id $mgmt_vlan
         ifup man
       fi
-    else
-      echo "Do gpon bringup."
+    elif [ "GFLT110" = "$platform" ]; then
+      echo "[RCS]: Starting sycl"
+      start_sycl & 2>&1 | logos sycl
     fi
     ;;
   stop)
