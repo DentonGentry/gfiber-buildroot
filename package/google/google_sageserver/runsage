@@ -62,6 +62,21 @@ SIEGEOPT=
 mkdir -p /rw/sage
 hnvram -rq 1ST_SERIAL_NUMBER >/tmp/serial
 
+# Fix permissions for running SageTV as non-root
+chown video.video /rw/sage
+chown video.video /rw/sage/*
+if [ "$MODE" = "server" ]; then
+  mkdir -p /rw/lucene
+  mkdir -p /rw/lucene/person
+  mkdir -p /rw/lucene/show
+  chown video.video /var/media/Wiz.bak
+  chown video.video /rw/lucene
+  chown video.video /rw/lucene/*
+  chown video.video /rw/lucene/person/*
+  chown video.video /rw/lucene/show/*
+  chown video.video /var/media/tv/*.properties
+fi
+
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 MOBILEAPIJARS=gftv_mobile_api_deploy.jar
 ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
@@ -74,7 +89,7 @@ ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
 
 export SIEGEDISABLEHEAPDUMP=1
 export SIEGENOGDB=1
-babysit 10 "$JVM" \
+babysit 10 setuid video "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \

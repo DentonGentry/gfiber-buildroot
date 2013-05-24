@@ -389,4 +389,4 @@ use_nio_transfers=false
 cc/708/advanced_options/enabled=true
 fiber/HDMI_disconnect_detection/enabled=false
 ui/final_rendering_thread_priority_offset=4
-
+seeker/enforce_minimum_import_sizes=false
