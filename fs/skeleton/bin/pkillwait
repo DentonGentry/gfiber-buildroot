@@ -18,7 +18,7 @@ else
 fi
 babysitter="babysit [0-9]+ ($baby)\$"
 
-pkill "$babysitter"
+pkill -f "$babysitter"
 pkill "$@"
 for d in $(seq 20); do
   if ! { pgrep -f "$babysitter" || pgrep "$@"; } >/dev/null; then
@@ -28,6 +28,6 @@ for d in $(seq 20); do
   usleep 100000
   echo -n "." >&2
 done
-pkill -9 "$babysitter"
+pkill -9 -f "$babysitter"
 pkill -9 "$@"
 echo done >&2
