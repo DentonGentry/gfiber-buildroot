@@ -14,6 +14,7 @@ hddserial() {
   trim "${var##*:}"
 }
 
+FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
 case "$1" in
   start)
     failure_media=0
@@ -23,6 +24,9 @@ case "$1" in
       echo "Mounting 9p /var/media."
       mount -t 9p -o trans=virtio,version=9p2000.L "${mediafs#9p:}" /var/media
       failure_media=$?
+    elif startswith "$mediafs" "/dev/"; then
+      echo "Mounting ext4 /var/media from '$mediafs'"
+      mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
     elif [ -e /dev/sda ]; then
       attachedSerial=$(hddserial)
       pairedSerial=$(hnvram -rq PAIRED_DISK)
@@ -40,7 +44,6 @@ case "$1" in
         fi
       fi
       echo "Mounting SATA device."
-      FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
       if [ -e /dev/sda1 ]; then
         mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
         failure_media=$?
