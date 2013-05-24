@@ -3,14 +3,20 @@ log()
   echo "$*" >&2
 }
 
+REG_FAILURE_COUNT="0x104083FC"
+
+signal_failure() {
+  devmem $REG_FAILURE_COUNT 32 1
+}
+
 
 die()
 {
   log "$*"
   log "FATAL ERROR DURING SIMPLERAMFS BOOT: rebooting immediately."
 
-  # we didn't set the "verified" flag in S99readallfiles, so CFE should know
-  # this and try booting the alternate boot image.
+  # rebooting from the alternate boot image
+  signal_failure
   reboot
 }
 
