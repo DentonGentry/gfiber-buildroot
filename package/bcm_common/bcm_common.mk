@@ -43,6 +43,7 @@ MSDRM_PD_HWDECRYPT=y \
 PRDY_ROBUSTNESS_ENABLE=y \
 PRDY_NEXUS_IO=y \
 MSDRM_PRDY_SDK_VERSION="2.0" \
+APPLIBS_PLAYREADY=y \
 NEXUS_SECURITY_KEYLADDER_EXTENSION_INC=${BCM_NEXUS_DIR}/extensions/security/keyladder/keyladder_ext.inc \
 NEXUS_SECURITY_OTPMSP_EXTENSION_INC=${BCM_NEXUS_DIR}/extensions/security/otpmsp/otpmsp_ext.inc \
 NEXUS_SECURITY_USERCMD_EXTENSION_INC=${BCM_NEXUS_DIR}/extensions/security/usercmd/usercmd_ext.inc \
