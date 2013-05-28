@@ -6,45 +6,6 @@ die() {
 }
 
 
-startswith() {
-  [ "$1" != "${1#$2}" ]
-}
-
-
-# chown -R would be easier than this, but toolbox chown doesn't support it.
-# Plus I don't know if I can trust it to not follow symlinks accidentally.  So
-# let's do it the slow, paranoid way instead.  We'll also chmod while we're
-# here.
-fixdirs() {
-  (
-    uidgid="$1"
-    basedir="$2"
-    echo "chown $uidgid $basedir" >&2
-    cd "$basedir" || die "chowndirs '$2'"
-    realdir=$(/bin/pwd)
-    chown "$uidgid" . || die "chown '$realdir'"
-    chmod 775 . || die "chmod '$realdir'"
-    [ "$realdir" != '/' ] && realdir="$realdir/"
-    find . | while read dir; do
-      (
-        # cd followed by 'chown .' avoids race conditions, although it's
-        # slower.
-        [ -L "$dir" ] && continue
-        [ -d "$dir" ] || continue
-        cd "$dir" || die "chowndirs '$dir'"
-        curdir=$(/bin/pwd)
-        if startswith "$curdir" "$realdir" || [ "$dir" = "." ]; then
-          chown "$uidgid" . || die "chown '$curdir'"
-          chmod 775 . || die "chmod '$curdir'"
-        else
-          echo "'$dir' = '$curdir' -> skipping chown" >&2
-        fi
-      )
-    done
-  )
-}
-
-
 # Carefully try to clean up the directory structures we create for samba.
 # We go through extra contortions here to minimize the chances that a bug
 # (or a deliberate security attack) will cause us to accidentally rm -rf
@@ -84,11 +45,8 @@ case "$1" in
         mount -o bind /var/lock/subsys var/lock/subsys
         cp /etc/samba/etc/* etc/
         chmod 0444 etc/*
-        fixdirs video.video tv
-        fixdirs video.video videos
-        fixdirs video.video pictures
-        fixdirs video.video music
-        chmod 775 tv videos pictures music
+        chg_mod_own.py --uid video --gid video --mode_dir 0775 \
+                       --mode_file 0664 tv videos pictures music
       )
       babysit 60 smbd -F -D -S 2>&1 | logos smbd &
       babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
