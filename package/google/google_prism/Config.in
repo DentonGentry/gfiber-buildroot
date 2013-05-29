@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GOOGLE_PRISM
+	bool "google_prism"
+	default n
+	depends on BR2_PACKAGE_GOOGLE_PLATFORM
+	select BR2_PACKAGE_GOOGLE_FIBER_JACK
+	help
+	  Include some tools designed for running on Google Prism devices.
