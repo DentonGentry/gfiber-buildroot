@@ -1,6 +1,7 @@
 iface=$1
 
 start_dhcp() {
+	echo "Starting DHCP on $iface"
 	lock=/var/run/dhclient.${iface}.lock
 	lockfile-create $lock
 	pidfile=/var/run/dhclient.${iface}.pid
