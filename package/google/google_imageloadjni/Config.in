@@ -1,4 +1,8 @@
 config BR2_PACKAGE_GOOGLE_IMAGELOADJNI
         bool "google_imageloadjni"
+        select BR2_PACKAGE_LIBPNG
+        select BR2_PACKAGE_JPEG
+        select BR2_PACKAGE_LIBUNGIF
+        select BR2_PACKAGE_TIFF
         help
           Builds the image loading interface library
