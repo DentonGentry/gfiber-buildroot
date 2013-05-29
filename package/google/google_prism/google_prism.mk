@@ -11,7 +11,7 @@ define GOOGLE_PRISM_BUILD_CMDS
 endef
 
 define GOOGLE_PRISM_TEST_CMDS
-	PYTHONPATH=$(HOST_PYTHONPATH) \
+	PYTHONPATH=$(HOST_PYTHONPATH):$(TARGET_DIR)/usr/catawampus \
 	PYTHON=$(HOST_DIR)/usr/bin/python $(MAKE) -C $(@D) test
 endef
 
