@@ -1,2 +1,3 @@
+cd /
 export CLISH_PATH=/etc/xml_commands
 sycl
