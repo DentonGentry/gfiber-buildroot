@@ -69,11 +69,10 @@ case "$1" in
     umount /var/backup 2>&1 >/dev/null
     ;;
   restart|reload)
-    "$0" stop
-    sleep 3
-    "$0" start
+    $0 stop
+    $0 start
     ;;
   *)
-    echo $"Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac

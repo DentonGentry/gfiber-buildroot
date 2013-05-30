@@ -1,62 +1,56 @@
 #!/bin/sh
-#
-# Start WAN ....
-#
 wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 mgmt_vlan=$(cat /etc/config/mgmtvlan)
-platform=$(cat /etc/platform)
 
 case $1 in
   start)
-    echo -n "Starting WAN..."
+    echo "Starting WAN."
     # Configure dhclient with the right hostname etc.
     setup-dhclient
-    echo "[RCS]: Start Interface"
-    ifup $wan_port
-    echo "[RCS]: Configure Data Path"
-    if [ "x" = "x$lan_port" ]; then
+    echo "Starting interface."
+    ifup "$wan_port"
+    echo "Configuring data path."
+    if [ -z "$lan_port" ]; then
       lan_arg=""
     else
       lan_arg="-l $lan_port"
     fi
-    if [ "GFLT200" = "$platform" ]; then
-      if [ "x" = "x$mgmt_vlan" ]; then
-        (sleep 3 && tpmadm -w $wan_port $lan_arg -v) &
+    if runnable laser; then
+      if [ -z "$mgmt_vlan" ]; then
+        # TODO(apenwarr): we should never rely on arbitrary delays like this.
+        (sleep 3 && tpmadm -w "$wan_port" "$lan_arg" -v) &
       else
-        (sleep 3 && tpmadm -w $wan_port $lan_arg -m $mgmt_vlan -v) &
-        ip link add link $wan_port name man type \
-          vlan id $mgmt_vlan
+        (sleep 3 && tpmadm -w "$wan_port" "$lan_arg" -m "$mgmt_vlan" -v) &
+        ip link add link "$wan_port" name man type vlan id "$mgmt_vlan"
         ifup man
       fi
-    elif [ "GFLT110" = "$platform" ]; then
-      echo "[RCS]: Starting sycl"
-      if [ "x" = "x$mgmt_vlan" ]; then
+    elif runnable start_sycl; then
+      echo "Starting sycl"
+      if [ -z "$mgmt_vlan" ]; then
         # TODO(jnewlin): Remove the hard coded vlan number here when
         # /etc/config/mgmtvlan file is populated.
         mgmt_vlan=4090
         echo 4090 >/etc/config/mgmtvlan
       fi
-      ip link add link pon0 name man type vlan id $mgmt_vlan
+      ip link add link pon0 name man type vlan id "$mgmt_vlan"
       ifup man
-      start_sycl & 2>&1 | logos sycl
+      start_sycl 2>&1 | logos sycl &
     fi
     ;;
   stop)
     echo -n "Stopping WAN..."
-    if [ "x" != "x$mgmt_vlan" ]; then
+    if [ -n "$mgmt_vlan" ]; then
       ifdown man
       ip link del man
     fi
-    ifdown $wan_port
+    ifdown "$wan_port"
     ;;
   restart|reload)
-    "$0" stop
-    "$0" start
+    $0 stop
+    $0 start
     ;;
   *)
-    echo $"Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
-
-exit $?

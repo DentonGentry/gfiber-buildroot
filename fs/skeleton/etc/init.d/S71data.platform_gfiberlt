@@ -1,38 +1,38 @@
 #!/bin/sh
 
-platform=$(cat /etc/platform)
-if [ $platform != "GFLT200" ]; then
-  # For GFLT200 leave the config files in their default state.
-  # For other platforms switch to gpon mode.
-  echo "[RCS]: Switching to GPON mode."
-  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml /etc/xml_params/pon_type_xml_cfg_file.xml
-  cp -sf /etc/xml_params/gpon_xml_cfg_file.xml /etc/xml_params/pon_xml_cfg_file.xml
-  cp -sf /etc/xml_params/tpm_xml_cfg_file_gpon.xml /etc/xml_params/tpm_xml_cfg_file.xml
+if ! runnable laser; then
+  # TODO(apenwarr): /etc should be readonly.
+  echo "Switching to GPON mode."
+  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
+         /etc/xml_params/pon_type_xml_cfg_file.xml
+  cp -sf /etc/xml_params/gpon_xml_cfg_file.xml \
+         /etc/xml_params/pon_xml_cfg_file.xml
+  cp -sf /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
+         /etc/xml_params/tpm_xml_cfg_file.xml
 fi
 
 case "$1" in
   start)
-    echo "[RCS]: Start Data Configuration"
-    ######################################
-    #Clean BM's cause register
+    echo "Starting data configuration."
+    # Clean BM's cause register
     devmem2 0xf10d0050 w 0
 
     ipg_set=0
 
-    ###Setting PNC_AGING_LO_THRESH_REGISTERS to maximum value:
+    # Set PNC_AGING_LO_THRESH_REGISTERS to maximum value
     devmem2 0xf10c802c w 0x3FFFFFF
     devmem2 0xf10c8030 w 0x3FFFFFF
     devmem2 0xf10c8034 w 0x3FFFFFF
     devmem2 0xf10c8038 w 0x3FFFFFF
 
-    ###Double PnC buffers for ports PMAC/GMAC0
+    # Double PnC buffers for ports PMAC/GMAC0
     devmem2 0xf10c8000 w 0x377777
 
-    if [ "${ipg_set}" -eq 1 ]; then
-      cd /sys/devices/platform/neta/switch
-      echo 3 26 2 0x0834 > reg_w
-      sleep 1
-      echo 2 26 2 0xb402 > reg_w
+    if [ "$ipg_set" = 1 ]; then
+      cd /sys/devices/platform/neta/switch &&
+      echo 3 26 2 0x0834 >reg_w &&
+      sleep 1 &&
+      echo 2 26 2 0xb402 >reg_w &&
       sleep 1
       cd /
       devmem2 0xf1072c00 w 0x8c00
@@ -40,20 +40,17 @@ case "$1" in
       devmem2 0xf1072c00 w 0x8c01
     fi
 
-    cd /sys/devices/platform/neta/gbe
-    echo 0 0x2F00 > mh_2B
-    echo 1 0x1F00 > mh_2B
-
+    cd /sys/devices/platform/neta/gbe &&
+    echo 0 0x2F00 >mh_2B &&
+    echo 1 0x1F00 >mh_2B
     ;;
   stop)
     ;;
   restart|reload)
-    "$0" stop
-    "$0" start
+    $0 stop
+    $0 start
     ;;
   *)
-    echo $"Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
-
-exit $?
