@@ -1,9 +1,9 @@
 #!/bin/sh
 
 if [ -e /tmp/DEBUG ]; then
-  agetty -L ttyS0 115200 vt100
+  agetty -L $1 115200 vt100
 else
-  echo "Not running getty. To activate, boot with debug=1 or login=1." >&2
+  echo "Not running getty on '$1'. To activate, boot with debug=1 or login=1." >&2
   while true; do
     sleep 86400;
   done
