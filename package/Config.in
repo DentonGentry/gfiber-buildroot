@@ -626,6 +626,10 @@ source "package/bcm_cfe/Config.in"
 source "package/bcm_vudu/Config.in"
 endmenu
 
+menu "Mindspeed custom build"
+source "package/mindspeed_drivers/Config.in"
+endmenu
+
 menu "Marvell custom build"
 source "package/mv_app/Config.in"
 endmenu
