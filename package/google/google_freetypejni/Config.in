@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_FREETYPEJNI
         bool "google_freetypejni"
+        select BR2_PACKAGE_FREETYPE
         help
           Builds the Freetype interface library

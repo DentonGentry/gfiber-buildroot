@@ -1,3 +1,8 @@
+config BR2_PACKAGE_MV_APP_PON_TYPE
+	string "XPON"
+	help
+	  PON Type, e.g. GPON, EPON.
+
 config BR2_PACKAGE_MV_APP
 	bool "mv_app"
 	help

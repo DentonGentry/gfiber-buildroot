@@ -1,0 +1,25 @@
+From e947cab5ff2cd8a2be51a40e8844c77f38637cf9 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 21 May 2013 01:11:23 -0400
+Subject: [PATCH] Require -lresolve on glibc.
+
+---
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 252862e..6b033fc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,7 +4,7 @@ LIBC_INCLUDE=/usr/include
+ DEFINES= 
+ 
+ #options if you have a bind>=4.9.4 libresolv (or, maybe, glibc)
+-LDLIBS=
++LDLIBS=-lresolv
+ ADDLIB=
+ 
+ #options if you compile with libc5, and without a bind>=4.9.4 libresolv
+-- 
+1.7.9.dirty
+

@@ -1,6 +1,6 @@
 BCM_BLUETOOTH_SITE=repo://vendor/broadcom/drivers
 BCM_BLUETOOTH_INSTALL_TARGET=YES
-BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils linux bcm_nexus
+BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils bcm_nexus
 
 define BCM_BLUETOOTH_CLEAN_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE1) \

@@ -6,12 +6,12 @@ define MV_APP_CLEAN_CMDS
 endef
 
 define MV_APP_BUILD_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE) CROSS_COMPILE=$(TARGET_CROSS) -C $(@D)
+	$(TARGET_MAKE_ENV) $(MAKE1) CROSS_COMPILE=$(TARGET_CROSS) \
+		PON_TYPE=$(BR2_PACKAGE_MV_APP_PON_TYPE) -C $(@D)
 endef
 
 define MV_APP_INSTALL_TARGET_CMDS
 	cp -fr $(@D)/build/bin/* $(TARGET_DIR)/usr/bin/. && \
-	chmod 6750 $(TARGET_DIR)/usr/bin/clish && \
 	cp -fr $(@D)/build/lib/* $(TARGET_DIR)/usr/lib/. && \
 	mkdir -p $(TARGET_DIR)/etc/xml_commands && \
 	cp -fr $(@D)/main/xml_commands/* $(TARGET_DIR)/etc/xml_commands/. && \

@@ -58,13 +58,12 @@ BSP_SC_VALUE_SUPPORT=ON \
 BSID_MJPEG_SUPPORT=y \
 NEXUS_COMMON_CRYPTO_SUPPORT=y
 
-ifeq ($(BR2_PACKAGE_BRUNO_DEBUG),y)
-  BCM_MAKE_ENV += B_REFSW_DEBUG=y
-  BCM_COMMON_BUILD_TYPE=debug
-else
-  BCM_MAKE_ENV += B_REFSW_DEBUG=n
-  BCM_COMMON_BUILD_TYPE=release
-endif
+BCM_MAKE_ENV += B_REFSW_DEBUG=y
+# NOTE(apenwarr): this could also be set to 'release'.
+#  That disables debug logs and makes things slightly smaller/faster. 
+#  However, since we capture the logs for analysis, we will probably always
+#  want debug mode.
+BCM_COMMON_BUILD_TYPE=debug
 
 BCM_MAKEFLAGS=
 BCM_MAKEFLAGS += CROSS_COMPILE="${TARGET_CROSS}"

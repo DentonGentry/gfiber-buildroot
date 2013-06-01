@@ -14,9 +14,11 @@ import options
 
 FRWD_DS = 'frwd_ds'
 FRWD_US = 'frwd_us'
-OWNER_ID = '1000'
+L2_KEY_ETHERTYPE = 'mgmt_oam'
 L2_KEY_MAC_WAN = 'mac_wan'
-L2_KEY_MAC_BC = 'mac_bc'
+L2_KEY_VLAN = 'mgmt_vlan'
+VLAN_RULE = 'mgmt_vlan_rule'
+OWNER_ID = '1000'
 
 # Constants
 MAC_ALL_ZERO = '00:00:00:00:00:00'
@@ -25,26 +27,46 @@ PORT_PON = 'pon0'
 PORT_ETH = 'eth0'
 ETH_BMP = 0x40000
 PON_BMP = 0x00001
+ETHER_OAM = 0x8902
+PARSE_NONE = 0x0000
+PARSE_ONE_VLAN_TAG = 0x0004
+PARSE_MAC_DA = 0x0001
+PARSE_ETYPE = 0x0010
+PARSE_FLAG_NONE = 0x0
+ACTION_SET_TARGET_PORT = 0x2
+ACTION_SET_TARGET_QUEUE = 0x4
+ACTION_NONE = 0x0
+PKT_MOD_NONE = 0x0
+NEXT_PHASE_DONE = 'done'
 
 # Empty Rules
+# If you use empty rules, there are some undocumented implicit rules:
+#
+# - For frwd_empty, action should be set to 0x0 accordling. frwd_empty basically
+# means punt to CPU.
+# - For mod_empty, pkt_mod_bm should be set to 0x0 accordingly.
+#
 FRWD_EMPTY = 'frwd_empty'
 MOD_EMPTY = 'mod_empty'
 L2_KEY_EMPTY = 'l2_key_empty'
+VLAN_EMPTY = 'vlan_empty'
 
 optspec = """
 tpmadm -w <port> [options...]
 tpmadm -p
+tpmadm -m
 tpmadm -f
 --
 w,wanport=        set WAN port to (pon0, eth0)
 l,lanport=        set LAN port to (pon0, eth0)
+m,mgmtvlan=       set management LAN
 p,printall        print all tpm rules
 f,flushall        flush all tpm rules
 v,verbose         verbose output
 """
 
 
-def EnableWanProfile(wan_port, lan_port):
+def EnableWanProfile(wan_port, lan_port, mgmt_vlan):
   """Enable WAN Profile."""
   if wan_port is None:
     tpm.Logger.Log('Upstream port must be defined.\n')
@@ -67,17 +89,56 @@ def EnableWanProfile(wan_port, lan_port):
   tt.Begin()
   try:
     tt.FlushAll()
-    tt.AddL2KeyMacAddr(L2_KEY_MAC_WAN, MAC_ALL_ZERO, MAC_ALL_ZERO,
-                       wan_mac, MAC_ALL_ONE)
-    tt.AddL2KeyMacAddr(L2_KEY_MAC_BC, MAC_ALL_ZERO, MAC_ALL_ZERO,
-                       MAC_ALL_ONE, MAC_ALL_ONE)
     rule_num = 0
-    tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0001, 0x0000, 0x0000, 'done',
-                 L2_KEY_MAC_WAN, FRWD_EMPTY, MOD_EMPTY, 0x0000)
-    rule_num += 1
-    tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0001, 0x0000, 0x0000, 'done',
-                 L2_KEY_MAC_BC, FRWD_EMPTY, MOD_EMPTY, 0x0000)
 
+    if mgmt_vlan:
+      tt.AddVlanRule(rule_name=VLAN_RULE,
+                     tpid=0x8100, tpid_mask=0xffff,
+                     vid=mgmt_vlan, vid_mask=0x0fff,
+                     cfi=0, cfi_mask=0x00,
+                     pbit=0, pbit_mask=0x00)
+      tt.AddL2KeyVlan(rule_name=L2_KEY_VLAN,
+                      vlan_rule1=VLAN_RULE, vlan_rule2=VLAN_EMPTY)
+      tt.AddL2Rule(owner_id=OWNER_ID,
+                   src_port=us_port,
+                   rule_num=rule_num,
+                   parse_rule_bm=PARSE_ONE_VLAN_TAG,
+                   parse_flags_bm=PARSE_FLAG_NONE,
+                   action=ACTION_NONE,
+                   next_phase=NEXT_PHASE_DONE,
+                   key_name=L2_KEY_VLAN,
+                   frwd_name=FRWD_EMPTY,
+                   mod_name=MOD_EMPTY,
+                   pkt_mod_bm=PKT_MOD_NONE)
+      rule_num += 1
+
+    tt.AddL2KeyEtherType(rule_name=L2_KEY_ETHERTYPE, ethertype=ETHER_OAM)
+    tt.AddL2KeyMacAddr(rule_name=L2_KEY_MAC_WAN,
+                       sa=MAC_ALL_ZERO, sa_mask=MAC_ALL_ZERO,
+                       da=wan_mac, da_mask=MAC_ALL_ONE)
+    tt.AddL2Rule(owner_id=OWNER_ID,
+                 src_port=us_port,
+                 rule_num=rule_num,
+                 parse_rule_bm=PARSE_MAC_DA,
+                 parse_flags_bm=PARSE_FLAG_NONE,
+                 action=ACTION_NONE,
+                 next_phase=NEXT_PHASE_DONE,
+                 key_name=L2_KEY_MAC_WAN,
+                 frwd_name=FRWD_EMPTY,
+                 mod_name=MOD_EMPTY,
+                 pkt_mod_bm=PKT_MOD_NONE)
+    rule_num += 1
+    tt.AddL2Rule(owner_id=OWNER_ID,
+                 src_port=us_port,
+                 rule_num=rule_num,
+                 parse_rule_bm=PARSE_ETYPE,
+                 parse_flags_bm=PARSE_FLAG_NONE,
+                 action=ACTION_NONE,
+                 next_phase=NEXT_PHASE_DONE,
+                 key_name=L2_KEY_ETHERTYPE,
+                 frwd_name=FRWD_EMPTY,
+                 mod_name=MOD_EMPTY,
+                 pkt_mod_bm=PKT_MOD_NONE)
     # If LAN port is not defined, spare media converting rules.
     if lan_port:
       if lan_port == PORT_PON:
@@ -94,11 +155,29 @@ def EnableWanProfile(wan_port, lan_port):
       tt.AddFrwdRule(FRWD_DS, ds_bmp)
       tt.AddFrwdRule(FRWD_US, us_bmp)
       rule_num += 1
-      tt.AddL2Rule(OWNER_ID, us_port, rule_num, 0x0000, 0x0000, 0x06,
-                   'done', L2_KEY_EMPTY, FRWD_DS, MOD_EMPTY, 0x0000)
+      tt.AddL2Rule(owner_id=OWNER_ID,
+                   src_port=us_port,
+                   rule_num=rule_num,
+                   parse_rule_bm=PARSE_NONE,
+                   parse_flags_bm=PARSE_FLAG_NONE,
+                   action=ACTION_SET_TARGET_PORT|ACTION_SET_TARGET_QUEUE,
+                   next_phase=NEXT_PHASE_DONE,
+                   key_name=L2_KEY_EMPTY,
+                   frwd_name=FRWD_DS,
+                   mod_name=MOD_EMPTY,
+                   pkt_mod_bm=PKT_MOD_NONE)
       rule_num += 1
-      tt.AddL2Rule(OWNER_ID, ds_port, rule_num, 0x0000, 0x0000, 0x06,
-                   'done', L2_KEY_EMPTY, FRWD_US, MOD_EMPTY, 0x0000)
+      tt.AddL2Rule(owner_id=OWNER_ID,
+                   src_port=ds_port,
+                   rule_num=rule_num,
+                   parse_rule_bm=PARSE_NONE,
+                   parse_flags_bm=PARSE_FLAG_NONE,
+                   action=ACTION_SET_TARGET_PORT|ACTION_SET_TARGET_QUEUE,
+                   next_phase=NEXT_PHASE_DONE,
+                   key_name=L2_KEY_EMPTY,
+                   frwd_name=FRWD_US,
+                   mod_name=MOD_EMPTY,
+                   pkt_mod_bm=PKT_MOD_NONE)
 
     tt.Commit()
     tt.Verify()
@@ -116,7 +195,7 @@ def main():
   tpm.Logger.VERBOSE = opt.verbose if opt.verbose else False
 
   if opt.wanport:
-    EnableWanProfile(opt.wanport, opt.lanport)
+    EnableWanProfile(opt.wanport, opt.lanport, opt.mgmtvlan)
   elif opt.flushall:
     tt = tpm.TpmTransaction()
     tt.Begin()

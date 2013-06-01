@@ -1,10 +1,15 @@
 #!/bin/sh
+
+touch() {
+  ( : >$1 )
+}
+
 case "$1" in
   start)
     # If using nfsroot, the default /var/empty/ntp is sometimes
     # not owned by root and thus makes ntpd angry.  Fix it.  But
     # only if it's not already mounted.
-    if [ ! -w /var/empty/ntp ]; then
+    if ! touch /var/empty/ntp/junkfile 2>/dev/null; then
       mount -t tmpfs none /var/empty/ntp
       chmod 500 /var/empty/ntp
     fi

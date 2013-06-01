@@ -14,7 +14,7 @@ SIMPLERAMFS_DEPENDENCIES= \
 	google_signing \
 	mtd
 
-ifeq ($(BR2_PACKAGE_BRUNO),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_HNVRAM),y)
 SIMPLERAMFS_DEPENDENCIES+=google_hnvram
 HNVRAM_BIN=$(TARGET_DIR)/usr/bin/hnvram
 endif
@@ -22,6 +22,12 @@ endif
 define SIMPLERAMFS_EXTRACT_CMDS
 	mkdir -p $(@D)
 endef
+
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GLIBC),y)
+SIMPLERAMFS_LD_LINUX = $(TARGET_DIR)/lib/ld-linux.so.2
+else
+SIMPLERAMFS_LD_LINUX = $(TARGET_DIR)/lib/ld-uClibc.so.0
+endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
@@ -37,6 +43,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		fs/simpleramfs/mounts-root \
 		fs/simpleramfs/helpers.sh \
 		$(@D)/fs/
+	ln -s lib $(@D)/fs/lib64
 
 	# toolbox/toybox symlinks
 	#TODO(apenwarr): not sure we're actually using toolbox in simpleramfs.
@@ -69,8 +76,13 @@ define SIMPLERAMFS_BUILD_CMDS
 	$(STRIPCMD) $(@D)/fs/bin/*
 
 	# without ld.so, nothing works
-	cp $(TARGET_DIR)/lib/ld-uClibc.so.0 \
-		$(@D)/fs/lib/
+	if [ "$(BR2_TOOLCHAIN_EXTERNAL_GLIBC)" = "y" ]; then \
+		cp $(TARGET_DIR)/lib/ld-linux-x86-64.so.2 \
+			$(@D)/fs/lib64/; \
+	else \
+		cp $(TARGET_DIR)/lib/ld-uClibc.so.0 \
+			$(@D)/fs/lib/; \
+	fi
 
 	# find required shared libs, including libraries pulled in by
 	# other libraries that were pulled in.  Three iterations seems to

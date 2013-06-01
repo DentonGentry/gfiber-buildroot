@@ -1,0 +1,20 @@
+#!/bin/sh
+case "$1" in
+  start)
+    if [ "$(kernopt diag)" = 1 ]; then
+      echo "diag is set: running diags on boot."
+      (switch-port eth0 && wait-until-created /tmp/time.synced && diags) &
+    else
+      echo "diag is not set: skipping."
+    fi
+    ;;
+  stop)
+    pkillwait -x diags
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

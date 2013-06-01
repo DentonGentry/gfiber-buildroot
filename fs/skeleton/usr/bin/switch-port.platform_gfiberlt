@@ -1,32 +1,45 @@
 #!/bin/sh
 # Simple script to switch wan interface
 
+lan_port=""
+mgmt_vlan=""
+
 usage()
 {
-  echo "Usage: $0 <wan> [lan]" >&2
-  echo "  This program has no options." >&2
+  echo "Usage: $(basename $0) [-l lan] [-m mgmtvlan] <wan>" >&2
+  echo "  lan - optional lan interface, e.g. eth0." >&2
+  echo "  mgmtvlan - optional management vlan id, e.g. 4090" >&2
+  echo "  wan - wan interface." >&2
 }
 
 
 switch_port()
 {
   wan_port=$1
-  lan_port=$2
 
   /etc/init.d/S40lan stop
   /etc/init.d/S72wan stop
   echo $wan_port > /etc/config/wanport
   echo $lan_port > /etc/config/lanport
-  if [ "x${lan_port}" != "x" ]; then
+  echo $mgmt_vlan > /etc/config/mgmtvlan
+  if [ "x$lan_port" != "x" ]; then
     /etc/init.d/S40lan start
   fi
   /etc/init.d/S72wan start
 }
 
 
-if [ $# -lt 1 ]; then
+while getopts l:m: o; do
+  case $o in
+    l) lan_port=$OPTARG;;
+    m) mgmt_vlan=$OPTARG;;
+  esac
+done
+shift $(($OPTIND-1))
+
+if [ $# -ne 1 ]; then
   usage
   exit 1
 fi
 
-switch_port $@
+switch_port $1

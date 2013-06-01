@@ -1,45 +1,134 @@
-choice
-	prompt "google platform"
-	default BR2_PACKAGE_BRUNO
-	help
-	  Set the debug level for gcc
-
-config BR2_PACKAGE_NOPLATFORM
-	bool "No particular board support"
-	help
-	  No support for any particular board.
-
-config BR2_PACKAGE_BRUNO
-	bool "Enable Bruno Board"
-	help
-	  Customization for Bruno boards.
-
-config BR2_PACKAGE_PRISM
-	bool "Enable Prism Board"
-	help
-	  Customization for Prism boards.
-endchoice
 
 config BR2_PACKAGE_GOOGLE_PLATFORM
-	bool
-	default y
+	bool "Google platform tools"
+	default n
+	help
+	  Include some tools designed for running on the Google Fiber
+	  devices.
 
-config BR2_TARGET_GOOGLE_PLATFORM
-	string
-	default "gfibertv"	if BR2_PACKAGE_BRUNO
-	default "prism"		if BR2_PACKAGE_PRISM
-	default "noplatform"	if BR2_PACKAGE_NOPLATFORM
+config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
+	bool "Google platform dependencies"
+	default n
+	select BR2_PACKAGE_FREEGREP
+	select BR2_PACKAGE_PROCPS
+	select BR2_PACKAGE_LOCKFILE_PROGS
+	select BR2_PACKAGE_SYSVINIT
+	select BR2_PACKAGE_GOOGLE_SIGNING
+	help
+	  This package is a placeholder that depends on other packages needed
+	  to run the Google Fibler devices.
 
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
 	help
-	  Build google openbox release.
+	  Build google openbox release, using the openbox (unlocked)
+	  bootloader.
 
 config BR2_PACKAGE_GOOGLE_PROD
 	bool "Production Release"
 	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
-	select BR2_PACKAGE_BCM_SIGNING if BR2_PACKAGE_BRUNO
+	select BR2_PACKAGE_BCM_SIGNING if BR2_mipsel
 	help
-	  Build google production release.
+	  Build google production release, using the signed/locked bootloader.
 
+config BR2_PACKAGE_GOOGLE_TEST
+	bool "Include Test Packages"
+	default n
+	select BR2_PACKAGE_GOOGLE_OOKLA if BR2_mipsel
+	select BR2_PACKAGE_BONNIE
+	select BR2_PACKAGE_CRASHME
+	select BR2_PACKAGE_DHRYSTONE
+	select BR2_PACKAGE_DROPBEAR
+	select BR2_PACKAGE_DROPBEAR_SMALL
+	select BR2_PACKAGE_DROPBEAR_DISABLE_REVERSEDNS
+	select BR2_PACKAGE_LESS
+	select BR2_PACKAGE_NANO
+	select BR2_PACKAGE_ZSH
+	select BR2_PACKAGE_ZSH_BINARIES_ONLY
+	select BR2_PACKAGE_ETHTOOL
+	select BR2_PACKAGE_FIO
+	select BR2_PACKAGE_IPERF
+	select BR2_PACKAGE_LMBENCH
+	select BR2_PACKAGE_MEMSTAT
+	select BR2_PACKAGE_MEMTESTER
+	select BR2_PACKAGE_NETPERF
+	select BR2_PACKAGE_STRACE
+	select BR2_PACKAGE_TCPDUMP
+	select BR2_PACKAGE_TCPDUMP_SMB
+	select BR2_PACKAGE_UTIL_LINUX_LOGIN_UTILS
+	select BR2_PACKAGE_UTIL_LINUX_AGETTY
+	select BR2_PACKAGE_WHETSTONE
+	select BR2_PACKAGE_SDPARM
+	select BR2_PACKAGE_SYSSTAT
+	select BR2_PACKAGE_TRACEROUTE_NEW
+	help
+	  Enable packages for test.
+
+config BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	bool "Disable all application-level code"
+	default n
+	help
+	  This meta-package disables Fiber Jack, Network Box, Storage Box,
+	  and TV Box functionality, leaving only the core operating system.
+	  (It works because other packages depend on !GOOGLE_PLATFORM_ONLY.)
+
+config BR2_PACKAGE_GOOGLE_FIBER_JACK
+	bool "Device can act as Google Fiber Jack"
+	default n
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+
+config BR2_PACKAGE_GOOGLE_NETWORK_BOX
+	bool "Device can act as Google Fiber Network Box"
+	default n
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+
+config BR2_PACKAGE_GOOGLE_STORAGE_BOX
+	bool "Device can act as Google Fiber Storage Box"
+	default n
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_GOOGLE_CHANNEL_SRV
+	select BR2_PACKAGE_GOOGLE_HDHOMERUN_PLUGIN
+	select BR2_PACKAGE_GOOGLE_MCASTCAPTURE
+	select BR2_PACKAGE_GOOGLE_PULLREADER
+	select BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
+	select BR2_PACKAGE_GOOGLE_SAGEJNI
+	select BR2_PACKAGE_GOOGLE_SAGESERVER
+	select BR2_PACKAGE_GOOGLE_TS_CHECK
+	select BR2_PACKAGE_AVAHI
+	select BR2_PACKAGE_AVAHI_DAEMON
+	select BR2_PACKAGE_SAMBA
+
+config BR2_PACKAGE_GOOGLE_TV_BOX
+	bool "Device can act as Google Fiber TV Box"
+	default n
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_GOOGLE_DVBCAPTURE
+	select BR2_PACKAGE_GOOGLE_FFMPEG
+	select BR2_PACKAGE_GOOGLE_FREETYPEJNI
+	select BR2_PACKAGE_GOOGLE_IMAGELOADJNI
+	select BR2_PACKAGE_GOOGLE_JTUX
+	select BR2_PACKAGE_GOOGLE_LICENSES
+	select BR2_PACKAGE_GOOGLE_MINICLIENT
+	select BR2_PACKAGE_GOOGLE_MOBILE_API
+	select BR2_PACKAGE_GOOGLE_MPEGPARSER
+	select BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
+	select BR2_PACKAGE_GOOGLE_SAGEJNI
+	select BR2_PACKAGE_GOOGLE_SAGESERVER
+	select BR2_PACKAGE_GOOGLE_TVSTREAMPARSER
+	select BR2_PACKAGE_BCM_DIRECTFB if BR2_mipsel
+	select BR2_PACKAGE_BCM_DRIVERS if BR2_mipsel
+	select BR2_PACKAGE_BCM_DRIVER_MOCA if BR2_mipsel
+	select BR2_PACKAGE_BCM_DRIVER_WIFI if BR2_mipsel
+	select BR2_PACKAGE_BCM_BLUETOOTH if BR2_mipsel
+	select BR2_PACKAGE_BCM_BSEAV if BR2_mipsel
+	select BR2_PACKAGE_BCM_NEXUS if BR2_mipsel
+	select BR2_PACKAGE_BCM_WEBKIT if BR2_mipsel
+	select BR2_PACKAGE_BCM_NETFLIX if BR2_mipsel
+	select BR2_PACKAGE_BCM_VUDU if BR2_mipsel
+	select BR2_PACKAGE_CAIRO
+	select BR2_PACKAGE_CAIRO_PDF
+	select BR2_PACKAGE_CAIRO_PNG
+	select BR2_PACKAGE_CAIRO_SVG
+	select BR2_PACKAGE_DIRECTFB
+	select BR2_PACKAGE_LIBPROJECTM

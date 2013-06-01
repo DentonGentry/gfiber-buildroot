@@ -1,0 +1,9 @@
+menu "Mindspeed Drivers"
+	config BR2_PACKAGE_MINDSPEED_DRIVERS
+		bool "Enable Mindspeed driver base"
+		default n
+	config BR2_PACKAGE_MINDSPEED_DRIVER_PFE
+		bool "Enable Mindspeed PFE Driver"
+		depends on BR2_PACKAGE_MINDSPEED_DRIVERS
+		default n
+endmenu

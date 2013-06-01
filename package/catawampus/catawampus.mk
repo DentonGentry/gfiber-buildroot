@@ -4,31 +4,44 @@
 #
 #############################################################
 CATAWAMPUS_SITE=repo://vendor/google/catawampus
-CATAWAMPUS_DEPENDENCIES=python py-curl host-py-mox host-python
-CATAWAMPUS_DEPENDENCIES+=python-netifaces
-CATAWAMPUS_INSTALL_STAGING=NO
 CATAWAMPUS_INSTALL_TARGET=YES
+CATAWAMPUS_DEPENDENCIES=\
+	python \
+	py-curl \
+	host-py-mox \
+	host-python \
+	host-py-yaml \
+	python-netifaces
+
+# Optional extension modules
+ifeq ($(BR2_PACKAGE_GOOGLE_PRISM),y)
+CATAWAMPUS_DEPENDENCIES+=google_prism
+endif
+
 
 define CATAWAMPUS_BUILD_CMDS
-	CROSS_COMPILE=$(TARGET_CROSS) PYTHON=$(HOST_DIR)/usr/bin/python $(MAKE) -C $(@D)
+	CROSS_COMPILE=$(TARGET_CROSS) \
+	PYTHON=$(HOST_DIR)/usr/bin/python \
+	CWMPD_EXT_DIR=$(TARGET_DIR)/usr/catawampus/ext \
+	$(MAKE) -C $(@D)
 endef
 
 define CATAWAMPUS_INSTALL_TARGET_CMDS
-	DSTDIR=$(TARGET_DIR)/usr/catawampus/ PYTHON=$(HOST_DIR)/usr/bin/python \
+	DSTDIR=$(TARGET_DIR)/usr/catawampus/ \
+	PYTHON=$(HOST_DIR)/usr/bin/python \
 		   $(MAKE) -C $(@D) install
-endef
 
-define CATAWAMPUS_REMOVE_SURPLUS_FILES
-	for i in `find $(TARGET_DIR)/usr/catawampus/ -type f -name *.py` ; do \
-		rm -f $$i ; \
+	# Remove installed *.py files since *.pyc files are available
+	find $(TARGET_DIR)/usr/catawampus/ -type f -name *.py | \
+	while read i; do \
+		rm -f $$i; \
 	done
 endef
-
-CATAWAMPUS_POST_INSTALL_TARGET_HOOKS += CATAWAMPUS_REMOVE_SURPLUS_FILES
 
 define CATAWAMPUS_TEST_CMDS
 	PYTHONPATH=$(HOST_PYTHONPATH) \
 	PYTHON=$(HOST_DIR)/usr/bin/python \
+	CWMPD_EXT_DIR=$(TARGET_DIR)/usr/catawampus/ext \
 	$(MAKE) -C $(@D) test
 endef
 

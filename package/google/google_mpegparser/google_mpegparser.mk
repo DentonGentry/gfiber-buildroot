@@ -1,5 +1,5 @@
 GOOGLE_MPEGPARSER_SITE=repo://vendor/google/mpegparser
-GOOGLE_MPEGPARSER_DEPENDENCIES=linux google_tvstreamparser google_mcastcapture
+GOOGLE_MPEGPARSER_DEPENDENCIES=google_tvstreamparser google_mcastcapture
 
 define GOOGLE_MPEGPARSER_BUILD_CMDS
         TVSTREAMPARSER_PATH=$(GOOGLE_TVSTREAMPARSER_DIR)/tvstreamparser/ \

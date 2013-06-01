@@ -67,10 +67,7 @@ def IfconfigData(ifcname):
 
 def NvramData():
   """Returns a list of key/value pairs based on NVRAM contents."""
-  data = TryReadPipe(['hnvram', '-r', '1ST_SERIAL_NUMBER'])
-  out = []
-  out += ReFind(r'(?:1ST_SERIAL_NUMBER=)?(.*)', 'serial', data)
-  return out
+  return ['serial=' + TryReadPipe(['/bin/serial']).rstrip()]
 
 
 def Marker(s):
@@ -124,7 +121,8 @@ def main():
   if retval:
     raise Exception('dmesg returned exit code %d' % retval)
 
-  keys = set(IfconfigData('br0') + IfconfigData('eth0') + NvramData())
+  keys = set(IfconfigData('br0') + IfconfigData('eth0') +
+             IfconfigData('pon0') + NvramData())
   os.environ['PATH'] += ':.'  # make sure PWD is searched for upload-logs
 
   if not opt.all:

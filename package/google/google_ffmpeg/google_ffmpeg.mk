@@ -1,5 +1,5 @@
 GOOGLE_FFMPEG_SITE=repo://vendor/opensource/ffmpeg
-GOOGLE_FFMPEG_DEPENDENCIES=linux
+GOOGLE_FFMPEG_DEPENDENCIES=
 GOOGLE_FFMPEG_INSTALL_STAGING = YES
 
 ifeq ($(BR2_PACKAGE_ZLIB),y)
@@ -29,6 +29,8 @@ define GOOGLE_FFMPEG_CONFIGURE_CMDS
                 --arch=$(BR2_ARCH) \
                 --target-os=linux \
                 --extra-cflags='-fPIC -DEM8622' \
+                --disable-mmx \
+                --disable-mmx2 \
                 --disable-muxers \
                 --disable-encoders \
                 --disable-shared \

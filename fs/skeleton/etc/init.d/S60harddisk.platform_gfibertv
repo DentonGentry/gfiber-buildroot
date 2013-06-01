@@ -1,4 +1,5 @@
 #!/bin/sh
+. /etc/utils.sh
 
 trim() {
   local var="$1"
@@ -7,16 +8,26 @@ trim() {
   echo -n $var
 }
 
-hddserial () {
+hddserial() {
   local var
   var=$(hdparm -I /dev/sda | grep "Serial Number")
-  echo -n $(trim "${var##*:}")
+  trim "${var##*:}"
 }
 
+FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
 case "$1" in
   start)
-    # Mount SATA device
-    if [ -e /dev/sda ]; then
+    failure_media=0
+    failure_backup=0
+    mediafs=$(kernopt mediafs)
+    if startswith "$mediafs" "9p:"; then
+      echo "Mounting 9p /var/media."
+      mount -t 9p -o trans=virtio,version=9p2000.L "${mediafs#9p:}" /var/media
+      failure_media=$?
+    elif startswith "$mediafs" "/dev/"; then
+      echo "Mounting ext4 /var/media from '$mediafs'"
+      mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
+    elif [ -e /dev/sda ]; then
       attachedSerial=$(hddserial)
       pairedSerial=$(hnvram -rq PAIRED_DISK)
       echo "Attached HDD Serial:$attachedSerial, Paired HDD Serial:$pairedSerial"
@@ -32,26 +43,23 @@ case "$1" in
           exit 0;
         fi
       fi
-      echo "Mounting SATA device"
-      failure_media=0
-      failure_backup=0
-      FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
+      echo "Mounting SATA device."
       if [ -e /dev/sda1 ]; then
         mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
-        failure_media="$?"
+        failure_media=$?
         if [ -e /dev/sda2 ]; then
           mount -o "$FLAGS" -t ext4 /dev/sda2 /var/backup
-          failure_backup="$?"
+          failure_backup=$?
         fi
       elif [ -h /dev/sda ]; then
         mount -o "$FLAGS" -t ext4 /dev/sda /var/media
-        failure_media="$?"
+        failure_media=$?
       fi
-      if [ "$failure_media" != 0 ] || [ "$failure_backup" != 0 ]; then
-        echo "HDD mounting error."
-        echo 1 > /tmp/gpio/ledcontrol/hdd_mount_err
-        exit 0;
-      fi
+    fi
+    if [ "$failure_media" != 0 ] || [ "$failure_backup" != 0 ]; then
+      echo "HDD mounting error."
+      echo 1 >/tmp/gpio/ledcontrol/hdd_mount_err
+      exit 0
     fi
     ;;
   stop)
@@ -61,11 +69,10 @@ case "$1" in
     umount /var/backup 2>&1 >/dev/null
     ;;
   restart|reload)
-    "$0" stop
-    sleep 3
-    "$0" start
+    $0 stop
+    $0 start
     ;;
   *)
-    echo $"Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
