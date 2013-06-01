@@ -1,7 +1,8 @@
 #!/bin/sh
 
 if [ -e /tmp/DEBUG ]; then
-  agetty -L $1 115200 vt100
+  wait-until-created /dev/"$1"
+  agetty -L "$1" 115200 vt100
 else
   echo "Not running getty on '$1'. To activate, boot with debug=1 or login=1." >&2
   while true; do
