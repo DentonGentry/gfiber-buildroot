@@ -1,18 +1,23 @@
 <?xml version="1.0"?>
 <cnfg>
-	<APM>
-		<!--  poll interval unit ms, should be larger than 1000 ms-->
-		<alarm_poll_interval>3000</alarm_poll_interval>
-		<alarm_max_entity_num>500</alarm_max_entity_num>
-		<pm_poll_interval>3000</pm_poll_interval>
-		<pm_max_entity_num>100</pm_max_entity_num>
-		<avc_poll_interval>3000</avc_poll_interval>
-		<avc_max_entity_num>200</avc_max_entity_num>
-		<!--  Enabled - APM enables alarms, alarms are called. Disabled - APM disables alarms, alarms are not called.  --> 
-		<apm_alarm_activation enabled="true" />
-		<!--  Enabled - APM enables PM, PM are called. Disabled - APM disables PM on relevant MEs, PM are not called.  --> 
-		<apm_pm_activation enabled="true" />
-		<!--  Enabled - APM enables avcs, avcs are called. Disabled - APM disables avcs, avc are not called.  --> 
-		<apm_avc_activation enabled="true" />
-	</APM>
+    <APM>
+        <!--  Alarm poll interval in unit of ms, should be larger than 1000 ms -->
+        <alarm_poll_interval>3000</alarm_poll_interval>
+        <!--  Maximum number of alarm supported -->
+        <alarm_max_entity_num>500</alarm_max_entity_num>
+        <!--  PM poll interval in unit of ms, should be larger than 1000 ms -->
+        <pm_poll_interval>3000</pm_poll_interval>
+        <!--  Maximum number of PM supported -->
+        <pm_max_entity_num>100</pm_max_entity_num>
+        <!--  AVC poll interval in unit of ms, should be larger than 1000 ms -->
+        <avc_poll_interval>3000</avc_poll_interval>
+         <!--  Maximum number of AVC supported -->
+        <avc_max_entity_num>200</avc_max_entity_num>
+        <!--  Alarm enabled/disabled flag, true:enabled alarm functions, false:disabled alarm functions. -->
+        <apm_alarm_activation enabled="false" />
+        <!--  PM enabled/disabled flag, true:enabled PM functions, false:disabled PM functions. -->
+        <apm_pm_activation enabled="false" />
+        <!--  AVC enabled/disabled flag, true:enabled AVC functions, false:disabled AVC functions. -->
+        <apm_avc_activation enabled="false" />
+    </APM>
 </cnfg>
