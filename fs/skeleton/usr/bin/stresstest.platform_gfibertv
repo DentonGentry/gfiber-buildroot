@@ -167,4 +167,4 @@ main()
 }
 
 
-main 2>&1 | tee /proc/self/fd/2 | logger -t stresstest
+main 2>&1 | tee /proc/self/fd/2 | logos stresstest
