@@ -30,6 +30,7 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 	cp -alf	$(@D)/stvs/FiberTV \
 		$(TARGET_DIR)/app/sage/STVs/
 	rm -f	$(TARGET_DIR)/app/sage/STVs/FiberTV/FiberTV7.xml
+	rm -f	$(TARGET_DIR)/app/sage/STVs/FiberTV/FiberTVDark.xml
 	cp -lf	$(@D)/images/SageTV/images/tvicon* \
 		$(TARGET_DIR)/app/sage/images/
 	cp -alf	package/google/google_sageserver/Sage.properties.defaults.* \
