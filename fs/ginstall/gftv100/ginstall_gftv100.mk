@@ -34,22 +34,44 @@ ifneq ($(BRUNO_LOADER),)
 BRUNO_LOADERS := loader.bin loader.sig
 endif
 
+ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
+ROOTFS_GINSTALL_KERNEL_FILE=uImage
+else
+ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
+endif
+
+# TODO(apenwarr): update uboot to handle kernels with dmverity in them.
+#  Right now our uboot doesn't understand the google verity header added
+#  by GOOGLE_SIGNING (repack.py).
 define ROOTFS_GINSTALL_CMD
 	set -e; \
-	gzip -c <$(BINARIES_DIR)/vmlinux \
-		>$(BINARIES_DIR)/vmlinuz_unsigned && \
-	chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
-	if [ -e '$(value BRUNO_LOADER)' ]; then \
-		cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin && \
-		cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
+	if [ -e "$(BINARIES_DIR)/vmlinux" ]; then \
+		gzip -c <$(BINARIES_DIR)/vmlinux \
+			>$(BINARIES_DIR)/vmlinuz_unsigned && \
+		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
+		if [ -e '$(value BRUNO_LOADER)' ]; then \
+			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin && \
+			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
+		fi && \
+		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
+		( \
+			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
+		); \
 	fi && \
-	cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
-	( \
-		export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
-	) && \
 	cd $(BINARIES_DIR) && \
+	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
+	if [ "$(BR2_LINUX_KERNEL_ZIMAGE)" = "y" ]; then \
+		$(HOST_DIR)/usr/bin/mkimage \
+			-A $(BR2_ARCH) -O linux -T multi -C none \
+			-a 0x03008000 -e 0x03008000 -n Linux \
+			-d zImage:simpleramfs.cpio.gz \
+			uImage; \
+	fi && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
-		version $(value BRUNO_LOADERS) vmlinuz rootfs.squashfs
+		version \
+		$(BRUNO_LOADERS) \
+		$(ROOTFS_GINSTALL_KERNEL_FILE) \
+		rootfs.squashfs
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))

@@ -109,9 +109,10 @@ elif [ -n "$ROOTDEV" ]; then
     args=$(replacefirst "$args" ROOT_DEV "$ROOTDEV")
     args=$(replacefirst "$args" HASH_DEV "$KERNELDEV")
     if ! dmsetup create -r vroot --table "$args"; then
-      read x y z platform junk </proc/cpuinfo
-      if [ "$platform" = "BCM7425B0" ]; then
-        log 'dmsetup failed: platform is old B0 device, continuing anyway.'
+      # TODO(apenwarr): fix uboot, then remove special case for armplatform.
+      read x y armplatform platform junk </proc/cpuinfo
+      if [ "$platform" = "BCM7425B0" -o "$armplatform" = "ARMv7" ]; then
+        log 'dmsetup failed: platform is unsigned device, continuing anyway.'
         mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
             die "root='$ROOTDEV' mount failed"
         log "Mounted root='$ROOTDEV'"
