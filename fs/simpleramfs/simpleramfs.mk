@@ -31,7 +31,7 @@ endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
-	for d in bin lib proc dev sys rootfs mnt tmp; do \
+	for d in sbin bin lib proc dev sys rootfs mnt tmp; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
 
@@ -71,6 +71,17 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/sbin/switch_root \
 		$(HNVRAM_BIN) \
 		$(@D)/fs/bin/
+
+	# driver firmware and modules
+	if [ "$(BR2_PACKAGE_MINDSPEED_DRIVERS)" = "y" ]; then \
+		mkdir -p $(@D)/fs/lib/modules $(@D)/fs/lib/firmware && \
+		ln -f	$(TARGET_DIR)/lib/modules/*/extra/pfe.ko \
+			$(@D)/fs/lib/modules/ && \
+		ln -f	$(TARGET_DIR)/lib/firmware/* \
+			$(@D)/fs/lib/firmware/ && \
+		ln -f	$(TARGET_DIR)/sbin/hotplug \
+			$(@D)/fs/sbin/; \
+	fi
 
 	# strip all the binaries
 	$(STRIPCMD) $(@D)/fs/bin/*

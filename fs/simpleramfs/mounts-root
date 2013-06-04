@@ -74,6 +74,18 @@ if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
 fi
 
 if [ -n "$NFSROOT" ]; then
+  log "Mounting nfs: '$NFSROOT'"
+  if [ -n "$IP" ]; then
+    # Can't necessarily count on the kernel to do this, in case our
+    # ethernet driver is a kernel module instead of built-in.
+    log "  IP initialization: '$IP'"
+    echo "$IP" | {
+      IFS=: read ip junk
+      if [ "$ip" != "auto" ]; then
+        ifconfig eth0 "$ip"
+      fi
+    }
+  fi
   NFSADDR=${NFSROOT%:*}
   NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
   mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"

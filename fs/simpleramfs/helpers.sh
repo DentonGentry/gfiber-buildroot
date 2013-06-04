@@ -23,6 +23,7 @@ read_cmdline()
   UBI_MTD=
   INIT=
   DEBUG=
+  IP=
 
   set $(cat /proc/cmdline)
   for i in "$@"; do
@@ -35,6 +36,7 @@ read_cmdline()
       ubi.mtd) UBI_MTD=$value ;;
       init) INIT=$value ;;
       debug|login) DEBUG=1 ;;
+      ip) IP=$value ;;
     esac
   done
 }

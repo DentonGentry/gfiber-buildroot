@@ -19,7 +19,7 @@ atomic() {
 # Returns true if the system has wifi.
 has_wifi() {
   WIFI_IF="eth2"
-  test -f "/sys/class/net/$WIFI_IF/address"
+  [ -f "/sys/class/net/$WIFI_IF/address" ] && runnable wl
 }
 
 

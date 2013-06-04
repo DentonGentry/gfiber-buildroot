@@ -1,4 +1,6 @@
 #!/bin/sh
+. /etc/utils.sh
+
 case "$1" in
   start)
     # if the file exists and it isn't empty
@@ -41,6 +43,7 @@ case "$1" in
       $(cat /sys/class/net/eth0/address)
     echo "done"
     ip link set br0 up
+    ip link set br0 up  # kernel 3.2.26 bug: fails the first time
 
     # VLAN tag for MoCA interface
     ip link add link eth1 name eth1.0 type vlan id 0
@@ -51,21 +54,18 @@ case "$1" in
 
     echo "Adding interfaces... "
     # set up networking if we are not on an NFS rootfs
-    for x in $(ls /sys/class/net); do
-      [ $x = "lo" ] && continue
-      [ $x = "br0" ] && continue
+    for x in /sys/class/net/eth[0-9]; do
+      x=${x#/sys/class/net/}
       echo "Adding interface $x..."
       ip link set $x up &&
       ip -o -f inet addr show $x |
       while read a b c ip d brd junk; do
         ip addr add $ip broadcast $brd dev br0
       done &&
-      if [ -e /sys/class/net/$x/device ]; then
-        if [ $x = eth1 ]; then
-          x=eth1.0
-        fi
-        brctl addif br0 $x
+      if [ $x = eth1 ]; then
+        x=eth1.0
       fi &&
+      brctl addif br0 $x &&
       ip -o -f inet route list dev $x |
       while read dst routeinfo; do
         if [ "$dst" = "default" ]; then
@@ -113,7 +113,7 @@ case "$1" in
       mocacfg boot &  # a bit slow, so don't bother waiting
     fi
 
-    if [ -d /sys/class/net/eth2 ]; then
+    if has_wifi && is-tv-box; then
       # Partial fix for "micro-stuttering" seen in video playback.
       # Wifi driver needs to be on cpu1 and video on cpu0 so that wifi
       # can't lock out scheduling of the video player.

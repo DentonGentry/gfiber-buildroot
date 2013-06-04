@@ -20,6 +20,11 @@ trap 'log FATAL - INIT EXITED - Rebooting.; reboot >&9 2>&1 9>&-' EXIT
 log 'Disable repartitioning'
 echo 1 >/proc/sys/dev/repartition/disable
 
+# Initialize any loadable driver modules
+for d in /lib/modules/*.ko /lib/modules/*/*.ko; do
+  [ -e "$d" ] && insmod $d
+done
+
 # Mount /rootfs
 /mounts-root || die "couldn't mount root filesystems"
 
