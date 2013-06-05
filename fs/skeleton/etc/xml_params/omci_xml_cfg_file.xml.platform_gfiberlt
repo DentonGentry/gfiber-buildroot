@@ -166,12 +166,12 @@
 
         <me name="Software Image" instance="0">
             <!--  version: 14 characters wide, printable characters. See G.988    -->
-            <attrib name="version" enabled="false" value="MRVL ONU 1.0A" />
+            <attrib name="version" enabled="true" value="TR69CONTROL" />
         </me >
 
         <me name="Software Image" instance="1">
             <!--  version: 14 characters wide, printable characters. See G.988    -->
-            <attrib name="version" enabled="false" value="MRVL ONU 1.0B" />
+            <attrib name="version" enabled="true" value="TR69CONTROL" />
         </me >
 
         <!--The Cardholder instance number is a hex value in the range 0..0xFFF. See G.988  -->
