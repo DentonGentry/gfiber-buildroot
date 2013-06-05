@@ -28,8 +28,8 @@ case "$1" in
         (
          wait-until-created /var/run/gpio-mailbox
          startupvideo /tmp/svpipe \
-           /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 \
-           /usr/sv/connecting.ts 1 0 256 0
+           /usr/sv/Google_Loading_Loop_HiRes2.ts 2 0 1001 1002 0 \
+           /usr/sv/connecting.ts 1 0 256 0 1
 
          # in case sv crashes early, make sure ntp is synced
          wait-until-created /tmp/time.synced
