@@ -1,4 +1,5 @@
 config BR2_TARGET_ROOTFS_GINSTALL
 	bool "ginstall"
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS if BR2_LINUX_KERNEL_ZIMAGE
 	help
 	  Create installer package for Google platforms

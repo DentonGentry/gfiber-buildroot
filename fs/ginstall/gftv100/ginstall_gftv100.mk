@@ -15,6 +15,8 @@ ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
 
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
+ifeq ($(BR2_ARCH),mips)
+
 BRUNO_CFE_DIR = ../vendor/broadcom/cfe-bin
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
@@ -34,6 +36,8 @@ ifneq ($(BRUNO_LOADER),)
 BRUNO_LOADERS := loader.bin loader.sig
 endif
 
+endif  # mips
+
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 else
@@ -45,7 +49,7 @@ endif
 #  by GOOGLE_SIGNING (repack.py).
 define ROOTFS_GINSTALL_CMD
 	set -e; \
-	if [ -e "$(BINARIES_DIR)/vmlinux" ]; then \
+	if [ "$(BR2_LINUX_KERNEL_VMLINUX)" = "y" ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
