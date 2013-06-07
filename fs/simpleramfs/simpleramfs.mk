@@ -88,8 +88,8 @@ define SIMPLERAMFS_BUILD_CMDS
 
 	# without ld.so, nothing works
 	if [ "$(BR2_TOOLCHAIN_EXTERNAL_GLIBC)" = "y" ]; then \
-		cp $(TARGET_DIR)/lib/ld-linux-x86-64.so.2 \
-			$(@D)/fs/lib64/; \
+		cp --no-dereference --preserve=links $(TARGET_DIR)/lib/ld-* \
+			$(@D)/fs/lib/; \
 	else \
 		cp $(TARGET_DIR)/lib/ld-uClibc.so.0 \
 			$(@D)/fs/lib/; \
