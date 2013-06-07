@@ -48,7 +48,7 @@ case "$1" in
         ionice -c 3 -n 7 chg_mod_own --uid video --gid video --mode_dir 0775 \
           --mode_file 0664 tv videos pictures music
       )
-      babysit 60 smbd -F -D -S 2>&1 | logos smbd &
+      babysit 60 ionice -c 3 -n 7 smbd -F -D -S 2>&1 | logos smbd &
       babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
     fi 2>&1 | logos smbd &  # run in background to avoid slowing boot
     ;;
