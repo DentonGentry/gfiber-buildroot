@@ -1,0 +1,22 @@
+#!/bin/sh
+cd "$(dirname "$0")"
+export LANG=en_US.UTF-8
+export SIEGEHOME=/app/sage/skelmir
+
+if runnable java; then
+  JVM=java
+else
+  JVM=./skelmir/siege
+fi
+
+SIEGEOPT=
+[ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
+
+export SIEGEDISABLEHEAPDUMP=1
+export SIEGENOGDB=1
+
+# TODO(apenwarr): eliminate skelmir's need for a stdin on ARM devices.
+while sleep 10000; do :; done |
+exec "$JVM" \
+    $SIEGEOPT \
+    "$@"

@@ -1,6 +1,12 @@
 #!/bin/sh
 cd "$(dirname "$0")"
 export LD_LIBRARY_PATH=$PWD:$PWD/lib
+
+# TODO(apenwarr): remove once skelmir adds vfork support on ARM devices.
+if [ "$(uname -m)" = "armv7l" ]; then
+  echo 1 >/proc/sys/vm/overcommit_memory
+fi
+
 export LANG=en_US.UTF-8
 export SIEGEHOME=/app/sage/skelmir
 
@@ -87,9 +93,21 @@ ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
   [ "$MODE" = "client" ] && cat SageClient.properties.defaults.analytics
 ) >/tmp/Sage.properties.defaults
 
+read junk1 memtotal junk2 </proc/meminfo
+echo "System memory: $memtotal kb" >&2
+if [ "$memtotal" -le 524288 ]; then
+  # Mostly for mindspeed eval board which has only 512M
+  HEAPSIZE=-Xmx300m
+else
+  HEAPSIZE=-Xmx512m
+fi
+
 export SIEGEDISABLEHEAPDUMP=1
 export SIEGENOGDB=1
-babysit 10 setuid video "$JVM" \
+
+# TODO(apenwarr): get a version of siege for ARM that doesn't need 'ioblock'.
+#  Our current one dies if stdin gets EOF.
+babysit 10 setuid video ioblock "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
@@ -97,7 +115,7 @@ babysit 10 setuid video "$JVM" \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -Djava.lang.runtime.exec.vfork \
     -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
-    -Xmx512m \
+    $HEAPSIZE \
     -verbose:gc \
     $SIEGEOPT \
     sage.Sage 0 0 "$CONNECT_STRING" \
