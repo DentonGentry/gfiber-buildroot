@@ -1,6 +1,9 @@
 #!/bin/sh
 MODULE_PATH=/usr/lib/modules
 
+# Do this early because hnvram needs it.
+update-mtd-links
+
 # Set up NEXUS first since it applies PINMUX.
 echo "Starting nexus"
 [ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko

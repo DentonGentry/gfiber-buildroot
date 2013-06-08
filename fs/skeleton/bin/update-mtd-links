@@ -1,0 +1,48 @@
+#!/bin/sh
+. /etc/utils.sh
+
+die() {
+  echo "$0: failed." >&2
+  exit 1
+}
+
+rm -rf /dev/mtd.new
+mkdir /dev/mtd.new || die
+
+{
+  cd /dev/mtd.new || die
+  read junk  # header line
+  while IFS=': ' read dev size erasesize name; do
+    if ! startswith "$name" '"' || ! endswith "$name" '"'; then
+      echo "$0: '$name' must be quoted" >&2
+      die
+    fi
+    if ! startswith "$dev" 'mtd'; then
+      echo "$0: '$dev' must start with 'mtd'" >&2
+      die
+    fi
+    name=${name#'"'}
+    name=${name%'"'}
+    devno=${dev#mtd}
+
+    # TODO(apenwarr): remove special case for 'rootfs' nodes.
+    #  They should be named rootfs0+ubi and rootfs1+ubi for clarity and
+    #  to help avoid special cases.
+    if endswith "$name" "+ubi" ||
+       [ "$name" = "rootfs0" ] ||
+       [ "$name" = "rootfs1" ]; then
+      # ubifs host partitions are the only ones that need to be char
+      # devices.  Everything else can be a block device.
+      ndev="mtd$devno"
+    else
+      ndev="mtdblock$devno"
+    fi
+    if [ ! -e "/dev/$ndev" ]; then
+      echo "$0: '/dev/$ndev' does not exist" >&2
+      die
+    fi
+    ln -s "../$ndev" "$name"
+  done
+} </proc/mtd || die
+rm -rf /dev/mtd
+mv /dev/mtd.new /dev/mtd || die
