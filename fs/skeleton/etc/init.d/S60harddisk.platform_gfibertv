@@ -39,12 +39,13 @@ case "$1" in
           $(hnvram -w PAIRED_DISK="$attachedSerial")
         else
           echo "NO MATCH; NO MOUNT"
-          echo 1 > /tmp/gpio/ledcontrol/hdd_bad_pair
+          echo 1 >/tmp/gpio/ledcontrol/hdd_bad_pair
           exit 0;
         fi
       fi
       echo "Mounting SATA device."
       if [ -e /dev/sda1 ]; then
+        tune2fs -m 0 /dev/sda1
         mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
         failure_media=$?
         if [ -e /dev/sda2 ]; then
@@ -52,6 +53,7 @@ case "$1" in
           failure_backup=$?
         fi
       elif [ -h /dev/sda ]; then
+        tune2fs -m 0 /dev/sda
         mount -o "$FLAGS" -t ext4 /dev/sda /var/media
         failure_media=$?
       fi
