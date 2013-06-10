@@ -150,7 +150,7 @@ def EnableWanProfile(wan_port, lan_port, mgmt_vlan):
         us_bmp = PON_BMP
         ds_port = 'UNI_ANY'
       else:
-        raise tpm.Fatal('Invalid LAN port - %s\n', ds_port)
+        raise tpm.Fatal('Invalid LAN port - %s\n', lan_port)
 
       tt.AddFrwdRule(FRWD_DS, ds_bmp)
       tt.AddFrwdRule(FRWD_US, us_bmp)
