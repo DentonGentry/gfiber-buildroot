@@ -109,6 +109,7 @@
                 <!--  GMAC Marvell_Header configuration - GMAC adds 2B Marvell header at beginning of packet
 				      mh_enabled 0 = FALSE, 1 = TRUE, 2 = AUTO (enabled if connected to Switch)   -->
                 <gmac0_mh_en>0</gmac0_mh_en>
+                <gmac1_mh_en>0</gmac1_mh_en>
             </gmac_mh_en>
 
             <gmac_bm_buffers>
@@ -374,7 +375,7 @@
                 0 = CPU WAN Egress Loopback - disabled
                 1 = CPU WAN Egress Loopback - enabled
         -->
-        <cpu_wan_egr_loopback>1</cpu_wan_egr_loopback>
+        <cpu_wan_egr_loopback>0</cpu_wan_egr_loopback>
 
         <!--  IPV6 5-tuple status :
                 0 = IPV6 is configured by normal API,
@@ -474,7 +475,7 @@
                 0 = CTC CnM - disabled,
                 1 = CTC CnM - enabled
          -->
-        <ctc_cnm_enable>1</ctc_cnm_enable>
+        <ctc_cnm_enable>0</ctc_cnm_enable>
         <!--  PNC MAC learning status :
                 0 = PNC MAC learn - disabled,
                 1 = PNC MAC learn - enabled
@@ -484,7 +485,7 @@
                 0 = CTC mode,
                 1 = TR156 mode
          -->
-        <pnc_mac_learn_enable>1</pnc_mac_learn_enable>
+        <pnc_mac_learn_enable>0</pnc_mac_learn_enable>
 
         <!--  CTC IPv6 CNM parsing window: 0 = first 24 bytes of IPv6 header, 1 = second 24 bytes -->
         <ctc_cnm_ipv6_parsing_window>0</ctc_cnm_ipv6_parsing_window>
@@ -499,59 +500,61 @@
                 <!--  TPM_PNC_MNGMT_DS -->
                 <range num="00" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "1" />
                 <!--  TPM_PNC_MAC_LEARN -->
-                <range num="01" type="0" size="5"  cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
+                <range num="01" type="0" size="0"   cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CPU_WAN_LPBK_US -->
                 <range num="02" type="0" size="5"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_NUM_VLAN_TAGS -->
                 <range num="03" type="0" size="05"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_MULTI_LPBK -->
-                <range num="04" type="0" size="20"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="05" type="0" size="20"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_VIRT_UNI -->
-                <range num="05" type="0" size="13"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="06" type="0" size="13"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_LOOP_DET_US -->
-                <range num="06" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="07" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_L2_MAIN -->
-                <range num="07" type="0" size="64"  cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
+                <range num="08" type="0" size="64"  cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_ETH_TYPE -->
-                <range num="08" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
+                <range num="09" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IGMP -->
-                <range num="09" type="0" size="06"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="10" type="0" size="0"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MC_DS -->
-                <range num="10" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="11" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MAIN -->
-                <range num="11" type="1" size="64" cntr_grp="3"  lu_mask="0" min_reset_level = "0" />
+                <range num="12" type="1" size="64" cntr_grp="3"  lu_mask="0" min_reset_level = "0" />
                 <!--  TPM_PNC_TCP_FLAG -->
-                <range num="12" type="0" size="12"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="13" type="0" size="12"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_TTL -->
-                <range num="13" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="14" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_PROTO -->
-                <range num="14" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="15" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_FRAG -->
-                <range num="15" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="16" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_LEN -->
-                <range num="16" type="0" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="17" type="0" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_NH -->
-                <range num="17" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="18" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4_MC_DS -->
-                <range num="18" type="1" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="19" type="1" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_TCP_FLAG -->
+                <range num="20" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4 -->
-                <range num="19" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="21" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_HOPL -->
-                <range num="20" type="1" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="22" type="1" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_MC_SIP -->
-                <range num="21" type="1" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="23" type="1" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_GEN -->
-                <range num="22" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
-                <!--  TPM_PNC_IPV6_MC_DS -->
-                <range num="23" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
-                <!--  TPM_PNC_IPV6_DIP -->
                 <range num="24" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_MC_DS -->
+                <range num="25" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_DIP -->
+                <range num="26" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_IPV4_PRE -->
-                <range num="25" type="1" size="36"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="27" type="1" size="36"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_MAIN -->
-                <range num="26" type="0" size="43"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="28" type="0" size="0"   cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CATCH_ALL -->
-                <range num="27" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="29" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
             </range_parameters>
             <!--  0 = drop, 1 =  trap to CPU    -->
             <catch_all_pkt_action>1</catch_all_pkt_action>
