@@ -1,7 +1,7 @@
 From 5022a0c49d98c498a3f5d8adb8814021ad6ce03f Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
-Date: Mon, 4 Jun 2012 20:18:09 -0700
-Subject: [PATCH 4/6] Abort if adjtime() fails.
+Date: Tue, 11 Jun 2013 00:38:41 -0400
+Subject: Abort if adjtime() fails or settime() refuses to set the time.
 
 There's no point running an ntp daemon if it can't adjtime(); that's all it
 does.  If we abort, the process babysitter can restart it.  We previously
@@ -10,14 +10,27 @@ confusion in the state machine (such as double-adding very large time
 offsets - offsets calculated for adjtime, not really for settime - by
 accident when we get two packets in rapid succession).
 ---
- ntpd.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ ntpd.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/ntpd.c b/ntpd.c
-index 22db996..3439f3f 100644
+index 22db996..0515752 100644
 --- a/ntpd.c
 +++ b/ntpd.c
-@@ -358,9 +358,10 @@ ntpd_adjtime(double d)
+@@ -305,8 +305,10 @@ dispatch_imsg(struct ntpd_conf *conf)
+ 		case IMSG_SETTIME:
+ 			if (imsg.hdr.len != IMSG_HEADER_SIZE + sizeof(d))
+ 				fatalx("invalid IMSG_SETTIME received");
+-			if (!conf->settime)
+-				break;
++			if (d && !conf->settime) {
++				log_debug("can't IMSG_SETTIME since !conf->settime; aborting to start over.");
++				exit(26);
++			}
+ 			log_init(conf->debug);
+ 			memcpy(&d, imsg.data, sizeof(d));
+ 			ntpd_settime(d);
+@@ -358,9 +360,10 @@ ntpd_adjtime(double d)
  	else
  		log_debug("adjusting local clock by %fs", d);
  	d_to_tv(d, &tv);
@@ -32,5 +45,5 @@ index 22db996..3439f3f 100644
  	firstadj = 0;
  	return (synced);
 -- 
-1.7.7.3
+1.7.9.dirty
 

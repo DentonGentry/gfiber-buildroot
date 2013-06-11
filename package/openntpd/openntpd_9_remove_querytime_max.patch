@@ -1,0 +1,133 @@
+From 11bbce7be6c86fd177ee903216ba43b8adba5e1f Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 11 Jun 2013 00:26:19 -0400
+Subject: Use error_interval() instead of QUERYTIME_MAX for each query packet.
+
+The original implementation would wait QUERYTIME_MAX for each ntp request to
+expire before *then* starting to count error_interval() seconds until the
+next request.  This caused problems because the initial settime_timeout
+could expire before even retrying a single time.  That, in turn, was
+problematic if the first IP address in a multi-IP-address DNS entry turned
+out not to work; we'd give up trying to set the time before we even tried
+all the servers.
+
+Now the retries are much faster (but still use the backoff interval).
+---
+ client.c |   12 ++++++------
+ ntp.c    |    6 +++---
+ ntpd.h   |    3 +--
+ 3 files changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/client.c b/client.c
+index da6aa43..c0acaa2 100644
+--- a/client.c
++++ b/client.c
+@@ -118,7 +118,7 @@ client_query(struct ntp_peer *p)
+ 	int	tos = IPTOS_LOWDELAY;
+ 
+ 	if (p->addr == NULL && client_nextaddr(p) == -1) {
+-		set_next(p, error_interval());
++		set_next(p, error_interval(0));
+ 		return (0);
+ 	}
+ 
+@@ -136,7 +136,7 @@ client_query(struct ntp_peer *p)
+ 			    errno == EHOSTUNREACH) {
+ 				client_log_error(p, "connect", errno);
+ 				client_nextaddr(p);
+-				set_next(p, error_interval());
++				set_next(p, error_interval(0));
+ 				return (-1);
+ 			} else
+ 				fatal("client_query connect");
+@@ -171,7 +171,7 @@ client_query(struct ntp_peer *p)
+ 	}
+ 
+ 	p->state = STATE_QUERY_SENT;
+-	set_deadline(p, QUERYTIME_MAX);
++	set_deadline(p, error_interval(0));
+ 
+ 	return (0);
+ }
+@@ -191,7 +191,7 @@ client_dispatch(struct ntp_peer *p, u_int8_t settime)
+ 		    errno == ENETUNREACH || errno == ENETDOWN ||
+ 		    errno == ECONNREFUSED || errno == EADDRNOTAVAIL) {
+ 			client_log_error(p, "recvfrom", errno);
+-			set_next(p, error_interval());
++			set_next(p, error_interval(0));
+ 			return (0);
+ 		} else
+ 			fatal("recvfrom");
+@@ -207,7 +207,7 @@ client_dispatch(struct ntp_peer *p, u_int8_t settime)
+ 
+ 	if ((msg.status & LI_ALARM) == LI_ALARM || msg.stratum == 0 ||
+ 	    msg.stratum > NTP_MAXSTRATUM) {
+-		interval = error_interval();
++		interval = error_interval(0);
+ 		set_next(p, interval);
+ 		log_info("reply from %s: not synced, next query %ds",
+ 		    log_sockaddr((struct sockaddr *)&p->addr->ss), interval);
+@@ -236,7 +236,7 @@ client_dispatch(struct ntp_peer *p, u_int8_t settime)
+ 	p->reply[p->shift].offset = ((T2 - T1) + (T3 - T4)) / 2;
+ 	p->reply[p->shift].delay = (T4 - T1) - (T3 - T2);
+ 	if (p->reply[p->shift].delay < 0) {
+-		interval = error_interval();
++		interval = error_interval(0);
+ 		set_next(p, interval);
+ 		log_info("reply from %s: negative delay %f",
+ 		    log_sockaddr((struct sockaddr *)&p->addr->ss),
+diff --git a/ntp.c b/ntp.c
+index 4c33f7e..d8d14df 100644
+--- a/ntp.c
++++ b/ntp.c
+@@ -219,7 +219,7 @@ ntp_main(int pipe_prnt[2], struct ntpd_conf *nconf)
+ 			if (p->deadline > 0 && p->deadline < nextaction)
+ 				nextaction = p->deadline;
+ 			if (p->deadline > 0 && p->deadline <= time(NULL)) {
+-				timeout = error_interval();
++				timeout = error_interval(1);
+ 				log_debug("no reply from %s received in time, "
+ 				    "next query %ds", log_sockaddr(
+ 				    (struct sockaddr *)&p->addr->ss), timeout);
+@@ -542,7 +542,7 @@ scale_interval(time_t requested)
+ }
+ 
+ time_t
+-error_interval(void)
++error_interval(int step_incr)
+ {
+ 	static time_t step = 1;
+ 	time_t interval, maxival, r;
+@@ -552,7 +552,7 @@ error_interval(void)
+ 	if (interval > maxival)
+ 		interval = maxival;
+ 	else
+-		step++;
++		step += step_incr;
+ 	r = arc4random() % (interval / 10 + 1);
+ 	log_info("retrying in %d", interval + r);
+ 	return (interval + r);
+diff --git a/ntpd.h b/ntpd.h
+index 3bda1ec..e97c254 100644
+--- a/ntpd.h
++++ b/ntpd.h
+@@ -54,7 +54,6 @@
+ #define	QSCALE_OFF_MIN			0.05
+ #define	QSCALE_OFF_MAX			0.50
+ 
+-#define	QUERYTIME_MAX		15	/* single query might take n secs max */
+ #define	OFFSET_ARRAY_SIZE	8
+ #define	SETTIME_MIN_OFFSET	10	/* min offset for settime at start */
+ #define	SETTIME_TIMEOUT		15	/* max seconds to wait with -s */
+@@ -251,7 +250,7 @@ int	client_dispatch(struct ntp_peer *, u_int8_t);
+ void	client_log_error(struct ntp_peer *, const char *, int);
+ void	update_scale(double);
+ time_t	scale_interval(time_t);
+-time_t	error_interval(void);
++time_t	error_interval(int step_incr);
+ void	set_next(struct ntp_peer *, time_t);
+ 
+ /* util.c */
+-- 
+1.7.9.dirty
+
