@@ -53,7 +53,8 @@ case "$1" in
     done
 
     echo "Adding interfaces... "
-    # set up networking if we are not on an NFS rootfs
+    # Move any existing network info from primary network interfaces to
+    # the bridge.
     for x in /sys/class/net/eth[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
@@ -78,6 +79,16 @@ case "$1" in
       while read a b c ip junk; do
         ip addr del $ip dev $x
       done
+    done
+    kernopt ip |
+    while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
+      # $ip should be already setup by simpleramfs.
+      # TODO(apenwarr): simpleramfs should set up $gatewayip too.
+      #  But right now its included networking commands are too limited.
+      if [ -n "$gatewayip" ]; then
+        echo "IP: adding default gateway '$gatewayip'"
+        ip route add default via "$gatewayip"
+      fi
     done
     if [ ! -e /tmp/NFS ]; then
       echo "Bringing up the bridge..."
