@@ -1,5 +1,5 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
-GOOGLE_SAGESERVER_DEPENDENCIES = google_skelmir google_mobile_api google_sage_analytics_plugin
+GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin
 
 define GOOGLE_SAGESERVER_BUILD_CMDS
 	cd $(@D)/build/bruno/sage && \
@@ -17,8 +17,7 @@ endef
 #  elsewhere (yet?)
 define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/app/sage/STVs \
-		 $(TARGET_DIR)/app/sage/images \
-		 $(TARGET_DIR)/app/sage/skelmir/Libraries
+		 $(TARGET_DIR)/app/sage/images
 	cp -alf	$(@D)/build/bruno/sage/jars/*.jar \
 		$(@D)/build/bruno/sage/Sage.jar \
 		$(@D)/build/bruno/sage/webserver/* \

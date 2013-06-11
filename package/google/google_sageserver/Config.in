@@ -1,6 +1,6 @@
 config BR2_PACKAGE_GOOGLE_SAGESERVER
         bool "google_sageserver"
-        select BR2_PACKAGE_GOOGLE_SKELMIR
+        depends on BR2_PACKAGE_GOOGLE_SKELMIR || BR2_PACKAGE_OPENJDK_BIN
         select BR2_PACKAGE_GOOGLE_MOBILE_API
 	select BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
         help
