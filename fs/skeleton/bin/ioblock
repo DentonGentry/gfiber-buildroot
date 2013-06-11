@@ -1,0 +1,29 @@
+#!/usr/bin/python
+#
+# Run the program given on the command line, binding its stdin to a socket
+# that is readable but which will never have anything to read.  We accomplish
+# this by spinning off a copy of "cat" that will read from the other end
+# of the socket, but never write anything.  When our program dies, cat
+# will see EOF and also terminate cleanly.
+#
+# This can be used to keep alive a program that exits when its stdout gets
+# EOF.
+
+import os
+import socket
+import sys
+
+s1, s2 = socket.socketpair()
+pid = os.fork()
+if pid == 0:
+  # first child
+  try:
+    s1.close()
+    os.dup2(s2.fileno(), 0)
+    os.execvp('cat', ['cat'])
+  finally:
+    os._exit(99)
+
+s2.close()
+os.dup2(s1.fileno(), 0)
+os.execvp(sys.argv[1], sys.argv[1:])
