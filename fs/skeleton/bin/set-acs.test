@@ -161,22 +161,40 @@ WVPASS set-acs timeout http://x1
 WVPASSEQ "$(set-acs print)" http://bork
 
 wipe
-# Testing only the set-acs cwmp clear command
 
 WVPASS set-acs cwmp http://2
 WVPASS set-acs bless http://2
 WVPASS set-acs cwmp http://4
 WVPASSEQ "$(set-acs print)" http://4
 WVPASS set-acs cwmp clear
-WVPASSEQ "$(set-acs print)" ""
+WVPASSEQ "$(set-acs print)" "http://bork"
 
 wipe
 
-WVPASS set-acs cwmp http://2
+# test for clearing redirs
 WVPASS set-acs cwmp http://4
 WVPASS set-acs bless http://4
+WVPASS set-acs cwmp http://4a  # tried but not yet blessed
 WVPASS set-acs dhcp http://5   # dhcp delivers a new setting: takes precedence
 WVPASSEQ "$(set-acs print)" http://5
-WVPASS set-acs cwmp clear
-WVPASSEQ "$(set-acs print)" http://4
+WVPASS set-acs cwmp clear  # no-op, because nothing redirected the dhcp url
+WVPASSEQ "$(set-acs print)" http://5
+WVPASS set-acs cwmp http://5a  # redirects the dhcp url
+WVPASSEQ "$(set-acs print)" http://5a
+WVPASS set-acs cwmp clear  # undo dhcp redir but not the original redirs
+WVPASSEQ "$(set-acs print)" http://5
+WVPASS set-acs dhcp clear
+WVPASSEQ "$(set-acs print)" http://4a
+WVPASS set-acs cwmp clear  # clears *both* redirs
+WVPASSEQ "$(set-acs print)" "http://bork"
 
+# almost the same, but shows nesting of blessed and non-blessed redirs of the
+# same url
+WVPASS set-acs cwmp http://4
+WVPASS set-acs bless http://4
+WVPASS set-acs cwmp http://4a  # tried but not yet blessed
+WVPASSEQ "$(set-acs print)" http://4a
+WVPASS set-acs timeout http://4a
+WVPASSEQ "$(set-acs print)" http://4
+WVPASS set-acs cwmp clear
+WVPASSEQ "$(set-acs print)" "http://bork"
