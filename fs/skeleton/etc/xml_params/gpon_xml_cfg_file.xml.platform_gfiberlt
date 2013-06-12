@@ -2,9 +2,9 @@
 <cnfg>
     <PON>
         <!--  PON serial number - up to 8 symbols   -->
-        <PON_serial_num>MRVL00010203</PON_serial_num>
+        <PON_serial_num>SERIALXXYYZZ</PON_serial_num>
         <!--  PON serial source: 0 - xml, 1 - digit part is taken from MAC lower 4 bytes-->
-        <PON_serial_src>1</PON_serial_src>
+        <PON_serial_src>0</PON_serial_src>
         <!--  PON password - up to 10 symbols   -->
         <PON_passwd>1234567890</PON_passwd>
         <!--  PON SN disabled: 0 = FALSE, 1 = TRUE    -->

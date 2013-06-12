@@ -3,10 +3,23 @@
 if ! runnable laser; then
   # TODO(apenwarr): /etc should be readonly.
   echo "Switching to GPON mode."
-  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
-         /etc/xml_params/pon_type_xml_cfg_file.xml
+  serial=$(serial)
+  if [ ! -z "$serial" ]; then
+    # simple py script to replace the placeholder serial with the real serial.
+    subst_script="
+import sys
+import re
+sys.stdout.write(re.sub(r'SERIALXXYYZZ', '$serial', sys.stdin.read()))
+"
+    # Do the replace.
+    cat /etc/xml_params/gpon_xml_cfg_file.xml | \
+      python -c "$subst_script" >/etc/xml_params/pon_xml_cfg_file.xml
+  else
   cp -sf /etc/xml_params/gpon_xml_cfg_file.xml \
          /etc/xml_params/pon_xml_cfg_file.xml
+  fi
+  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
+    /etc/xml_params/pon_type_xml_cfg_file.xml
   cp -sf /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
          /etc/xml_params/tpm_xml_cfg_file.xml
 fi
