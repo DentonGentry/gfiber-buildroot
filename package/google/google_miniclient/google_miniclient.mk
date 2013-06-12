@@ -4,11 +4,18 @@ GOOGLE_MINICLIENT_DEPENDENCIES=\
 	bcm_nexus bcm_rockford \
 	google_pullreader google_swscale google_widevine google_hdcp bruno \
 	openssl libcurl tiff zlib libpng libungif libprojectM libxml2
+GOOGLE_MINICLIENT_INSTALL_STAGING=YES
 
 define GOOGLE_MINICLIENT_BUILD_CMDS
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \
         SWSCALE_PATH=$(STAGING_DIR)/usr/local/ \
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425 all
+endef
+
+define GOOGLE_MINICLIENT_INSTALL_STAGING_CMDS
+        $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_djitter_monitoring.h $(STAGING_DIR)/usr/include/tr135_djitter_monitoring.h
+        $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_tcp_monitoring.h $(STAGING_DIR)/usr/include/tr135_tcp_monitoring.h
+        $(INSTALL) -D -m 0644 $(@D)/libtr135.so $(STAGING_DIR)/usr/lib/libtr135.so
 endef
 
 define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
