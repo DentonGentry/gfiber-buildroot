@@ -4,7 +4,7 @@ GOOGLE_PRISM_INSTALL_TARGET=YES
 GOOGLE_PRISM_DEPENDENCIES=\
 	host-py-mox \
 	python \
-	py-setuptools \
+	python-setuptools \
 
 define GOOGLE_PRISM_BUILD_CMDS
 	$(GPLAT_MAKE) -C $(@D)
