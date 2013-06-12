@@ -1,7 +1,7 @@
 BCM_VUDU_SITE=repo://vendor/broadcom/vudu
 BCM_VUDU_DEPENDENCIES=bcm_bseav bcm_magnum bcm_nexus bcm_common \
   google_hdcp libpng jpeg zlib freetype openssl expat \
-  libcurl libxml2 libxslt fontconfig \
+  libcurl libxml2 libxslt fontconfig google_miniclient \
 
 BCM_VUDU_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/vudu
 BCM_VUDU_INSTALL_STAGING=YES

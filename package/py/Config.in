@@ -2,7 +2,7 @@ menu "other python modules"
 
 config BR2_PACKAGE_PY_GOOGLE_API
 	bool "Google API"
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 	select BR2_PACKAGE_PY_OAUTH2
 	select BR2_PACKAGE_PY_URI_TEMPLATES
 	select BR2_PACKAGE_PY_GFLAGS
@@ -10,24 +10,24 @@ config BR2_PACKAGE_PY_GOOGLE_API
 
 config BR2_PACKAGE_PY_OAUTH2
 	bool "OAuth 2"
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
 config BR2_PACKAGE_PY_URI_TEMPLATES
 	bool "URI Templates"
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
 config BR2_PACKAGE_PY_GFLAGS
 	bool "Google Flags"
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
 config BR2_PACKAGE_PY_HTTPLIB2
 	bool "HTTPLib2"
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
 config BR2_PACKAGE_PY_CURL
 	bool "py-curl"
 	select BR2_PACKAGE_LIBCURL
-	select BR2_PACKAGE_PY_SETUPTOOLS
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
 source "package/py/py-monotime/Config.in"
 source "package/py/py-yaml/Config.in"

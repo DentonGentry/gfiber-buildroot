@@ -93,12 +93,6 @@ config BR2_PACKAGE_PYTHON_ZLIB
 	help
 	  zlib support in Python
 
-config BR2_PACKAGE_PY_SETUPTOOLS
-	bool "Setuptools"
-	default true
-	help
-	  Package support for Python
-
 config BR2_PACKAGE_PYTHON_IPV6
 	bool "IPv6 support"
 	default false

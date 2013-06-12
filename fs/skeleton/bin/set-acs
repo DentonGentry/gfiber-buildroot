@@ -155,8 +155,8 @@ find_source_for_url() {
   local wanturl="$1"
   source_list | {
     while read name file; do
-      url=$(readword "$file" ||
-            readword "$file.redir" ||
+      url=$(readword "$file.redir" ||
+            readword "$file" ||
             readword "$file.blessed.redir" ||
             readword "$file.blessed.redir.blessed" ||
             readword "$file.blessed" ||
@@ -167,12 +167,6 @@ find_source_for_url() {
     done
     exit 1  # no match
   }
-}
-
-clear_source() {
-  file=$1
-  rm -f "$file" "$file.timed_out" "$file.blessed" "$file.redir" \
-     "$file.blessed.redir" "$file.blessed.redir.blessed"
 }
 
 set_timed_out() {
@@ -241,10 +235,12 @@ update_acs_file() {
   source_list | while read name file; do
     if [ "$wantname" = "$name" ]; then
       if [ "$url" = "clear" ]; then
-        # only humans are expected to ever try to clear an URL... so it's
-        # okay to just clear it out completely, including blessed URLs.
+        # only humans are expected to ever try to clear an URL other than
+        # cwmp... so it's okay to just clear it out completely, including
+        # blessed URLs.
         log "clearing $name"
-        clear_source $file
+        rm -f "$file" "$file.timed_out" "$file.blessed" "$file.redir" \
+           "$file.blessed.redir" "$file.blessed.redir.blessed"
       elif [ "$name" = "manual" ]; then
         # manual URLs are always blessed
         atomic "$file.blessed" "$url"
@@ -406,8 +402,8 @@ redirect_current_url_to() {
   check_for_url "$redirect_to"
   all_urls | while read stat name file url; do
     if [ "$redirect_to" = "clear" ]; then
-      echo "clearing $file"
-      clear_source $file
+      log "clearing redirect for $file"
+      rm -f "$file.redir" "$file.redir.blessed"
     else
       atomic "$file.redir" "$redirect_to"
     fi

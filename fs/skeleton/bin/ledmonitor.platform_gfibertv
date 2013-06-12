@@ -21,6 +21,7 @@ HALT_FILE="$CONTROL_PATH/halted"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
 SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
+KEYBOX_FILE="$CONTROL_PATH/invalid_keybox"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
@@ -88,6 +89,8 @@ while read f; do
     change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
   elif [ -f "$HALT_FILE" ]; then
     change_state HALT "$HALT_LED_ON"
+  elif [ -f "$KEYBOX_FILE" ]; then
+    change_state INVALID_KEYBOX "$HW_FAIL_LED_ON"
   elif [ -f "$OVERTEMP_FILE" ]; then
     change_state OVERTEMP "$HW_FAIL_LED_ON"
   elif [ -f "$HDPAIRING_FILE" ]; then
