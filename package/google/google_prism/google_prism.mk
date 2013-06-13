@@ -6,21 +6,23 @@ GOOGLE_PRISM_DEPENDENCIES=\
 	python \
 	python-setuptools \
 
+GOOGLE_PRISM_MAKE_OPTS = PON_TYPE=$(BR2_PACKAGE_MV_APP_PON_TYPE)
+
 define GOOGLE_PRISM_BUILD_CMDS
-	$(GPLAT_MAKE) PON_TYPE=$(BR2_PACKAGE_MV_APP_PON_TYPE) -C $(@D)
+	$(GPLAT_MAKE) -C $(@D) $(GOOGLE_PRISM_MAKE_OPTS)
 endef
 
 define GOOGLE_PRISM_TEST_CMDS
 	PYTHONPATH=$(HOST_PYTHONPATH):$(TARGET_DIR)/usr/catawampus \
-	PYTHON=$(HOST_DIR)/usr/bin/python $(MAKE) -C $(@D) test
+	PYTHON=$(HOST_DIR)/usr/bin/python $(MAKE) -C $(@D) $(GOOGLE_PRISM_MAKE_OPTS) test
 endef
 
 define GOOGLE_PRISM_INSTALL_STAGING_CMDS
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(@D) install-libs
+	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(@D) $(GOOGLE_PRISM_MAKE_OPTS) install-libs
 endef
 
 define GOOGLE_PRISM_INSTALL_TARGET_CMDS
-	$(GPLAT_MAKE) -C $(@D) install
+	$(GPLAT_MAKE) -C $(@D) $(GOOGLE_PRISM_MAKE_OPTS) install
 endef
 
 $(eval $(call GENTARGETS))
