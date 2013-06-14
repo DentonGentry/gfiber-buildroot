@@ -10,6 +10,7 @@ endif
 
 define GOOGLE_SKELMIR_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/app/sage/skelmir
+	rm -f $(TARGET_DIR)/app/sage/skelmir/$(SKELMIR_ARCH)/siege*; \
 	cp -af  $(@D)/Binaries/Libraries \
 		$(@D)/Binaries/$(SKELMIR_ARCH) \
 		$(TARGET_DIR)/app/sage/skelmir/

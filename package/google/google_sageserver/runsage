@@ -2,11 +2,6 @@
 cd "$(dirname "$0")"
 export LD_LIBRARY_PATH=$PWD:$PWD/lib
 
-# TODO(apenwarr): remove once skelmir adds vfork support on ARM devices.
-if [ "$(uname -m)" = "armv7l" ]; then
-  echo 1 >/proc/sys/vm/overcommit_memory
-fi
-
 export LANG=en_US.UTF-8
 export SIEGEHOME=/app/sage/skelmir
 
@@ -102,12 +97,16 @@ else
   HEAPSIZE=-Xmx512m
 fi
 
+# Tell siege not to dump its entire heap when signals happen
 export SIEGEDISABLEHEAPDUMP=1
+
+# Tell siege not to launch gdb to debug itself when signals happen
 export SIEGENOGDB=1
 
-# TODO(apenwarr): get a version of siege for ARM that doesn't need 'ioblock'.
-#  Our current one dies if stdin gets EOF.
-babysit 10 alivemonitor /tmp/sagetvalive setuid video ioblock "$JVM" \
+# Prevent siege-on-arm from exiting on changes to stdin
+export SIEGE_BLOCK_GETNEXTEVENT=1
+
+babysit 10 alivemonitor /tmp/sagetvalive setuid video "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
