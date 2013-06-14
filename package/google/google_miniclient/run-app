@@ -62,7 +62,7 @@ case $appname in
     ;;
   youtube)
     cd /usr/local/bin/webkitGl2
-    [ -z "$opts" ] && opts='http://www.youtube.com/tv'
+    [ -z "$opts" ] && opts='https://www.youtube.com/tv'
     ./start $opts 2>&1 | logos youtube
     ;;
   waitpower)
