@@ -27,4 +27,8 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
           $(TARGET_DIR)/app/sage/lib/libtvformat.so
 endef
 
+define GOOGLE_MCASTCAPTURE_TEST_CMDS
+        $(MAKE) -C $(@D) test
+endef
+
 $(eval $(call GENTARGETS))
