@@ -18,6 +18,9 @@ ifeq ($(BR2_PACKAGE_GOOGLE_HNVRAM),y)
 SIMPLERAMFS_DEPENDENCIES+=google_hnvram
 HNVRAM_BIN=$(TARGET_DIR)/usr/bin/hnvram
 endif
+ifeq ($(BR2_PACKAGE_MINDSPEED_DRIVERS),y)
+SIMPLERAMFS_DEPENDENCIES+=mindspeed_drivers
+endif
 
 define SIMPLERAMFS_EXTRACT_CMDS
 	mkdir -p $(@D)

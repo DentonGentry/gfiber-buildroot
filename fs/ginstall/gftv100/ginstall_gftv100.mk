@@ -10,8 +10,8 @@ ifneq ($(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE),0)
 GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
 endif
 
-ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
-			       host-google_signing
+ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
+				host-dmverity host-google_signing
 
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
