@@ -1,0 +1,60 @@
+#!/usr/bin/python
+"""DNS service check.
+
+Prints a one line summary of whether DNS servers are functioning.
+Supports IPv4 and IPv6.
+
+$ dnsck 2001:4860:4860::8888 2001:4860:4860::8844 8.8.8.8 8.8.4.4
+2001:4860:4860::8888(OK),13.2ms 2001:4860:4860::8844(TIMEOUT),3000.0ms \
+8.8.8.8(OK),13.7ms 8.8.4.4(OK),15.8ms
+"""
+
+import dns.resolver
+import sys
+import time
+
+try:
+  import monotime  # gpylint disable=unused-import,g-import-not-at-top
+except ImportError:
+  pass
+
+
+_time = getattr(time, 'monotime', time.time)
+
+
+def GetDefaultNameservers():
+  s = dns.resolver.Resolver(configure=True)
+  return s.nameservers
+
+
+def DnsCheck(server, qname):
+  """Resolve qname using server, return status."""
+  s = dns.resolver.Resolver(configure=False)
+  s.timeout = 3  # in seconds
+  s.nameservers.append(server)
+  start = _time()
+  result = 'UNKNOWN'
+  try:
+    answer = s.query(qname=qname)
+    result = 'OK'
+  except dns.exception.Timeout:
+    result = 'TIMEOUT'
+  except dns.exception.DNSException:
+    result = 'DNSERR'
+  end = _time()
+  msec = '%.1fms' % ((end - start) * 1000)
+  return '%s(%s),%s' % (server, result, msec)
+
+
+def main():
+  servers = set(GetDefaultNameservers())
+  if (len(sys.argv) > 1):
+    servers |= set(sys.argv[1:])
+  output = []
+  for server in servers:
+    output.append(DnsCheck(server, qname='gstatic.com'))
+  print ' '.join(output)
+
+
+if __name__ == '__main__':
+  main()
