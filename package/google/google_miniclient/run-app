@@ -36,6 +36,13 @@ export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
 # Install DFB /dev/input/event nodes
 /usr/local/bin/directfb/1.4/rundfb.sh install
 
+# Verify if we need to clear any activation data
+Apps=( netflix vudu youtube )
+for app in "${Apps[@]}"
+do
+  [ -e /rw/sage/deactivate_$app ] && /app/client/clear-app $app
+done
+
 case $appname in
   netflix)
     cd /usr/local/bin/netflix
