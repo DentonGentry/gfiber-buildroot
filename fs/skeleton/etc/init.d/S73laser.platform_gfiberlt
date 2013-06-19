@@ -4,7 +4,7 @@
 
 case "$1" in
   start)
-    if runnable laser; then
+    if runnable laser && [ "$(kernopt diag)" != "1" ]; then
       echo "Starting laser."
       babysit 60 laser 2>&1 | logos laser &
     fi
