@@ -1,0 +1,25 @@
+From d9d3d66caa302a6eb8f38ef7c4a8914446415594 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 22 Jun 2013 19:07:17 -0700
+Subject: [PATCH] Initialize value to avoid unpredictable behavior.
+
+---
+ support.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/support.cc b/support.cc
+index a7f476b..9480247 100644
+--- a/support.cc
++++ b/support.cc
+@@ -131,7 +131,7 @@ uint64_t GetSectorNum(uint64_t low, uint64_t high, uint64_t def, uint64_t sSize,
+ uint64_t IeeeToInt(string inValue, uint64_t sSize, uint64_t low, uint64_t high, uint64_t def) {
+    uint64_t response = def, bytesPerUnit = 1, mult = 1, divide = 1;
+    size_t foundAt = 0;
+-   char suffix, plusFlag = ' ';
++   char suffix = 0, plusFlag = ' ';
+    string suffixes = "KMGTPE";
+    int badInput = 0; // flag bad input; once this goes to 1, other values are irrelevant
+ 
+-- 
+1.8.3
+
