@@ -88,7 +88,14 @@ if [ -n "$NFSROOT" ]; then
   fi
   NFSADDR=${NFSROOT%:*}
   NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
-  mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs || die "NFS mount failed"
+  # 7429 internal PHY takes >1 second to get link.
+  # If the NFS mount fails, wait a while and try again.
+  for s in 2 2 2 0; do \
+    mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs && break
+    log "NFS mount failed, sleeping"
+    sleep $s
+    false
+  done || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -n "$ROOTDEV" ]; then
   if startswith "$ROOTDEV" /dev; then
