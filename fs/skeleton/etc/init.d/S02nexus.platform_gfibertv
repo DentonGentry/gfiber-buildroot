@@ -5,18 +5,19 @@ MODULE_PATH=/usr/lib/modules
 update-mtd-links
 
 # Set up NEXUS first since it applies PINMUX.
-echo "Starting nexus"
-[ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko
-if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
-  insmod ${MODULE_PATH}/bcmdriver.ko
-  mknod /dev/brcm0 c 30 0
-fi
+#echo "Starting nexus"
+#[ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko
+#if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
+#  insmod ${MODULE_PATH}/bcmdriver.ko
+#  mknod /dev/brcm0 c 30 0
+#fi
 
 # Set up space for multiprocess NEXUS unix sockets
 mount -t tmpfs none /shared
 
 # Populate the platform ID
 PLATFORM=$(hnvram -qr PLATFORM_NAME)
+PLATFORM=GFHD200
 [ -n "$PLATFORM" ] &&
 echo $PLATFORM >/etc/platform &&
 chmod 444 /etc/platform
@@ -28,7 +29,8 @@ leds 4 0  # blink activity while booting
 echo 30 >/tmp/gpio/fanpercent  # low fan at first
 ulimit -c 49152
 if runnable gpio-mailbox; then
-  reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &
+#  reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &
+  echo "Skipping gpio-mailbox"
 else
   # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
   : >/var/run/gpio-mailbox
