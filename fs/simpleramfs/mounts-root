@@ -137,10 +137,10 @@ elif [ -n "$ROOTDEV" ]; then
     elif [ -b "$mmc" ]; then
       log "Found root='$ROOTDEV': $mmc"
       mount -t vfat -o ro,nodev,noexec,nosuid "$mmc" /vfat
-      losetup /dev/loop0 /vfat/vmlinuz
-      losetup /dev/loop1 /vfat/rootfs.squashfs
-      ROOTDEV=/dev/loop1
       KERNELDEV=/dev/loop0
+      ROOTDEV=/dev/loop1
+      losetup $KERNELDEV /vfat/vmlinuz.img
+      losetup $ROOTDEV /vfat/rootfs.img
     else
       cat /proc/mtd
       log "root='$ROOTDEV' is not an mtd device."

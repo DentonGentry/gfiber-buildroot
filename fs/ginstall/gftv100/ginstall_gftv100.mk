@@ -20,10 +20,13 @@ ifeq ($(BR2_ARCH),mips)
 BRUNO_CFE_DIR = ../vendor/broadcom/cfe-bin
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
+IMAGE_TYPE=prod
 else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = cfe_signed_openbox
+IMAGE_TYPE=openbox
 else
 _BRUNO_LOADER = cfe_signed_unlocked
+IMAGE_TYPE=unlocked
 endif
 
 # These will be blank if the given files don't exist (eg. if you don't have
@@ -41,7 +44,7 @@ endif  # mips
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 else
-ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
+ROOTFS_GINSTALL_KERNEL_FILE=kernel.img
 endif
 
 # TODO(apenwarr): update uboot to handle kernels with dmverity in them.
@@ -49,20 +52,26 @@ endif
 #  by GOOGLE_SIGNING (repack.py).
 define ROOTFS_GINSTALL_CMD
 	set -e; \
+	rm -f $(BINARIES_DIR)/manifest && \
+	echo "installer_version: 3" >>$(BINARIES_DIR)/manifest && \
+	echo "image_type: $(IMAGE_TYPE)" >>$(BINARIES_DIR)/manifest && \
+	echo "version: $(value ROOTFS_GINSTALL_VERSION) " >>$(BINARIES_DIR)/manifest && \
+	echo "platforms: [ GFHD200 ]" >>$(BINARIES_DIR)/manifest && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
 		if [ -e '$(value BRUNO_LOADER)' ]; then \
-			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin && \
+			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
 			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
 		fi && \
-		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
+		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/kernel.img && \
 		( \
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
 	fi && \
 	cd $(BINARIES_DIR) && \
+	ln -f rootfs.squashfs rootfs.img && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
@@ -72,10 +81,10 @@ define ROOTFS_GINSTALL_CMD
 			uImage; \
 	fi && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
-		version \
+		manifest \
 		$(BRUNO_LOADERS) \
 		$(ROOTFS_GINSTALL_KERNEL_FILE) \
-		rootfs.squashfs
+		rootfs.img
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))
