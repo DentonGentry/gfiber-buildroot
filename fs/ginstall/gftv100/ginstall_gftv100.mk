@@ -13,7 +13,7 @@ endif
 ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 				host-dmverity host-google_signing
 
-ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
+ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 
 ifeq ($(BR2_ARCH),mips)
 
@@ -55,7 +55,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo "installer_version: 3" >>$(BINARIES_DIR)/manifest && \
 	echo "image_type: $(IMAGE_TYPE)" >>$(BINARIES_DIR)/manifest && \
-	echo "version: $(value ROOTFS_GINSTALL_VERSION) " >>$(BINARIES_DIR)/manifest && \
+	echo "version: $(value ROOTFS_GINSTALL_VERSION)" >>$(BINARIES_DIR)/manifest && \
 	echo "platforms: [ GFHD200 ]" >>$(BINARIES_DIR)/manifest && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
@@ -80,7 +80,7 @@ define ROOTFS_GINSTALL_CMD
 			-d zImage:simpleramfs.cpio.gz \
 			uImage; \
 	fi && \
-	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
+	tar -cf "$(value ROOTFS_GINSTALL_VERSION).gi" \
 		manifest \
 		$(BRUNO_LOADERS) \
 		$(ROOTFS_GINSTALL_KERNEL_FILE) \
