@@ -55,7 +55,7 @@ case "$1" in
     echo "Adding interfaces... "
     # Move any existing network info from primary network interfaces to
     # the bridge.
-    for x in /sys/class/net/eth[0-9]; do
+    for x in /sys/class/net/eth[0-9] /sys/class/net/ath[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
       ip link set $x up &&

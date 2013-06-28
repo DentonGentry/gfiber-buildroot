@@ -3,13 +3,17 @@
 
 case "$1" in
   start)
-    if has_wifi; then
+    if runnable wl && has_wifi; then
       wifi="eth2"
       wifisys=/sys/class/net/$wifi/address
       wifimac=$(cat $wifisys)
       wl ap 1
       wl radio off
       wl bssid "$wifimac"
+    fi
+    # Qualcomm Atheros WLAN
+    if runnable iwconfig; then
+      iwconfig ath0 essid GFRG200
     fi
     ;;
   stop)
