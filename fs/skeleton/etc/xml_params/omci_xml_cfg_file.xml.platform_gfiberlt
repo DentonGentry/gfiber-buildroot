@@ -34,12 +34,14 @@
         <voipConfigByOmci  enabled="true"  />
 
         <!--  ONT Type, 0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU   -->
-        <!-- <ontType               type="0"  /> -->
-        <ontType               type="6"  />
+        <ontType               type="0"  />
         <!--  Native HGU mode: true = OMCI standard; else false.  -->
         <nativeHguMode         enabled="true"  />
         <!--  Standard VEIP numbering: true = OMCI standard; else false.  -->
         <standardVeipNumbering enabled="false"  />
+
+        <!--  Management VLAN support.  -->
+        <mgmtVlanSupport       enabled="true"  vid="4090" />
 
         <!--  Eth UNI port isolation: true = isolated; Not isolated.  -->
         <ethPortIsolated enabled="false"  />
