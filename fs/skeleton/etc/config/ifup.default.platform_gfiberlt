@@ -39,20 +39,8 @@ if [ $(cat /etc/config/wanport) = $iface ]; then
 		start_dhcp
 	fi
 elif [ "man" = "$iface" ]; then
-	start_dhcp
-
-	# TODO(jnewlin): Remove this once RA's work and we can
-	# can get an ipv6 address.
-	if ! runnable laser; then
-		mac_addr=$(cat /sys/class/net/pon0/address)
-		mac_lower=$(python -c "print ':'.join('$mac_addr'.split(':')[2:])")
-		v6_addr="2605:a601:ff00:100:${mac_lower}/64"
-		echo "Setting v6 address to: $v6_addr"
-		ip addr add "${v6_addr}" dev man
-		ip -6 route add default via 2605:a601:ff00:100::1
-		echo "nameserver 2001:4860:4860::8888" >/tmp/resolv.conf.dhclient6
-		echo "nameserver 2001:4860:4860::8844" >>/tmp/resolv.conf.dhclient6
-        cp /tmp/resolv.conf.dhclient6 /etc/resolv.conf
-	fi
-	# END TODO.
+  echo "nameserver 2001:4860:4860::8888" >/tmp/resolv.conf.dhclient6
+  echo "nameserver 2001:4860:4860::8844" >>/tmp/resolv.conf.dhclient6
+  cp /tmp/resolv.conf.dhclient6 /etc/resolv.conf
+  start_dhcp
 fi
