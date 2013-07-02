@@ -1,0 +1,4 @@
+config BR2_PACKAGE_PF_RING
+    bool "pf_ring"
+    help
+      PF RING utility package
