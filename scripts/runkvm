@@ -54,6 +54,6 @@ kvm \
     -virtfs local,mount_tag=rootfs,path="$rootfsdir",security_model=none,readonly \
     -virtfs local,mount_tag=mediafs,path="/tmp/varmedia",security_model=none \
     -net nic,model=virtio \
-    -net user \
+    -net user,hostfwd=tcp::8880-:8880 \
     -machine type=pc,accel=kvm \
     -append "$append $*"
