@@ -1,6 +1,9 @@
 #!/bin/sh
 case "$1" in
   start)
+    if [ -O /var/media ]; then
+      chown video /var/media
+    fi
     if [ -f /var/media/.mfgmedia ] ; then
       # remove detritus from previous mfg burnin support
       rm -f /var/media/videos/GoogleFiber.mov
