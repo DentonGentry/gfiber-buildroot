@@ -101,7 +101,7 @@ def FirstStamp(s):
 
 def main():
   o = options.Options(optspec)
-  (opt, flags, extra) = o.parse(sys.argv[1:])  #pylint: disable-msg=W0612
+  (opt, flags, extra) = o.parse(sys.argv[1:])  # pylint: disable-msg=W0612
   if extra:
     o.fatal('no filenames expected')
 
@@ -121,8 +121,12 @@ def main():
   if retval:
     raise Exception('dmesg returned exit code %d' % retval)
 
-  keys = set(IfconfigData('br0') + IfconfigData('eth0') +
-             IfconfigData('pon0') + NvramData())
+  interfaces = set(['br0', 'eth0', 'man', 'pon0'])
+  interfaces = interfaces.intersection(os.listdir('/sys/class/net'))
+  keys = []
+  for iface in interfaces:
+    keys += IfconfigData(iface)
+  keys = set(keys + NvramData())
   os.environ['PATH'] += ':.'  # make sure PWD is searched for upload-logs
 
   if not opt.all:
