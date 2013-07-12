@@ -48,7 +48,7 @@ if [ "$MODE" = "server" ]; then
   # Start up native streaming server
   SAGESRV_UID=$(id -u video)
   SAGESRV_GID=$(id -g video)
-  babysit 10 ./sagesrv -l6 -m5 -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
+  babysit 10 alivemonitor /tmp/sagesrvalive 300 ./sagesrv -l6 -m5 -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
@@ -106,7 +106,7 @@ export SIEGENOGDB=1
 # Prevent siege-on-arm from exiting on changes to stdin
 export SIEGE_BLOCK_GETNEXTEVENT=1
 
-babysit 10 alivemonitor /tmp/sagetvalive setuid video "$JVM" \
+babysit 10 alivemonitor /tmp/sagetvalive 600 setuid video "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
