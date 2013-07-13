@@ -43,14 +43,19 @@ endif  # mips
 
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
-else
+else ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3),y)
 ROOTFS_GINSTALL_KERNEL_FILE=kernel.img
+else
+ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 endif
 
 # TODO(apenwarr): update uboot to handle kernels with dmverity in them.
 #  Right now our uboot doesn't understand the google verity header added
 #  by GOOGLE_SIGNING (repack.py).
-define ROOTFS_GINSTALL_CMD
+
+# v3 image format contains a manifest file, which describes the image and
+# supported platforms
+define ROOTFS_GINSTALL_CMD_V3
 	set -e; \
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo "installer_version: 3" >>$(BINARIES_DIR)/manifest && \
@@ -65,13 +70,14 @@ define ROOTFS_GINSTALL_CMD
 			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
 			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
 		fi && \
-		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/kernel.img && \
+		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
 		( \
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
 	fi && \
 	cd $(BINARIES_DIR) && \
 	ln -f rootfs.squashfs rootfs.img && \
+	ln -f vmlinuz kernel.img && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
@@ -86,5 +92,45 @@ define ROOTFS_GINSTALL_CMD
 		$(ROOTFS_GINSTALL_KERNEL_FILE) \
 		rootfs.img
 endef
+
+# v2 image format was used at launch of GFiber TV devices.
+# it contains only a version file, and no provision for
+# specifying platform compatibility
+define ROOTFS_GINSTALL_CMD_V2
+	set -e; \
+	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
+		gzip -c <$(BINARIES_DIR)/vmlinux \
+			>$(BINARIES_DIR)/vmlinuz_unsigned && \
+		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
+		if [ -e '$(value BRUNO_LOADER)' ]; then \
+			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin && \
+			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
+		fi && \
+		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
+		( \
+			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
+		); \
+	fi && \
+	cd $(BINARIES_DIR) && \
+	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
+	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
+		$(HOST_DIR)/usr/bin/mkimage \
+			-A $(BR2_ARCH) -O linux -T multi -C none \
+			-a 0x03008000 -e 0x03008000 -n Linux \
+			-d zImage:simpleramfs.cpio.gz \
+			uImage; \
+	fi && \
+	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
+		version \
+		$(BRUNO_LOADERS) \
+		$(ROOTFS_GINSTALL_KERNEL_FILE) \
+		rootfs.squashfs
+endef
+
+ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3),y)
+ROOTFS_GINSTALL_CMD=$(ROOTFS_GINSTALL_CMD_V3)
+else
+ROOTFS_GINSTALL_CMD=$(ROOTFS_GINSTALL_CMD_V2)
+endif
 
 $(eval $(call ROOTFS_TARGET,ginstall))
