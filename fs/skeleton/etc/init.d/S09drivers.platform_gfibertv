@@ -9,3 +9,15 @@ MODULE_PATH=/usr/lib/modules
 [ -e ${MODULE_PATH}/btusb.ko ] && insmod ${MODULE_PATH}/btusb.ko
 [ -e ${MODULE_PATH}/bthid.ko ] && insmod ${MODULE_PATH}/bthid.ko
 
+# Set up Qualcomm Atheros WLAN, if present
+EXTRA_MODULE_PATH=/lib/modules/*/extra
+if [ -e ${EXTRA_MODULE_PATH}/ath_hal.ko ] && runnable wlanconfig; then
+  for m in adf asf ath_dfs ath_hal ath_rate_atheros ath_dev umac ath_pktlog; do
+    insmod ${EXTRA_MODULE_PATH}/$m.ko
+  done
+  # TODO(danielmentz): Determine if this sleep cmd is really required
+  sleep 1
+  wlanconfig ath create wlandev wifi0 wlanmode ap
+  iwpriv ath0 mode 11ACVHT80
+  # iwconfig ath0 channel 48
+fi

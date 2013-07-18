@@ -40,6 +40,9 @@ else ifeq ($(BR2_PACKAGE_GOOGLE_NETWORK_BOX),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfibertv
 endif
 
+define GOOGLE_PLATFORM_PERMISSIONS
+/var/media			 d 0555	200 0 - - - - -
+endef
 
 GPLAT_MAKE = \
 	HOSTDIR=$(HOST_DIR) \

@@ -197,14 +197,6 @@ case "$1" in
       ) 2>&1 | logos smartctl &
     fi
 
-    # TODO: Consolidate overheating code to sysmgr.
-    # See peripheralmon.cc for detail
-    if [ -e /user/rw/overheating ]; then
-      echo "Delay 30 seconds because SOC overheating"
-      sleep 30
-      rm -f /user/rw/overheating
-    fi
-
     if [ -e /config/DEBUG ]; then
       echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
       echo >/tmp/DEBUG

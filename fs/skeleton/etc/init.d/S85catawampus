@@ -8,9 +8,13 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/ts
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
     babysit 60 cwmpd 2>&1 | logos cwmpd 0 20000000 &
+    if is-network-box; then
+      babysit 60 diaguid 2>&1 | logos diaguid &
+    fi
     ;;
   stop)
     pkillwait -x cwmpd
+    pkillwait -x diaguid
     ;;
   restart)
     $0 stop; $0 start
