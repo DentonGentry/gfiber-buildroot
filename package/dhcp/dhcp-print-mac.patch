@@ -1,0 +1,36 @@
+From cf8b74784ec28e76ddae8c3ce55d9ff4876c0210 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 29 Jun 2013 23:08:35 -0700
+Subject: [PATCH] Print MAC address of DHCPOFFER.
+
+Makes it easier to diagnose multiple-DHCP-server
+issues.
+---
+ client/dhclient.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/client/dhclient.c b/client/dhclient.c
+index 7a6bc09..697cbd6 100644
+--- a/client/dhclient.c
++++ b/client/dhclient.c
+@@ -1505,7 +1505,16 @@ void dhcpoffer (packet)
+ 		return;
+ 	}
+ 
+-	sprintf (obuf, "%s from %s", name, piaddr (packet -> client_addr));
++	if (packet -> haddr && packet -> haddr -> hbuf[0] == ARPHRD_ETHER) {
++		snprintf (obuf, sizeof(obuf),
++		         "%s from %s (%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx)",
++		         name, piaddr (packet -> client_addr),
++		         packet -> haddr -> hbuf[1], packet -> haddr -> hbuf[2],
++		         packet -> haddr -> hbuf[3], packet -> haddr -> hbuf[4],
++		         packet -> haddr -> hbuf[5], packet -> haddr -> hbuf[6]);
++	} else {
++		snprintf (obuf, sizeof(obuf), "%s from %s", name, piaddr (packet -> client_addr));
++	}
+ 
+ 
+ 	/* If this lease doesn't supply the minimum required DHCPv4 parameters,
+-- 
+1.8.3
+

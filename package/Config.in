@@ -631,6 +631,10 @@ menu "Mindspeed custom build"
 source "package/mindspeed_drivers/Config.in"
 endmenu
 
+menu "Qualcomm-provided drivers"
+source "package/qualcomm_drivers/Config.in"
+endmenu
+
 menu "Marvell custom build"
 source "package/mv_app/Config.in"
 endmenu

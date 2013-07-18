@@ -10,13 +10,12 @@ ifneq ($(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE),0)
 GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
 endif
 
-ROOTFS_GINSTALL_DEPENDENCIES = rootfs-squashfs host-mtd host-dmverity \
-			       host-google_signing
+ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
+				host-dmverity host-google_signing
 
 ROOTFS_GINSTALL_VERSION = "$$\(cat $(BINARIES_DIR)/version\)"
 
-ifeq ($(BR2_ARCH),mips)
-
+ifeq ($(ARCH),mipsel)
 BRUNO_CFE_DIR = ../vendor/broadcom/cfe-bin
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
@@ -36,7 +35,7 @@ ifneq ($(BRUNO_LOADER),)
 BRUNO_LOADERS := loader.bin loader.sig
 endif
 
-endif  # mips
+endif  # mipsel
 
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
@@ -49,7 +48,7 @@ endif
 #  by GOOGLE_SIGNING (repack.py).
 define ROOTFS_GINSTALL_CMD
 	set -e; \
-	if [ "$(BR2_LINUX_KERNEL_VMLINUX)" = "y" ]; then \
+	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
@@ -64,7 +63,7 @@ define ROOTFS_GINSTALL_CMD
 	fi && \
 	cd $(BINARIES_DIR) && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
-	if [ "$(BR2_LINUX_KERNEL_ZIMAGE)" = "y" ]; then \
+	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T multi -C none \
 			-a 0x03008000 -e 0x03008000 -n Linux \

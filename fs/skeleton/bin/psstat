@@ -153,7 +153,6 @@ gstatics()
   return $rv
 }
 
-
 while :; do
   printstat "cputop:" ps --no-headers -e -o cputime,comm,cmd
   printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
@@ -167,7 +166,8 @@ while :; do
     echo "gstatic: $(gstatics)"
     pings "ping:" "$gs_retval"
     pings6 "ping6:" "$gs_retval"
-    echo "find-servers: $(find-servers)"
+    runnable find-servers && echo "find-servers: $(find-servers)"
+    echo "dns: $(dnsck 8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844)"
   fi
 
   if [ -n "$DELAY" ]; then

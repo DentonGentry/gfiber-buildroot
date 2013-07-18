@@ -1,0 +1,23 @@
+#!/bin/sh
+case $1 in
+  netflix)
+    /bin/rm -rf /user/netflix
+    /bin/mkdir -p /user/netflix
+    /bin/rm -rf /user/drm
+    /bin/mkdir -p /user/drm
+    /bin/rm /rw/sage/deactivate_netflix
+    ;;
+  vudu)
+    /bin/echo 1 > /user/vudu/deactivate_request
+    /bin/rm /rw/sage/deactivate_vudu
+    ;;
+  youtube)
+    /bin/rm -rf /user/ytlb
+    /bin/mkdir -p /user/ytlb
+    /bin/rm /rw/sage/deactivate_youtube
+    ;;
+  *)
+    /bin/echo "Unknown application." >&2
+    exit 1
+    ;;
+esac

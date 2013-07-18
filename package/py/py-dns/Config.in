@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PY_DNS
+	bool "py-dns"
+	depends on BR2_PACKAGE_PYTHON
+	help
+      DNS toolkit for Python.
+
+      http://www.dnspython.org/
