@@ -16,7 +16,7 @@ ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 
 ifeq ($(ARCH),mipsel)
-BRUNO_CFE_DIR = ../vendor/broadcom/cfe-bin
+BRUNO_CFE_DIR = $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
 IMAGE_TYPE=prod

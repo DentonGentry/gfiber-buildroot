@@ -9,7 +9,7 @@ choice
 	prompt "Image version"
 	default BR2_TARGET_ROOTFS_GINSTALL_V2
 	help
-	  Select the image versin to build.
+	  Select the image version to build.
 
 config BR2_TARGET_ROOTFS_GINSTALL_V3
        bool "v3"
@@ -18,4 +18,13 @@ config BR2_TARGET_ROOTFS_GINSTALL_V2
        bool "v2"
 
 endchoice
+
+config BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR
+	string "Directory to obtain bootloader from"
+	depends on BR2_TARGET_ROOTFS_GINSTALL
+    default "../vendor/broadcom/cfe-bin/gftv100"
+	help
+      Path from buildroot of where to find bootloaders
+      for this platform.
+
 endif
