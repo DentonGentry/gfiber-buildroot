@@ -15,4 +15,8 @@ menu "Broadcom Drivers"
 		default n
 		help
 		  Builds for Broadcom WiFi Driver
+    config BR2_PACKAGE_BCM_DRIVER_WIFI_USB
+        bool "Enable Broadcom WiFi Driver for USB dongles"
+        default n
+        depends on BR2_PACKAGE_BCM_DRIVER_WIFI
 endmenu

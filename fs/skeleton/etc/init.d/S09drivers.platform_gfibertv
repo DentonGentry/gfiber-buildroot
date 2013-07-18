@@ -3,6 +3,7 @@
 MODULE_PATH=/usr/lib/modules
 
 # Set up WLAN, if present
+[ -e ${MODULE_PATH}/bcm_dbus.ko ] && insmod ${MODULE_PATH}/bcm_dbus.ko
 [ -e ${MODULE_PATH}/wl.ko ] && insmod ${MODULE_PATH}/wl.ko
 
 # Set up BT, if present

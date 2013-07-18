@@ -34,6 +34,14 @@ ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI),y)
 #  But I don't know what difference that makes.
 WIFI_CONFIG_PREFIX=debug
 
+ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI_USB),y)
+BCM_MAKE_TARGETS=mipsel-mips-high
+BCM_MAKE_EXTRA=BCM_EXTERNAL_MODULE=1 BRAND=external BCMEMBEDIMAGE=1
+else
+BCM_MAKE_TARGETS=mipsel-mips
+BCM_MAKE_EXTRA=
+endif
+
 define BCM_DRIVERS_BUILD_WIFI
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		STBLINUX=1 \
@@ -43,7 +51,7 @@ define BCM_DRIVERS_BUILD_WIFI
 		AR="$(TARGET_AR)" \
 		STRIP="$(TARGET_STRIP)" \
 		-C $(@D)/wifi/src/wl/linux \
-		mipsel-mips \
+		$(BCM_MAKE_TARGETS) $(BCM_MAKE_EXTRA) \
 		BUILDING_BCM_DRIVERS=1
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		TARGETENV="linuxmips" \
@@ -57,9 +65,20 @@ define BCM_DRIVERS_BUILD_WIFI
 		BUILDING_BCM_DRIVERS=1
 endef
 
+
+ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI_USB),y)
+define BCM_DRIVERS_INSTALL_TARGET_WIFI_USB
+$(INSTALL) -D -m 0600 $(@D)/wifi/src/wl/linux/obj-mipsel-mips-*/bcm_dbus.ko $(TARGET_DIR)/usr/lib/modules/bcm_dbus.ko
+endef
+else
+define BCM_DRIVERS_INSTALL_TARGET_WIFI_USB
+endef
+endif
+
 define BCM_DRIVERS_INSTALL_TARGET_WIFI
 	$(INSTALL) -D -m 0600 $(@D)/wifi/src/wl/linux/obj-mipsel-mips-*/wl.ko $(TARGET_DIR)/usr/lib/modules/wl.ko
 	$(INSTALL) -m 0700 $(@D)/wifi/src/wl/exe/wlmips $(TARGET_DIR)/usr/bin/wl
+	$(BCM_DRIVERS_INSTALL_TARGET_WIFI_USB)
 endef
 
 endif
