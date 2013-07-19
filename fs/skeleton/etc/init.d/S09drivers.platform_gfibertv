@@ -2,8 +2,30 @@
 
 MODULE_PATH=/usr/lib/modules
 
+has_usb_wifi() {
+  for x in /sys/bus/usb/devices/*; do
+    # fields from the USB descriptor to identify the device
+    [ -f $x/idProduct ] && product=$(cat $x/idProduct)
+    [ -f $x/idVendor ] && vendor=$(cat $x/idVendor)
+    if [ "$product" = bd17 ] && [ "$vendor" = 0a5c ]; then
+      echo 'bcm43236-nofirmware'
+      return
+    fi
+    if [ "$product" = 0bdc ] && [ "$vendor" = 0a5c ]; then
+      echo 'bcm43236'
+      return
+    fi
+  done
+}
+
 # Set up WLAN, if present
-[ -e ${MODULE_PATH}/bcm_dbus.ko ] && insmod ${MODULE_PATH}/bcm_dbus.ko
+if [ $(has_usb_wifi) = 'bcm43236-nofirmware' ]; then
+  bcmdl /lib/firmware/bcm43236-nohotplug.bin
+fi
+if [ ! -z $(has_usb_wifi) ]; then
+  [ -e ${MODULE_PATH}/bcm_dbus.ko ] && insmod ${MODULE_PATH}/bcm_dbus.ko
+fi
+# Broadcom PCIe Wifi modules do not require bcmdl nor bcm_dbus.ko.
 [ -e ${MODULE_PATH}/wl.ko ] && insmod ${MODULE_PATH}/wl.ko
 
 # Set up BT, if present

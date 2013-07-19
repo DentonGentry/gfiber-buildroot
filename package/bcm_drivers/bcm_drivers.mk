@@ -1,7 +1,7 @@
 BCM_DRIVERS_SITE=repo://vendor/broadcom/drivers
 BCM_DRIVERS_INSTALL_STAGING=YES
 BCM_DRIVERS_INSTALL_TARGET=YES
-BCM_DRIVERS_DEPENDENCIES=linux google_platform
+BCM_DRIVERS_DEPENDENCIES=linux google_platform libusb-compat
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
 define BCM_DRIVERS_BUILD_MOCA
@@ -37,10 +37,22 @@ WIFI_CONFIG_PREFIX=debug
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI_USB),y)
 BCM_MAKE_TARGETS=mipsel-mips-high
 BCM_MAKE_EXTRA=BCM_EXTERNAL_MODULE=1 BRAND=external BCMEMBEDIMAGE=1
+define BCM_DRIVERS_BUILD_WIFI_USB_UTILS
+	$(TARGET_MAKE_ENV) $(MAKE1) \
+		STBLINUX=1 \
+		LINUXDIR="$(LINUX_DIR)" \
+		LD="$(TARGET_LD)" \
+		CC="$(TARGET_CC)" \
+		AR="$(TARGET_AR)" \
+		STRIP="$(TARGET_STRIP)" \
+		-C $(@D)/wifi/src/usbdev/usbdl \
+		BUILDING_BCM_DRIVERS=1
+endef
 else
 BCM_MAKE_TARGETS=mipsel-mips
 BCM_MAKE_EXTRA=
 endif
+
 
 define BCM_DRIVERS_BUILD_WIFI
 	$(TARGET_MAKE_ENV) $(MAKE1) \
@@ -63,12 +75,16 @@ define BCM_DRIVERS_BUILD_WIFI
 		-f GNUmakefile \
 		-C $(@D)/wifi/src/wl/exe \
 		BUILDING_BCM_DRIVERS=1
+	$(BCM_DRIVERS_BUILD_WIFI_USB_UTILS)
 endef
 
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI_USB),y)
 define BCM_DRIVERS_INSTALL_TARGET_WIFI_USB
-$(INSTALL) -D -m 0600 $(@D)/wifi/src/wl/linux/obj-mipsel-mips-*/bcm_dbus.ko $(TARGET_DIR)/usr/lib/modules/bcm_dbus.ko
+$(INSTALL) -D -m 0444 $(@D)/wifi/src/wl/linux/obj-mipsel-mips-*/bcm_dbus.ko $(TARGET_DIR)/usr/lib/modules/bcm_dbus.ko
+$(INSTALL) -D -m 0555 $(@D)/wifi/src/usbdev/usbdl/bcmdl $(TARGET_DIR)/usr/bin/bcmdl
+$(INSTALL) -D -m 0444 $(@D)/wifi/src/dongle/rte/wl/builds/43236b-bmac/ag-nodis-p2p-mchan-media/rtecdc.bin.trx $(TARGET_DIR)/lib/firmware/bcm43236-firmware.bin
+$(INSTALL) -D -m 0444 $(@D)/wifi/src/dongle/rte/wl/builds/43236b-bmac/ag-p2p-mchan-media/rtecdc.bin.trx $(TARGET_DIR)/lib/firmware/bcm43236-nohotplug.bin
 endef
 else
 define BCM_DRIVERS_INSTALL_TARGET_WIFI_USB
