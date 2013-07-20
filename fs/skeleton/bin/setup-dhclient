@@ -1,22 +1,5 @@
 #!/bin/sh
-
 rm -f /tmp/dhclient.conf
-
-platform="$(cat /etc/platform)"
-
-if [ "$platform" == "GFLT200" ]; then
-cat >/tmp/dhclient.conf <<-EOF
-	retry 1;
-	initial-interval 1;
-	backoff-cutoff 1;
-	reboot 1;
-	timeout 600;
-	request subnet-mask, broadcast-address, routers,
-		domain-name, domain-name-servers, ntp-servers;
-	send host-name "$(hostname)";
-	script "/sbin/dhclient-script";
-EOF
-else
 cat >/tmp/dhclient.conf <<-EOF
 	retry 30;
 	request subnet-mask, broadcast-address, routers,
@@ -24,4 +7,3 @@ cat >/tmp/dhclient.conf <<-EOF
 	send host-name "$(hostname)";
 	script "/sbin/dhclient-script";
 EOF
-fi
