@@ -14,22 +14,24 @@ case "$1" in
   start)
     . /etc/utils.sh
 
-    has_wifi || { echo "No WiFi."; exit 0; }
-
     # Run the following in a sub-shell in the background to avoid
     # impacting boot time.
     (
-      # Reset the BT chip.
-      wl reset_bt_chip 2>&1
-      sleep $BT_RESET_DELAY
+      if [ -f /dev/btusb0 ]; then
+        # BCM20702 USB Bluetooth chip
+        BSATTY=/dev/btusb0
+        BSAFIRMWARE=-p /etc/bsa/bsa_config.hcd
 
-      # bsa_server cannot run without /dev/btusb0.
-      test -e /dev/btusb0 || { echo "No /dev/btusb0."; exit 0; }
+        wl reset_bt_chip 2>&1
+        sleep $BT_RESET_DELAY
+      else
+        # BCM20705 serial Bluetooth chip
+        BSATTY=/dev/ttyS1
+        BSAFIRMWARE=
+      fi
 
-      # Start bsa_server.
       cd /user/bsa
-      babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd 2>&1 \
-          | logos bsa &
+      babysit 30 bsa_server -d $BSATTY $BSAFIRMWARE 2>&1 | logos bsa &
       sleep $BT_BSA_STARTUP_DELAY
 
       # Start app_gtv.

@@ -1,6 +1,50 @@
 #!/bin/sh
 . /etc/utils.sh
 
+
+redistribute_irqs()
+{
+  if is-storage-box; then
+    # Storage Box serves MoCA and Ethernet simultaneously,
+    # so we move them to different CPUs.
+    # TV Box mostly uses MoCA *or* Ethernet, and keeps
+    # CPU1 free to handle the video interrupts.
+    mocacpu=1
+    eth0cpu=2
+  else
+    mocacpu=2
+    eth0cpu=2
+  fi
+
+  wifi_irq=
+  if grep BCM7425 /proc/cpuinfo >/dev/null; then
+    echo 1 >/proc/irq/62/smp_affinity
+    echo $eth0cpu >/proc/irq/18/smp_affinity
+    echo $eth0cpu >/proc/irq/19/smp_affinity
+    echo $mocacpu >/proc/irq/20/smp_affinity
+    echo $mocacpu >/proc/irq/21/smp_affinity
+    echo $mocacpu >/proc/irq/31/smp_affinity
+    wifi_irq=34
+  elif grep BCM7429 /proc/cpuinfo >/dev/null; then
+    echo 1 >/proc/irq/52/smp_affinity
+    echo $eth0cpu >/proc/irq/16/smp_affinity
+    echo $eth0cpu >/proc/irq/17/smp_affinity
+    echo $mocacpu >/proc/irq/18/smp_affinity
+    echo $mocacpu >/proc/irq/19/smp_affinity
+    echo $mocacpu >/proc/irq/28/smp_affinity
+    wifi_irq=57
+  fi
+
+  if has_wifi && is-tv-box && [ ! -z  ${wifi_irq} ]; then
+    # Partial fix for "micro-stuttering" seen in video playback.
+    # Wifi driver needs to be on cpu1 and video on cpu0 so that wifi
+    # can't lock out scheduling of the video player.
+    echo "forcing wifi onto cpu1"
+    echo 2 >/proc/irq/${wifi_irq}/smp_affinity
+  fi
+}
+
+
 case "$1" in
   start)
     # if the file exists and it isn't empty
@@ -98,38 +142,13 @@ case "$1" in
       upload-logs-now
     fi
 
-    if [ -e /dev/bmoca0 ]; then
-      echo "distribute IRQ handling between cores"
-      # IRQ 62 (Serial port) on CPU 1.
-      echo 1 >/proc/irq/62/smp_affinity
-      if is-storage-box; then
-        # Storage Box serves MoCA and Ethernet simultaneously,
-        # so we move them to different CPUs.
-        # TV Box mostly uses MoCA *or* Ethernet, and keeps
-        # CPU1 free to handle the video interrupts.
-        mocacpu=1
-        eth0cpu=2
-      else
-        mocacpu=2
-        eth0cpu=2
-      fi
-      echo $eth0cpu >/proc/irq/18/smp_affinity
-      echo $eth0cpu >/proc/irq/19/smp_affinity
-      echo $mocacpu >/proc/irq/20/smp_affinity
-      echo $mocacpu >/proc/irq/21/smp_affinity
-      echo $mocacpu >/proc/irq/31/smp_affinity
+    echo "distribute IRQ handling between cores"
+    redistribute_irqs
 
+    if [ -e /dev/bmoca0 ]; then
       echo "mocacfg boot..."
       mkdir -p /tmp/moca
       mocacfg boot &  # a bit slow, so don't bother waiting
-    fi
-
-    if has_wifi && is-tv-box; then
-      # Partial fix for "micro-stuttering" seen in video playback.
-      # Wifi driver needs to be on cpu1 and video on cpu0 so that wifi
-      # can't lock out scheduling of the video player.
-      echo "forcing wifi onto cpu1"
-      echo 2 >/proc/irq/34/smp_affinity
     fi
 
     # Enable hardware offloads, do this at the end to avoid
