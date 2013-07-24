@@ -26,6 +26,9 @@ opts=
 if is-tv-box; then
   # TV box starts in powered-off mode
   mode=waitpower
+  if [ -e /tmp/runapp ] ; then
+    mode=app
+  fi
 else
   opts="$opts --encodemode"
   mode=miniclient

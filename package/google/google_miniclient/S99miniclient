@@ -12,7 +12,7 @@ case "$1" in
     pkillwait -x miniclient
     pkillwait -x waitpower
     pkillwait -x netflix
-    pkillwait -x browsertest
+    pkillwait -x content_shell
     ;;
   restart)
     $0 stop; $0 start
