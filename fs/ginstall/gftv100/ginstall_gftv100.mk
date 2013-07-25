@@ -85,6 +85,13 @@ define ROOTFS_GINSTALL_CMD_V3
 			-d zImage:simpleramfs.cpio.gz \
 			uImage; \
 	fi && \
+	(echo -n "rootfs.img-sha1: " && sha1sum rootfs.img | cut -c1-40 && \
+	 echo -n "$(ROOTFS_GINSTALL_KERNEL_FILE)-sha1: " && \
+	 sha1sum "$(ROOTFS_GINSTALL_KERNEL_FILE)"  | cut -c1-40 && \
+	 if [ -e '$(value BRUNO_LOADER)' ]; then \
+	   echo -n "loader.img-sha1: " && sha1sum loader.img | cut -c1-40 && \
+	   echo -n "loader.sig-sha1: " && sha1sum loader.sig | cut -c1-40; \
+	 fi ) >>manifest && \
 	tar -cf "$(value ROOTFS_GINSTALL_VERSION).gi" \
 		manifest \
 		$(BRUNO_LOADERS) \
