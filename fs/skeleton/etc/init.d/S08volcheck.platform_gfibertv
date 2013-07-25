@@ -12,7 +12,7 @@ DATA_MTD_NO=
 DATA_UBI_NO=1
 
 # eMMC support
-DATA_MMC_NAME="user"
+DATA_MMC_NAME="data+ext4"
 
 USER_NAME=user
 CONFIG_NAME=config
@@ -184,6 +184,7 @@ mount_ext4fs()
 recover_ext4fs()
 {
   e2fsck $1 || mkfs.ext4 -E discard -m 2 -L ${DATA_MMC_NAME} $1
+  mount_ext4fs $1
 }
 
 

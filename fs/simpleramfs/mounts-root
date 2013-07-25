@@ -120,10 +120,11 @@ elif [ -n "$ROOTDEV" ]; then
         die "root='$fsdev' (9p) mount failed"
     log "Mounted root='$fsdev' (9p)"
   else
-    KERNELDEV=$(replacefirst $ROOTDEV rootfs kernel)
+    KERNELNAME=$(replacefirst $ROOTDEV rootfs kernel)
     mtd=/dev/mtd$(find_mtd "$ROOTDEV")
+    mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
     IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
-    mmc=/dev/mmcblk0p$(find_mmc $IMAGENAME)
+    mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
     if [ -b "$mtd" ]; then
       log "Found root='$ROOTDEV': $mtd"
       # In this build, the rootdev mtd is always an UBI device.
@@ -133,10 +134,14 @@ elif [ -n "$ROOTDEV" ]; then
       ubi_mtd=$(find_mtd "rootfs")
       [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
       ROOTDEV=/dev/mtdblock$ubi_mtd
-      KERNELDEV=/dev/mtdblock$(find_mtd "$KERNELDEV")
-    elif [ -b "$mmc" ]; then
-      log "Found root='$ROOTDEV': $mmc"
-      mount -t vfat -o ro,nodev,noexec,nosuid "$mmc" /vfat
+      KERNELDEV=/dev/mtdblock$(find_mtd "$KERNELNAME")
+    elif [ -b "$mmcraw" ]; then
+      log "Found root='$ROOTDEV': $mmcraw"
+      ROOTDEV=$mmcraw
+      KERNELDEV=/dev/mmcblk0p$(find_mmc "$KERNELNAME")
+    elif [ -b "$mmcvfat" ]; then
+      log "Found root='$ROOTDEV': $mmcvfat"
+      mount -t vfat -o ro,nodev,noexec,nosuid "$mmcvfat" /vfat
       KERNELDEV=/dev/loop0
       ROOTDEV=/dev/loop1
       losetup $KERNELDEV /vfat/vmlinuz.img
