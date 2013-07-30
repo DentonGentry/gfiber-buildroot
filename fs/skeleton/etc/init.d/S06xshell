@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec /usr/bin/zsh </dev/console >/dev/console 2>&1
