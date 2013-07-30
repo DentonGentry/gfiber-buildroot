@@ -17,7 +17,7 @@ start_dhcp() {
 		kill $(cat $pidfile) 2>&1 > /dev/null
 		rm -f $pidfile
 	fi
-	/usr/sbin/dhclient $iface -6 -S -nw -v -pf $pidfile \
+	/usr/sbin/dhclient $iface -6 -nw -v -pf $pidfile \
 		-lf /var/run/dhclient-v6.${iface}.lease \
 		-cf /etc/dhclient6.conf \
 	    --never-gonna-give-you-up 900 2>&1 | logos dhclient6 &
