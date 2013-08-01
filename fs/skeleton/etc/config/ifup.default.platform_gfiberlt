@@ -11,7 +11,7 @@ start_dhcp() {
 	fi
 	/usr/sbin/dhclient $iface -nw -v -pf $pidfile \
 		-lf /var/run/dhclient.${iface}.lease \
-		-cf /etc/dhclient.conf 2>&1 | logger -t dhclient &
+		-cf /etc/dhclient.conf 2>&1 | logos dhclient &
 	pidfile=/var/run/dhclient-v6.${iface}.pid
 	if [ -e $pidfile ]; then
 		kill $(cat $pidfile) 2>&1 > /dev/null
@@ -20,7 +20,7 @@ start_dhcp() {
 	/usr/sbin/dhclient $iface -6 -S -nw -v -pf $pidfile \
 		-lf /var/run/dhclient-v6.${iface}.lease \
 		-cf /etc/dhclient6.conf \
-	    --never-gonna-give-you-up 900 2>&1 | logger -t dhclient6 &
+	    --never-gonna-give-you-up 900 2>&1 | logos dhclient6 &
 	lockfile-remove $lock
 }
 
