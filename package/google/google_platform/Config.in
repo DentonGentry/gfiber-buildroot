@@ -62,6 +62,7 @@ config BR2_PACKAGE_GOOGLE_TEST
 	select BR2_PACKAGE_WHETSTONE
 	select BR2_PACKAGE_SDPARM
 	select BR2_PACKAGE_SYSSTAT
+	select BR2_PACKAGE_TESTUSB
 	select BR2_PACKAGE_TRACEROUTE_NEW
 	help
 	  Enable packages for test.
