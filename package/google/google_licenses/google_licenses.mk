@@ -12,9 +12,9 @@ endef
 ifeq ($(BR2_PACKAGE_GOOGLE_LICENSES),y)
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
-GOOGLE_LICENSES_LICTYPE=playready_prod_license
+GOOGLE_LICENSES_LICTYPE=playready2_prod_license
 else
-GOOGLE_LICENSES_LICTYPE=playready_dev_license
+GOOGLE_LICENSES_LICTYPE=playready2_dev_license
 endif
 GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += $(GOOGLE_LICENSES_LICTYPE)
 
