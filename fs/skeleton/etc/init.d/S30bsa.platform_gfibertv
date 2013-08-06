@@ -1,5 +1,5 @@
 #!/bin/sh
-BT_MAC_ADDR=$(hnvram -rq MAC_ADDR_BT)
+BT_MAC=$(hnvram -rq MAC_ADDR_BT)
 BT_NAME=$(hnvram -rq PLATFORM_NAME)
 
 # Time to wait (in seconds) after resetting the BT chip to allow /dev/btusb0 to
@@ -20,14 +20,14 @@ case "$1" in
       if [ -f /dev/btusb0 ]; then
         # BCM20702 USB Bluetooth chip
         BSATTY=/dev/btusb0
-        BSAFIRMWARE=-p /etc/bsa/bsa_config.hcd
+        BSAFIRMWARE="-p /etc/bsa/BCM20702.hcd"
 
         wl reset_bt_chip 2>&1
         sleep $BT_RESET_DELAY
       else
         # BCM20705 serial Bluetooth chip
         BSATTY=/dev/ttyS1
-        BSAFIRMWARE=
+        BSAFIRMWARE="-p /etc/bsa/BCM20705.hcd"
       fi
 
       cd /user/bsa
@@ -35,8 +35,7 @@ case "$1" in
       sleep $BT_BSA_STARTUP_DELAY
 
       # Start app_gtv.
-      babysit 30 app_gtv -a "$BT_MAC_ADDR" -n "$BT_NAME" -k 2>&1 \
-          | logos app_gtv &
+      babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
     ) &
     ;;
   stop)
