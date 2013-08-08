@@ -120,11 +120,18 @@ elif [ -n "$ROOTDEV" ]; then
         die "root='$fsdev' (9p) mount failed"
     log "Mounted root='$fsdev' (9p)"
   else
-    KERNELNAME=$(replacefirst $ROOTDEV rootfs kernel)
-    mtd=/dev/mtd$(find_mtd "$ROOTDEV")
-    mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
-    IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
-    mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
+    for s in 1 1 0; do
+      KERNELNAME=$(replacefirst $ROOTDEV rootfs kernel)
+      mtd=/dev/mtd$(find_mtd "$ROOTDEV")
+      mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
+      IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
+      mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
+      [ -b "$mtd" -o -b "$mmcraw" -o -b "$mmcvfat" -o -b $ROOTDEV ] && break
+      log "No rootfs found, sleeping"
+      # eMMC is sometimes slow to appear; try again.
+      sleep $s
+      false
+    done
     if [ -b "$mtd" ]; then
       log "Found root='$ROOTDEV': $mtd"
       # In this build, the rootdev mtd is always an UBI device.
