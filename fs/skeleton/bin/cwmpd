@@ -4,7 +4,7 @@ mkdir -p /tmp/cwmp
 platform="$(cat /etc/platform)"
 case "$platform" in
   GFMS*|GFHD*|GFRG*) board=gfmedia ;;
-  GFLT*) board=gflt${platform#GFLT} ;;
+  GFLT*) board=gfonu ;;
   *) board="$platform" ;;
 esac
 

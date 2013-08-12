@@ -4,7 +4,7 @@ rm -f /tmp/dhclient.conf
 
 platform="$(cat /etc/platform)"
 
-if [ "$platform" == "GFLT200" ]; then
+if [ "$platform" = "GFLT200" ]; then
 cat >/tmp/dhclient.conf <<-EOF
 	retry 1;
 	initial-interval 1;

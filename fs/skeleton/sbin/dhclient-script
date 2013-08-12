@@ -54,6 +54,11 @@ merge_resolv_conf() {
     atomic /tmp/resolv.conf \
         "$(cat /tmp/resolv.conf.dhclient)"
     log_file_contents /tmp/resolv.conf
+
+    if [ -e /tmp/ipv6_dns_ok ]; then
+      atomic /tmp/resolv.conf \
+        "$(cat /tmp/resolv.conf.dhclient6)"
+    fi
 }
 
 make_resolv_conf() {

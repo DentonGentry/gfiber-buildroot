@@ -5,6 +5,7 @@ GOOGLE_PRISM_DEPENDENCIES=\
 	host-py-mox \
 	python \
 	python-setuptools \
+	google_platform \
 
 GOOGLE_PRISM_MAKE_OPTS = PON_TYPE=$(BR2_PACKAGE_MV_APP_PON_TYPE)
 
