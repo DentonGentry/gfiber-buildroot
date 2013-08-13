@@ -20,7 +20,7 @@ case "$1" in
     # impacting boot time.
     (
       # Reset the BT chip.
-      wl reset_bt_chip 2>&1
+      wl reset_bt_chip 1 2>&1
       sleep $BT_RESET_DELAY
 
       # bsa_server cannot run without /dev/btusb0.
