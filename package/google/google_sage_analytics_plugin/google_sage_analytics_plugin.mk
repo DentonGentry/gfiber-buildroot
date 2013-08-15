@@ -3,7 +3,7 @@
 # sage_analytics_plugin (GFiber Analytics plugin for Sage)
 #
 #############################################################
-GOOGLE_SAGE_ANALYTICS_PLUGIN_VERSION = 2013-03-05-00@43447700
+GOOGLE_SAGE_ANALYTICS_PLUGIN_VERSION = 2013-08-13-00@50790681
 GOOGLE_SAGE_ANALYTICS_PLUGIN_SITE = mpm://fiber/analytics/sage_plugin
 GOOGLE_SAGE_ANALYTICS_PLUGIN_BASE_NAME = google_sage_analytics_plugin
 GOOGLE_SAGE_ANALYTICS_PLUGIN_SOURCE = $(GOOGLE_SAGE_ANALYTICS_PLUGIN_VERSION).tar
