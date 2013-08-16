@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<cnfg>
+    <!--  Wether support generic application packet handling   -->
+    <app_support>1</app_support>
+    <!--  Wether support IGMP/MLD packet special handling      -->
+    <igmp_support>1</igmp_support>
+    <!--  Wether support broadcast packet special handling     -->
+    <bc_support>1</bc_support>
+    <!--  Wether support data traffic handling by flow mapping -->
+    <flow_support>1</flow_support>
+    <!--  Wether support data traffic handling by UDP port     -->
+    <udp_support>0</udp_support>    
+</cnfg>

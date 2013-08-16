@@ -2,19 +2,10 @@
 <cnfg>
     <MIDWARE_CONFIG>
 
-    <!-- Decide whether midware should its DB to flash at in interval  -->
+    <!-- Decide whether midware should save its DB to flash at in interval  -->
     <saveDBflag   enabled="false" />
-		<!--  The DB saving interval in unit of second, must >= 10, usually 10.  -->
-	  <saveDBInterval intervalTime="10" />
-	  <!--  uniType  : UNI port type  -->
-		<!--  src_port : srouce port number -->
-		<!--  phy_type : 1: connect to GE PHY, 0: connect to FE PHY  -->
-	  <uniType>
-	    <uni src_port="0" phy_type="1" />
-	    <uni src_port="1" phy_type="0" />
-	    <uni src_port="2" phy_type="0" />
-	    <uni src_port="3" phy_type="0" />
-	  </uniType>
+    <!--  The DB saving interval in unit of second, must >= 10, usually 10.  -->
+    <saveDBInterval intervalTime="10" />
+    
     </MIDWARE_CONFIG>
-
 </cnfg>
