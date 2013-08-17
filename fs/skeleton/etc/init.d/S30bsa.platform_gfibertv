@@ -28,7 +28,7 @@ case "$1" in
 
       # Start bsa_server.
       cd /user/bsa
-      babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd 2>&1 \
+      babysit 30 bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd -hci 2>&1 \
           | logos bsa &
       sleep $BT_BSA_STARTUP_DELAY
 
