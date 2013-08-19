@@ -14,10 +14,10 @@
          <!--  Maximum number of AVC supported -->
         <avc_max_entity_num>200</avc_max_entity_num>
         <!--  Alarm enabled/disabled flag, true:enabled alarm functions, false:disabled alarm functions. -->
-        <apm_alarm_activation enabled="false" />
+        <apm_alarm_activation enabled="true" />
         <!--  PM enabled/disabled flag, true:enabled PM functions, false:disabled PM functions. -->
-        <apm_pm_activation enabled="false" />
+        <apm_pm_activation enabled="true" />
         <!--  AVC enabled/disabled flag, true:enabled AVC functions, false:disabled AVC functions. -->
-        <apm_avc_activation enabled="false" />
+        <apm_avc_activation enabled="true" />
     </APM>
 </cnfg>

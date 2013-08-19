@@ -1,29 +1,18 @@
 <?xml version="1.0"?>
 <cnfg>
     <EPON>
-        <!--  EPON OAM connet low layer TPM APIs: 0 = disconnected, 1 = connected, 2 = only connect FEC and ENC  -->
-        <EPON_connect_tpm>0</EPON_connect_tpm>
         <!--  EPON Dying Gasp polarity: 0 = low, 1 = high    -->
         <EPON_DG_polarity>1</EPON_DG_polarity>
-        <!--  EPON DDM TX polarity: 0 - high; 1 - low    -->
-        <EPON_XVR_polarity>0</EPON_XVR_polarity>
-        <!--  EPON OAM RX queue number: 0-7 should be correlated to GMAC_rx_queues for PON MAC  -->
-        <EPON_OAM_RX_queue>0</EPON_OAM_RX_queue>
-        <!--  EPON OAM TX queue number per LLID  -->
-        <EPON_OAM_TX_queue>
-            <!--  id   : LLID number      -->
-            <!--  num  : TX queue number  -->
-            <LLID id="0" num="6" />
-            <LLID id="1" num="0" />
-            <LLID id="2" num="0" />
-            <LLID id="3" num="0" />
-            <LLID id="4" num="0" />
-            <LLID id="5" num="0" />
-            <LLID id="6" num="0" />
-            <LLID id="7" num="0" />
-        </EPON_OAM_TX_queue>
-        <!--  EPON IGMP: 0 = NOT supported, 1 = supported   -->
-        <EPON_IGMP_supported>0</EPON_IGMP_supported>
+        <!--  PON XVR Burst Enable Polarity: 0 - high; 1 - low    -->
+        <PON_XVR_burst_enable_polarity>0</PON_XVR_burst_enable_polarity>
+        <!--  PON XVR Polarity: 0 - high; 1 - low    -->
+        <PON_XVR_polarity>0</PON_XVR_polarity>
+        <!--  P2P XVR burst enable polarity: 0 - high; 1 - low    -->
+        <P2P_XVR_burst_enable_polarity>1</P2P_XVR_burst_enable_polarity>
+        <!--  P2P XVR Polarity: 0 - high; 1 - low    -->
+        <P2P_XVR_polarity>0</P2P_XVR_polarity>
+        <!--  2KB Support: 0 = NOT supported, 1 = supported -->
+        <EPON_2KB_supported>1</EPON_2KB_supported >
     </EPON>
 </cnfg>
 

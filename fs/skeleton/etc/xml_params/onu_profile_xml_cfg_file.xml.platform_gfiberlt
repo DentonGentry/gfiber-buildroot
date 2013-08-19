@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<cnfg>
+    <Vendor>
+        <!--ONU vendor ID: STRING(4).     -->
+        <attrib name="ONU vendor ID" value="MRVL" />
+
+        <!--ONU vendor OUI: ARRAY(3).     -->
+        <attrib name="ONU vendor OUI" value="0x005043" />
+
+        <!--ONU vendor name: STRING(64).     -->
+        <attrib name="ONU vendor name" value="Marvell" />
+
+        <!--Model for eOAM: STRING(4).     -->
+        <attrib name="Model for eOAM" value="6601" />
+
+        <!--Model for OMCI: STRING(20).     -->
+        <attrib name="Model for OMCI" value="MRVL" />
+
+        <!--Model for TR-069: STRING(64).     -->
+        <attrib name="Model for TR-069" value="MRVL" />
+
+        <!--ONU product code: ARRAY(2).     -->
+        <attrib name="ONU product code" value="0x0201" />
+
+        <!--ONU product class: STRING(64).     -->
+        <attrib name="ONU product class" value="Marvell AVANTA 88F6500" />
+
+        <!--HW version: STRING(64).     -->
+        <attrib name="HW version" value="AVANTA A0" />
+
+        <!--SW version: STRING(64).     -->
+        <attrib name="SW version" value="2.6.25" />
+
+        <!--Addtional HW version: STRING(64).     -->
+        <attrib name="Addtional HW version" value="0" />
+
+        <!--Addtional SW version: STRING(64).     -->
+        <attrib name="Addtional SW version" value="16" />
+
+        <!--Device description: STRING(256).     -->
+        <attrib name="Device description" value="MARVELL AVANTA UPON device" />
+
+        <!--Firmware version: ARRAY(16).     -->
+        <attrib name="Firmware version" value="0x00000001" />
+
+        <!--Chip vendor ID: ARRAY(2).     -->
+        <attrib name="Chip vendor ID" value="0x03e9" />
+
+        <!--Chip model: ARRAY(2).     -->
+        <attrib name="Chip model" value="0x6601" />
+
+        <!--Chip revision: BYTE(1).     -->
+        <attrib name="Chip revision" value="0x02" />
+
+        <!--Chip version: ARRAY(3).     -->
+        <attrib name="Chip version" value="0x000001" />
+
+        <!--Operator ID: STRING(4).     -->
+        <attrib name="Operator ID" value="CTC" />
+    </Vendor>
+
+    <Capability>
+        <!--ONU type: UINT32.     -->
+        <!--0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU -->
+        <attrib name="ONU type" value="0" />
+
+        <!--  1=MV_PON_WAN_DUAL_MAC_INT_SWITCH   2=MV_PON_WAN_G0_INT_SWITCH      3=MV_PON_WAN_G1_LAN_G0_INT_SWITCH  4=MV_G0_WAN_G1_INT_SWITCH
+              5=MV_G1_WAN_G0_INT_SWITCH          6=MV_PON_G1_WAN_G0_INT_SWITCH   7=MV_PON_G0_WAN_G1_INT_SWITCH      8=MV_PON_WAN_DUAL_MAC_EXT_SWITCH
+              9=MV_PON_WAN_G1_MNG_EXT_SWITCH     10=MV_PON_WAN_G0_SINGLE_PORT    11=MV_PON_WAN_G1_SINGLE_PORT       12=MV_PON_G1_WAN_G0_SINGLE_PORT
+              13=MV_PON_G0_WAN_G1_SINGLE_PORT    14=MV_PON_WAN_G0_G1_LPBK        15=MV_PON_WAN_G0_G1_DUAL_LAN -->
+        <attrib name="Complex profile" value="10" />
+
+        <!-- active_wan    0=GMAC0 1=GMAC1 2=PMAC -->
+        <attrib name="Active wan" value="2" />
+        
+        <!-- switch port to appliacation port(start from 1) mapping -->
+        <attrib name="Switch port 0" value="1" />
+        <attrib name="Switch port 1" value="2" />
+        <attrib name="Switch port 2" value="3" />
+        <attrib name="Switch port 3" value="4" />
+
+        <!--Voice management method: BYTE.     -->
+        <!--0:TR-069, 1:eOAM/OMCI, 2:Proprietary.     -->
+        <attrib name="Voice management method" value="1" />
+
+        <!--PON port number: BYTE.     -->
+        <attrib name="PON port number" value="1" />
+
+        <!--GE Ethernet port number: BYTE.     -->
+        <attrib name="GE Ethernet port number" value="1" />
+
+        <!--FE Ethernet port number: BYTE.     -->
+        <attrib name="FE Ethernet port number" value="0" />
+
+        <!--POTS port number: BYTE.     -->
+        <attrib name="POTS port number" value="2" />
+
+        <!--WIFI port number: BYTE.     -->
+        <attrib name="WIFI port number" value="0" />
+
+        <!--USB port number: BYTE.     -->
+        <attrib name="USB port number" value="0" />
+
+        <!--E1 port number: BYTE.     -->
+        <attrib name="E1 port number" value="0" />
+
+        <!--ADSL port number: BYTE.     -->
+        <attrib name="ADSL port number" value="0" />
+
+        <!--VDSL port number: BYTE.     -->
+        <attrib name="VDSL port number" value="0" />
+
+        <!--CATV port number: BYTE.     -->
+        <attrib name="CATV port number" value="0" />
+
+        <!--GE Ethernet port bitmap: UINT32.     -->
+        <attrib name="GE Ethernet port bitmap" value="0x01" />
+
+        <!--FE Ethernet port bitmap: UINT32.     -->
+        <attrib name="FE Ethernet port bitmap" value="0x00" />
+
+        <!--Maximum upstream queue per port: UINT32.     -->
+        <attrib name="Maximum upstream queue per port" value="4" />
+
+        <!--Maximum downstream queue per port: UINT32.     -->
+        <attrib name="Maximum downstream queue per port" value="4" />
+
+        <!--Maximum queue per T-CONT: UINT32.     -->
+        <attrib name="Maximum queue per T-CONT" value="4" />
+
+        <!--Maximum queue per GEM MAC port: UINT32.     -->
+        <attrib name="Maximum queue per GEM MAC port" value="4" />
+
+        <!--ONU pluggable capability: BYTE.     -->
+        <!--0: unpluggable, 1: pluggable        -->
+        <attrib name="ONU pluggable capability" value="0" />
+
+        <!--Total slot number: BYTE.     -->
+        <attrib name="Total slot number" value="1" />
+
+        <!--Total T-CONT number: BYTE.     -->
+        <attrib name="Total T-CONT number" value="8" />
+
+        <!--Total LLID number: BYTE.     -->
+        <attrib name="Total LLID number" value="1" />
+
+        <!--Total GEM port number: UINT32.     -->
+        <attrib name="Total GEM port number" value="256" />
+
+        <!--ONU protect type: BYTE.     -->
+        <!--0: no protection support, 1: support type C link protection, 2: support type D link protection -->
+        <attrib name="ONU protect type" value="1" />
+
+        <!--IPv6 support capability: BYTE.          -->
+        <!--0: do not support IPv6, 1: support IPv6 -->
+        <attrib name="IPv6 support capability" value="0" />
+
+        <!--Power control support capability: BYTE.       -->
+        <!--0£ºdon't support ONU power supply control
+            1£ºSupport ONU Tx power supply control only.
+            2£ºSupport both Tx and Rx power supply control.-->
+        <attrib name="Power control support capability" value="2" />
+
+        <!--SLA support capability: BYTE.     -->
+        <!--1£ºdon't support Service SLA£»
+          2-8£ºSupport Service SLA function£¬
+          The value indicates the number of services the ONU supported. -->
+        <attrib name="SLA support capability" value="4" />
+
+        <!--Sleep mode support capability: BYTE.            -->
+        <!--0:neither Tx nor Rx supported, 1:only Tx supported
+            2:only Rx supported, 3:both Tx and Rx supported -->
+        <attrib name="Sleep mode support capability" value="3" />
+
+        <!--Wakeup support capability: BYTE.                                -->
+        <!--0: early wake-up is supported, 1: early wake-up is not supported-->
+        <attrib name="Wakeup support capability" value="1" />
+
+        <!--Traffic management option: BYTE.     -->
+        <!--0:Priority controlled and flexibly scheduled upstream traffic.
+            1:Rate controlled upstream traffic. 
+            2:Priority and rate controlled       -->        
+        <attrib name="Traffic management option" value="2" />
+
+        <!--Battery backup support capability: BYTE.                    -->
+        <!--0: do not support battery backup, 1: support battery backup -->
+        <attrib name="Battery backup support capability" value="0" />
+    </Capability>
+
+    <Queue>
+        <!--  id           : GMAC number, 0:GMAC0, 2:T-CONT0, 3:T-CONT1, ...9:T-CONT7, currently does not support GMAC1  -->
+        <!--  v_q_num      : Total virtual queue number in each T-CONT  -->
+        <!--  hwf_q_map    : Virtual queue to real HWF queue mapping list, Example:0=7 means virtual 0 map to HWF queue 7,should be accordant with TPM XML -->
+        <!--  swf_q_map    : Virtual queue to real SWF queue mapping list, Example:0=7 means virtual 0 map to SWF queue 6,should be accordant with TPM XML -->
+        <gmac id="0" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="2" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="3" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="4" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="5" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="6" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="7" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="8" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+        <gmac id="9" v_q_num="4" hwf_q_map="0=1,1=3,2=5,3=7", swf_q_map="0=0,1=2,2=4,3=6" />
+    </Queue Mapping>
+</cnfg>

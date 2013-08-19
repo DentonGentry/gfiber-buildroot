@@ -1,27 +1,27 @@
 <?xml version="1.0"?>
 <cnfg>
-	<eth_complex_config>
+    <eth_complex_config>
                <!--  1=TPM_PON_WAN_DUAL_MAC_INT_SWITCH   2=TPM_PON_WAN_G0_INT_SWITCH      3=TPM_PON_WAN_G1_LAN_G0_INT_SWITCH  4=TPM_G0_WAN_G1_INT_SWITCH
                      5=TPM_G1_WAN_G0_INT_SWITCH          6=TPM_PON_G1_WAN_G0_INT_SWITCH   7=TPM_PON_G0_WAN_G1_INT_SWITCH      8=TPM_PON_WAN_DUAL_MAC_EXT_SWITCH
                      9=TPM_PON_WAN_G1_MNG_EXT_SWITCH     10=TPM_PON_WAN_G0_SINGLE_PORT    11=TPM_PON_WAN_G1_SINGLE_PORT       12=TPM_PON_G1_WAN_G0_SINGLE_PORT
-                     13=TPM_PON_G0_WAN_G1_SINGLE_PORT    14=TPM_PON_WAN_G0_G1_LPBK -->
-		<profile>10</profile>
-		<!-- src    0) TPM_SRC_PORT_UNI_0
-                               1) TPM_SRC_PORT_UNI_1
-                               ...
-                               7) TPM_SRC_PORT_UNI7			-->
-		<switch_ports>
-			<port id="0" src_port="0"/>
-			<port id="1" src_port="1"/>
-			<port id="2" src_port="2"/>
-			<port id="3" src_port="3"/>
-		</switch_ports>
-		<gmac_ports>
-			<port id="0" src_port="0"/>
-		</gmac_ports>
-		<!-- backup_wan	0=TPM_ENUM_GMAC_0 1=TPM_ENUM_GMAC_1 2=TPM_ENUM_PMAC -->
-		<backup_wan></backup_wan>
-	</eth_complex_config>
+                     13=TPM_PON_G0_WAN_G1_SINGLE_PORT    14=TPM_PON_WAN_G0_G1_LPBK    15=TPM_PON_WAN_G0_G1_DUAL_LAN -->
+        <profile>10</profile>
+        <!-- src    0) TPM_SRC_PORT_UNI_0
+                    1) TPM_SRC_PORT_UNI_1
+                    ...
+                    7) TPM_SRC_PORT_UNI7            -->
+        <switch_ports>
+            <port id="0" src_port="0"/>
+            <port id="1" src_port="1"/>
+            <port id="2" src_port="2"/>
+            <port id="3" src_port="3"/>
+        </switch_ports>
+        <gmac_ports>
+            <port id="0" src_port="0"/>
+        </gmac_ports>
+        <!-- active_wan    0=TPM_ENUM_GMAC_0 1=TPM_ENUM_GMAC_1 2=TPM_ENUM_PMAC -->
+        <active_wan>2</active_wan>
+    </eth_complex_config>
 
     <traffic_setting>
         <!--  pppoe_add_enable: 0 = disable, 1 = enable
@@ -29,7 +29,7 @@
         <pppoe_add_enable>1</pppoe_add_enable>
 
         <!--  Maximum required number of Vlan Tags.
-		      Influences the modification chain_size and the max. mru   -->
+              Influences the modification chain_size and the max. mru   -->
         <num_vlan_tags>2</num_vlan_tags>
         <!--  Action for packets with illegal TTL     -->
         <!--  0 = no action, 1 = drop, 2 = trap to CPU    -->
@@ -61,12 +61,12 @@
 
     <igmp_snoop>
         <!--  Snooping enabled: 0 = FALSE, 1 = TRUE
-		      When set to TRUE, the igmp_range must be created, and the following params determine igmp behavior  -->
+              When set to TRUE, the igmp_range must be created, and the following params determine igmp behavior  -->
         <enabled>1</enabled>
         <!--  CPU rx queue for trapped IGMP packets: 0 -7   -->
         <igmp_cpu_rx_queue>7</igmp_cpu_rx_queue>
         <!--  Per UNI IGMP packet forwarding mode :
-		      0 = drop, 1 = forward, 2= snoop   -->
+              0 = drop, 1 = forward, 2= snoop   -->
         <igmp_frwrd_mode_wan>2</igmp_frwrd_mode_wan>
         <igmp_frwrd_mode_uni0>2</igmp_frwrd_mode_uni0>
         <igmp_frwrd_mode_uni1>2</igmp_frwrd_mode_uni1>
@@ -78,21 +78,22 @@
     <multicast>
         <!--  Multicast over PPPoE allowed: (0 = FALSE, 1 = TRUE) -->
         <mc_pppoe_enable>1</mc_pppoe_enable>
-        <!--  Per UNI Vlan translation: 0 = no_per_uni_translation, 1 = per_uni_translation   -->
+        <!--  Per UNI Vlan translation: 0 = no_per_uni_translation, 1 = per_uni_translation
+         when this feature is enabled, range size of TPM_PNC_VIRT_UNI must be increased by 4   -->
         <mc_per_uni_vlan_xlat>0</mc_per_uni_vlan_xlat>
-	<!-- Multicast per uni vlan xlat support for IPv4/6: 0 = no support, 1 = support -->
+        <!-- Multicast per uni vlan xlat support for IPv4/6: 0 = no support, 1 = support -->
         <ipv4_mc_support>1</ipv4_mc_support>
-        <ipv6_mc_support>0</ipv6_mc_support>
+        <ipv6_mc_support>1</ipv6_mc_support>
         <!--  Multicast filtering mode  -->
-        <!--  	0 = Forward all Multicast traffic to CPU
-				1 = Multicast traffic is forwarded to the Internal Switch, where it is filtered based on MAC_DA.
-				2 = Multicast traffic is filtered in packet processor according to (vid, dip, sip).
-					The stream specific target uni_port(s) are determined in Internal Switch based on MAC_DA
-				3 = Multicast traffic is forwarded exclusively by (vid, dip, sip) including setting the target uni_ports	 -->
+        <!--    0 = Forward all Multicast traffic to CPU
+                1 = Multicast traffic is forwarded to the Internal Switch, where it is filtered based on MAC_DA.
+                2 = Multicast traffic is filtered in packet processor according to (vid, dip, sip).
+                    The stream specific target uni_port(s) are determined in Internal Switch based on MAC_DA
+                3 = Multicast traffic is forwarded exclusively by (vid, dip, sip) including setting the target uni_ports     -->
         <mc_filter_mode>3</mc_filter_mode>
         <!-- Multicast hwf queue: Set to highest txq of GMAC0, whose owner is PMAC. -->
         <mc_hwf_queue>7</mc_hwf_queue>
-	<!-- Multicast cpu queue: Set to highest PMAC rx queue -->
+        <!-- Multicast cpu queue: Set to highest PMAC rx queue -->
         <mc_cpu_queue>7</mc_cpu_queue>
     </multicast>
 
@@ -105,7 +106,7 @@
 
             <gmac_mh_en>
                 <!--  GMAC Marvell_Header configuration - GMAC adds 2B Marvell header at beginning of packet
-				      mh_enabled 0 = FALSE, 1 = TRUE, 2 = AUTO (enabled if connected to Switch)   -->
+                      mh_enabled 0 = FALSE, 1 = TRUE, 2 = AUTO (enabled if connected to Switch)   -->
                 <gmac0_mh_en>0</gmac0_mh_en>
                 <gmac1_mh_en>0</gmac1_mh_en>
             </gmac_mh_en>
@@ -243,6 +244,9 @@
         <!--  VALIDATION type: 0 = DISABLED, 1 = ENABLED -->
         <validation_enable>1</validation_enable>
 
+        <!--  Support 2G DS with GMAC0/1: 0 = disable, 1 = enable -->
+        <ds_mac_based_trunking>0</ds_mac_based_trunking>
+
         <!--  Init switch or not: 0 = do not Init, 1 = do Init -->
         <switch_init>0</switch_init>
 
@@ -258,7 +262,7 @@
                 0 = CPU WAN Egress Loopback - disabled
                 1 = CPU WAN Egress Loopback - enabled
         -->
-        <cpu_wan_egr_loopback>1</cpu_wan_egr_loopback>
+        <cpu_wan_egr_loopback>0</cpu_wan_egr_loopback>
 
         <!--  IPV6 5-tuple status :
                 0 = IPV6 is configured by normal API,
@@ -275,11 +279,15 @@
         <vlan_filter_tpid>
             <!--  id    : option id                 -->
             <!--  comb  : tpid combination
-													format - 0xAABB[,0xCCDD]  -->
+                  format - 0xAABB[,0xCCDD]          -->
             <filter_tpid id="0" type="0x8100,0x8100" />
             <filter_tpid id="1" type="0x9100,0x8100" />
             <filter_tpid id="2" type="0x88A8,0x8100" />
-            <filter_tpid id="3" type="0x8100"        />
+            <filter_tpid id="3" type="0x88A8,0x88A8" />
+            <filter_tpid id="4" type="0x8100,0x88A8" />
+            <filter_tpid id="5" type="0x8100"        />
+            <filter_tpid id="6" type="0x88A8"        />
+            <filter_tpid id="7" type="0x9100"        />
         </vlan_filter_tpid>
 
         <!--  trace_debug_info:
@@ -318,30 +326,30 @@
             <!--  configuration of modification chains:         -->
             <!--  id   : chain id                               -->
             <!--  type : chain type
-            						 1 - MH_MOD_SUBR_CHAIN
-            						 2 - MAC_MOD_SUBR_CHAIN
-            						 3 - VLAN_MOD_SUBR_CHAIN
-            						 4 - PPPOE_MOD_SUBR_CHAIN
-            						 5 - IPV6_PPPOE_MOD_SUBR_CHAIN
-            						 6 - L2_MAIN_CHAIN
-            						 7 - IPV4_NAPT_MAIN_CHAIN
-            						 8 - IPV4_MULTICAST_MAIN_CHAIN
-            						 9 - IPV6_ROUTING_MAIN_CHAIN
-            						 10 - IPV6_MULTICAST_MAIN_CHAIN              -->
+                                     1 - MH_MOD_SUBR_CHAIN
+                                     2 - MAC_MOD_SUBR_CHAIN
+                                     3 - VLAN_MOD_SUBR_CHAIN
+                                     4 - PPPOE_MOD_SUBR_CHAIN
+                                     5 - IPV6_PPPOE_MOD_SUBR_CHAIN
+                                     6 - L2_MAIN_CHAIN
+                                     7 - IPV4_NAPT_MAIN_CHAIN
+                                     8 - IPV4_MULTICAST_MAIN_CHAIN
+                                     9 - IPV6_ROUTING_MAIN_CHAIN
+                                     10 - IPV6_MULTICAST_MAIN_CHAIN              -->
             <!--  num  : number of modification chain entries
                          4096 - "all remaining", fills up remaining part of the modification tables with this chain_type.
                          Only "L2_MAIN_CHAIN" OR "IPV4_NAPT_MAIN_CHAIN" can be assigned "all remaining"  -->
             <chain_parameters>
-            		<chain id="0" type="1" num="32" />
-            		<chain id="1" type="2" num="64" />
-            		<chain id="2" type="3" num="300" />
-            		<chain id="3" type="4" num="8" />
-            		<chain id="4" type="5" num="6" />
-            		<chain id="5" type="6" num="170" />
-            		<chain id="6" type="7" num="4096" />
-            		<chain id="7" type="8" num="16" />
-            		<chain id="8" type="9" num="64" />
-            		<chain id="9" type="10" num="16" />
+                    <chain id="0" type="1" num="32" />
+                    <chain id="1" type="2" num="64" />
+                    <chain id="2" type="3" num="300" />
+                    <chain id="3" type="4" num="8" />
+                    <chain id="4" type="5" num="6" />
+                    <chain id="5" type="6" num="170" />
+                    <chain id="6" type="7" num="4096" />
+                    <chain id="7" type="8" num="16" />
+                    <chain id="8" type="9" num="64" />
+                    <chain id="9" type="10" num="16" />
             </chain_parameters>
             <udp_checksum_use_init>0</udp_checksum_use_init>
             <udp_checksum_calc>0</udp_checksum_calc>
@@ -368,13 +376,13 @@
                 0 = CTC mode,
                 1 = TR156 mode
          -->
-        <pnc_mac_learn_enable>1</pnc_mac_learn_enable>
+        <pnc_mac_learn_enable>0</pnc_mac_learn_enable>
 
         <!--  CTC IPv6 CNM parsing window: 0 = first 24 bytes of IPv6 header, 1 = second 24 bytes -->
         <ctc_cnm_ipv6_parsing_window>0</ctc_cnm_ipv6_parsing_window>
 
         <PnC>
-    	    <!--  num            :   -->
+            <!--  num            :   -->
             <!--  type           :   0 = ACL,  1 = TABLE -->
             <!--  cntr_grp       :   0 = GROUP_0(Default), 1-3 = GROUP_1/GROUP_2/GROUP_3/ -->
             <!--  lu_mask_all    :   0 = DONT_MASK, 1 = MASK -->
@@ -385,65 +393,64 @@
                 <!--  TPM_PNC_MAC_LEARN -->
                 <range num="01" type="0" size="5"  cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CPU_WAN_LPBK_US -->
-                <range num="02" type="0" size="5"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="02" type="0" size="5"   cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_NUM_VLAN_TAGS -->
-                <range num="03" type="0" size="05"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="03" type="0" size="09"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_DS_LOAD_BALANCE -->
+                <range num="04" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_MULTI_LPBK -->
-                <range num="04" type="0" size="20"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="05" type="0" size="20"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_VIRT_UNI -->
-                <range num="05" type="0" size="13"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="06" type="0" size="13"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_LOOP_DET_US -->
-                <range num="06" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="07" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_L2_MAIN -->
-                <range num="07" type="0" size="64"  cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
+                <range num="08" type="0" size="64"  cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_ETH_TYPE -->
-                <range num="08" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
+                <range num="09" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IGMP -->
-                <range num="09" type="0" size="06"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="10" type="0" size="06"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MC_DS -->
-                <range num="10" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="11" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MAIN -->
-                <range num="11" type="1" size="64" cntr_grp="3"  lu_mask="0" min_reset_level = "0" />
-                <!--  TPM_PNC_TCP_FLAG -->
-                <range num="12" type="0" size="12"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="12" type="1" size="64"  cntr_grp="3"  lu_mask="0" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV4_TCP_FLAG -->
+                <range num="13" type="0" size="12"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_TTL -->
-                <range num="13" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="14" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_PROTO -->
-                <range num="14" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="15" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_FRAG -->
-                <range num="15" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="16" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_LEN -->
-                <range num="16" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="17" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_NH -->
-                <range num="17" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="18" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4_MC_DS -->
-                <range num="18" type="1" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="19" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_TCP_FLAG -->
+                <range num="20" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4 -->
-                <range num="19" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="21" type="1" size="17"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_HOPL -->
-                <range num="20" type="1" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="22" type="1" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_MC_SIP -->
-                <range num="21" type="1" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="23" type="1" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_GEN -->
-                <range num="22" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
-                <!--  TPM_PNC_IPV6_MC_DS -->
-                <range num="23" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
-                <!--  TPM_PNC_IPV6_DIP -->
                 <range num="24" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_MC_DS -->
+                <range num="25" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <!--  TPM_PNC_IPV6_DIP -->
+                <range num="26" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_IPV4_PRE -->
-                <range num="25" type="1" size="36"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="27" type="1" size="36"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_MAIN -->
-                <range num="26" type="0" size="43"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="28" type="0" size="43"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CATCH_ALL -->
-                <range num="27" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="29" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
             </range_parameters>
             <!--  0 = drop, 1 =  trap to CPU    -->
             <catch_all_pkt_action>1</catch_all_pkt_action>
-
-
         </PnC>
     </TPM>
-
-
 </cnfg>
-

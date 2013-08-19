@@ -16,12 +16,16 @@
         <custVlanMod       enabled="true"  />
         <!--  The action for OMCI default rules come from OMCI itself.  0:pass all packet, 1:discard all packet -->
         <defaultAction     type="0"  />
+        
         <!--  Enable or disable MAC add learning in switch UNI port -->
         <macLearn          enabled="true"  />
         <!--  Enable or disable multicast flooding  -->
         <mcFlooding        enabled="false"  />
         <!--  Enable or disable setting PPTP UNI MTU size -->
         <uniMtu            enabled="false"  />
+        <!--  Eth UNI port isolation: true = isolated; Not isolated.  -->
+        <ethPortIsolated   enabled="false"  />
+        
         <!--  The ONT supports voice application = true.  -->
         <voiceSupport      enabled="false"  />
         <!--  The ONT supports VoIP = true.  -->
@@ -33,8 +37,6 @@
         <!--  VoIP configuration is done by OMCI = true. Reported in VoIP Config Data ME.  -->
         <voipConfigByOmci  enabled="true"  />
 
-        <!--  ONT Type, 0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU   -->
-        <ontType               type="0"  />
         <!--  Native HGU mode: true = OMCI standard; else false.  -->
         <nativeHguMode         enabled="true"  />
         <!--  Standard VEIP numbering: true = OMCI standard; else false.  -->
@@ -42,9 +44,6 @@
 
         <!--  Management VLAN support.  -->
         <mgmtVlanSupport       enabled="true"  vid="4090" />
-
-        <!--  Eth UNI port isolation: true = isolated; Not isolated.  -->
-        <ethPortIsolated enabled="false"  />
 
         <!--  Multicast service package table: true = OMCI standard; else false.  -->
         <mcastServicePackageG988 enabled="true"  />
@@ -55,14 +54,6 @@
         <ctcParameter      enabled="true"  version="1"  xrvType="2"  />
         <!--  CTC LOID authentification, MAX length: operator(4bytes), loid(24bytes), password(12bytes) .  -->
         <ctcLOIDAuth       operator="CTC" loid="MARVELL123" password="123456" />
-
-        <!--  OMCI frame capture in VBS format  -->
-        <omciCellCap       enabled="true"  />
-
-        <!--  The number of Ethernet ports. Usually 4.  -->
-        <ethernetInfo      numPorts="1" />
-        <!--  The number of POTS ports. Usually 2.  -->
-        <potsInfo          numPorts="0" />
 
         <!--  The slot number for Ethernet ports. Usually 1. Must be different from POTS, WIFI, ANI, VEIP slot numbers -->
         <ethernetSlotInfo  slotNumber="1" />
@@ -87,23 +78,10 @@
         <!--  The number of the first non OMCI T-CONT. Usually tcontId = 1 (0x8001, 0x8002.. numbering)  -->
         <!--  Occasionally tcontId = 0 (0x8000, 0x8001.. numbering) is used.  -->
         <firstNonOmciTcontInfo tcontId="1" />
-
-        <!--  virtualQueue : Virtual TX queue created and reported by OMCI   -->
-        <!--  id           : GMAC number, 0:GMAC0, 2:T-CONT0, 3:T-CONT1, ...9:T-CONT7, currently does not support GMAC1  -->
-        <!--  v_q_num      : Total virtual queue number in each T-CONT  -->
-        <!--  hwf_q_map    : Virtual queue to real HWF queue mapping list, Example:0=7 means virtual 0 map to HWF queue 7,should be accordant with TPM XML -->
-        <!--  swf_q_map    : Virtual queue to real SWF queue mapping list, Example:0=7 means virtual 0 map to SWF queue 6,should be accordant with TPM XML -->
-        <virtualQueue>
-            <gmac id="0" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="2" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="3" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="4" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="5" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="6" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="7" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="8" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-            <gmac id="9" v_q_num="4" hwf_q_map="0=7,1=5,2=3,3=1", swf_q_map="0=6,1=4,2=2,3=0" />
-        </virtualQueue>
+        
+        <!--  OMCI frame capture in VBS format  -->
+        <omciCellCap       enabled="true"  />
+        
     </OMCI_MIB>
 
     <OMCI_DEBUG>
