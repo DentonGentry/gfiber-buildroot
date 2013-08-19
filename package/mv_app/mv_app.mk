@@ -13,8 +13,9 @@ endef
 define MV_APP_INSTALL_TARGET_CMDS
 	cp -fr $(@D)/build/bin/* $(TARGET_DIR)/usr/bin/. && \
 	cp -fr $(@D)/build/lib/* $(TARGET_DIR)/usr/lib/. && \
+	cp -fr $(@D)/build/ipc/* $(TARGET_DIR)/usr/lib/. && \
 	mkdir -p $(TARGET_DIR)/etc/xml_commands && \
-	cp -fr $(@D)/main/xml_commands/* $(TARGET_DIR)/etc/xml_commands/. && \
+	cp -fr $(@D)/build/xml/xml_commands/* $(TARGET_DIR)/etc/xml_commands/. && \
 	if [ -e "$(@D)/tools/omci_tool" ]; then \
 		cp -f  $(@D)/tools/omci_tool $(TARGET_DIR)/usr/bin/.; \
 	fi
