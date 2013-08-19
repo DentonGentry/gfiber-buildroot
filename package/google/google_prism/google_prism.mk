@@ -6,6 +6,7 @@ GOOGLE_PRISM_DEPENDENCIES=\
 	python \
 	python-setuptools \
 	google_platform \
+	host-gtest \
 
 GOOGLE_PRISM_MAKE_OPTS = PON_TYPE=$(BR2_PACKAGE_MV_APP_PON_TYPE)
 
