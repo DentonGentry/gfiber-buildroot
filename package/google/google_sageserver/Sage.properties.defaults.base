@@ -392,4 +392,4 @@ ui/final_rendering_thread_priority_offset=4
 seeker/enforce_minimum_import_sizes=false
 enable_vudu_leanback=true
 ui/allow_ui_selector=true
-
+ui/channel/auto_accept=true
