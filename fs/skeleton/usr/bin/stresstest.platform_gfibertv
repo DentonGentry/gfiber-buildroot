@@ -143,7 +143,6 @@ main()
   done
 
   # NAND reads
-  #TODO(apenwarr): don't hardcode the device name; read it from /proc/mtd
   #TODO(apenwarr): -c65536 causes memory allocation problems.
   # This seems to be because the MTD driver tries to allocate kernel memory
   # the same size as the read() parameter as a single contiguous block,
@@ -151,12 +150,11 @@ main()
   # for MTD to do this, afaik, so we could try to debug the kernel so we
   # can increase this parameter.  It could theoretically cause problems on
   # a normal system under high load, not just one being stresstested.
-  should_never_die stress-disk -p10 -c4096 /dev/mtd12 &
+  should_never_die stress-disk -p10 -c4096 /dev/mtd/rootfs0 &
 
   # NOR reads
-  #TODO(apenwarr): don't hardcode the device name; read it from /proc/mtd
   #TODO(apenwarr): see above about -c65536.
-  should_never_die stress-disk -p10 -c4096 /dev/mtd1 &
+  should_never_die stress-disk -p10 -c4096 /dev/mtd/hnvram &
 
   sleep 5
   #TODO(apenwarr): actually bind the following to cpu0 and cpu1
