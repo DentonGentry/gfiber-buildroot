@@ -30,7 +30,7 @@ def GetDefaultNameservers():
 def DnsCheck(server, qname):
   """Resolve qname using server, return status."""
   s = dns.resolver.Resolver(configure=False)
-  s.timeout = 3  # in seconds
+  s.timeout = s.lifetime = 3  # in seconds
   s.nameservers.append(server)
   start = _time()
   result = 'UNKNOWN'
