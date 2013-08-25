@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Monitor $ACSFILE for changes, checking every $SLEEPTIME
+# seconds. If $ACSFILE goes $timeout seconds without
+# changing, remove $LEDFILE.
+# SLEEPTIME is relatively short so that we'll notice
+# when the ACS comes back into contact, and stop
+# blinking the LED quickly. People tend to get
+# impatient and start rebooting things if we don't.
+
+ACSFILE=/tmp/cwmp/acsconnected
+LEDFILE=/tmp/gpio/ledcontrol/acsconnected
+TIMEOUTFILE=/tmp/cwmp/acs_timeout
+SLEEPTIME=30
+
+timeout=10800
+if [ -f $TIMEOUTFILE ]; then
+  # Useful for system test, set a short timeout.
+  timeout=$(cat $TIMEOUTFILE)
+fi
+
+last_contact=$(ls -l $ACSFILE 2>&1)
+out_of_contact=$timeout
+
+while [ 1 ]; do
+  sleep $SLEEPTIME
+
+  # This is a string comparison. We just want to know
+  # if the file has changed since the last iteration.
+  contact=$(ls -l $ACSFILE 2>&1)
+  if [ "$contact" != "$last_contact" ]; then
+    out_of_contact=0
+  else
+    out_of_contact=$((out_of_contact+SLEEPTIME))
+  fi
+  last_contact="$contact"
+
+  if [ "$out_of_contact" -lt "$timeout" ]; then
+    echo >$LEDFILE
+  else
+    rm -f $LEDFILE
+  fi
+done
