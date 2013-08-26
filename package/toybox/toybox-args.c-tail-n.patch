@@ -1,0 +1,17 @@
+#
+# add missing signed number arg type '-' to option list
+# only used by tail eg: dmesg | tail -n 1 
+#
+
+diff -u -r toybox-0.2.1/lib/args.c toybox-0.2.1.new/lib/args.c
+--- toybox-0.2.1/lib/args.c	2012-03-03 08:56:11.000000000 -0800
++++ toybox-0.2.1.new/lib/args.c	2013-08-26 15:45:09.632937377 -0700
+@@ -241,7 +241,7 @@
+ 
+ 		// If this is the start of a new option that wasn't a longopt,
+ 
+-		} else if (strchr(":*#@.", *options)) {
++		} else if (strchr(":*#-@.", *options)) {
+ 			if (CFG_TOYBOX_DEBUG && new->type)
+ 				error_exit("multiple types %c:%c%c", new->c, new->type, *options);
+ 			new->type = *options;
