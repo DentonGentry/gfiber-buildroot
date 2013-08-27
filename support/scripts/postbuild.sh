@@ -10,6 +10,11 @@ BINARIES_DIR=$TARGET_DIR/../images
 # the customized skeleton files.
 support/scripts/copy-skeleton.sh "$TARGET_DIR" "$TARGET_SKELETON" "$PLATFORM_SUFFIX"
 
+# Strip out some files from the target file system that we shouldn't need.
+echo "!!!!!!!!!! Stripping $TARGET_DIR "
+support/scripts/strip-skeleton.sh "$TARGET_DIR"
+echo "!!!!!!!!!! DONE Stripping $TARGET_DIR "
+
 # Generate /etc/manifest, /etc/version, /etc/softwaredate
 repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 #TODO(apenwarr): 'git describe' should use all projects.
