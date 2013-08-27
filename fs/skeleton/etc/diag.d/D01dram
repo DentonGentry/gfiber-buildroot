@@ -1,0 +1,44 @@
+#!/bin/sh
+
+. $(dirname $0)/Config.sh
+
+error=
+
+dram()
+{
+  size="$1"
+  loops="$2"
+  okperloop=18
+
+  echo "Running memtest $size $loops times..."
+  log=/tmp/log.$$
+  memtester "$size" "$loops" 2>&1 | tee $log 1>&2
+  ok=`grep ok$ $log | wc -l`
+  rm -f $log
+  want=$(($loops * $okperloop))
+  if [ "$ok" -ne $want ]; then
+    error="wanted $want ok, got $ok"
+    return 1
+  fi
+  return 0
+}
+
+case "$1" in
+  diag)
+    if dram "$dram_memory" 1; then
+      echo PASS
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  quick)
+    if dram 1M 1; then
+      echo PASS
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac

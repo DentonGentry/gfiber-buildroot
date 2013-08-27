@@ -1,0 +1,33 @@
+#!/bin/sh
+
+set -e
+
+detail=
+
+# a normal pass case
+
+runtest()
+{
+  # note, text will be pre-pended by 8 spaces (to minimize typeover)
+  echo "<<< ACTION REQUIRED: type 'yes' and press the return key"
+  read x
+  echo "User entered '$x'"
+  if [ X"$x" != X"yes" ]; then
+    detail="wanted 'yes', got '$x'"
+    return 1
+  fi
+  return 0
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS $detail
+    else
+      echo FAIL $detail
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

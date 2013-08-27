@@ -1,0 +1,160 @@
+#!/bin/sh
+
+#
+# like /etc/init.d/rcS, for diagnostics
+#
+
+# abort immediately on uncaught errors
+set -e
+
+echo Running diagnostics:
+
+#
+# onelinelog <file> <command...>
+# run command, logging to file, but also logging to screen, 
+# replacing \n with \r so there is no scrolling
+#
+onelinelog()
+{
+	file="$1"
+	shift
+	status="$file.status"
+
+	# this trick saves the status of the command, since PIPESTATUS doesn't work
+	echo 0 > $status
+	("$@" 2>&1 || echo $? > $status) | tee $file | while IFS="" read line; do
+		if [ -z "$line" ]; then
+			line="... $1 is running"	# blank lines are boring
+		fi
+		echo -n "        $line" > /dev/tty	# indented to avoid input overwrite
+		echo -n "[K\r" > /dev/tty		# clear to EOL and CR w/o NL
+	done
+
+	exitval=`cat $status`
+	rm -f $status
+	return $exitval
+}
+
+# some of this is copied from /etc/init.d/rcS
+
+# /usr should take precedence over /
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
+
+# TODO(apenwarr): mkdir -p seems buggy across symlinks.
+#  Strangely doing the 'cd' commands below seems to make things like
+#  'mkdir -p /var/lock/whatever' start working, implying it's caused by a bug
+#  in the kernel somewhere (perhaps in NFS).
+test -d /tmp/run || mkdir /tmp/run
+(cd /var/lock)
+(cd /var/cache)
+(cd /var/log)
+
+. /etc/utils.sh
+
+# Start all init scripts in /etc/diag.d
+# executing them in numerical order.
+#
+case "$1" in
+   diag | quick)
+     SCRIPTS=/etc/diag.d/D[0-9]?*
+     ;;
+   test)
+     SCRIPTS=/etc/diag.d/T[0-9]?*
+     ;;
+   *)
+     echo "Usage: $0 {diag|quick|test}" 1>&2
+     exit 1
+     ;;
+esac
+
+#
+# run scripts and summarize results
+#
+
+rm -f /tmp/diag.log /tmp/diag.*.log
+
+> /tmp/diag.log
+
+exitval=0
+{
+  ran=0
+  passed=0
+  failed=0
+
+  for i in ${SCRIPTS}; do
+
+    # Ignore if /config/init_skiplist exists and contains the name of the file
+    if [ -e /config/init_skiplist ] &&
+       filecontains "$i" /config/init_skiplist; then
+      echo "Skipping $i"
+      continue
+    fi
+
+    # Ignore dangling symlinks (if any).
+    [ ! -f "$i" ] && continue
+
+    # Ignore backup files (filename~) created by editors (mostly for nfsroot)
+    [ "$i" != "${i%~}" ] && continue
+
+    ran=$(($ran + 1))
+    name=${i##*/}
+
+    log=/tmp/diag.$name.log
+
+    # run script to a log file
+    # each diag script must echo PASS or FAIL on last line when done
+    set +e
+    onelinelog $log $i $1
+    status=$?
+    set -e
+
+    # make sure last line is PASS or FAIL + text
+    lastline=`tail -n 1 $log`
+    result=${lastline%% *}
+    rest=${lastline#$result}
+
+    if [ $status -ne 0 ]; then
+      failed=$(($failed + 1))
+      result=ERROR
+      rest="$0: $i exited with status '$status'"
+    else
+      case "$result" in
+	PASS)
+	  passed=$(($passed + 1))
+	  ;;
+	FAIL)
+	  failed=$(($failed + 1))
+	  ;;
+	*)
+	  failed=$(($failed + 1))
+	  echo "$0: $i: expected PASS or FAIL, got '$result'" 1>&2
+	  result=ERROR
+	  rest=" last text was: '$lastline'"
+      esac
+    fi
+
+    out=`printf "%s %-30s %-5s %s\n" "----" "$name" "$result" "$rest"`
+
+    # for the screen
+    echo "$out" > /dev/tty
+
+    # this is for the log
+    echo "$out"
+  done 
+
+  echo ""
+
+  if [ $failed -eq 0 ]; then
+    echo "SUCCESS! $passed passed" | tee /dev/tty
+  else
+    echo "FAILURE! $failed of $ran FAILED" | tee /dev/tty
+    exitval=1
+  fi
+
+} > /tmp/diag.log 2>&1
+
+(cd /tmp; tar czf diag.tgz diag.log diag.*.log)
+echo logs are in /tmp/diag.tgz
+
+echo "$0: done." >&2
+exit $exitval

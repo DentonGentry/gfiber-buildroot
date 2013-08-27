@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# exit without writing PASS/FAIL
+
+case "$1" in
+  test)
+    exit 0
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# run factory diagnostics instead of normal boot if factory=1
+# used by manufacturing to verify boards
+if [ "$(kernopt factory)" = "1" ]; then
+  echo "$0: found factory=1, running /etc/diag.d/rcD" >/dev/kmsg
+  exec /etc/diag.d/rcD diag
+  echo "$0: /etc/diag.d/rcD failed to exec, returning to normal rcS" >/dev/kmsg
+fi
+
 # /usr should take precedence over /
 export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
 

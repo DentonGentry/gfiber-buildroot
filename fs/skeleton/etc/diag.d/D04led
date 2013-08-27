@@ -1,0 +1,23 @@
+#!/bin/sh
+
+
+error=
+
+todo()
+{
+  error="not implemented"
+  return 1
+}
+
+case "$1" in
+  diag | quick)
+    if todo; then
+      echo PASS
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac
