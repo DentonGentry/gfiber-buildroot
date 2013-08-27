@@ -19,15 +19,10 @@ log()
 
 log "pid $pid ($exe) dying on signal $2"
 
-if [ ! -w "$outdir" ] || [ -e "$out" -a ! -w "$out" ]; then
+if [ ! -e "/tmp/DEBUG" ]; then
+  log "skipping coredump for process '$exe'"
+elif [ ! -w "$outdir" ] || [ -e "$out" -a ! -w "$out" ]; then
   log "can't dump core: $out is not writable."
-elif [ "$exe" = "siege" ]; then
-  # TODO(apenwarr): Remove this if we ever figure out why this blocks.
-  #  We see quite a few instances of coredump blocking for 120+ seconds
-  #  when trying to coredump the siege process, but not other processes.
-  #  This isn't completely surprising since siege is our largest process,
-  #  so therefore the slowest, but 120 seconds is just way too long.
-  log "skipping coredump for process 'siege'"
 elif pgrep -x coredump-delay >/dev/null; then
   log "coredump-delay not yet reached; not saving."
 else
