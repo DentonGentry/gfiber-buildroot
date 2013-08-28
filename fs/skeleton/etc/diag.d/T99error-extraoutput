@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+# echo something other than PASS/FAIL
+
+runtest()
+{
+  echo "here is some stdout text"
+  echo "here is some stderr text" 1>&2
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS
+    else
+      echo FAIL
+    fi
+    echo "this should result in ERROR"
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

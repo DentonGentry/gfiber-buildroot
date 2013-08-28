@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -e
+
+# a normal pass case
+
+runtest()
+{
+  echo "here is some stdout text"
+  echo "here is some stderr text" 1>&2
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS
+    else
+      echo FAIL
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac
