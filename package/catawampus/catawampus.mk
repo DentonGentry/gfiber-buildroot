@@ -28,6 +28,7 @@ endef
 
 define CATAWAMPUS_INSTALL_TARGET_CMDS
 	DSTDIR=$(TARGET_DIR)/usr/catawampus/ \
+	DSTBINDIR=$(TARGET_DIR)/usr/bin/ \
 	PYTHON=$(HOST_DIR)/usr/bin/python \
 		   $(MAKE) -C $(@D) install
 
