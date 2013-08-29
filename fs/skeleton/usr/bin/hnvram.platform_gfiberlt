@@ -1,0 +1,44 @@
+#!/usr/bin/python
+
+# GFLT* uses sysvar_cmd to read/write flash instead of hnvram.
+# ginstall wants to call hnvram like:
+# hnvram -w VAR1=val1 -w VAR2=val2 -w VAR3=val3
+#
+# This will translate those into sysvar_cmd calls.
+
+import subprocess
+import sys
+
+SYSVAR_CMD = '/usr/bin/sysvar_cmd'
+
+def usage():
+  print "Usage: hnvram -w var1=val1 -w var2=val2 ..."
+
+
+def main():
+  if len(sys.argv) < 3 or (len(sys.argv[1:]) % 2) != 0:
+    print 'a'
+    usage()
+    sys.exit(1)
+
+  vars_to_set = {}
+  # this python mojo collects adjacent elements of a list into a list of tuples.
+  args = zip(sys.argv[1::2], sys.argv[2::2])
+  for arg in args:
+    if arg[0] != '-w' or len(arg[1]) == 0:
+      usage()
+      sys.exit(1)
+    key_val = arg[1].split('=', 1)
+    if len(key_val) != 2:
+      usage()
+      sys.exit(1)
+    vars_to_set[key_val[0]] = key_val[1]
+
+  # Now we should have a map of key,values
+  retval = 0
+  for k,v in vars_to_set.iteritems():
+    retval |= subprocess.call([SYSVAR_CMD, '--set', k, v])
+  sys.exit(retval)
+
+if __name__ == '__main__':
+  main()
