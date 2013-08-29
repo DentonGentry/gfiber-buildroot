@@ -7,6 +7,11 @@ set -e
 
 error=
 
+cleanup()
+{
+  umount /mnt || echo but no matter
+}
+
 usbstick()
 {
   file=/mnt/diag_test_file

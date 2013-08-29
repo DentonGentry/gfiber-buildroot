@@ -7,16 +7,38 @@ set -e
 
 error=
 
-todo()
+cleanup()
 {
-  error="not implemented"
-  return 1
+  :
 }
+
+disktest()
+{
+  # disk may not be formatted
+
+  # run dd non-destuctive read test with several block sizes
+  for bs in 32 64 128 256; do
+    bytes=$(($bs * 1024))
+    count=$((100 * 1024 * 1024 / $bytes))
+    dd=$(dd bs=$bytes count=$count if=/dev/sda of=/dev/null 2>&1)
+    echo $dd
+    bps=${dd##*(}
+    bps=${bps%% *}
+    mibps=$(($bps / 1024 / 1024))
+    result="$result ${bs}k->${mibps}MiB/s"
+    if [ "$mibps" -lt $disk_min_mibps ]; then
+      error="${mibps}MiB/s is less than required ${disk_min_mibps}MiB/s"
+      return 1
+    fi
+  done
+}
+
+type=$1
 
 case "$1" in
   diag | quick)
-    if todo; then
-      echo PASS
+    if disktest; then
+      echo PASS $result
     else
       echo FAIL "$error"
     fi

@@ -33,6 +33,9 @@ iperf_min_weth0=10		# MBytes/sec
 iperf_server_weth1="${iperf_server_weth1:-${diag_iperf_server:-$iperf_server}}"
 iperf_min_weth1=10		# MBytes/sec
 
+disk_badblock_count=3000000	# number of blocks to check (large is slow)
+disk_min_mibps=90		# 90MiB/s read is nice, 120 is great
+
 #
 # platform specific configs follow
 #
