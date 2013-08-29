@@ -7,15 +7,33 @@ set -e
 
 error=
 
-todo()
+usbstick()
 {
-  error="not implemented"
-  return 1
+  file=/mnt/diag_test_file
+  want=4289204007
+
+  umount /mnt || echo but no matter
+  run fdisk -l /dev/sdb
+  run mount -t vfat /dev/sdb1 /mnt
+  run rm -f $file
+  echo "This file must have these exact letters, please do not modify" > $file
+  sync
+  run umount /mnt
+  run mount -t vfat /dev/sdb1 /mnt
+  cksum=$(cksum $file)
+  sum=${cksum%% *}
+  if [ "$sum" != $want ]; then
+    error="cksum mismatch, wanted $want, got '$sum'"
+    return 1
+  fi
+  run rm -f $file
+  run umount /mnt
+  return 0
 }
 
 case "$1" in
   diag | quick)
-    if todo; then
+    if usbstick; then
       echo PASS
     else
       echo FAIL "$error"
