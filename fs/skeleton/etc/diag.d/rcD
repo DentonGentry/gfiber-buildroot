@@ -51,8 +51,12 @@ test -d /tmp/run || mkdir /tmp/run
 (cd /var/lock)
 (cd /var/cache)
 (cd /var/log)
+update-mtd-links
 
 . /etc/utils.sh
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
 
 # Start all init scripts in /etc/diag.d
 # executing them in numerical order.
@@ -161,6 +165,11 @@ exitval=0
   echo $msg
 
 } > /tmp/diag.log 2>&1
+
+
+# display summary again since console messages may cause scrolling
+echo ""
+cat /tmp/diag.log
 
 (cd /tmp; tar czf diag.tgz diag.log diag.*.log)
 echo logs are in /tmp/diag.tgz
