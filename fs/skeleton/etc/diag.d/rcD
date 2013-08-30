@@ -4,6 +4,9 @@
 # like /etc/init.d/rcS, for diagnostics
 #
 
+# save /dev/tty or whatever stdout is as fd 3
+exec 3>&1
+
 # abort immediately on uncaught errors
 set -e
 
@@ -26,8 +29,8 @@ onelinelog()
 		if [ -z "$line" ]; then
 			line="... $1 is running"	# blank lines are boring
 		fi
-		echo -n "        $line" > /dev/tty	# indented to avoid input overwrite
-		echo -n "[K\r" > /dev/tty		# clear to EOL and CR w/o NL
+		echo -n "        $line" 1>&3		# indented to avoid input overwrite
+		echo -n "[K\r" 1>&3			# clear to EOL and CR w/o NL
 	done
 
 	exitval=`cat $status`
@@ -136,7 +139,7 @@ exitval=0
     out=`printf "%s %-30s %-5s %s\n" "----" "$name" "$result" "$rest"`
 
     # for the screen
-    echo "$out" > /dev/tty
+    echo "$out" 1>&3
 
     # this is for the log
     echo "$out"
@@ -145,11 +148,17 @@ exitval=0
   echo ""
 
   if [ $failed -eq 0 ]; then
-    echo "SUCCESS! $passed passed" | tee /dev/tty
+    msg="SUCCESS! $passed passed"
   else
-    echo "FAILURE! $failed of $ran FAILED" | tee /dev/tty
+    msg="FAILURE! $failed of $ran FAILED"
     exitval=1
   fi
+
+  # for the screen
+  echo $msg 1>&3
+
+  # for the log
+  echo $msg
 
 } > /tmp/diag.log 2>&1
 
@@ -157,4 +166,8 @@ exitval=0
 echo logs are in /tmp/diag.tgz
 
 echo "$0: done." >&2
+
+# without this the last 2 lines may be chopped off run from rundiag
+usleep 100000
+
 exit $exitval

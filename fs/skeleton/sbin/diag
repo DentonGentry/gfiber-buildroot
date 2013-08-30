@@ -1,0 +1,7 @@
+#/bin/sh
+
+type="$1"
+if [ -z "$type" ]; then
+	type=diag
+fi
+/etc/diag.d/rcD "$type"
