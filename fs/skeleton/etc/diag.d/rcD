@@ -63,10 +63,10 @@ update-mtd-links
 #
 case "$1" in
    diag | quick)
-     SCRIPTS=/etc/diag.d/D[0-9]?*
+     SCRIPTS=$(dirname $0)/D[0-9]?*
      ;;
    test)
-     SCRIPTS=/etc/diag.d/T[0-9]?*
+     SCRIPTS=$(dirname $0)/T[0-9]?*
      ;;
    *)
      echo "Usage: $0 {diag|quick|test}" 1>&2
@@ -87,6 +87,7 @@ exitval=0
   ran=0
   passed=0
   failed=0
+  skipped=0
 
   for i in ${SCRIPTS}; do
 
@@ -94,6 +95,7 @@ exitval=0
     if [ -e /config/init_skiplist ] &&
        filecontains "$i" /config/init_skiplist; then
       echo "Skipping $i"
+      skipped=$(($skipped + 1))
       continue
     fi
 
@@ -132,6 +134,9 @@ exitval=0
 	FAIL)
 	  failed=$(($failed + 1))
 	  ;;
+	SKIP)
+	  skipped=$(($skipped + 1))
+	  ;;
 	*)
 	  failed=$(($failed + 1))
 	  echo "$0: $i: expected PASS or FAIL, got '$result'" 1>&2
@@ -156,6 +161,9 @@ exitval=0
   else
     msg="FAILURE! $failed of $ran FAILED"
     exitval=1
+  fi
+  if [ $skipped -ne 0 ]; then
+    msg="$msg, $skipped tests were skipped"
   fi
 
   # for the screen

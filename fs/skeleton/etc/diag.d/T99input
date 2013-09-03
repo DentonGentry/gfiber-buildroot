@@ -12,7 +12,7 @@ runtest()
   echo "<<< ACTION REQUIRED: type 'yes' and press the return key"
   read x
   echo "User entered '$x'"
-  if [ X"$x" != X"yes" ]; then
+  if [ "$x" != yes ]; then
     detail="wanted 'yes', got '$x'"
     return 1
   fi

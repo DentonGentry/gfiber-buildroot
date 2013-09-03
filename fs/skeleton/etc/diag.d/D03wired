@@ -1,0 +1,93 @@
+#!/bin/sh
+
+set -e
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
+
+error=
+
+# used by run
+cleanup()
+{
+  local if
+
+  for if in $wired_lan $wired_wan; do
+    isNFS=$(isNFS $if)
+
+    if [ "$isNFS" -eq 0 ]; then
+      dhclient_stop $if || echo but no matter
+    fi
+  done
+}
+
+testswitch()
+{
+  local if isNFS server done
+
+  for if in $wired_lan $wired_wan; do
+    isNFS=$(isNFS $if)
+
+    # don't flap the network if we're using it for nfs
+    if [ "$isNFS" -eq 0 ]; then
+      run dhclient_start $if
+    fi
+
+    server=$(eval echo \${iperf_server_$if})
+    echo "server is $server, override with iperf_server_$if=$server $0 ..."
+
+    ifconfig $if || echo but no matter
+    run ping -c 3 $server
+
+    if [ "$type" != quick ]; then
+      while true; do
+	echo "Running iperf -c $server on $if"
+	speed=$(iperf -c $server -f M | grep "MBytes/sec")
+	echo $speed
+
+	# trim down to the integer number of MBytes/sec
+	speed=${speed% MBytes/sec*}
+	speed=${speed##* }
+	speed=${speed%.*}
+	
+	thisresult="$if=$speed"
+	result="$result $thisresult"
+	echo "Speed for $if is '$speed'"
+
+	minspeed=$(eval echo \${iperf_min_$if})
+      
+	if [ -z "$speed" ] || [ "$speed" -lt "$minspeed" ]; then
+	  error="$if speed '$speed' is below required '$minspeed' MBytes/sec"
+	  cleanup
+	  return 1
+	fi
+
+	echo "<<< $thisresult -- Press enter if done or any text to run iperf on $if again"
+	read done
+	if [ "$done" = "" ]; then
+	  break
+	fi
+
+      done
+    fi
+
+    if [ "$isNFS" -eq 0 ]; then
+      run dhclient_stop $if
+    fi
+  done
+  cleanup
+}
+
+case "$1" in
+  diag | quick)
+    type=$1
+    if testswitch; then
+      echo PASS $result
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac

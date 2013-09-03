@@ -3,7 +3,7 @@
 #
 
 # defaults, if not overridden
-iperf_server=192.168.1.2
+iperf_server=192.168.1.100
 
 # these can be set on the boot line or the environment
 diag_essid="${diag_essid:-$(kernopt diag_essid)}"

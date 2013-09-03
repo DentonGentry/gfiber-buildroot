@@ -48,7 +48,7 @@ isNFS()
   local if nfs nfsip nfsNet ip ipNet
   if="$1"
 
-  nfs=$(mount | grep ' nfs ')
+  nfs=$(mount | grep ' nfs ' || true)
   nfsip=${nfs%%:*}
   nfsNet=${nfsip%.*}	# strip last octet from ip addr, use as network
 
@@ -56,7 +56,7 @@ isNFS()
   ipNet=${ip%.*}
 
   # check if interface is on same network as nfs server
-  if [ "$nfsNet" = "$ipNet" ]; then
+  if [ "$nfsNet" ] && [ "$nfsNet" = "$ipNet" ]; then
     echo 1
   else
     echo 0
@@ -80,4 +80,5 @@ dhclient_stop()
   killall dhclient || echo but no matter
   killall ntpd || echo but no matter
   killall babysit || echo but no matter
+  killall logos || echo but no matter
 }

@@ -9,8 +9,8 @@ error=
 
 todo()
 {
-  error="not implemented"
-  return 1
+  echo "SKIP not implemented"
+  exit 0
 }
 
 case "$1" in
