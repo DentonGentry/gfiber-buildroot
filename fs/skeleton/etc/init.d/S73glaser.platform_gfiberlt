@@ -4,13 +4,13 @@
 
 case "$1" in
   start)
-    if runnable laser && [ "$(kernopt diag)" != "1" ]; then
-      echo "Starting laser."
-      babysit 60 laser 2>&1 | logos laser &
+    if runnable glaser && [ "$(kernopt diag)" != "1" ]; then
+      echo "Starting glaser."
+      babysit 60 glaser 2>&1 | logos glaser &
     fi
     ;;
   stop)
-    pkillwait -x laser
+    pkillwait -x glaser
     ;;
   restart)
     $0 stop; $0 start
