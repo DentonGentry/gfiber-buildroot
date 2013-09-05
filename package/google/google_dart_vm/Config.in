@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_DART_VM
+	bool "google_dart_vm"
+	help
+	  Builds the Dart Virtual Machine and runtime

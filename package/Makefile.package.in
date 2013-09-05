@@ -99,6 +99,7 @@ HG:=$(call qstrip,$(BR2_HG)) $(QUIET)
 SCP:=$(call qstrip,$(BR2_SCP)) $(QUIET)
 SSH:=$(call qstrip,$(BR2_SSH)) $(QUIET)
 MPM:=$(call qstrip,$(BR2_MPM)) $(QUIET)
+GCLIENT:=$(call qstrip,$(BR2_GCLIENT))
 LOCALFILES:=$(call qstrip,$(BR2_LOCALFILES))
 
 # Default spider mode is 'DOWNLOAD'. Other possible values are 'SOURCE_CHECK'
@@ -323,6 +324,31 @@ define SHOW_EXTERNAL_DEPS_LOCALFILES
   echo $($(PKG)_SITE)/$($(PKG)_SOURCE)
 endef
 
+define DOWNLOAD_GCLIENT
+  test -e $(DL_DIR)/$($(PKG)_SOURCE) || \
+  (pushd $(DL_DIR) > /dev/null && \
+  mkdir -p $($(PKG)_BASE_NAME) && \
+  pushd $($(PKG)_DL_DIR) > /dev/null && \
+  $(GCLIENT) config $($(PKG)_SITE) && \
+  $(GCLIENT) sync -r $($(PKG)_DL_VERSION) -t && \
+  rm -rf .gclient .gclient_entries && \
+  find . -name '.svn' -print0 | xargs -0 sh -c 'for i in "$$@" ; do test -e "$$i" && rm -rf "$$i" ; done' _ && \
+  find . -name '.git' -print0 | xargs -0 sh -c 'for i in "$$@" ; do test -e "$$i" && rm -rf "$$i" ; done' _ && \
+  popd > /dev/null && \
+  $(TAR) czf $($(PKG)_SOURCE) $($(PKG)_BASE_NAME)/ && \
+  rm -rf $($(PKG)_DL_DIR) && \
+  popd > /dev/null)
+endef
+
+define SOURCE_CHECK_GCLIENT
+  $(SVN) ls $($(PKG)_SITE) > /dev/null || \
+  $(GIT) ls-remote --heads $($(PKG)_SITE) > /dev/null
+endef
+
+define SHOW_EXTERNAL_DEPS_GCLIENT
+  echo $($(PKG)_SOURCE)
+endef
+
 ################################################################################
 # DOWNLOAD -- Download helper. Will try to download source from:
 # 1) BR2_PRIMARY_SITE if enabled
@@ -353,6 +379,7 @@ define DOWNLOAD
 			hg) $($(DL_MODE)_HG) && exit ;; \
 			repo) $($(DL_MODE)_REPO) && exit ;; \
 			mpm) $($(DL_MODE)_MPM) && exit ;; \
+			gclient) $($(DL_MODE)_GCLIENT) && exit ;; \
 			null) exit ;; \
 			*) $(call $(DL_MODE)_WGET,$(1),$(2)) && exit ;; \
 		esac ; \
