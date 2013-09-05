@@ -12,42 +12,49 @@ die() {
 # important stuff or start with special files in the wrong places.
 cleanup() {
   (
-    echo "cleaning up /var/media."
-    cd /var/media || die 'cd /var/media'
+    echo "cleaning up"
     random=$(
       dd if=/dev/urandom bs=20 count=1 2>/dev/null |
       sha1sum |
       { read sum junk; echo "$sum"; }
     )
     D=clean.$random.$(date +%s).$$
-    mkdir "$D"
-    for d in tmp var etc; do
-      [ -e "$d" ] && mv "$d" "$D"
+    for d in /var/lock/samba/subsys /tmp/samba/sockets; do
+      dir=$(dirname "$d")
+      if [ -d "$dir" ]; then
+        cd "$dir" || die 'cd $dir'
+        mkdir "$D"
+        [ -e "$d" ] && mv "$d" "$D"
+        rm -rf "$D" || die rm-rf
+      fi
     done
-    umount-subdirs-of "$D" || die umount
-    rm -rf "$D" || die rm-rf
-    for d in tmp var etc; do
-      [ -e "$d" ] && die "/var/media/$d could not be deleted"
-    done
+    umount-subdirs-of /chroot/samba
     return 0
   )
 }
 
+mounts() {
+  cd /chroot/samba && \
+  mount -o bind /var/media var/media && \
+  mount -o bind /usr/lib usr/lib && \
+  mount -o bind /lib lib && \
+  mount -o bind /var/lock/samba var/lock && \
+  mount -o bind /tmp/samba tmp
+}
 
 case "$1" in
   start)
     if is-storage-box; then
-      cleanup || die 'start cleanup failed'
-      cd /var/media && (
-        mkdir -p tmp var/lock/subsys etc /tmp/samba/sockets
-        chown video.video tmp
-        chmod 775 tmp var var/lock etc
-        mount -o bind /var/lock/subsys var/lock/subsys
-        cp /etc/samba/etc/* etc/
-        chmod 0444 etc/*
+      cleanup || die 'start failed'
+      mkdir -p /var/lock/samba/subsys /tmp/samba/sockets && \
+      chown video.video /var/lock/samba/subsys /tmp/samba && \
+      chown video.video /tmp/samba/sockets && \
+      mounts || die 'mounts failed'
+      chmod 0750 /tmp/samba/sockets && \
+      cd /chroot/samba/var/media && (
         ionice -c 3 -n 7 chg_mod_own --uid video --gid video --mode_dir 0775 \
           --mode_file 0664 tv videos pictures music
-      )
+      ) || die 'prepare environment failed'
       babysit 60 ionice -c 3 -n 7 smbd -F -D -S 2>&1 | logos smbd &
       babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
     fi 2>&1 | logos smbd &  # run in background to avoid slowing boot

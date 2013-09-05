@@ -1,0 +1,40 @@
+From 115f1690ef240ae5fe6098598bf38e096b99c3c9 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Mon, 9 Sep 2013 16:49:44 -0700
+Subject: [PATCH] Make stdout be line buffered.
+
+Makes logs more timely.
+---
+ source3/nmbd/nmbd.c   | 2 ++
+ source3/smbd/server.c | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/source3/nmbd/nmbd.c b/source3/nmbd/nmbd.c
+index 986c575..31cae16 100644
+--- a/source3/nmbd/nmbd.c
++++ b/source3/nmbd/nmbd.c
+@@ -769,6 +769,8 @@ static bool open_sockets(bool isdaemon, int port)
+ 	TALLOC_CTX *frame;
+ 	NTSTATUS status;
+ 
++	setvbuf(stdout, NULL, _IOLBF, 0);
++
+ 	/*
+ 	 * Do this before any other talloc operation
+ 	 */
+diff --git a/source3/smbd/server.c b/source3/smbd/server.c
+index db68ace..6e4f42b 100644
+--- a/source3/smbd/server.c
++++ b/source3/smbd/server.c
+@@ -922,6 +922,8 @@ extern void build_options(bool screen);
+ 	NTSTATUS status;
+ 	uint64_t unique_id;
+ 
++	setvbuf(stdout, NULL, _IOLBF, 0);
++
+ 	/*
+ 	 * Do this before any other talloc operation
+ 	 */
+-- 
+1.8.4
+
