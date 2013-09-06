@@ -3,6 +3,8 @@ wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 mgmt_vlan=$(cat /etc/config/mgmtvlan)
 
+hostname GFiberONU
+
 case $1 in
   start)
     echo "Starting WAN."
