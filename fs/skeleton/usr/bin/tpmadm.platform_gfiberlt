@@ -17,7 +17,11 @@ FRWD_US = 'frwd_us'
 L2_KEY_ETHERTYPE = 'mgmt_oam'
 L2_KEY_MAC_WAN = 'mac_wan'
 L2_KEY_VLAN = 'mgmt_vlan'
+L2_KEY_VLAN_BLOCK_4000_7 = 'block_vlan_4000/7'
+L2_KEY_VLAN_BLOCK_4032_6 = 'block_vlan_4032/6'
 VLAN_RULE = 'mgmt_vlan_rule'
+VLAN_BLOCK_4000_7_RULE = 'block_vlan_4000/7_rule'
+VLAN_BLOCK_4032_6_RULE = 'block_vlan_4032/6_rule'
 OWNER_ID = '1000'
 
 # Constants
@@ -36,6 +40,7 @@ PARSE_FLAG_NONE = 0x0
 ACTION_SET_TARGET_PORT = 0x2
 ACTION_SET_TARGET_QUEUE = 0x4
 ACTION_NONE = 0x0
+ACTION_DROP = 0x1
 PKT_MOD_NONE = 0x0
 NEXT_PHASE_DONE = 'done'
 
@@ -151,6 +156,49 @@ def EnableWanProfile(wan_port, lan_port, mgmt_vlan):
         ds_port = 'UNI_ANY'
       else:
         raise tpm.Fatal('Invalid LAN port - %s\n', lan_port)
+
+      # Add rules to block VLANs 4000-4095 on LAN.
+      tt.AddVlanRule(rule_name=VLAN_BLOCK_4000_7_RULE,
+                     tpid=0x0, tpid_mask=0x0,
+                     vid=0xfa0, vid_mask=0xfe0,
+                     cfi=0, cfi_mask=0x00,
+                     pbit=0, pbit_mask=0x00)
+      tt.AddL2KeyVlan(rule_name=L2_KEY_VLAN_BLOCK_4000_7,
+                      vlan_rule1=VLAN_BLOCK_4000_7_RULE,
+                      vlan_rule2=VLAN_EMPTY)
+      rule_num += 1
+      tt.AddL2Rule(owner_id=OWNER_ID,
+                   src_port=ds_port,
+                   rule_num=rule_num,
+                   parse_rule_bm=PARSE_ONE_VLAN_TAG,
+                   parse_flags_bm=PARSE_FLAG_NONE,
+                   action=ACTION_DROP,
+                   next_phase=NEXT_PHASE_DONE,
+                   key_name=L2_KEY_VLAN_BLOCK_4000_7,
+                   frwd_name=FRWD_EMPTY,
+                   mod_name=MOD_EMPTY,
+                   pkt_mod_bm=PKT_MOD_NONE)
+
+      tt.AddVlanRule(rule_name=VLAN_BLOCK_4032_6_RULE,
+                     tpid=0x0, tpid_mask=0x0,
+                     vid=0xfc0, vid_mask=0xfc0,
+                     cfi=0, cfi_mask=0x00,
+                     pbit=0, pbit_mask=0x00)
+      tt.AddL2KeyVlan(rule_name=L2_KEY_VLAN_BLOCK_4032_6,
+                      vlan_rule1=VLAN_BLOCK_4032_6_RULE,
+                      vlan_rule2=VLAN_EMPTY)
+      rule_num += 1
+      tt.AddL2Rule(owner_id=OWNER_ID,
+                   src_port=ds_port,
+                   rule_num=rule_num,
+                   parse_rule_bm=PARSE_ONE_VLAN_TAG,
+                   parse_flags_bm=PARSE_FLAG_NONE,
+                   action=ACTION_DROP,
+                   next_phase=NEXT_PHASE_DONE,
+                   key_name=L2_KEY_VLAN_BLOCK_4032_6,
+                   frwd_name=FRWD_EMPTY,
+                   mod_name=MOD_EMPTY,
+                   pkt_mod_bm=PKT_MOD_NONE)
 
       tt.AddFrwdRule(FRWD_DS, ds_bmp)
       tt.AddFrwdRule(FRWD_US, us_bmp)
