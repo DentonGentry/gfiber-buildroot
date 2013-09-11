@@ -2,9 +2,14 @@
 # TODO(zixia): change be placed between S70pon and S72wan
 # Pending 802.3ah OAM implementation
 
+. /etc/utils.sh
+
 case "$1" in
   start)
-    if runnable glaser && [ "$(kernopt diag)" != "1" ]; then
+    # TODO(showarth): remove check for !diag=1.
+    if runnable glaser && [ "$(kernopt diag)" != "1" ] \
+      && ! contains "$(kernopt diag)" "nolaser" \
+      && ! contains "$(kernopt diag)" "prbs"; then
       echo "Starting glaser."
       babysit 60 glaser 2>&1 | logos glaser &
     fi
