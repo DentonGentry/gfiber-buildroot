@@ -3,7 +3,7 @@
 # mobile_api (GFTV remote API for Android and iOS)
 #
 #############################################################
-GOOGLE_MOBILE_API_VERSION = gfiberapi-34.1
+GOOGLE_MOBILE_API_VERSION = gfiberapi-34.2
 GOOGLE_MOBILE_API_SITE = mpm://fiber/mobile/plugin
 GOOGLE_MOBILE_API_BASE_NAME = google_mobile_api
 GOOGLE_MOBILE_API_SOURCE = $(GOOGLE_MOBILE_API_VERSION).tar
