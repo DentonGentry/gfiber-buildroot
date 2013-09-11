@@ -1,26 +1,34 @@
 #!/bin/sh
-# TODO(kedong): Add RTC support.
 TIME_FILE=/tmp/time.synced
+
+logtosys()
+{
+  dmesg | grep T: | (
+    lasttime=0
+    while IFS='[] ' read space level service version timestamp humandate humantime ntpsync junk; do
+      if [ "$service" = "T:" ] && [ "$ntpsync" = "ntp=1" ]; then
+        lasttime=$timestamp
+      fi
+    done
+    if [ "$lasttime" -gt 0 ]; then
+      date +%s -s $lasttime
+    fi
+    #TODO(irinams): create the TIME_FILE only when we have a way to approximate
+    # how much time was spent during reboot to add it to to lasttime
+    #echo >"TIME_FILE"
+  )
+}
 
 case "$1" in
   start)
     cp /etc/ntpd.conf.default /tmp/ntpd.conf
     echo "UTC" > /tmp/TZ
 
-    dmesg | grep T: | (
-      lasttime=0
-      while IFS='[] ' read space level service version timestamp humandate humantime ntpsync junk; do
-        if [ "$service" = "T:" ] && [ "$ntpsync" = "ntp=1" ]; then
-          lasttime=$timestamp
-        fi
-      done
-      if [ "$lasttime" -gt 0 ]; then
-        date +%s -s $lasttime
-      fi
-      #TODO(irinams): create the TIME_FILE only when we have a way to approximate
-      # how much time was spent during reboot to add it to to lasttime
-      #echo >"TIME_FILE"
-    )
+    if [ -c /dev/rtc0 ] ; then
+      babysit 60 systohc-loop &
+    else
+      logtosys
+    fi
 
     (
       wait-until-created /tmp/ntp.synced
@@ -28,6 +36,9 @@ case "$1" in
     ) &
     ;;
   stop)
+    if [ -c /dev/rtc0 ] ; then
+      pkillwait -x systohc-loop
+    fi
     rm -f "$TIME_FILE"
     ;;
   restart|reload)
