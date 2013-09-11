@@ -25,7 +25,7 @@ find_mtd()
 find_mmc()
 {
   local result=
-  sgdisk -p /dev/mmcblk0 >/tmp/mmcpart
+  sgdisk -p /dev/mmcblk0 >/tmp/mmcpart 2>/dev/null
   while read number start end size unit code name; do
     if [ "$name" = "$1" ]; then
       result=$number
@@ -132,7 +132,7 @@ elif [ -n "$ROOTDEV" ]; then
       sleep $s
       false
     done
-    if [ -b "$mtd" ]; then
+    if [ -c "$mtd" ]; then
       log "Found root='$ROOTDEV': $mtd"
       # In this build, the rootdev mtd is always an UBI device.
       ubidetach -p "$mtd"  # Just in case kernel automounted it somewhere
