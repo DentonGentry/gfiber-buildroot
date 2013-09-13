@@ -19,10 +19,10 @@ has_usb_wifi() {
 }
 
 # Set up WLAN, if present
-if [ $(has_usb_wifi) = 'bcm43236-nofirmware' ]; then
+if [ "$(has_usb_wifi)" = 'bcm43236-nofirmware' ]; then
   bcmdl /lib/firmware/bcm43236-nohotplug.bin
 fi
-if [ ! -z $(has_usb_wifi) ]; then
+if [ ! -z "$(has_usb_wifi)" ]; then
   [ -e ${MODULE_PATH}/bcm_dbus.ko ] && insmod ${MODULE_PATH}/bcm_dbus.ko
 fi
 # Broadcom PCIe Wifi modules do not require bcmdl nor bcm_dbus.ko.
