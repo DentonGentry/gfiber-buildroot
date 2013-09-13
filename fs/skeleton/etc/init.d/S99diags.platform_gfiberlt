@@ -1,7 +1,11 @@
 #!/bin/sh
+
+. /etc/utils.sh
+
 case "$1" in
   start)
-    if [ "$(kernopt diag)" = 1 ]; then
+    # TODO(showarth): remove check for diag=1.
+    if [ "$(kernopt diag)" = 1 ] || contains "$(kernopt diag)" "diags"; then
       echo "diag is set: running diags on boot."
       diags &
     else

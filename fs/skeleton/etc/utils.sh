@@ -34,6 +34,10 @@ endswith() {
   [ "${1%$2}" != "$1" ]
 }
 
+# Returns true if the string $1 contains the string $2.
+contains() {
+  [ -n "$1" ] && [ -z "${1##*$2*}" ]
+}
 
 # Checks if the string $1 is appears in file $2
 filecontains() {

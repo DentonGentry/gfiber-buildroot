@@ -3,6 +3,8 @@ wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 mgmt_vlan=$(cat /etc/config/mgmtvlan)
 
+hostname GFiberONU
+
 case $1 in
   start)
     echo "Starting WAN."
@@ -21,7 +23,7 @@ case $1 in
     else
       lan_arg="-l $lan_port"
     fi
-    if runnable laser; then
+    if runnable glaser; then
       if [ -z "$mgmt_vlan" ]; then
         # TODO(apenwarr): we should never rely on arbitrary delays like this.
         (sleep 3 && tpmadm -w "$wan_port" $lan_arg -v) &
