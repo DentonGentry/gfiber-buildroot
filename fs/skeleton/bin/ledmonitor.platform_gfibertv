@@ -35,12 +35,14 @@ ANYTHING_ELSE="x2 4 0" # slow blink blue
 
 change_state() {
   # Check if the new state is different from the previous one
-  if [ -e "$LEDSTATE_FILE" ] && [ "$(cat $LEDSTATE_FILE)" = "$1" ]; then
-    echo "same state: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+  if [ -e "$LEDSTATE_FILE" ] && [ "$last_ledstate" = "$1" ]; then
+    echo "same state: $last_ledstate $last_leds"
   else
     leds $2
+    last_leds="$2"
     atomic $LEDSTATE_FILE "$1"
-    echo "state changed to: $(cat $LEDSTATE_FILE) $(cat $LEDS_FILE)"
+    last_ledstate="$1"
+    echo "state changed to: $last_ledstate $last_leds"
   fi
 }
 
@@ -60,22 +62,26 @@ is_link_up() {
 }
 
 is_manufactured_recently() {
-  # Check if the device is made within or after 2013 by checking serial number.
-  hnvram_serial=$(hnvram -r 1ST_SERIAL_NUMBER)
-  serial="${hnvram_serial#1ST_SERIAL_NUMBER=}"
+  if [ ! "$is_manufactured_recently_status" ]; then
+    # Check if the device is made within or after 2013 by checking serial number.
+    hnvram_serial=$(hnvram -r 1ST_SERIAL_NUMBER)
+    serial="${hnvram_serial#1ST_SERIAL_NUMBER=}"
 
-  # Serial number format: GABCYWWSSSSS.
-  # Check if the serial number matches this format (starting from G)
-  # and YWWSSSSS >= 30000000
-  date_manufactured=${serial#G???}
-  [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
+    # Serial number format: GABCYWWSSSSS.
+    # Check if the serial number matches this format (starting from G)
+    # and YWWSSSSS >= 30000000
+    date_manufactured=${serial#G???}
+    [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
+    is_manufactured_recently_status=$?
+  fi
+  return $is_manufactured_recently_status
 }
 
 watch-dir $CONTROL_PATH |
 while read f; do
 
   if is_link_up; then
-    rm -f "$LINK_DOWN_FILE"
+    test ! -e "$LINK_DOWN_FILE" || rm -f "$LINK_DOWN_FILE"
     if has_ip_address br0; then
       echo "IP address acquired on br0" >"$IP_FILE"
     else
