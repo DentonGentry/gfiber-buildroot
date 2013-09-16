@@ -13,17 +13,19 @@ LEDFILE=/tmp/gpio/ledcontrol/acsconnected
 TIMEOUTFILE=/tmp/cwmp/acs_timeout
 SLEEPTIME=30
 
-timeout=10800
-if [ -f $TIMEOUTFILE ]; then
-  # Useful for system test, set a short timeout.
-  timeout=$(cat $TIMEOUTFILE)
-fi
-
 last_contact=$(ls -l $ACSFILE 2>&1)
-out_of_contact=$timeout
+out_of_contact=31536000
 
 while [ 1 ]; do
   sleep $SLEEPTIME
+
+  timeout=10800
+  if [ -f $TIMEOUTFILE ]; then
+    # Useful for system test, set a short timeout.
+    # Need to read on every loop iteration, test
+    # changes it while running then puts it back.
+    timeout=$(cat $TIMEOUTFILE)
+  fi
 
   # This is a string comparison. We just want to know
   # if the file has changed since the last iteration.
