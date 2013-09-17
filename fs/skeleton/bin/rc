@@ -1,0 +1,16 @@
+#!/bin/sh
+
+RC_PIPE=/tmp/rc_pipe
+
+if is-tv-box; then
+  if [ -e $RC_PIPE ]; then
+    echo "$@" > $RC_PIPE
+  else
+    echo "Error - $RC_PIPE doesn't exist!"
+    exit 1
+  fi
+else
+  echo "Error - $0 only works on the TV box!"
+  exit 2
+fi
+exit 0
