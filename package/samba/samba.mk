@@ -62,12 +62,12 @@ SAMBA_CONF_OPT = \
 
 SAMBA_INSTALL_TARGET_OPT = \
 	DESTDIR=$(TARGET_DIR) -C $(SAMBA_DIR)/$(SAMBA_SUBDIR) \
-	installlibs installservers installbin installscripts \
+	installlibs installservers installbin installscripts installmodules \
 	$(if $(BR2_PACKAGE_SAMBA_SWAT),installswat)
 
 SAMBA_UNINSTALL_TARGET_OPT = \
 	DESTDIR=$(TARGET_DIR) -C $(SAMBA_DIR)/$(SAMBA_SUBDIR) \
-	uninstalllibs uninstallservers uninstallbin uninstallscripts \
+	uninstalllibs uninstallservers uninstallbin uninstallscripts uninstallmodules \
 	$(if $(BR2_PACKAGE_SAMBA_SWAT),uninstallswat)
 
 # binaries to keep

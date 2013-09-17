@@ -1,0 +1,44 @@
+From 57e7fefee8ea042a8f740a197ea289c7a7e8d9c0 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Tue, 10 Sep 2013 06:05:25 -0700
+Subject: [PATCH] Don't close stdout, we're logging to it.
+
+---
+ lib/util/become_daemon.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/lib/util/become_daemon.c b/lib/util/become_daemon.c
+index 2af1631..5fd38e5 100644
+--- a/lib/util/become_daemon.c
++++ b/lib/util/become_daemon.c
+@@ -29,6 +29,7 @@
+  Close the low 3 fd's and open dev/null in their place.
+ ********************************************************************/
+ 
++static int leave_stdout_open_yo = 1;
+ _PUBLIC_ void close_low_fds(bool stderr_too)
+ {
+ #ifndef VALGRIND
+@@ -36,7 +37,9 @@ _PUBLIC_ void close_low_fds(bool stderr_too)
+ 	int i;
+ 
+ 	close(0);
+-	close(1);
++
++	if (!leave_stdout_open_yo)
++		close(1);
+ 
+ 	if (stderr_too)
+ 		close(2);
+@@ -44,6 +47,8 @@ _PUBLIC_ void close_low_fds(bool stderr_too)
+ 	/* try and use up these file descriptors, so silly
+ 		library routines writing to stdout etc won't cause havoc */
+ 	for (i=0;i<3;i++) {
++		if (i == 1 && !leave_stdout_open_yo)
++			continue;
+ 		if (i == 2 && !stderr_too)
+ 			continue;
+ 
+-- 
+1.8.4
+
