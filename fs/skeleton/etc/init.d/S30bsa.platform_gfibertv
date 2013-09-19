@@ -38,6 +38,9 @@ case "$1" in
       # Start app_gtv.
       babysit 30 app_gtv -a "$BT_MAC_ADDR" -n "$BT_NAME" -k 2>&1 \
           | logos app_gtv &
+
+      # Provide a mechanism for other processes to determine the Bluetooth MAC address
+      echo "$BT_MAC_ADDR" >/tmp/btmacaddress
     ) &
     ;;
   stop)
