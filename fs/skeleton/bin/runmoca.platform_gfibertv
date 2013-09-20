@@ -1,18 +1,70 @@
 #!/bin/sh
+pkillwait mocad
 
-# read configuration parameters
-CFG_FILE="/etc/moca/moca.conf.default"
-MOCAD_PARAMS=""
-[ -e $CFG_FILE ] && . $CFG_FILE
+# TODO(apenwarr): remove this once all devices use 'moca0' as the name.
+if [ -e /sys/class/net/moca0 ]; then
+  # GFRG200
+  mocaifc=moca0
+else
+  # GFMS100/GFHD100/GFHD200
+  mocaifc=eth1
+fi
 
-mocad $MOCAD_PARAMS &
+try_start() {
+  xinit=
+  if runnable mocap; then
+    # moca 2.0
+    # TODO(apenwarr): if two nodes have nc_mode on, only one can join.
+    #   This was not the case in moca 1.0.  For now, let's leave it off,
+    #   and an nc will be elected randomly, but at least all nodes can join.
+    # is-storage-box && xinit="--nc_mode 1"
+    mocap set \
+        --restore_defaults \
+        $xinit \
+        --rf_band 3 \
+        --beacon_channel 575 \
+        --lof 575 \
+        --tpc_en 1
+    mocap set --start
+  else
+    # moca 1.0
+    # TODO(apenwarr): remove this after fully migrating to moca 2.0.
+    is-storage-box && xinit="--preferredNC on"
+    mocactl restore_defaults
+    mocactl start \
+        $xinit \
+        --rfType bandE \
+        --singleCh on2 \
+        --autoScan off \
+        --beaconChannel 575 \
+        --lof 575 \
+        --tpc off
+  fi
+}
+
+
+mkdir -p /tmp/moca &&
+cd /tmp/moca &&
+mocad -i $mocaifc -w -l /tmp/moca &  # backgrounds itself when ready to go
 mocad_pid=$!
+
+# Unfortunately this weird loop is needed because we can't use mocad -D.
+# The -D option would self-background mocad as soon as it's ready to go, so
+# sending it commands via mocactl/mocap would be guaranteed to work.  But
+# we have to background it ourselves, not let it background itself, so that
+# we can collect its error code and pass it along to our parent, if it exits,
+# so that we can be run under babysit and it will know whether or not to
+# restart us.
 for i in $(seq 20); do
+  pgrep -x mocad >/dev/null || exit 1  # mocad exited
   msleep 250
-  if mocacfg start; then
-    echo "mocad started!"
+  if try_start; then
+    echo "mocad started!" >&2
     wait $mocad_pid
     exit $?  # return mocad exit code
+  else
+    echo "moca start: code $?" >&2
   fi
 done
-exit $?
+
+exit 2  # timed out
