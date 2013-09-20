@@ -36,10 +36,36 @@ usbstick()
   return 0
 }
 
+usb3disk()
+{
+  # do a read test from the disk, expect at least 40 MB/sec
+  d=/dev/sdb
+  if [ ! -e $d ]; then
+    error="/dev/sdb not found, is USB disk connected?"
+    return 1
+  fi
+
+  # this runs dd and prints xfer rate several times as the 1st dd runs
+  f=/tmp/dd1
+  dd if=$d bs=65536 count=10000 2>$f |
+  for n in `seq 1 10`; do dd bs=65536 count=1000 of=/dev/null; done
+
+  # eg: 65536000 bytes transferred in 1.522 secs (43059132 bytes/sec)
+  dd1=$(tail -n 1 /tmp/dd1)
+  dd1=${dd1%% bytes/sec*}
+  dd1=${dd1##* secs (}
+  if [ "$dd1" -lt $usb_min_bps ]; then
+    error="wanted $usb_min_bps b/s or more, got $dd1 b/s"
+    return 1
+  fi
+  result="$dd1 bytes/sec"
+  return 0
+}
+
 case "$1" in
   diag | quick)
-    if usbstick; then
-      echo PASS
+    if usb3disk; then
+      echo PASS $result
     else
       echo FAIL "$error"
     fi

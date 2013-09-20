@@ -36,6 +36,13 @@ iperf_min_weth1=10		# MBytes/sec
 disk_badblock_count=3000000	# number of blocks to check (large is slow)
 disk_min_mibps=90		# 90MiB/s read is nice, 120 is great
 
+usb_min_bps=36000000		# 36 MB/s seen on usb3.0 drive
+
+fan_temp1_min=29000		# 29-45 degrees celcius, just a guideline for now
+fan_temp1_max=45000
+fan_temp2_min=29000
+fan_temp2_max=45000
+
 #
 # platform specific configs follow
 #
