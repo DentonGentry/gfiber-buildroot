@@ -4,8 +4,8 @@ MONITOR_PATH="/tmp/ledmonitor"
 
 case "$1" in
   start)
+    mkdir -p /tmp/ledmonitor
     if [ -d /sys/class/leds ] ; then
-      mkdir -p /tmp/ledmonitor
       setsid babysit 60 ledmonitor 2>&1 | logos ledmonitor &
       setsid babysit 60 linkmonitor $MONITOR_PATH/link.changed 2>&1 | logos linkmonitor &
       setsid babysit 60 ipmonitor $MONITOR_PATH/ip.changed 2>&1 | logos ipmonitor &
