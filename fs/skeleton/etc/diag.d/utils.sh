@@ -82,3 +82,16 @@ dhclient_stop()
   killall babysit || echo but no matter
   killall logos || echo but no matter
 }
+
+redblueled()
+{
+  red=1
+  blue=1
+  if [ "$1" = 0 ]; then
+    red=0
+  fi
+  if [ "$2" = 0 ]; then
+    blue=0
+  fi
+  python $(dirname $0)/gpio_gfrg200 red=$red blue=$blue
+}

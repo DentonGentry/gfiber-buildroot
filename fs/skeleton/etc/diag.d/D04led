@@ -7,15 +7,36 @@ set -e
 
 error=
 
-todo()
+cleanup()
 {
-  echo "SKIP not implemented"
-  exit 0
+  :
+}
+
+led_gfrg200()
+{
+  gpio=$(dirname $0)/gpio_gfrg200
+  delay=100	# doesn't really matter, python is slow
+  count=10
+
+  # both off
+  run $gpio red=0 blue=0
+
+  # flash red led
+  run $gpio loop=$count red=1 delay=$delay red=0 delay=$delay end
+
+  # flash blue led
+  run $gpio loop=$count blue=1 delay=$delay blue=0 delay=$delay end
+
+  # flash both alternate
+  run $gpio loop=$count red=1 blue=0 delay=$delay red=0 blue=1 delay=$delay end blue=0
+
+  # flash both together
+  run $gpio loop=$count red=1 blue=1 delay=$delay red=0 blue=0 delay=$delay end
 }
 
 case "$1" in
   diag | quick)
-    if todo; then
+    if led_gfrg200; then
       echo PASS
     else
       echo FAIL "$error"

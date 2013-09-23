@@ -89,6 +89,8 @@ exitval=0
   failed=0
   skipped=0
 
+  redblueled 0 0
+
   for i in ${SCRIPTS}; do
 
     # Ignore if /config/init_skiplist exists and contains the name of the file
@@ -145,6 +147,12 @@ exitval=0
       esac
     fi
 
+    if [ "$failed" -gt 0 ]; then
+      redblueled 1 0
+    else
+      redblueled 0 0
+    fi
+
     out=`printf "%s %-30s %-5s %s\n" "----" "$name" "$result" "$rest"`
 
     # for the screen
@@ -158,8 +166,10 @@ exitval=0
 
   if [ $failed -eq 0 ]; then
     msg="SUCCESS! $passed passed"
+    redblueled 0 1
   else
     msg="FAILURE! $failed of $ran FAILED"
+    redblueled 1 0
     exitval=1
   fi
   if [ $skipped -ne 0 ]; then
