@@ -28,10 +28,13 @@ case "$1" in
       fi
     fi
 
+    # Provide a mechanism for other processes to determine the Bluetooth MAC address
+    echo "$BT_MAC" >/tmp/btmacaddress
+
     # Run the following in a sub-shell in the background to avoid
     # impacting boot time.
     (
-      if [ -f /dev/btusb0 ]; then
+      if [ -e /dev/btusb0 ]; then
         # BCM20702 USB Bluetooth chip
         BSATTY=/dev/btusb0
         BSAFIRMWARE="-p /etc/bsa/BCM20702.hcd"
@@ -54,8 +57,6 @@ case "$1" in
       # Start app_gtv.
       babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
 
-      # Provide a mechanism for other processes to determine the Bluetooth MAC address
-      echo "$BT_MAC_ADDR" >/tmp/btmacaddress
     ) &
     ;;
   stop)
