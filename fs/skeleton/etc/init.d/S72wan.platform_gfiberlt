@@ -27,6 +27,12 @@ case $1 in
       fi
     elif runnable start_sycl; then
       echo "Starting sycl"
+      if [ -z "$mgmt_vlan" ]; then
+        # TODO(jnewlin): Remove the hard coded vlan number here when
+        # /etc/config/mgmtvlan file is populated.
+        mgmt_vlan=4090
+        echo 4090 >/etc/config/mgmtvlan
+      fi
       ip link add link pon0 name man type vlan id "$mgmt_vlan"
       ifup man
       start_sycl 2>&1 | logos sycl &

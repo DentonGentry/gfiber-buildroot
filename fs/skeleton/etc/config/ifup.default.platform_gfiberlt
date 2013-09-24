@@ -39,8 +39,5 @@ if [ $(cat /etc/config/wanport) = $iface ]; then
 		start_dhcp
 	fi
 elif [ "man" = "$iface" ]; then
-  echo "nameserver 2001:4860:4860::8888" >/tmp/resolv.conf.dhclient6
-  echo "nameserver 2001:4860:4860::8844" >>/tmp/resolv.conf.dhclient6
-  cp /tmp/resolv.conf.dhclient6 /etc/resolv.conf
-  start_dhcp
+	start_dhcp
 fi
