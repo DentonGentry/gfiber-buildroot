@@ -12,7 +12,7 @@ start_dhcp() {
       kill $(cat $pidfile) 2>&1 > /dev/null
       rm -f $pidfile
     fi
-    /usr/sbin/dhclient $iface -nw -v -pf $pidfile \
+    /usr/sbin/dhclient $iface -d -pf $pidfile \
       -lf /var/run/dhclient.${iface}.lease \
       -cf /etc/dhclient.conf 2>&1 | logos dhclient &
   fi
