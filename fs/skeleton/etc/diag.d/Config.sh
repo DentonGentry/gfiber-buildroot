@@ -43,6 +43,8 @@ fan_temp1_max=45000
 fan_temp2_min=29000
 fan_temp2_max=45000
 
+fan_max_rpm=5000
+
 #
 # platform specific configs follow
 #

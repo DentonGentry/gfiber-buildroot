@@ -10,60 +10,134 @@ error=
 cleanup()
 {
   echo "restoring fan settings"
+  i2cset -f -y 0 0x4c 0x04 $save_tach
   i2cset -f -y 0 0x4c 0x4c $save_speed
   i2cset -f -y 0 0x4c 0x4d $save_freq
+}
+
+# get the fan rpm.
+rpm_gfrg200()
+{
+  # must read in this order
+  lo=$(i2cget -f -y 0 0x4c 0x46)
+  hi=$(i2cget -f -y 0 0x4c 0x47)
+  lod=$(printf "%d\n" $lo)
+  hid=$(printf "%d\n" $hi)
+
+  # registers return number of 90kHz ticks between tach pulses
+  # see http://www.ti.com/lit/ds/symlink/lm96063.pdf
+  rpm=$((5400000/($lo + $hi * 256)))
+  echo $rpm
+}
+
+# near <reference> <tolerance> <value>
+# verify value is within reference +/- tolerance
+near()
+{
+  ref=$1
+  tol=$2
+  val=$3
+
+  min=$(($ref - $tol))
+  max=$(($ref + $tol))
+
+  if [ "$val" -ge "$min" ] && [ "$val" -le "$max" ]; then
+    return 0	# ok
+  fi
+  return 1
 }
 
 fantest_gfrg200()
 {
   # save old freq, not sure how to get this from /sys/bus
+  save_tach=$(i2cget -f -y 0 0x4c 0x03)
   save_speed=$(i2cget -f -y 0 0x4c 0x4c)
   save_freq=$(i2cget -f -y 0 0x4c 0x4d)
 
-  #  set freq to 9 (360khz / (2*9) = 20khz pulse?)
-  i2cset -f -y 0 0x4c 0x4d 9
+  # turn on tachometer
+  i2cset -f -y 0 0x4c 0x03 0x04
+
+  # if 4d is 0x17, 0x17 in 4c gives 50%. 2 * 0x17 gives 100%.  true for all values 0-31 of 4d
+  freq=23
+  speed50=$freq
+  speed100=$(($freq * 2))
+
+  # look for values within 15% of what is expected
+  range=$(($fan_max_rpm * 15 / 100))
+
+  #  set freq to 23 (360khz / (2*23) = 7.8khz pulse?)
+  #  or set freq to 9 (360khz / (2*9) = 10khz pulse?)
+  i2cset -f -y 0 0x4c 0x4d $freq
 
   # turn off fan
   d=/sys/bus/i2c/devices/0-004c
   echo 0 > $d/pwm1		# 0% speed
   echo "fan at 0%"
   sleep 3			# why not, I'm thinking
-
-  # fan i2c 0-0x12 is same as 0-100 via pwm1
+  rpm=$(rpm_gfrg200)
+  echo RPM at 0% is $rpm
+  if ! near 0 $range $rpm; then
+    error="wanted 0 rpm, got $rpm for 0% duty cycle"
+    cleanup
+    return 1
+  fi
 
   # write with /sys interface, check with i2cget
   echo 255 > $d/pwm1		# 100% speed
-  val=$(i2cget -f -y 0 0x4c 0x4c)
-  if [ $val != 0x12 ]; then
-    error="wanted 0x12, got $val for 100% duty cycle"
+  hexval=$(i2cget -f -y 0 0x4c 0x4c)
+  val=$(printf "%d\n" $hexval)
+  if [ $val != $speed100 ]; then
+    error="wanted $speed100, got $val for 100% duty cycle"
+    cleanup
     return 1
   fi
   echo "fan at 100%"
   sleep 3
+  rpm=$(rpm_gfrg200)
+  rpmsave=$rpm
+  echo RPM at 100% is $rpm
+  if ! near $fan_max_rpm $range $rpm; then
+    error="wanted $fan_max_rpm rpm, got $rpm for 100% duty cycle"
+    cleanup
+    return 1
+  fi
 
   # write with i2cset, verify with pwm1
-  run i2cset -f -y 0 0x4c 0x4c 0x9	# 50%
+  run i2cset -f -y 0 0x4c 0x4c $speed50		# 50%
   val=$(cat $d/pwm1)
   if [ $val != 128 ]; then
     error="wanted 128, got $val for 50% duty cycle"
+    cleanup
     return 1
   fi
   echo "fan at 50%"
   sleep 3
+  want=$(($fan_max_rpm / 2))
+  rpm=$(rpm_gfrg200)
+  echo RPM at 50% is $rpm
+  if ! near $want $range $rpm; then
+    error="wanted $want rpm, got $rpm for 50% duty cycle"
+    cleanup
+    return 1
+  fi
 
   # check temp sensors
   t1=$(cat $d/temp1_input)
+  echo t1 is $t1
   if [ $t1 -lt $fan_temp1_min ] || [ $t1 -gt $fan_temp1_max ]; then
     error="wanted $fan_temp1_min-$fan_temp1_max, got $t1 for temp1_input"
+    cleanup
     return 1
   fi
   t2=$(cat $d/temp2_input)
+  echo t2 is $t2
   if [ $t2 -lt $fan_temp2_min ] || [ $t2 -gt $fan_temp2_max ]; then
     error="wanted $fan_temp2_min-$fan_temp2_max, got $t2 for temp2_input"
+    cleanup
     return 1
   fi
 
-  result="t1=$t1 t2=$t2"
+  result="rpm=$rpmsave t1=$t1 t2=$t2"
 
   cleanup
 
