@@ -32,11 +32,12 @@ define BCM_DRIVERS_INSTALL_STAGING_MOCA
 		$(STAGING_DIR)/usr/lib/
 	$(INSTALL) -d -m 0755 \
 		$(STAGING_DIR)/usr/include/moca
+	rm -f $(STAGING_DIR)/usr/include/moca/linux/bmoca.h
 	cp -r $(@D)/moca/include/. $(STAGING_DIR)/usr/include/moca
 endef
 
 define BCM_DRIVERS_INSTALL_TARGET_MOCA
-	rm -f $(TARGET_DIR)/bin/mocap
+	rm -f $(TARGET_DIR)/bin/mocap $(TARGET_DIR)/bin/mocareg
 	$(INSTALL) -d -m 0755 \
 		$(TARGET_DIR)/etc/moca \
 		$(TARGET_DIR)/usr/lib/modules
@@ -52,7 +53,7 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 		$(@D)/moca2/bmoca/bmoca.ko \
 		$(TARGET_DIR)/usr/lib/modules
 endef
-endif
+endif  # MOCA1
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA2),y)
 define BCM_DRIVERS_BUILD_MOCA
@@ -73,8 +74,22 @@ define BCM_DRIVERS_INSTALL_STAGING_MOCA
 		$(STAGING_DIR)/usr/lib/
 	$(INSTALL) -d -m 0755 \
 		$(STAGING_DIR)/usr/include/moca
+	rm -f $(STAGING_DIR)/usr/include/moca/linux/bmoca.h
 	cp -r $(@D)/moca2/include/. $(STAGING_DIR)/usr/include/moca
 endef
+
+ifneq ($(BR2_mipsel),y)
+define BCM_DRIVERS_INSTALL_MOCAREG
+	# TODO(apenwarr): "mips" is a poor stand-in for "SoC w/ non-SPI MoCA"
+	$(INSTALL) -m 0755 \
+		$(@D)/moca2/bin/mocareg \
+		$(TARGET_DIR)/bin/
+endef
+else
+define BCM_DRIVERS_INSTALL_MOCAREG
+	rm -f $(TARGET_DIR)/bin/mocareg
+endef
+endif
 
 define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	rm -f $(TARGET_DIR)/bin/mocactl
@@ -85,6 +100,7 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 		$(@D)/moca2/bin/mocad \
 		$(@D)/moca2/bin/mocap \
 		$(TARGET_DIR)/bin/
+	$(BCM_DRIVERS_INSTALL_MOCAREG)
 	$(INSTALL) -m 0644 \
 		$(@D)/moca2/moca20core-*.bin \
 		$(TARGET_DIR)/etc/moca/
@@ -92,7 +108,7 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 		$(@D)/moca2/bmoca/bmoca.ko \
 		$(TARGET_DIR)/usr/lib/modules
 endef
-endif
+endif  # MOCA2
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI),y)
 
