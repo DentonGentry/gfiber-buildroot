@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if ! runnable laser; then
+if ! runnable glaser; then
   # TODO(apenwarr): /etc should be readonly.
   echo "Switching to GPON mode."
   serial=$(serial)

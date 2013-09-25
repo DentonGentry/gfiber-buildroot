@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<loopback_detection>
+    <!-- Loop detect switch true:support, false:not support -->
+    <lbdt_support enabled = "false" />
+    <!-- Default ethernet type, 0xfffa is default value, other vlaue can be configured-->
+    <ethernet_type>0xfffa</ethernet_type>
+    <!-- Default net work card name, eth0 is default value, other vlaue can be configured-->
+    <net_interface>eth0</net_interface>
+    <!--  It is the time when onu not receive the packet-->
+    <timeout_vlaue>5</timeout_vlaue>
+    <!-- loop detect for ethernet port,true:support, false:not support  -->
+    <UNI_1 enabled = "false" />
+    <UNI_2 enabled = "false" />
+    <UNI_3 enabled = "false" />
+    <UNI_4 enabled = "false" />
+    <UNI_5 enabled = "false" />
+    <UNI_6 enabled = "false" />
+    <UNI_7 enabled = "false" />
+    <UNI_8 enabled = "false" />
+</loopback_detection>

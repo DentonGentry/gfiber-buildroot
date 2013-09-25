@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+# show progress messages
+
+runtest()
+{
+  for n in `seq 1 100`; do
+    echo "$n% complete"
+    usleep 25000
+  done
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS
+    else
+      echo FAIL
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

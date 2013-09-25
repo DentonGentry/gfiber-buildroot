@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
+
+error=
+
+todo()
+{
+  echo "SKIP not implemented"
+  exit 0
+}
+
+case "$1" in
+  diag | quick)
+    if todo; then
+      echo PASS
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac

@@ -1,0 +1,200 @@
+#!/bin/sh
+
+#
+# like /etc/init.d/rcS, for diagnostics
+#
+
+# save /dev/tty or whatever stdout is as fd 3
+exec 3>&1
+
+# abort immediately on uncaught errors
+set -e
+
+echo Running diagnostics:
+
+#
+# onelinelog <file> <command...>
+# run command, logging to file, but also logging to screen, 
+# replacing \n with \r so there is no scrolling
+#
+onelinelog()
+{
+	file="$1"
+	shift
+	status="$file.status"
+
+	# this trick saves the status of the command, since PIPESTATUS doesn't work
+	echo 0 > $status
+	("$@" 2>&1 || echo $? > $status) | tee $file | while IFS="" read line; do
+		if [ -z "$line" ]; then
+			line="... $1 is running"	# blank lines are boring
+		fi
+		echo -n "        $line" 1>&3		# indented to avoid input overwrite
+		echo -n "[K\r" 1>&3			# clear to EOL and CR w/o NL
+	done
+
+	exitval=`cat $status`
+	rm -f $status
+	return $exitval
+}
+
+# some of this is copied from /etc/init.d/rcS
+
+# /usr should take precedence over /
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
+
+# TODO(apenwarr): mkdir -p seems buggy across symlinks.
+#  Strangely doing the 'cd' commands below seems to make things like
+#  'mkdir -p /var/lock/whatever' start working, implying it's caused by a bug
+#  in the kernel somewhere (perhaps in NFS).
+test -d /tmp/run || mkdir /tmp/run
+(cd /var/lock)
+(cd /var/cache)
+(cd /var/log)
+update-mtd-links
+
+. /etc/utils.sh
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
+
+# Start all init scripts in /etc/diag.d
+# executing them in numerical order.
+#
+case "$1" in
+   diag | quick)
+     SCRIPTS=$(dirname $0)/D[0-9]?*
+     ;;
+   test)
+     SCRIPTS=$(dirname $0)/T[0-9]?*
+     ;;
+   *)
+     echo "Usage: $0 {diag|quick|test}" 1>&2
+     exit 1
+     ;;
+esac
+
+#
+# run scripts and summarize results
+#
+
+rm -f /tmp/diag.log /tmp/diag.*.log
+
+> /tmp/diag.log
+
+exitval=0
+{
+  ran=0
+  passed=0
+  failed=0
+  skipped=0
+
+  redblueled 0 0
+
+  for i in ${SCRIPTS}; do
+
+    # Ignore if /config/init_skiplist exists and contains the name of the file
+    if [ -e /config/init_skiplist ] &&
+       filecontains "$i" /config/init_skiplist; then
+      echo "Skipping $i"
+      skipped=$(($skipped + 1))
+      continue
+    fi
+
+    # Ignore dangling symlinks (if any).
+    [ ! -f "$i" ] && continue
+
+    # Ignore backup files (filename~) created by editors (mostly for nfsroot)
+    [ "$i" != "${i%~}" ] && continue
+
+    ran=$(($ran + 1))
+    name=${i##*/}
+
+    log=/tmp/diag.$name.log
+
+    # run script to a log file
+    # each diag script must echo PASS or FAIL on last line when done
+    set +e
+    onelinelog $log $i $1
+    status=$?
+    set -e
+
+    # make sure last line is PASS or FAIL + text
+    lastline=`tail -n 1 $log`
+    result=${lastline%% *}
+    rest=${lastline#$result}
+
+    if [ $status -ne 0 ]; then
+      failed=$(($failed + 1))
+      result=ERROR
+      rest="$0: $i exited with status '$status'"
+    else
+      case "$result" in
+	PASS)
+	  passed=$(($passed + 1))
+	  ;;
+	FAIL)
+	  failed=$(($failed + 1))
+	  ;;
+	SKIP)
+	  skipped=$(($skipped + 1))
+	  ;;
+	*)
+	  failed=$(($failed + 1))
+	  echo "$0: $i: expected PASS or FAIL, got '$result'" 1>&2
+	  result=ERROR
+	  rest=" last text was: '$lastline'"
+      esac
+    fi
+
+    if [ "$failed" -gt 0 ]; then
+      redblueled 1 0
+    else
+      redblueled 0 0
+    fi
+
+    out=`printf "%s %-30s %-5s %s\n" "----" "$name" "$result" "$rest"`
+
+    # for the screen
+    echo "$out" 1>&3
+
+    # this is for the log
+    echo "$out"
+  done 
+
+  echo ""
+
+  if [ $failed -eq 0 ]; then
+    msg="SUCCESS! $passed passed"
+    redblueled 0 1
+  else
+    msg="FAILURE! $failed of $ran FAILED"
+    redblueled 1 0
+    exitval=1
+  fi
+  if [ $skipped -ne 0 ]; then
+    msg="$msg, $skipped tests were skipped"
+  fi
+
+  # for the screen
+  echo $msg 1>&3
+
+  # for the log
+  echo $msg
+
+} > /tmp/diag.log 2>&1
+
+
+# display summary again since console messages may cause scrolling
+echo ""
+cat /tmp/diag.log
+
+(cd /tmp; tar czf diag.tgz diag.log diag.*.log)
+echo logs are in /tmp/diag.tgz
+
+echo "$0: done." >&2
+
+# without this the last 2 lines may be chopped off run from rundiag
+usleep 100000
+
+exit $exitval

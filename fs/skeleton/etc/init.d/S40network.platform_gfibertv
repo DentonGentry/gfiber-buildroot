@@ -47,6 +47,17 @@ redistribute_irqs()
 
 case "$1" in
   start)
+    # TODO(apenwarr): remove this once all devices use 'moca0' as the name.
+    if [ -e /sys/class/net/moca0 ]; then
+      # GFRG200
+      mocaifc=moca0
+    else
+      # GFMS100/GFHD100/GFHD200
+      mocaifc=eth1
+    fi
+
+    [ -e /usr/lib/modules/bmoca.ko ] && insmod /usr/lib/modules/bmoca.ko
+
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -90,16 +101,21 @@ case "$1" in
     ip link set br0 up  # kernel 3.2.26 bug: fails the first time
 
     # VLAN tag for MoCA interface
-    ip link add link eth1 name eth1.0 type vlan id 0
+    ip link add link $mocaifc name $mocaifc.0 type vlan id 0
     # SO_PRIORITY -> 802.1p mapping
     for prio in 0 1 2 3 4 5 6 7; do
-      vconfig set_egress_map eth1.0 $prio $prio >/dev/null 2>&1
+      vconfig set_egress_map $mocaifc.0 $prio $prio >/dev/null 2>&1
     done
 
     echo "Adding interfaces... "
     # Move any existing network info from primary network interfaces to
     # the bridge.
-    for x in /sys/class/net/eth[0-9] /sys/class/net/ath[0-9]; do
+    # TODO(apenwarr): don't bridge the wan interface!  Firewall it instead.
+    for x in \
+        /sys/class/net/[ea]th[0-9] \
+        /sys/class/net/lan[0-9] \
+        /sys/class/net/wan[0-9] \
+        /sys/class/net/moca[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
       ip link set $x up &&
@@ -107,8 +123,8 @@ case "$1" in
       while read a b c ip d brd junk; do
         ip addr add $ip broadcast $brd dev br0
       done &&
-      if [ $x = eth1 ]; then
-        x=eth1.0
+      if [ $x = $mocaifc ]; then
+        x=$mocaifc.0
       fi &&
       brctl addif br0 $x &&
       ip -o -f inet route list dev $x |
@@ -146,15 +162,14 @@ case "$1" in
     redistribute_irqs
 
     if [ -e /dev/bmoca0 ]; then
-      echo "mocacfg boot..."
-      mkdir -p /tmp/moca
-      mocacfg boot &  # a bit slow, so don't bother waiting
+      echo "starting moca..."
+      babysit 30 runmoca 2>&1 | logos mocad &
     fi
 
     # Enable hardware offloads, do this at the end to avoid
     # invalid access caused by powered down core
     ethtool -K eth0 rx on tx on sg on gso on gro on
-    ethtool -K eth1 rx on tx on sg on gso on gro on
+    ethtool -K $mocaifc rx on tx on sg on gso on gro on
 
     ;;
   stop)
@@ -172,8 +187,7 @@ case "$1" in
       # Kill mocad and mocactl
       if [ -e /dev/bmoca0 ]; then
         echo -n "mocacfg kill"
-        mocacfg kill
-        echo "done"
+        pkillwait mocad
       fi
     fi
     if ip link show dev br0 2>&1 > /dev/null; then

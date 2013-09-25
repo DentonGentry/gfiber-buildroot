@@ -1,0 +1,30 @@
+
+#!/bin/sh
+
+set -e
+
+# show progress messages
+
+runtest()
+{
+  for n in `seq 1 50`; do
+    for m in `seq 1 $n`; do
+      echo -n ' '
+    done
+    echo "indented $n"
+    usleep 50000
+  done
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS
+    else
+      echo FAIL
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

@@ -19,18 +19,24 @@ die()
 pid=$1
 [ -e "/proc/$pid/exe" ] || die "pid invalid: /proc/$pid/exe does not exist"
 
+# need to run gdb on the master process to get backtraces for all threads
+line=`grep '^Tgid:' /proc/$pid/status`
+tgid=${line##*	}
 
 gdb --batch \
     -ex "set heuristic-fence-post 100000" \
-    -ex bt \
+    -ex "thread apply all bt" \
     "/proc/$pid/exe" \
-    --pid "$pid" \
+    --pid "$tgid" \
     </dev/null 2>&1 |
 (
   echo
   echo '--CRASHDUMP-START--'
   rv=2
   while read level offset in func etc; do
+    if [ "$level" = Thread ]; then
+      echo "$level $offset $in $func $etc"
+    fi
     if [ "$level" != "${level#\#}" ] && [ "$in" = "in" ]; then
       rv=0
       echo "$level $offset $func $etc"

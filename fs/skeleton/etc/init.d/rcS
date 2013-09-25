@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# don't run normal rc stuff if factory=1
+# used by manufacturing to verify boards on a clean system
+if [ "$(kernopt factory)" = "1" ]; then
+  echo "$0: found factory=1, exiting" >/dev/kmsg
+  exit 0
+fi
+
 # /usr should take precedence over /
 export PATH=/usr/bin:/usr/sbin:/bin:/sbin:.
 

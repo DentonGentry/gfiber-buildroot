@@ -1,4 +1,5 @@
 menu "Google libraries and applications"
+source "package/google/google_dial/Config.in"
 source "package/google/google_keystore_client/Config.in"
 source "package/google/google_licenses/Config.in"
 source "package/google/google_ffmpeg/Config.in"
@@ -32,4 +33,5 @@ source "package/google/google_hdcp/Config.in"
 source "package/google/google_ookla/Config.in"
 source "package/google/google_platform/Config.in"
 source "package/google/google_prism/Config.in"
+source "package/google/google_dart_vm/Config.in"
 endmenu

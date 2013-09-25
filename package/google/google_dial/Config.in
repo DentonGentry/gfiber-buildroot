@@ -1,0 +1,2 @@
+config BR2_PACKAGE_GOOGLE_DIAL
+	bool "google_dial"

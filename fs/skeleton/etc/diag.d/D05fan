@@ -1,0 +1,84 @@
+#!/bin/sh
+
+set -e
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
+
+error=
+
+cleanup()
+{
+  echo "restoring fan settings"
+  i2cset -f -y 0 0x4c 0x4c $save_speed
+  i2cset -f -y 0 0x4c 0x4d $save_freq
+}
+
+fantest_gfrg200()
+{
+  # save old freq, not sure how to get this from /sys/bus
+  save_speed=$(i2cget -f -y 0 0x4c 0x4c)
+  save_freq=$(i2cget -f -y 0 0x4c 0x4d)
+
+  #  set freq to 9 (360khz / (2*9) = 20khz pulse?)
+  i2cset -f -y 0 0x4c 0x4d 9
+
+  # turn off fan
+  d=/sys/bus/i2c/devices/0-004c
+  echo 0 > $d/pwm1		# 0% speed
+  echo "fan at 0%"
+  sleep 3			# why not, I'm thinking
+
+  # fan i2c 0-0x12 is same as 0-100 via pwm1
+
+  # write with /sys interface, check with i2cget
+  echo 255 > $d/pwm1		# 100% speed
+  val=$(i2cget -f -y 0 0x4c 0x4c)
+  if [ $val != 0x12 ]; then
+    error="wanted 0x12, got $val for 100% duty cycle"
+    return 1
+  fi
+  echo "fan at 100%"
+  sleep 3
+
+  # write with i2cset, verify with pwm1
+  run i2cset -f -y 0 0x4c 0x4c 0x9	# 50%
+  val=$(cat $d/pwm1)
+  if [ $val != 128 ]; then
+    error="wanted 128, got $val for 50% duty cycle"
+    return 1
+  fi
+  echo "fan at 50%"
+  sleep 3
+
+  # check temp sensors
+  t1=$(cat $d/temp1_input)
+  if [ $t1 -lt $fan_temp1_min ] || [ $t1 -gt $fan_temp1_max ]; then
+    error="wanted $fan_temp1_min-$fan_temp1_max, got $t1 for temp1_input"
+    return 1
+  fi
+  t2=$(cat $d/temp2_input)
+  if [ $t2 -lt $fan_temp2_min ] || [ $t2 -gt $fan_temp2_max ]; then
+    error="wanted $fan_temp2_min-$fan_temp2_max, got $t2 for temp2_input"
+    return 1
+  fi
+
+  result="t1=$t1 t2=$t2"
+
+  cleanup
+
+  return 0
+}
+
+case "$1" in
+  diag | quick)
+    if fantest_gfrg200; then
+      echo PASS "$result"
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+set -e
+
+. $(dirname $0)/Config.sh
+. $(dirname $0)/utils.sh
+
+error=
+
+cleanup()
+{
+  echo Cleaning up...
+  for n in 0 1; do
+    weth=weth$n
+    dhclient_stop $weth || echo but no matter
+    ifconfig $weth down || echo but no matter
+    wlanconfig $weth destroy || echo but no matter
+  done
+  #for d in ath_pktlog umac ath_dev ath_rate_atheros ath_dfs ath_hal asf adf; do
+  #  rmmod $d || echo but no matter
+  #done
+}
+
+testwifi()
+{
+  # load modules
+  for d in adf asf ath_hal ath_dfs ath_rate_atheros ath_dev umac ath_pktlog; do
+    m=/lib/modules/3.2.26/extra/$d.ko
+    insmod $m || echo but no matter
+  done
+
+  # bring up each radio, check with ping
+  for n in 1 0; do
+    weth=weth$n
+    wifi=wifi$n
+    run wlanconfig $weth create wlandev $wifi wlanmode sta
+    channels=$(iwlist $weth channel | head -n 1)
+    echo Channels for $weth $wifi are: $channels
+    run iwconfig $weth essid $wifi_essid
+    run dhclient_start $weth
+    server=$(eval echo \$iperf_server_$weth)
+    run ping -c 3 $server
+    run iperf -c $server -f M
+    run dhclient_stop $weth
+    run ifconfig $weth down
+    run wlanconfig $weth destroy
+  done
+  cleanup
+}
+
+case "$1" in
+  diag | quick)
+    if testwifi; then
+      echo PASS
+    else
+      echo FAIL "$error"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {diag|quick}"
+    exit 1
+esac

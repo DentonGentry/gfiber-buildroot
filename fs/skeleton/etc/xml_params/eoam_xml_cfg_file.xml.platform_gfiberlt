@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<cnfg>
+  <!--  Management of loop detection  1 = disactivated, 2 = activated   -->
+  <ONU_LOOPDETECT>
+    <port id="1" loopdetect="1"/>
+    <port id="2" loopdetect="1"/>
+    <port id="3" loopdetect="1"/>
+    <port id="4" loopdetect="1"/>
+  </ONU_LOOPDETECT>
+
+  <ONU_MISC>
+    <!--  Management of service SLA 0 = deative, 1 = active   -->
+    <oam_service_sla_op>1</oam_service_sla_op>
+    <!--  Default sla schedule: 0 = sp, 1 = wrr, 2 = sp + wrr   -->
+    <oam_service_sla_sch>0</oam_service_sla_sch>
+    <!--  Holdover state: 1 = deactive, 2 = active; CTC default is :deactive  -->
+    <oam_hldover_state>1</oam_hldover_state>
+    <!--  Holdover time: 50~1000ms, CTC default is 200ms   -->
+    <oam_hldover_time>200</oam_hldover_time>
+    <!--  management of VOIP port :
+          0 = disactivate
+          1 = activate
+     -->
+    <oam_voip_pots1>0</oam_voip_pots1>
+    <oam_voip_pots2>0</oam_voip_pots2>
+    <!--  CLI debug level, :
+          0 = none, 1 = error, 2 = alarm, 3 = info
+          4 = debug 5 = degub_ext, 6 = debug_pkt
+     -->
+    <oam_debug_level>1</oam_debug_level>
+    <!--  OAM configured to hardware, :
+          0 = not configure to hardware
+          1 = configure to hardware
+          2 = only allow FEC and encryption
+     -->
+    <EPON_connect_tpm>1</EPON_connect_tpm>
+    <!-- switch_enable: This parameter is used for OAM config VLAN mode
+        switch enabled: OAM will configure VLAN by switch and TPM rules
+        switch disabled: OAM will configure VLAN only by TPM rules
+        1 = enabled; 0 = disabled  -->
+    <switch_enable>0</switch_enable>
+    <!--  EPON IGMP support  0 = not support, 1 = support   -->
+    <epon_igmp_support>0</epon_igmp_support>
+    <!--  EPON silence switch: 0 = disable, 1 = enable   -->
+    <epon_silence_mode>0</epon_silence_mode>
+    <!--  OAM cauture support switch: 0 = disable, 1 = enable  
+          enable this feature will save incoming configured OAM
+          commands in /tmp/oam_commands -->
+    <oam_capture_support>1</oam_capture_support>
+    <!--  skip the keeping alive packets : 0 = not skip, 1 = skip   -->
+    <oam_capture_skip_alive>1</oam_capture_skip_alive>
+    <!--  max number of OAM commands that can be put to file   -->
+    <oam_capture_line>400</oam_capture_line>
+
+  </ONU_MISC>
+  <ONU_PWR>
+    <!--  ONU Power Saving Config   -->
+    <!--  Identifies whether the ONU is supposed to enable the early
+          wake-up functions or not, this attribute used only when ONU
+          supports early wake-up mechanism
+          0x00: enable early wake-up
+          0x01: disable early wake-up
+          when ONU not supports early wake-up mechanism, it should be 0xff
+      -->
+    <early_wakeup_state>0x01</early_wakeup_state>
+    <!--  Provides the maximum duration of the period of time,expressed in 
+          units of TQ
+      -->
+    <sleep_duration_max>0xff</sleep_duration_max>
+    <!--  ONU Protection Parameters   -->
+    <!--  Identifies the period of time that has to expire before the ONU
+          moves to the HoldOver state if no optical signal is detected.The
+          value of this parameter is expressed in ms, default is 2ms
+      -->
+    <los_optical_time>0x2</los_optical_time>
+    <!--  Identifies the period of time that has to expire before the ONU
+          moves to the HoldOver state if no GATE MPCPDU is received.
+          The value of this parameter is expressed in ms, default 10ms
+      -->
+    <los_mac_time>0x10</los_mac_time>
+    <!--  ONU Sleep Control   -->
+    <!--  Indicate the sleep duration of ONU in sleep mode, the unit is TQ
+          0x00000000: used to populate the field when Sleep_Flag is equal to 0x00
+          0x00000001~03B9ACA0: express the value of sleep duration
+      -->
+    <sleep_duration>0x00000000</sleep_duration>
+    <!--  Identifies the awake duration of ONU in sleep mode, the Unit is TQ
+          0x00000000: used to populate the field when Sleep_Flag is equal to 0x00
+          0x00000001~03B9ACA0: express the value of sleep duration
+      -->
+    <wait_duration>0x00</wait_duration>
+    <!--  indicate to enable/disable/modify the sleep mode and sleep duration
+          0x00: leave the sleep mode
+          0x01: enter the sleep mode
+          0x02: modify the sleep mode and sleep duration
+      -->
+    <sleep_flag>0x00</sleep_flag>
+    <!--  indicate the ONU sleep mode for next sleep cycle
+          0x00: used to populate the field when sleep_flag is equal to 0x00
+          0x01: Tx only mode
+          0x02: TRx mode
+      -->
+    <sleep_mode>0x00</sleep_mode>
+  </ONU_PWR>
+  <ONU_MULTICAST>
+    <!--  Multicast Group Num Max   -->
+    <port id="1" groupnum="64"/>
+    <port id="2" groupnum="64"/>
+    <port id="3" groupnum="64"/>
+    <port id="4" groupnum="64"/>
+    <!--  oam_multicast_switch: IGMP default state
+          0 = IGMP snooping,
+          1 = CTC control
+     -->
+    <oam_multicast_switch>0</oam_multicast_switch>
+    <!--  Multicast table len   -->
+    <oam_multicast_tab_len>256</oam_multicast_tab_len>
+  </ONU_MULTICAST>
+  <ONU_HWF_USQUEUE>
+      <!--  Default hardware forward upstream queue # for each LLID, now only LLID0 is used: -->
+      <!--  The queue # should be enabled in /etc/xml_param/tpm_xml_cfg_file.xml -->
+      <!--  id   : LLID number      -->
+      <!--  num  : TX upstream queue number  -->
+      <LLID id="0" num="1" />
+      <LLID id="1" num="1" />
+      <LLID id="2" num="1" />
+      <LLID id="3" num="1" />
+      <LLID id="4" num="1" />
+      <LLID id="5" num="1" />
+      <LLID id="6" num="1" />
+      <LLID id="7" num="1" />
+  </ONU_HWF_USQUEUE>
+  <ONU_HWF_DSQUEUE>
+      <!--  Default hardware forward queue # for each LLID, now only LLID0 is used: -->
+      <!--  id   : LLID number      -->
+      <!--  num  : TX downstream queue number  -->
+      <LLID id="0" num="1" />
+      <LLID id="1" num="1" />
+      <LLID id="2" num="1" />
+      <LLID id="3" num="1" />
+      <LLID id="4" num="1" />
+      <LLID id="5" num="1" />
+      <LLID id="6" num="1" />
+      <LLID id="7" num="1" />
+  </ONU_HWF_DSQUEUE>
+  <ONU_OAM_QUEUE>
+    <!--  OAM rx queue #: 0~7  -->
+    <OAM_RX_queue>2</OAM_RX_queue>
+    <!--  OAM tx queue # for each LLID,now only LLID0 is used: 0~7  -->
+    <OAM_TX_queue>
+      <!--  id   : LLID number      -->
+      <!--  num  : TX queue number  -->
+      <LLID id="0" num="6" />
+      <LLID id="1" num="0" />
+      <LLID id="2" num="0" />
+      <LLID id="3" num="0" />
+      <LLID id="4" num="0" />
+      <LLID id="5" num="0" />
+      <LLID id="6" num="0" />
+      <LLID id="7" num="0" />
+    </OAM_TX_queue>
+  </ONU_OAM_QUEUE>
+
+</cnfg>

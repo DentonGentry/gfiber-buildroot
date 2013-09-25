@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -e
+
+# a normal pass case
+
+runtest()
+{
+  for n in 1 2 3; do
+    echo ""
+    usleep 500000
+    echo "should alternate between running message and this message"
+    usleep 500000
+  done
+}
+
+case "$1" in
+  test)
+    if runtest; then
+      echo PASS
+    else
+      echo FAIL
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {test}"
+    exit 1
+esac

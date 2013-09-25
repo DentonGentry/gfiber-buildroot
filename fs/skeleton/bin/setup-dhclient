@@ -1,5 +1,7 @@
 #!/bin/sh
+
 rm -f /tmp/dhclient.conf
+
 cat >/tmp/dhclient.conf <<-EOF
 	retry 30;
 	request subnet-mask, broadcast-address, routers,

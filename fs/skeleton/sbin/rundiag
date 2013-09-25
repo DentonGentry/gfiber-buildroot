@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$RUNLEVEL" != 1 ]; then
+	echo "$0: this should only be run by inittab.  Run 'diag' instead."
+	exit 1
+fi
+
+if [ "$(kernopt factory)" = 1 ]; then
+	wait-until-created /dev/"$1"
+	agetty -n -l /bin/sh -o /sbin/diag -L "$1" 115200 vt100
+fi

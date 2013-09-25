@@ -1,8 +1,16 @@
 #!/bin/sh
+
+RC_PIPE=/tmp/rc_pipe
+
 case "$1" in
   start)
     (
       wait-until-created /tmp/startupvideo.done
+      if is-tv-box; then
+        [ -e $RC_PIPE ] && rm $RC_PIPE
+        mknod $RC_PIPE p
+        babysit 30 soft_rc -i $RC_PIPE 2>&1 | logos soft_rc &
+      fi
       /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
     ) &
     ;;
@@ -12,7 +20,10 @@ case "$1" in
     pkillwait -x miniclient
     pkillwait -x waitpower
     pkillwait -x netflix
-    pkillwait -x browsertest
+    pkillwait -x content_shell
+    pkillwait -x vudu
+    pkillwait -x soft_rc
+    rm -f $RC_PIPE
     ;;
   restart)
     $0 stop; $0 start

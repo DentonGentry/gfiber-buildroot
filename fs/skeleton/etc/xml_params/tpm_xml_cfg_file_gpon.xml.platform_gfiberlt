@@ -4,7 +4,7 @@
                <!--  1=TPM_PON_WAN_DUAL_MAC_INT_SWITCH   2=TPM_PON_WAN_G0_INT_SWITCH      3=TPM_PON_WAN_G1_LAN_G0_INT_SWITCH  4=TPM_G0_WAN_G1_INT_SWITCH
                      5=TPM_G1_WAN_G0_INT_SWITCH          6=TPM_PON_G1_WAN_G0_INT_SWITCH   7=TPM_PON_G0_WAN_G1_INT_SWITCH      8=TPM_PON_WAN_DUAL_MAC_EXT_SWITCH
                      9=TPM_PON_WAN_G1_MNG_EXT_SWITCH     10=TPM_PON_WAN_G0_SINGLE_PORT    11=TPM_PON_WAN_G1_SINGLE_PORT       12=TPM_PON_G1_WAN_G0_SINGLE_PORT
-                     13=TPM_PON_G0_WAN_G1_SINGLE_PORT    14=TPM_PON_WAN_G0_G1_LPBK    15=TPM_PON_WAN_G0_G1_DUAL_LAN -->
+                     13=TPM_PON_G0_WAN_G1_SINGLE_PORT    14=TPM_PON_WAN_G0_G1_LPBK        15=TPM_PON_WAN_G0_G1_DUAL_LAN -->
         <profile>10</profile>
         <!-- src    0) TPM_SRC_PORT_UNI_0
                     1) TPM_SRC_PORT_UNI_1
@@ -58,7 +58,6 @@
         <ipv4_pppoe_mtu_us>1970</ipv4_pppoe_mtu_us>
     </mtu_setting>
 
-
     <igmp_snoop>
         <!--  Snooping enabled: 0 = FALSE, 1 = TRUE
               When set to TRUE, the igmp_range must be created, and the following params determine igmp behavior  -->
@@ -83,7 +82,7 @@
         <mc_per_uni_vlan_xlat>0</mc_per_uni_vlan_xlat>
         <!-- Multicast per uni vlan xlat support for IPv4/6: 0 = no support, 1 = support -->
         <ipv4_mc_support>1</ipv4_mc_support>
-        <ipv6_mc_support>0</ipv6_mc_support>
+        <ipv6_mc_support>1</ipv6_mc_support>
         <!--  Multicast filtering mode  -->
         <!--      0 = Forward all Multicast traffic to CPU
                 1 = Multicast traffic is forwarded to the Internal Switch, where it is filtered based on MAC_DA.
@@ -545,7 +544,7 @@
                 <!--  TPM_PNC_LOOP_DET_US -->
                 <range num="07" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_L2_MAIN -->
-                <range num="08" type="0" size="264" cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
+                <range num="08" type="0" size="154" cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_ETH_TYPE -->
                 <range num="09" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IGMP -->
@@ -565,23 +564,23 @@
                 <!--  TPM_PNC_IPV4_LEN -->
                 <range num="17" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_NH -->
-                <range num="18" type="1" size="06"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="18" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4_MC_DS -->
-                <range num="19" type="1" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="19" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_TCP_FLAG -->
                 <range num="20" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4 -->
-                <range num="21" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="21" type="1" size="17"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_HOPL -->
                 <range num="22" type="1" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_MC_SIP -->
                 <range num="23" type="1" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_GEN -->
-                <range num="24" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="24" type="1" size="22"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_MC_DS -->
-                <range num="25" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="25" type="1" size="32"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_DIP -->
-                <range num="26" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="26" type="1" size="22"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_IPV4_PRE -->
                 <range num="27" type="1" size="0"   cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CNM_MAIN -->

@@ -1,7 +1,13 @@
 #!/bin/sh
 RETRY_TIMEOUT=$1
 
-echo -500 >/proc/$$/oom_score_adj
+if [ -e /proc/$$/oom_score_adj ] ; then
+  OOM_FILE=oom_score_adj
+  echo -500 >/proc/$$/$OOM_FILE
+else
+  OOM_FILE=oom_adj
+  echo -17 >/proc/$$/$OOM_FILE
+fi
 
 shift
 if [ -z "$RETRY_TIMEOUT" -o -z "$*" ]; then
@@ -12,7 +18,7 @@ fi
 run() {
   "$@" &
   local pid=$!
-  echo 0 >/proc/$pid/oom_score_adj
+  echo 0 >/proc/$pid/$OOM_FILE
   wait $pid
 }
 

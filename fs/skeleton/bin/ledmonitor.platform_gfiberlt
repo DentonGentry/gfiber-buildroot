@@ -1,0 +1,112 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+MONITOR_PATH="/tmp/ledmonitor"
+ACS_FILE="$MONITOR_PATH/acsconnected"
+NETWORK_STATUS_FILE="$MONITOR_PATH/network_status"
+LED_STATE_FILE="/tmp/ledstate"
+LED_PATH="/sys/class/leds/sys-"
+BLUE_LED="blue"
+RED_LED="red"
+SOLID_MODE="solid"
+BLINK_MODE="blink"
+FAST_MODE="fast"
+PON_IFACE="pon0"
+MAN_IFACE="man"
+
+led_state=""
+
+set_led_brightness() {
+  local color="$1"
+  local brightness="$2"
+  local path="$LED_PATH""$color"
+
+  # when the trigger is disabled the led will assume the brightness value, so
+  # set the brightness first to avoid glitching.
+  echo "$brightness" > "$path/brightness"
+  echo "none" > "$path/trigger"
+}
+
+blink_led() {
+  local color="$1"
+  local delay_on="$2"
+  local delay_off="$3"
+  local path="$LED_PATH""$color"
+  local trigger="$(cat "$path/trigger")"
+
+  # only set the trigger if it's not already set, otherwise the kernel will
+  # first disable the blink, then re-enable it, possibly glitching the led.
+  # 'none' is always the first listed trigger.
+  if [ "${trigger#\[none\]}" != "$trigger" ] ; then
+    echo "timer" > "$path/trigger"
+  fi
+
+  # the driver waits until both the on and off durations are non-zero before
+  # enabling blinking.
+  echo "$delay_on" > "$path/delay_on"
+  echo "$delay_off" > "$path/delay_off"
+}
+
+set_led_state() {
+  local mode="$1"
+  local color="$2"
+  local state="$mode $color"
+
+  case "$color" in
+    "$BLUE_LED")
+      set_led_brightness "$RED_LED" "0"
+      ;;
+    "$RED_LED")
+      set_led_brightness "$BLUE_LED" "0"
+      ;;
+    *)
+      echo "unknown color '$color'"
+      ;;
+  esac
+
+  case "$mode" in
+    "$SOLID_MODE")
+      set_led_brightness "$color" "1"
+      ;;
+    "$BLINK_MODE")
+      blink_led "$color" "1000" "500"
+      ;;
+    "$FAST_MODE")
+      blink_led "$color" "500" "500"
+      ;;
+    *)
+      echo "unknown mode '$mode'"
+      ;;
+  esac
+
+  if [ "$state" != "$led_state" ] ; then
+    echo "state changed to '$state'"
+    atomic $LED_STATE_FILE "$state"
+    led_state="$state"
+  fi
+}
+
+is_interface_up() {
+  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
+}
+
+has_ip_address() {
+  [ -n "$(ip -f inet6 addr show dev $1 scope global 2>/dev/null)" ] ||
+    [ -n "$(ip -f inet addr show dev $1 scope global 2>/dev/null)" ]
+}
+
+watch-dir $MONITOR_PATH |
+while [ -z "$led_state" ] || read event; do
+  if ! is_interface_up "$PON_IFACE" ; then
+    set_led_state "$BLINK_MODE" "$RED_LED"
+  # TODO(showarth): network status
+  elif ! has_ip_address "$MAN_IFACE" ; then
+    set_led_state "$BLINK_MODE" "$BLUE_LED"
+  elif [ ! -e $ACS_FILE ] ; then
+    set_led_state "$FAST_MODE" "$BLUE_LED"
+  else
+    set_led_state "$SOLID_MODE" "$BLUE_LED"
+  # TODO(showarth): upgrading
+  fi
+done

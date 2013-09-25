@@ -48,7 +48,8 @@ if [ "$MODE" = "server" ]; then
   # Start up native streaming server
   SAGESRV_UID=$(id -u video)
   SAGESRV_GID=$(id -g video)
-  babysit 10 alivemonitor /tmp/sagesrvalive 300 ./sagesrv -l6 -m5 -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
+  babysit 10 alivemonitor /tmp/sagesrvalive 80 10 120 ./sagesrv -l6 -m5 \
+    -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then
@@ -81,6 +82,10 @@ fi
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 MOBILEAPIJARS=gftv_mobile_api_deploy.jar
 ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
+GFIBERJARS=$MOBILEAPIJARS:$ANALYTICSJARS
+if [ "$MODE" = "client" ]; then
+  GFIBERJARS=$ANALYTICSJARS
+fi
 
 (
   cat Sage.properties.defaults.base
@@ -106,14 +111,14 @@ export SIEGENOGDB=1
 # Prevent siege-on-arm from exiting on changes to stdin
 export SIEGE_BLOCK_GETNEXTEVENT=1
 
-babysit 10 alivemonitor /tmp/sagetvalive 600 setuid video "$JVM" \
+babysit 10 alivemonitor /tmp/sagetvalive 300 60 600 setuid video "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
     -Dsage.embedded=1 \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -Djava.lang.runtime.exec.vfork \
-    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$MOBILEAPIJARS:$ANALYTICSJARS \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$GFIBERJARS \
     $HEAPSIZE \
     -verbose:gc \
     $SIEGEOPT \

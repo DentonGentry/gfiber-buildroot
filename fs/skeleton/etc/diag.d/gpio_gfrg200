@@ -1,0 +1,107 @@
+#! /usr/bin/env python
+
+import string
+import sys
+import mmap
+import argparse
+import struct
+import time
+
+debug = 0
+
+# optimus: gpio's are 1 bit
+width = 1
+mask = (1 << width) - 1
+addr = 0x90470000
+red = 13
+blue = 12
+reg = 0
+
+if len(sys.argv) > 1 and sys.argv[1] == "-d":
+  debug = 1
+  sys.argv.pop(1)
+
+if len(sys.argv) == 1:
+  print "Usage:", sys.argv[0], "[-d)ebug] [loop=10 ... end] [n] [n=v] [delay=msecs]"
+  print " 	n is 0-31 (gpio index)"
+  print "	v is 0-1 (gpio value)"
+  print "	leave out = to print value"
+  print "   Ex:", sys.argv[0], "loop=10 red=1 delay=100 red=0 delay=100 end"
+  sys.exit(1)
+
+if not debug:
+  f = open("/dev/mem", "r+b")
+  mm = mmap.mmap(f.fileno(), 4, offset=addr)
+
+def gpioGet(n):
+  if debug:
+    global reg
+    gpio = reg
+  else:
+    mm.seek(0)
+    str = mm.read(4)
+    r = struct.unpack("L", str)
+    gpio = r[0]
+  v = ((gpio & (1 << n * width)) >> (n * width)) & mask
+  return v
+
+def gpioSet(n, v):
+  if debug:
+    global reg
+    gpio = reg
+  else:
+    mm.seek(0)
+    str = mm.read(4)
+    r = struct.unpack("L", str)
+    gpio = r[0]
+
+  gpio &= ~(mask << n)
+  gpio |= (v & mask) << n
+  reg = gpio
+  if debug:
+    print n, "=", v
+  else:
+    str = struct.pack("L", gpio)
+    mm.seek(0)
+    mm.write(str)
+
+i = 1
+loops = [ ]
+while i < len(sys.argv):
+  cmd = sys.argv[i]
+  kv = string.split(cmd, "=", 2)
+  k = kv[0]
+
+  if k == "red":
+    k = red
+  if k == "blue":
+    k = blue
+
+  if len(kv) == 1:	# no =
+    if k == "end":
+      (start, count) = loops.pop()
+      count = count - 1
+      if count <= 0:
+        i += 1
+      else:
+        loops.append([start, count])
+	i = start
+      continue
+    # read gpio
+    if k >= 0 and k < 32:
+      v = gpioGet(k)
+      print v
+      i += 1
+      continue
+    print "unknown command '" + cmd + "'"
+    break
+
+  v = int(kv[1])
+  if k == "loop":
+    loops.append([i + 1, v])
+  if k == "delay":
+    time.sleep(v/1000.0)
+  if k >= 0 and k < 32:
+    gpioSet(k, v)
+
+  i += 1

@@ -92,9 +92,11 @@ if [ -n "$NFSROOT" ]; then
     # ethernet driver is a kernel module instead of built-in.
     log "  IP initialization: '$IP'"
     echo "$IP" | {
-      IFS=: read ip junk
+      IFS=: read client_ip server_ip gw_ip netmask hostname device \
+              autoconf dns0_ip dns1_ip junk
+      [ -z "$device" ] && device=eth0
       if [ "$ip" != "auto" ]; then
-        ifconfig eth0 "$ip"
+        ifconfig "$device" "$client_ip"
       fi
     }
   fi

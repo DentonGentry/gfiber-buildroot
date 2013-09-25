@@ -28,7 +28,12 @@ endef
 
 define CATAWAMPUS_INSTALL_TARGET_CMDS
 	DSTDIR=$(TARGET_DIR)/usr/catawampus/ \
+	DSTBINDIR=$(TARGET_DIR)/usr/bin/ \
 	PYTHON=$(HOST_DIR)/usr/bin/python \
+	HOSTPYTHONPATH=$(HOST_PYTHONPATH) \
+	TARGETPYTHONPATH=$(TARGET_PYTHONPATH) \
+	HOSTDIR=$(HOST_DIR) \
+	DESTDIR=$(TARGET_DIR) \
 		   $(MAKE) -C $(@D) install
 
 	# Remove installed *.py files since *.pyc files are available

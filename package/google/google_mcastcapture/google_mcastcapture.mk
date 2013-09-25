@@ -25,6 +25,8 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
           $(TARGET_DIR)/app/sage/lib/libptsindex.so
         $(INSTALL) -D -m 0755 $(@D)/libtvformat.so \
           $(TARGET_DIR)/app/sage/lib/libtvformat.so
+        $(INSTALL) -D -m 0755 $(@D)/libads.so \
+          $(TARGET_DIR)/app/sage/lib/libads.so
 endef
 
 define GOOGLE_MCASTCAPTURE_TEST_CMDS
