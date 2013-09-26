@@ -48,7 +48,7 @@ fan_max_rpm=5000
 #
 # platform specific configs follow
 #
-PLATFORM_NAME=$(hnvram -qr PLATFORM_NAME)
+PLATFORM_NAME=$(hnvram -qr PLATFORM_NAME || true)
 case "$PLATFORM_NAME" in
   GFHD100)
     ;;
