@@ -62,6 +62,7 @@ config BR2_PACKAGE_GOOGLE_TEST
 	select BR2_PACKAGE_WHETSTONE
 	select BR2_PACKAGE_SDPARM
 	select BR2_PACKAGE_SYSSTAT
+	select BR2_PACKAGE_TESTUSB
 	select BR2_PACKAGE_TRACEROUTE_NEW
 	help
 	  Enable packages for test.
@@ -126,6 +127,7 @@ config BR2_PACKAGE_GOOGLE_TV_BOX
 	select BR2_PACKAGE_BCM_BLUETOOTH if BR2_mipsel
 	select BR2_PACKAGE_BCM_BSEAV if BR2_mipsel
 	select BR2_PACKAGE_BCM_NEXUS if BR2_mipsel
+#	select BR2_PACKAGE_BCM_CHROMIUM if BR2_mipsel
 	select BR2_PACKAGE_BCM_NETFLIX if BR2_mipsel
 	select BR2_PACKAGE_BCM_VUDU if BR2_mipsel
 	select BR2_PACKAGE_CAIRO

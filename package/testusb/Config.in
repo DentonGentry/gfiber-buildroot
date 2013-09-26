@@ -1,0 +1,5 @@
+config BR2_PACKAGE_TESTUSB
+  bool "testusb"
+  help
+    Build user space testusb utility.
+    http://www.linux-usb.org/usbtest/

@@ -21,6 +21,14 @@ endif
 ifeq ($(BR2_PACKAGE_MINDSPEED_DRIVERS),y)
 SIMPLERAMFS_DEPENDENCIES+=mindspeed_drivers
 endif
+ifeq ($(BR2_PACKAGE_GPTFDISK_SGDISK),y)
+SIMPLERAMFS_DEPENDENCIES+=gptfdisk
+SGDISK_BIN=$(TARGET_DIR)/usr/sbin/sgdisk
+endif
+ifeq ($(BR2_PACKAGE_UTIL_LINUX_MOUNT),y)
+SIMPLERAMFS_DEPENDENCIES+=util-linux
+LOSETUP_BIN=$(TARGET_DIR)/sbin/losetup
+endif
 
 define SIMPLERAMFS_EXTRACT_CMDS
 	mkdir -p $(@D)
@@ -34,7 +42,7 @@ endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
-	for d in sbin bin lib proc dev sys rootfs mnt tmp; do \
+	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
 
@@ -73,6 +81,8 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
 		$(HNVRAM_BIN) \
+		$(SGDISK_BIN) \
+		$(LOSETUP_BIN) \
 		$(@D)/fs/bin/
 
 	# driver firmware and modules

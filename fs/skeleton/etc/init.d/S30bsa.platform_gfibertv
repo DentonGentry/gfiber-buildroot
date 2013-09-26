@@ -1,6 +1,4 @@
 #!/bin/sh
-BT_MAC_ADDR=$(hnvram -rq MAC_ADDR_BT)
-BT_NAME=$(hnvram -rq PLATFORM_NAME)
 
 # Time to wait (in seconds) after resetting the BT chip to allow /dev/btusb0 to
 # be created.
@@ -14,33 +12,51 @@ case "$1" in
   start)
     . /etc/utils.sh
 
-    has_wifi || { echo "No WiFi."; exit 0; }
+    BT_MAC=$(hnvram -rq MAC_ADDR_BT)
+    BT_NAME=$(cat /etc/platform)
+
+    # A few platforms are populated with MAC_ADDR, but not MAC_ADDR_BT.
+    if [ -z "$BT_MAC" ]; then
+      MAC=$(hnvram -rq MAC_ADDR)
+      if [ ! -z "$MAC" ]; then
+        BT_MAC=$(echo "$MAC" | (
+          IFS=: read m1 m2 m3 m4 m5 m6; \
+          decimal=$(printf "%d" "0x$m6"); \
+          m6=$(printf "%02x" $(($decimal + 2))); \
+          echo "$m1:$m2:$m3:$m4:$m5:$m6"
+        ))
+      fi
+    fi
+
+    # Provide a mechanism for other processes to determine the Bluetooth MAC address
+    echo "$BT_MAC" >/tmp/btmacaddress
 
     # Run the following in a sub-shell in the background to avoid
     # impacting boot time.
     (
-      # Reset the BT chip.
-      wl reset_bt_chip 1 2>&1
-      sleep $BT_RESET_DELAY
+      if [ -e /dev/btusb0 ]; then
+        # BCM20702 USB Bluetooth chip
+        BSATTY=/dev/btusb0
+        BSAFIRMWARE="-p /etc/bsa/BCM20702.hcd"
 
-      # bsa_server cannot run without /dev/btusb0.
-      test -e /dev/btusb0 || { echo "No /dev/btusb0."; exit 0; }
+        wl reset_bt_chip 2>&1
+        sleep $BT_RESET_DELAY
+      else
+        # BCM20705 serial Bluetooth chip
+        BSATTY=/dev/ttyS1
+        BSAFIRMWARE="-p /etc/bsa/BCM20705.hcd"
+      fi
 
-      # Start bsa_server.
       cd /user/bsa
       (
         LD_PRELOAD=/lib/stdoutline.so babysit 30 \
-        bsa_server -d /dev/btusb0 -p /etc/bsa/bsa_config.hcd -hci 2>&1 \
-            | logos bsa &
+        bsa_server -d $BSATTY $BSAFIRMWARE -hci 2>&1 | logos bsa &
       )
       sleep $BT_BSA_STARTUP_DELAY
 
       # Start app_gtv.
-      babysit 30 app_gtv -a "$BT_MAC_ADDR" -n "$BT_NAME" -k 2>&1 \
-          | logos app_gtv &
+      babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
 
-      # Provide a mechanism for other processes to determine the Bluetooth MAC address
-      echo "$BT_MAC_ADDR" >/tmp/btmacaddress
     ) &
     ;;
   stop)

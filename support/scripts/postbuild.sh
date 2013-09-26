@@ -29,3 +29,6 @@ fi
 cp "$TARGET_DIR/etc/version" "$BINARIES_DIR/version"
 (d="$(git log --date=iso --pretty=%ad -1)"; date +%s --date="$d"; echo "$d") \
   >$TARGET_DIR/etc/softwaredate
+
+# Installer support for VFAT platforms (and harmless elsewhere)
+mkdir -p $TARGET_DIR/install

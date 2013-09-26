@@ -12,6 +12,7 @@ UTIL_LINUX_INSTALL_STAGING = YES
 UTIL_LINUX_DEPENDENCIES = host-pkg-config
 
 UTIL_LINUX_CONF_OPT += --disable-rpath --disable-makeinstall-chown
+UTIL_LINUX_CONF_OPT += --disable-makeinstall-chown --disable-makeinstall-setuid
 
 $(call BUILD_AFTER_BUSYBOX,util-linux)
 HOST_UTIL_LINUX_DEPENDENCIES = host-pkg-config
