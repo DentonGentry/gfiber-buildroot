@@ -11,6 +11,9 @@ DATA_MTD_NO=
 # 'data+ubi' on /dev/ubi1
 DATA_UBI_NO=1
 
+# eMMC support
+DATA_MMC_NAME="data+ext4"
+
 USER_NAME=user
 CONFIG_NAME=config
 
@@ -28,6 +31,19 @@ check_mtd()
     e=${a%:*}
     [ $d = $1 ] && echo "${e#mtd}"
   done
+}
+
+check_mmc()
+{
+  local result=
+  sgdisk -p /dev/mmcblk0 >/tmp/mmcpart
+  while read number start end size unit code name; do
+    if [ "$name" = "$1" ]; then
+      result=$number
+    fi
+  done </tmp/mmcpart
+  rm -f /tmp/mmcpart
+  [ -n "$result" ] && echo "$result"
 }
 
 
@@ -158,6 +174,20 @@ umount_ubifs()
 }
 
 
+mount_ext4fs()
+{
+  mount -t ext4 -o defaults,noatime,discard,data=writeback $1 /user || return 1
+  [ ! -d /user/config ] && mkdir -p /user/config
+  mount --bind /user/config /config || return 1
+}
+
+recover_ext4fs()
+{
+  e2fsck $1 || mkfs.ext4 -E discard -m 2 -L ${DATA_MMC_NAME} $1
+  mount_ext4fs $1
+}
+
+
 case "$1" in
   start)
     # Get MTD partition number
@@ -171,8 +201,16 @@ case "$1" in
     done
     echo "Bad Blocks: $BBT"
 
-    mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
-      recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
+    if [ ! -z "${DATA_MTD_NO}" ]; then
+      mount_ubifs ${DATA_MTD_NO} ${DATA_UBI_NO} || \
+        recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
+    else
+      DATA_MMC_NO=$(check_mmc ${DATA_MMC_NAME})
+      DATA_BLK_NAME=/dev/mmcblk0p${DATA_MMC_NO}
+      if [ -b ${DATA_BLK_NAME} ]; then
+        mount_ext4fs ${DATA_BLK_NAME} || recover_ext4fs ${DATA_BLK_NAME}
+      fi
+    fi
 
     [ ! -d /user/rw ] && mkdir -p /user/rw
     [ ! -d /user/bsa ] && mkdir -p /user/bsa

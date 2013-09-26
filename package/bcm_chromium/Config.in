@@ -1,0 +1,4 @@
+config BR2_PACKAGE_BCM_CHROMIUM
+	bool "Build Broadcom Chromium package"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD

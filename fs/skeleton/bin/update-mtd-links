@@ -8,9 +8,9 @@ die() {
 
 rm -rf /dev/mtd.new
 mkdir /dev/mtd.new || die
+cd /dev/mtd.new || die
 
 {
-  cd /dev/mtd.new || die
   read junk  # header line
   while IFS=': ' read dev size erasesize name; do
     if ! startswith "$name" '"' || ! endswith "$name" '"'; then
@@ -44,5 +44,16 @@ mkdir /dev/mtd.new || die
     ln -s "../$ndev" "$name"
   done
 } </proc/mtd || die
+
+for x in 0 1 2 3 4 5; do
+  sgdisk -p /dev/mmcblk${x} 2>/dev/null |
+  while read number start end size unit code name; do
+    if [ ! -z "${number##*[!0-9]*}" ]; then
+      mmc=mmcblk${x}p${number}
+      ln -s "../$mmc" "$name"
+    fi
+  done
+done || die
+
 rm -rf /dev/mtd
 mv /dev/mtd.new /dev/mtd || die

@@ -1,7 +1,9 @@
 #!/bin/sh
 case "$1" in
   start)
-    babysit 60 ubifsmonitor 2>&1 | logos ubifsmonitor &
+    if [ ! -z "$(lsubi)" ]; then
+      babysit 60 ubifsmonitor 2>&1 | logos ubifsmonitor &
+    fi
     ;;
   stop)
     pkillwait -x ubifsmonitor

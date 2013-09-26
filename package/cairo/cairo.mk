@@ -78,7 +78,7 @@ else
 endif
 
 ifeq ($(BR2_PACKAGE_BCM_DIRECTFB),y)
-CAIRO_CONF_ENV += directfb_CFLAGS="-I$(BCM_DIRECTFB_DIR)/opensource/directfb/bin/DirectFB-$(DIRECTFB_VERSION)_$(BCM_COMMON_BUILD_TYPE)_build.97425$(BCHP_VER)/usr/local/include/directfb"
+CAIRO_CONF_ENV += directfb_CFLAGS="-I$(BCM_DIRECTFB_DIR)/opensource/directfb/bin/DirectFB-$(DIRECTFB_VERSION)_$(BCM_COMMON_BUILD_TYPE)_build.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)$(BCHP_VER)/usr/local/include/directfb"
 CAIRO_CONF_ENV += directfb_LIBS="-L$(STAGING_DIR)/staging/usr/local/lib -ldirect -ldirectfb -lfusion"
 CAIRO_DEPENDENCIES += bcm_directfb
 
