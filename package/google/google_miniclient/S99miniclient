@@ -9,6 +9,8 @@ case "$1" in
       if is-tv-box; then
         [ -e $RC_PIPE ] && rm $RC_PIPE
         mknod $RC_PIPE p
+        chown root.video $RC_PIPE
+        chmod 620 $RC_PIPE # give sage write permissions
         babysit 30 soft_rc -i $RC_PIPE 2>&1 | logos soft_rc &
       fi
       /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
