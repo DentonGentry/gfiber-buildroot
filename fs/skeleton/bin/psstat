@@ -154,7 +154,12 @@ gstatics()
 }
 
 while :; do
-  printstat "cputop:" ps --no-headers -e -o cputime,comm,cmd
+  # time used by each process, followed by cumulative time (which includes
+  # children, including already terminated ones).  Note that the 'cputime'
+  # format doesn't work with --cumulative, so we need to use bsdtime instead.
+  printstat "cputop:" ps --no-headers -e -o bsdtime,comm,cmd
+  printstat "ccputop:" ps --no-headers --cumulative -e -o bsdtime,comm,cmd
+
   printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
   echo "loadavg: $(cat /proc/loadavg)"
   freemem "mem:"
