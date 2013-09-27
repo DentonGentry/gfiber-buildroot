@@ -7,15 +7,40 @@ set -e
 
 error=
 
-todo()
+button()
 {
-  echo "SKIP not implemented"
-  exit 0
+  gpio=$(dirname $0)/gpio_gfrg200
+
+  isUp=$($gpio button)
+  if [ "$isUp" != 1 ]; then
+    error="factory_reset button was down at start of test"
+    return 1
+  fi
+
+  echo "<<< press and hold the button and press enter"
+  read x
+
+  isUp=$($gpio button)
+  if [ "$isUp" != 0 ]; then
+    error="factory_reset button was not down"
+    return 1
+  fi
+
+  echo "<<< release the button and press enter"
+  read x
+
+  isUp=$($gpio button)
+  if [ "$isUp" != 1 ]; then
+    error="factory_reset button was still down at end of test"
+    return 1
+  fi
+
+  return 0
 }
 
 case "$1" in
   diag | quick)
-    if todo; then
+    if button; then
       echo PASS
     else
       echo FAIL "$error"

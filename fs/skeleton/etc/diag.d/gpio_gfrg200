@@ -6,64 +6,100 @@ import mmap
 import argparse
 import struct
 import time
-
-debug = 0
+import array
 
 # optimus: gpio's are 1 bit
 width = 1
 mask = (1 << width) - 1
 addr = 0x90470000
-red = 13
-blue = 12
-reg = 0
+output = 0x0
+input = 0x10
+direction = 0x4
+
+button = "6"
+blue = "12"
+red = "13"
+
+debug = 0
+simulated = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+simulated[direction] = 0x1800f800
+simulated[input] = 0xbdffccbf
+simulated[output] = 0x1800c800
+
+# start
 
 if len(sys.argv) > 1 and sys.argv[1] == "-d":
   debug = 1
   sys.argv.pop(1)
 
 if len(sys.argv) == 1:
-  print "Usage:", sys.argv[0], "[-d)ebug] [loop=10 ... end] [n] [n=v] [delay=msecs]"
-  print " 	n is 0-31 (gpio index)"
-  print "	v is 0-1 (gpio value)"
-  print "	leave out = to print value"
+  print "Usage:", sys.argv[0], "[-d)ebug] [loop=10 ... end] [n] [n=v] [n=input|output] [delay=msecs] [status]"
+  print "       n is 0-31 (gpio index)"
+  print "       v is 0-1 (gpio value)"
+  print "       leave out = to print value"
   print "   Ex:", sys.argv[0], "loop=10 red=1 delay=100 red=0 delay=100 end"
   sys.exit(1)
 
 if not debug:
   f = open("/dev/mem", "r+b")
-  mm = mmap.mmap(f.fileno(), 4, offset=addr)
+  mm = mmap.mmap(f.fileno(), 0x20, offset=addr)
 
-def gpioGet(n):
+# read/write a register
+
+def getReg(offset):
   if debug:
-    global reg
-    gpio = reg
-  else:
-    mm.seek(0)
-    str = mm.read(4)
-    r = struct.unpack("L", str)
-    gpio = r[0]
-  v = ((gpio & (1 << n * width)) >> (n * width)) & mask
+    return simulated[offset]
+  mm.seek(offset)
+  str = mm.read(4)
+  r = struct.unpack("L", str)
+  reg = r[0]
+  return reg
+
+def setReg(offset, v):
+  if debug:
+    simulated[offset] = v
+    return
+  str = struct.pack("L", v)
+  mm.seek(offset)
+  mm.write(str)
+
+# read/write a bit in a register
+
+def getBit(offset, n):
+  reg = getReg(offset)
+  v = ((reg & (1 << n * width)) >> (n * width)) & mask
   return v
 
-def gpioSet(n, v):
-  if debug:
-    global reg
-    gpio = reg
-  else:
-    mm.seek(0)
-    str = mm.read(4)
-    r = struct.unpack("L", str)
-    gpio = r[0]
+def setBit(offset, n, v):
+  # read, and, or, write
+  reg = getReg(offset)
+  reg &= ~(mask << n)
+  reg |= (v & mask) << n
+  setReg(offset, reg)
 
-  gpio &= ~(mask << n)
-  gpio |= (v & mask) << n
-  reg = gpio
-  if debug:
-    print n, "=", v
+# get/set direction
+ 
+def getDirection(n):
+  return getBit(direction, n)
+
+def setDirection(n, v):
+  setBit(direction, n, v)
+
+# read/write a gpio
+ 
+def getGPIO(n):
+  isOutput = getDirection(n)
+  if isOutput:
+    return getBit(output, n)
   else:
-    str = struct.pack("L", gpio)
-    mm.seek(0)
-    mm.write(str)
+    return getBit(input, n)
+
+def setGPIO(n, v):
+  isOutput = getDirection(n)
+  if isOutput:
+    setBit(output, n, v)
+
+#
 
 i = 1
 loops = [ ]
@@ -72,12 +108,19 @@ while i < len(sys.argv):
   kv = string.split(cmd, "=", 2)
   k = kv[0]
 
+  if k == "status":
+    print "direction=%08x input=%08x output=%08x" % (getReg(direction), getReg(input), getReg(output))
+    i += 1
+    continue
+
   if k == "red":
     k = red
-  if k == "blue":
-    k = blue
+  elif k == "blue":                                                          
+    k = blue                                                                
+  elif k == "button":
+    k = button
 
-  if len(kv) == 1:	# no =
+  if len(kv) == 1:      # no =
     if k == "end":
       (start, count) = loops.pop()
       count = count - 1
@@ -85,23 +128,32 @@ while i < len(sys.argv):
         i += 1
       else:
         loops.append([start, count])
-	i = start
+        i = start
       continue
     # read gpio
+    k = int(k)
     if k >= 0 and k < 32:
-      v = gpioGet(k)
+      v = getGPIO(k)
       print v
       i += 1
       continue
     print "unknown command '" + cmd + "'"
     break
 
-  v = int(kv[1])
-  if k == "loop":
-    loops.append([i + 1, v])
-  if k == "delay":
-    time.sleep(v/1000.0)
-  if k >= 0 and k < 32:
-    gpioSet(k, v)
+  v = kv[1]
+  if v == "input" or v == "in":
+    setDirection(k, 0)
+  elif v == "output" or v == "out":
+    setDirection(k, 1)
+  else:
+    v = int(kv[1])
+    if k == "loop":
+      loops.append([i + 1, v])
+    elif k == "delay":
+      time.sleep(v/1000.0)
+    else:
+      k = int(k)
+      if k >= 0 and k < 32:
+        setGPIO(k, v)
 
   i += 1
