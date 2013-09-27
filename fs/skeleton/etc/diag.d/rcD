@@ -10,8 +10,6 @@ exec 3>&1
 # abort immediately on uncaught errors
 set -e
 
-echo Running diagnostics:
-
 #
 # onelinelog <file> <command...>
 # run command, logging to file, but also logging to screen, 
@@ -68,8 +66,12 @@ case "$1" in
    test)
      SCRIPTS=$(dirname $0)/T[0-9]?*
      ;;
+   setup)
+     # just exit; the setup steps (update-mtd-links, etc) are done
+     exit 0
+     ;;
    *)
-     echo "Usage: $0 {diag|quick|test}" 1>&2
+     echo "Usage: $0 {diag|quick|test|setup}" 1>&2
      exit 1
      ;;
 esac
@@ -77,6 +79,8 @@ esac
 #
 # run scripts and summarize results
 #
+
+echo Running diagnostics:
 
 rm -f /tmp/diag.log /tmp/diag.*.log
 
