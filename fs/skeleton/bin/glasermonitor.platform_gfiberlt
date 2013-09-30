@@ -12,7 +12,7 @@ mkdir -p $GLASER_PATH
 mkdir -p $LED_PATH
 
 set_glaser_port_status() {
-  local status="$(cat $LED_GLASER_STATUS_FILE)"
+  local status="$1"
 
   if [ "$status" = "CONNECTING" ]; then
     echo "Bring down man port"
@@ -38,7 +38,7 @@ while [ 1 ]; do
     if [ "$led_glaser_status" != "$glaser_status" ]; then
       echo "$glaser_status" > "$LED_GLASER_STATUS_FILE.tmp"
       mv "$LED_GLASER_STATUS_FILE.tmp" "$LED_GLASER_STATUS_FILE"
-      set_glaser_port_status
+      set_glaser_port_status "$glaser_status"
     fi
   fi
   sleep $1
