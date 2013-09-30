@@ -5,14 +5,14 @@
 GLASER_PATH="/tmp/glaser"
 LED_PATH="/tmp/ledmonitor"
 GLASER_CHANNEL_FILE="$GLASER_PATH/channel"
-GLASER_STATUS_FILE="$LED_PATH/glaserstatus"
-GLASER_STATUS_TMP="$GLASER_PATH/status.tmp"
+LED_GLASER_STATUS_FILE="$LED_PATH/glaserstatus"
+GLASER_STATUS_FILE="$GLASER_PATH/status"
 
 mkdir -p $GLASER_PATH
 mkdir -p $LED_PATH
 
 set_glaser_port_status() {
-  local status="$(cat $GLASER_STATUS_FILE)"
+  local status="$(cat $LED_GLASER_STATUS_FILE)"
 
   if [ "$status" = "CONNECTING" ]; then
     echo "Bring down man port"
@@ -27,17 +27,17 @@ set_glaser_port_status() {
 }
 
 while [ 1 ]; do
-  if [ -e "$GLASER_STATUS_TMP" ]; then
-    status_tmp="$(cat $GLASER_STATUS_TMP)"
-    status_cur=""
+  if [ -e "$GLASER_STATUS_FILE" ]; then
+    glaser_status="$(cat $GLASER_STATUS_FILE)"
+    led_glaser_status=""
 
-    if [ -e "$GLASER_STATUS_FILE" ]; then
-      status_cur="$(cat $GLASER_STATUS_FILE)"
+    if [ -e "$LED_GLASER_STATUS_FILE" ]; then
+      led_glaser_status="$(cat $LED_GLASER_STATUS_FILE)"
     fi
 
-    if [ "$status_cur" != "$status_tmp" ]; then
-      mv $GLASER_STATUS_TMP $GLASER_STATUS_FILE
-      cp $GLASER_STATUS_FILE $GLASER_STATUS_TMP
+    if [ "$led_glaser_status" != "$glaser_status" ]; then
+      mv $GLASER_STATUS_FILE $LED_GLASER_STATUS_FILE
+      cp $LED_GLASER_STATUS_FILE $GLASER_STATUS_FILE
       set_glaser_port_status
     fi
   fi
