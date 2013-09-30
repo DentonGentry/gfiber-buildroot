@@ -3,10 +3,18 @@
 # Starts dropbear sshd.
 #
 
-# Make sure this load is used for test
-[ -f /tmp/DEBUG ] || exit 0
-
 start() {
+	# Bail out before starting dropbear if the DEBUG file does not exist.
+	[ -f /tmp/DEBUG ] || exit 0
+
+	# On GFLT110 if this is not production, set an IP and allow password
+	# login.
+	allow_password_logins="no"
+	if [ $(cat /etc/platform) = "GFLT110" -a ! `sysvar_cmd -g PRODUCTION_UNIT` ]; then
+		ip addr add 192.168.10.11/24 dev eth0
+		allow_password_logins="yes"
+	fi
+
 	# Make sure dropbear directory exists.
 	#  /etc/dropbear links to /tmp/dropbear, which we can write to.
 	if mkdir -p /config/dropbear; then
@@ -30,7 +38,13 @@ start() {
 		dropbearkey -t dss -f $K2
 	fi
 
-	babysit 60 dropbear -s -F &
+	# If mfg console is allowed, then allow login by password.
+        # But only from the local address.
+	if [ $allow_password_logins = "yes" ]; then
+		babysit 60 dropbear -p 192.168.10.11:22 -F &
+	else
+		babysit 60 dropbear -s -F &
+	fi
 }
 stop() {
 	# we could use pkill dropbear here, but then it would kill running
@@ -45,16 +59,16 @@ restart() {
 }
 
 case "$1" in
-  start)
-  	start
-	;;
-  stop)
-  	stop
-	;;
-  restart|reload)
-  	restart
-	;;
-  *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		restart
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
 esac
