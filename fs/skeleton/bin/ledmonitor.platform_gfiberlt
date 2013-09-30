@@ -4,7 +4,8 @@
 
 MONITOR_PATH="/tmp/ledmonitor"
 ACS_FILE="$MONITOR_PATH/acsconnected"
-NETWORK_STATUS_FILE="$MONITOR_PATH/network_status"
+NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
+NETWORK_STATUS_CONNECTED="CONNECTED"
 LED_STATE_FILE="/tmp/ledstate"
 LED_PATH="/sys/class/leds/sys-"
 BLUE_LED="blue"
@@ -98,9 +99,15 @@ has_ip_address() {
 
 watch-dir $MONITOR_PATH |
 while [ -z "$led_state" ] || read event; do
+  network_status=""
+  if [ -e "$NETWORK_STATUS_FILE" ] ; then
+    network_status="$(cat "$NETWORK_STATUS_FILE")"
+  fi
+
   if ! is_interface_up "$PON_IFACE" ; then
     set_led_state "$BLINK_MODE" "$RED_LED"
-  # TODO(showarth): network status
+  elif [ "$network_status" != "$NETWORK_STATUS_CONNECTED" ] ; then
+    set_led_state "$FAST_MODE" "$RED_LED"
   elif ! has_ip_address "$MAN_IFACE" ; then
     set_led_state "$BLINK_MODE" "$BLUE_LED"
   elif [ ! -e $ACS_FILE ] ; then
