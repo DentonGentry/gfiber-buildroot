@@ -1,0 +1,12 @@
+--- libcurl-7.32.0-orig/lib/multi.c	2013-08-09 17:41:42.000000000 -0400
++++ libcurl-7.32.0/lib/multi.c	2013-09-30 14:29:37.078921341 -0400
+@@ -512,6 +512,9 @@
+   if(!GOOD_EASY_HANDLE(curl_handle))
+     return CURLM_BAD_EASY_HANDLE;
+ 
++  if(easy->multi != multi)
++    return CURLM_BAD_EASY_HANDLE;
++
+   if(easy) {
+     bool premature = (easy->mstate < CURLM_STATE_COMPLETED) ? TRUE : FALSE;
+     bool easy_owns_conn = (easy->easy_conn &&
