@@ -1,0 +1,12 @@
+--- a/src/iperf_api.c	2013-03-28 10:09:34.000000000 -0700
++++ b/src/iperf_api.c	2013-10-02 11:43:24.322623947 -0700
+@@ -466,8 +466,7 @@
+                 test->debug = 1;
+                 break;
+             case 'v':
+-                fputs(version, stdout);
+-		system("uname -a");
++                printf("%s\n", version);
+                 exit(0);
+             case 's':
+                 if (test->role == 'c') {
