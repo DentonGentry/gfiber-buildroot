@@ -1,0 +1,31 @@
+config BR2_PACKAGE_IPERF3
+	bool "iperf3"
+	depends on BR2_INSTALL_LIBSTDCPP
+	help
+	  Iperf was orginally developed by NLANR/DAST as a tool for measuring
+	  maximum TCP and UDP bandwidth performance. Iperf allows the tuning
+	  of various parameters and UDP characteristics. Iperf reports
+	  bandwidth, delay jitter, datagram loss.
+
+	  iperf3 is a new implementation from scratch, with the goal of a
+	  smaller, simpler code base, and a library version of the
+	  functionality that can be used in other programs. iperf3 has also a
+	  number of features found in other tools such as nuttcp and netperf,
+	  but were missing from iperf2.x.
+
+	  Some new features in iperf3 include:
+
+	   * reports the number of TCP packets that were retransmitted
+	   * reports the average CPU utilization of the client and server (-V flag)
+	   * support for zero copy TCP (-Z flag)
+	   * JSON output format (-J flag)
+
+	  Note that iperf3.x is not backwards compatible with iperf2.x
+
+	  https://code.google.com/p/iperf/
+
+comment "iperf3 requires a toolchain with C++ support enabled"
+	depends on !BR2_INSTALL_LIBSTDCPP
+
+
+
