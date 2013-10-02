@@ -41,6 +41,11 @@ export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
 [ -e /rw/sage/deactivate_vudu ] && /app/client/clear-app vudu
 [ -e /rw/sage/deactivate_youtube ] && /app/client/clear-app youtube
 
+if [ "$appname" != "waitpower" ]; then
+  echo "Starting activity $appname"
+  start_time=`date +%s`
+fi
+
 case $appname in
   netflix)
     cd /usr/local/bin/netflix
@@ -73,3 +78,7 @@ case $appname in
     exit 1
     ;;
 esac
+
+if [ "$appname" != "waitpower" ]; then
+  echo "Exited activity $appname after $(( `date +%s` - $start_time )) seconds"
+fi
