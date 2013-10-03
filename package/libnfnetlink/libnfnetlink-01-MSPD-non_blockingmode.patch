@@ -1,0 +1,102 @@
+diff -ur libnfnetlink-1.0.0/include/libnfnetlink/libnfnetlink.h libnfnetlink-1.0.0.new/include/libnfnetlink/libnfnetlink.h
+--- libnfnetlink-1.0.0/include/libnfnetlink/libnfnetlink.h	2009-06-13 17:17:56.000000000 +0200
++++ libnfnetlink-1.0.0.new/include/libnfnetlink/libnfnetlink.h	2009-10-28 19:23:00.000000000 +0100
+@@ -61,6 +61,8 @@
+ struct nfnl_handle;
+ struct nfnl_subsys_handle;
+ 
++extern int nfnl_set_nonblocking_mode(struct nfnl_handle *h);
++extern int nfnl_unset_nonblocking_mode(struct nfnl_handle *h);
+ extern int nfnl_fd(struct nfnl_handle *h);
+ extern unsigned int nfnl_portid(const struct nfnl_handle *h);
+ 
+diff -ur libnfnetlink-1.0.0/src/libnfnetlink.c libnfnetlink-1.0.0.new/src/libnfnetlink.c
+--- libnfnetlink-1.0.0/src/libnfnetlink.c	2009-06-13 17:17:56.000000000 +0200
++++ libnfnetlink-1.0.0.new/src/libnfnetlink.c	2009-10-28 19:24:36.000000000 +0100
+@@ -41,6 +41,7 @@
+ #include <errno.h>
+ #include <string.h>
+ #include <time.h>
++#include <fcntl.h>
+ #include <netinet/in.h>
+ #include <assert.h>
+ #include <linux/types.h>
+@@ -80,6 +81,7 @@
+ #define		NFNL_MAX_SUBSYS			16 /* enough for now */
+ 
+ #define NFNL_F_SEQTRACK_ENABLED		(1 << 0)
++#define NFNL_F_NONBLOCKING_MODE		(1 << 1)
+ 
+ struct nfnl_handle {
+ 	int			fd;
+@@ -260,6 +262,49 @@
+ }
+ 
+ /**
++ * nfnl_set_nonblocking_mode - set non blocking mode for netlink socket
++ * @h: nfnetlink handler
++ */
++int nfnl_set_nonblocking_mode(struct nfnl_handle *h)
++{
++	int ret;
++
++	ret = fcntl(h->fd, F_GETFL);
++	if (ret < 0)
++		return ret;
++
++	ret = fcntl(h->fd, F_SETFL, ret | O_NONBLOCK);
++	if (ret < 0)
++		return ret;
++
++	h->flags |= NFNL_F_NONBLOCKING_MODE;
++
++	return 0;
++}
++
++
++/**
++ * nfnl_unset_nonblocking_mode - unset non blocking mode for netlink socket
++ * @h: nfnetlink handler
++ */
++int nfnl_unset_nonblocking_mode(struct nfnl_handle *h)
++{
++	int ret;
++
++	ret = fcntl(h->fd, F_GETFL);
++	if (ret < 0)
++		return ret;
++
++	ret = fcntl(h->fd, F_SETFL, ret & ~O_NONBLOCK);
++	if (ret < 0)
++		return ret;
++
++	h->flags &= ~NFNL_F_NONBLOCKING_MODE;
++
++	return 0;
++}
++
++/**
+  * nfnl_subsys_open - open a netlink subsystem
+  * @nfnlh: libnfnetlink handle
+  * @subsys_id: which nfnetlink subsystem we are interested in
+@@ -1529,7 +1574,7 @@
+ 
+ 	assert(h);
+ 
+-	while (1) {
++	do {
+ 		unsigned char buf[h->rcv_buffer_size]
+ 			__attribute__ ((aligned));
+ 
+@@ -1543,8 +1588,9 @@
+ 
+ 		ret = nfnl_process(h, buf, ret);
+ 		if (ret <= NFNL_CB_STOP)
+-			break; 
+-	}
++			break;
++
++	} while (!(h->flags & NFNL_F_NONBLOCKING_MODE));
+ 
+ 	return ret;
+ }
