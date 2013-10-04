@@ -1,0 +1,14 @@
+diff -Naur libnetfilter_conntrack-0.9.1/include/libnetfilter_conntrack/libnetfilter_conntrack.h libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/libnetfilter_conntrack.h
+--- libnetfilter_conntrack-0.9.1/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2011-02-22 17:59:28.000000000 +0530
++++ libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2013-04-10 14:33:45.000000000 +0530
+@@ -681,6 +681,10 @@
+ 	/* Conntrack is a fake untracked entry */
+ 	IPS_UNTRACKED_BIT = 12,
+ 	IPS_UNTRACKED = (1 << IPS_UNTRACKED_BIT),
++
++	   /* Connection  cannot expire */
++	IPS_PERMANENT_BIT = 13,
++	IPS_PERMANENT = (1 << IPS_PERMANENT_BIT),
+ };
+ 
+ /* expectation flags */
