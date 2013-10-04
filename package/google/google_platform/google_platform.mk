@@ -15,6 +15,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-py-mox \
 	python \
 	python-setuptools \
+	host-python-setuptools \
 
 ifeq      ($(BR2_arm),y)
 GOOGLE_PLATFORM_ARCH   := arm
