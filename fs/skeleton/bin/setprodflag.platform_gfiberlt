@@ -1,0 +1,9 @@
+#!/bin/sh
+
+sleep 300
+sysvar_cmd -s PRODUCTION_UNIT 1
+
+# Don't stop dropbear if /tmp/DEBUG is still set.
+if [ ! -f /tmp/DEBUG ]; then
+  /etc/init.d/S50dropbear stop
+fi
