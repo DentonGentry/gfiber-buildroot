@@ -1,19 +1,25 @@
 MINDSPEED_DRIVERS_SITE=repo://vendor/mindspeed/drivers
-MINDSPEED_DRIVERS_DEPENDENCIES=linux
+MINDSPEED_DRIVERS_DEPENDENCIES=linux libcli libnetfilter_conntrack libpcap
 
-MINDSPEED_DRIVERS_MAKE = \
-	DESTDIR="$(TARGET_DIR)" \
+MINDSPEED_DRIVERS_CONF_ENV=CFLAGS="$(TARGET_CFLAGS) -DCOMCERTO_2000 -Wno-error -DWIFI_ENABLE"
+
+MINDSPEED_DRIVERS_MAKE_ENV = \
 	LINUX_DIR="$(LINUX_DIR)" \
 	INSTALL="$(INSTALL)" \
-	LINUX_MAKE_FLAGS='$(LINUX_MAKE_FLAGS)' \
-	$(MAKE)
+	LINUX_MAKE_FLAGS='$(LINUX_MAKE_FLAGS)'
 
 define MINDSPEED_DRIVERS_BUILD_CMDS
-	$(MINDSPEED_DRIVERS_MAKE) -C $(@D)
+	$(TARGET_MAKE_ENV) $($(PKG)_MAKE_ENV) $($(PKG)_MAKE) $($(PKG)_MAKE_OPT) STAGING_DIR="$(STAGING_DIR)" TARGET_DIR="$(TARGET_DIR)" -C $($(PKG)_SRCDIR)
+	for i in $$(find $(STAGING_DIR)/usr/lib* -name "*.la"); do \
+		cp -f $$i $$i~; \
+		$(SED) "s:\(['= ]\)/usr:\\1$(STAGING_DIR)/usr:g" $$i; \
+	done
 endef
-
 define MINDSPEED_DRIVERS_INSTALL_TARGET_CMDS
-	$(MINDSPEED_DRIVERS_MAKE) -C $(@D) install
+	@echo "Already installed this package as part of build process"
+endef
+define MINDSPEED_DRIVERS_INSTALL_TARGET_CMDS
+	@echo "Already installed this package as part of build process"
 endef
 
-$(eval $(call GENTARGETS))
+$(eval $(call AUTOTARGETS))
