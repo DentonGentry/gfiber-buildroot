@@ -2,13 +2,13 @@
 set -x
 TARGET_DIR=$1
 TARGET_SKELETON=$2
-PLATFORM_SUFFIX=$3
+PLATFORM_PREFIX=$3
 PROD=$4
 BINARIES_DIR=$TARGET_DIR/../images
 
 # Some skeleton files are overwritten by installed packages. Recover them to
 # the customized skeleton files.
-support/scripts/copy-skeleton.sh "$TARGET_DIR" "$TARGET_SKELETON" "$PLATFORM_SUFFIX"
+support/scripts/copy-skeleton.sh "$TARGET_DIR" "$TARGET_SKELETON" "$PLATFORM_PREFIX"
 
 # Strip out some files from the target file system that we shouldn't need.
 echo "!!!!!!!!!! Stripping $TARGET_DIR "
@@ -21,8 +21,10 @@ repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 #  Right now it only uses buildroot.  I have a plan for this
 #  involving git submodules, just don't want to change too much
 #  in this code all at once.  This should work for now.
-echo -n $(git describe --match=''"$PLATFORM_SUFFIX"'-*') \
+version=$(git describe --match="gfiber*" | cut -d- -f2-)
+echo -n "$PLATFORM_PREFIX-$version" \
   >"$TARGET_DIR/etc/version" 2>/dev/null
+
 if [ "$PROD" != "y" ]; then
   (echo -n '-'; whoami | cut -c1-2) >>$TARGET_DIR/etc/version;
 fi

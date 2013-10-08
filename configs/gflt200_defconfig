@@ -1,3 +1,6 @@
+# Platform Name
+BR2_TARGET_GENERIC_PLATFORM_NAME="gflt200"
+
 # Architecture
 BR2_arm=y
 BR2_arm926t=y

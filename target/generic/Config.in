@@ -149,4 +149,7 @@ config BR2_ROOTFS_POST_BUILD_SCRIPT
 	  only argument. Make sure the exit code of that script is 0,
 	  otherwise make will stop after calling it.
 
+config BR2_TARGET_GENERIC_PLATFORM_NAME
+  string "Platform name from defconfig"
+
 endmenu
