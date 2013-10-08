@@ -28,9 +28,6 @@ case "$1" in
       fi
     fi
 
-    # Provide a mechanism for other processes to determine the Bluetooth MAC address
-    echo "$BT_MAC" >/tmp/btmacaddress
-
     # Run the following in a sub-shell in the background to avoid
     # impacting boot time.
     (
@@ -41,21 +38,26 @@ case "$1" in
 
         wl reset_bt_chip 2>&1
         sleep $BT_RESET_DELAY
-      else
+      elif [ "$(cat /etc/platform)" = GFHD200 ]; then
         # BCM20705 serial Bluetooth chip
         BSATTY=/dev/ttyS1
         BSAFIRMWARE="-p /etc/bsa/BCM20705.hcd"
       fi
 
-      cd /user/bsa
-      (
-        LD_PRELOAD=/lib/stdoutline.so babysit 30 \
-        bsa_server -d $BSATTY $BSAFIRMWARE -hci 2>&1 | logos bsa &
-      )
-      sleep $BT_BSA_STARTUP_DELAY
+      if [ ! -z $BSATTY ]; then
+        # Provide a mechanism for other processes to determine the Bluetooth MAC address
+        echo "$BT_MAC" >/tmp/btmacaddress
 
-      # Start app_gtv.
-      babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
+        cd /user/bsa
+        (
+          LD_PRELOAD=/lib/stdoutline.so babysit 30 \
+          bsa_server -d $BSATTY $BSAFIRMWARE -hci 2>&1 | logos bsa &
+        )
+        sleep $BT_BSA_STARTUP_DELAY
+
+        # Start app_gtv.
+        babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
+      fi
 
     ) &
     ;;
