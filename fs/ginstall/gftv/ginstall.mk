@@ -11,6 +11,7 @@ ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 				host-dmverity host-google_signing
 
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
+ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
 ifeq ($(ARCH),mipsel)
 # Config strings have quotes around them for some reason, which causes
@@ -18,13 +19,13 @@ ifeq ($(ARCH),mipsel)
 BRUNO_CFE_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
-IMAGE_TYPE=prod
+ROOTFS_GINSTALL_TYPE=prod
 else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = cfe_signed_openbox
-IMAGE_TYPE=openbox
+ROOTFS_GINSTALL_TYPE=openbox
 else
 _BRUNO_LOADER = cfe_signed_unlocked
-IMAGE_TYPE=unlocked
+ROOTFS_GINSTALL_TYPE=unlocked
 endif
 
 # These will be blank if the given files don't exist (eg. if you don't have
@@ -44,8 +45,6 @@ endif  # mipsel
 
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
-else ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3),y)
-ROOTFS_GINSTALL_KERNEL_FILE=kernel.img
 else
 ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 endif
@@ -65,9 +64,9 @@ define ROOTFS_GINSTALL_CMD_V3
 	set -e; \
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
-	echo 'image_type: $(IMAGE_TYPE)' >>$(BINARIES_DIR)/manifest && \
+	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/manifest && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
-	echo 'platforms: [ GFHD200 ]' >>$(BINARIES_DIR)/manifest && \
+	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/manifest && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
@@ -83,7 +82,6 @@ define ROOTFS_GINSTALL_CMD_V3
 	fi && \
 	cd $(BINARIES_DIR) && \
 	ln -f rootfs.squashfs rootfs.img && \
-	ln -f vmlinuz kernel.img && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
@@ -92,9 +90,9 @@ define ROOTFS_GINSTALL_CMD_V3
 			-d zImage:simpleramfs.cpio.gz \
 			uImage; \
 	fi && \
+	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
 	(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
-	 echo -n '$(ROOTFS_GINSTALL_KERNEL_FILE)-sha1: ' && \
-	 sha1sum '$(ROOTFS_GINSTALL_KERNEL_FILE)' | cut -c1-40 && \
+	 echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
 	 if [ -e '$(BRUNO_LOADER)' ]; then \
 	   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
 	   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
@@ -102,7 +100,7 @@ define ROOTFS_GINSTALL_CMD_V3
 	tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
 		manifest \
 		$(BRUNO_LOADERS_V3) \
-		$(ROOTFS_GINSTALL_KERNEL_FILE) \
+		kernel.img \
 		rootfs.img
 endef
 
@@ -126,17 +124,10 @@ define ROOTFS_GINSTALL_CMD_V2
 	fi && \
 	cd $(BINARIES_DIR) && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
-		$(HOST_DIR)/usr/bin/mkimage \
-			-A $(BR2_ARCH) -O linux -T multi -C none \
-			-a 0x03008000 -e 0x03008000 -n Linux \
-			-d zImage:simpleramfs.cpio.gz \
-			uImage; \
-	fi && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
 		version \
 		$(BRUNO_LOADERS_V2) \
-		$(ROOTFS_GINSTALL_KERNEL_FILE) \
+		vmlinuz \
 		rootfs.squashfs
 endef
 

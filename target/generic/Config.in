@@ -150,6 +150,18 @@ config BR2_ROOTFS_POST_BUILD_SCRIPT
 	  otherwise make will stop after calling it.
 
 config BR2_TARGET_GENERIC_PLATFORM_NAME
-  string "Platform name from defconfig"
+	string "Platform name from defconfig"
+
+config BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED
+	string "Supported hardware platforms for this image"
+	help
+	  Specify a list of hardware platforms that this image will run on.
+	  This can go into the installer manifest.  If the image works on
+	  multiple platforms, separate them with whitespace or commas.
+	  For example:
+	    GFMS100, GFHD100
+	    GFHD200
+	    GFLT110, GFLT200
+	    etc.
 
 endmenu
