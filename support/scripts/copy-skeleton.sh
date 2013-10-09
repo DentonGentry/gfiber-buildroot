@@ -2,7 +2,18 @@
 set -e
 TARGET_DIR=$1
 TARGET_SKELETON=$2
-PLATFORM_SUFFIX=$3
+PLATFORM_PREFIX=$3
+
+# Returns true if the string $1 starts with the string $2.
+startswith() {
+  [ "${1#$2}" != "$1" ]
+}
+
+if startswith "$PLATFORM_PREFIX" "gflt"; then
+  PLATFORM_SUFFIX=gfiberlt
+else
+  PLATFORM_SUFFIX=gfibertv
+fi
 
 if [ -d "$TARGET_SKELETON" ]; then \
   if [ "$PLATFORM_SUFFIX" != "" ]; then
