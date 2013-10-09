@@ -10,6 +10,7 @@ echo "---- initramfs ('$0')"
 echo "To bypass this script, use rdinit=/bin/sh"
 
 . /helpers.sh
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 trap 'log FATAL - INIT EXITED - Rebooting.; reboot >&9 2>&1 9>&-' EXIT
 
