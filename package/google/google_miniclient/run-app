@@ -50,13 +50,8 @@ case $appname in
   netflix)
     cd /usr/local/bin/netflix
     export PATH=$PWD:$PATH
-    export QWS_DISPLAY=directfb:boundingrectflip
-    export QT_QWS_FONTDIR=/usr/local/lib/fonts/
-    export QT_PLUGIN_PATH=/usr/local/plugins/
-    export NF_DEV_AUDIOPROFILE=PLAYREADY
-    export NF_DEV_VIDEOPROFILE=PLAYREADY
-    # Bruno startup will extract the idfile from flash and store it in /tmp
-    export NF_IDFILE=/tmp/idfile.secure
+    export sw_picture_decode=y
+    chmod 755 /user/netflix/nrd
     verify_drm_state
     netflix $opts 2>&1 | logos netflix
     ;;

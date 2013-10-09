@@ -5,21 +5,22 @@ BCM_NETFLIX_DEPENDENCIES=\
 	google_licenses google_hdcp \
 	libpng jpeg zlib freetype openssl expat \
 	libcurl libxml2 libxslt fontconfig \
-	sqlite pixman cairo google_platform
+	sqlite pixman cairo google_platform libcares
 
 define BCM_NETFLIX_CONFIGURE_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
 	$(RM) -rf $(@D)/opensource/directfb
 	ln -sf $(BCM_DIRECTFB_DIR)/opensource/directfb $(@D)/opensource/directfb
-	if [[ ! -e $(@D)/thirdparty/netflix/3.x/src/nrd ]] ; then \
-		mkdir -p $(@D)/thirdparty/netflix/3.x/src; \
-		mv $(NETFLIX_NRD_DIR) $(@D)/thirdparty/netflix/3.x/src/nrd; \
-		ln -sf $(@D)/thirdparty/netflix/3.x/src/nrd $(NETFLIX_NRD_DIR); \
+	if [[ ! -e $(@D)/thirdparty/netflix/4.0/src/nrd ]] ; then \
+		mkdir -p $(@D)/thirdparty/netflix/4.0/src; \
+		mv $(NETFLIX_NRD_DIR) $(@D)/thirdparty/netflix/4.0/src/nrd; \
+		ln -sf $(@D)/thirdparty/netflix/4.0/src/nrd $(NETFLIX_NRD_DIR); \
 	fi
 endef
 
 define BCM_NETFLIX_BUILD_CMDS
-	$(BCM_MAKE_ENV) NEXUS=${BCM_NEXUS_DIR} $(MAKE) $(NETFLIX_MAKEFLAGS) APPLIBS_TOP=$(@D) NETFLIX_DIR=src/nrd -C $(@D)/thirdparty/netflix/3.x all
+	$(BCM_MAKE_ENV) NEXUS=${BCM_NEXUS_DIR} $(MAKE) $(NETFLIX_MAKEFLAGS) \
+	APPLIBS_TOP=$(@D) NETFLIX_DIR=$(@D)/thirdparty/netflix/4.0/src/nrd NETFLIX_BUILD=single -C $(@D)/thirdparty/netflix/4.0 all
 endef
 
 
