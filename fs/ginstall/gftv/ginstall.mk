@@ -1,14 +1,11 @@
-#############################################################
-#
 # Google platform image creation for Bruno platform
 #
-#############################################################
-
-GINSTALL_UBI_UBINIZE_OPTS := -m $(BR2_TARGET_ROOTFS_GINSTALL_UBI_MINIOSIZE)
-GINSTALL_UBI_UBINIZE_OPTS += -p $(BR2_TARGET_ROOTFS_GINSTALL_UBI_PEBSIZE)
-ifneq ($(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE),0)
-GINSTALL_UBI_UBINIZE_OPTS += -s $(BR2_TARGET_ROOTFS_GINSTALL_UBI_SUBSIZE)
-endif
+#
+# WARNING WARNING WARNING
+#
+# Because of how buildroot handles fs generation macros, it EATS DOUBLE
+# QUOTES.  Use only single quotes in all shell commands in this file, or
+# you'll get very weird, hard-to-find errors.
 
 ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 				host-dmverity host-google_signing
@@ -16,7 +13,9 @@ ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 
 ifeq ($(ARCH),mipsel)
-BRUNO_CFE_DIR = $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)
+# Config strings have quotes around them for some reason, which causes
+# trouble.  This trick removes them.
+BRUNO_CFE_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = cfe_signed_release
 IMAGE_TYPE=prod
@@ -35,7 +34,10 @@ endif
 BRUNO_LOADER     := $(wildcard $(BRUNO_CFE_DIR)/$(_BRUNO_LOADER).bin)
 BRUNO_LOADER_SIG := $(wildcard $(BRUNO_CFE_DIR)/$(_BRUNO_LOADER).sig)
 ifneq ($(BRUNO_LOADER),)
-BRUNO_LOADERS := loader.bin loader.sig
+# We intentionally changed the filenames from v2 to v3 to prevent really
+# harmful installs due to accidental half-compatibility.
+BRUNO_LOADERS_V2 := loader.bin loader.sig
+BRUNO_LOADERS_V3 := loader.img loader.sig
 endif
 
 endif  # mipsel
@@ -53,19 +55,24 @@ endif
 #  by GOOGLE_SIGNING (repack.py).
 
 # v3 image format contains a manifest file, which describes the image and
-# supported platforms
+# supported platforms.
+#
+# Note: need to use $(value XYZ) for XYZ variables that change during
+# the build process (eg. because they read a file), since variable
+# substitutions in this macro happen at macro define time, not
+# runtime, unlike other make variables.
 define ROOTFS_GINSTALL_CMD_V3
 	set -e; \
 	rm -f $(BINARIES_DIR)/manifest && \
-	echo "installer_version: 3" >>$(BINARIES_DIR)/manifest && \
-	echo "image_type: $(IMAGE_TYPE)" >>$(BINARIES_DIR)/manifest && \
-	echo "version: $(value ROOTFS_GINSTALL_VERSION)" >>$(BINARIES_DIR)/manifest && \
-	echo "platforms: [ GFHD200 ]" >>$(BINARIES_DIR)/manifest && \
+	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
+	echo 'image_type: $(IMAGE_TYPE)' >>$(BINARIES_DIR)/manifest && \
+	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
+	echo 'platforms: [ GFHD200 ]' >>$(BINARIES_DIR)/manifest && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
-		if [ -e '$(value BRUNO_LOADER)' ]; then \
+		if [ -e '$(BRUNO_LOADER)' ]; then \
 			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
 			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
 		fi && \
@@ -85,16 +92,16 @@ define ROOTFS_GINSTALL_CMD_V3
 			-d zImage:simpleramfs.cpio.gz \
 			uImage; \
 	fi && \
-	(echo -n "rootfs.img-sha1: " && sha1sum rootfs.img | cut -c1-40 && \
-	 echo -n "$(ROOTFS_GINSTALL_KERNEL_FILE)-sha1: " && \
-	 sha1sum "$(ROOTFS_GINSTALL_KERNEL_FILE)"  | cut -c1-40 && \
-	 if [ -e '$(value BRUNO_LOADER)' ]; then \
-	   echo -n "loader.img-sha1: " && sha1sum loader.img | cut -c1-40 && \
-	   echo -n "loader.sig-sha1: " && sha1sum loader.sig | cut -c1-40; \
+	(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
+	 echo -n '$(ROOTFS_GINSTALL_KERNEL_FILE)-sha1: ' && \
+	 sha1sum '$(ROOTFS_GINSTALL_KERNEL_FILE)' | cut -c1-40 && \
+	 if [ -e '$(BRUNO_LOADER)' ]; then \
+	   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
+	   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
 	 fi ) >>manifest && \
-	tar -cf "$(value ROOTFS_GINSTALL_VERSION).gi" \
+	tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
 		manifest \
-		$(BRUNO_LOADERS) \
+		$(BRUNO_LOADERS_V3) \
 		$(ROOTFS_GINSTALL_KERNEL_FILE) \
 		rootfs.img
 endef
@@ -108,7 +115,7 @@ define ROOTFS_GINSTALL_CMD_V2
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
-		if [ -e '$(value BRUNO_LOADER)' ]; then \
+		if [ -e '$(BRUNO_LOADER)' ]; then \
 			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.bin && \
 			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
 		fi && \
@@ -128,7 +135,7 @@ define ROOTFS_GINSTALL_CMD_V2
 	fi && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
 		version \
-		$(BRUNO_LOADERS) \
+		$(BRUNO_LOADERS_V2) \
 		$(ROOTFS_GINSTALL_KERNEL_FILE) \
 		rootfs.squashfs
 endef
