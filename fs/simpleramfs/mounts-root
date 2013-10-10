@@ -128,13 +128,13 @@ elif [ -n "$ROOTDEV" ]; then
       mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
       IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
       mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
-      [ -b "$mtd" -o -b "$mmcraw" -o -b "$mmcvfat" -o -b $ROOTDEV ] && break
+      [ -e "$mtd" -o -e "$mmcraw" -o -e "$mmcvfat" -o -e $ROOTDEV ] && break
       log "No rootfs found, sleeping"
       # eMMC is sometimes slow to appear; try again.
       sleep $s
       false
     done
-    if [ -c "$mtd" ]; then
+    if [ -e "$mtd" ]; then
       log "Found root='$ROOTDEV': $mtd"
       # In this build, the rootdev mtd is always an UBI device.
       ubidetach -p "$mtd"  # Just in case kernel automounted it somewhere
@@ -144,11 +144,11 @@ elif [ -n "$ROOTDEV" ]; then
       [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
       ROOTDEV=/dev/mtdblock$ubi_mtd
       KERNELDEV=/dev/mtdblock$(find_mtd "$KERNELNAME")
-    elif [ -b "$mmcraw" ]; then
+    elif [ -e "$mmcraw" ]; then
       log "Found root='$ROOTDEV': $mmcraw"
       ROOTDEV=$mmcraw
       KERNELDEV=/dev/mmcblk0p$(find_mmc "$KERNELNAME")
-    elif [ -b "$mmcvfat" ]; then
+    elif [ -e "$mmcvfat" ]; then
       log "Found root='$ROOTDEV': $mmcvfat"
       mount -t vfat -o ro,nodev,noexec,nosuid "$mmcvfat" /vfat
       KERNELDEV=/dev/loop0
