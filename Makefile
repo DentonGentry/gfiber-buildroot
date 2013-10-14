@@ -486,7 +486,7 @@ endif
 
 $(BUILD_DIR)/.root:
 	mkdir -p $(TARGET_DIR)
-	support/scripts/copy-skeleton.sh $(TARGET_DIR) $(TARGET_SKELETON) $(BR2_TARGET_GENERIC_PLATFORM)
+	support/scripts/copy-skeleton.sh $(TARGET_DIR) $(TARGET_SKELETON) $(BR2_TARGET_GENERIC_PLATFORM_NAME)
 	touch $(STAGING_DIR)/.fakeroot.00000;
 	touch $@
 

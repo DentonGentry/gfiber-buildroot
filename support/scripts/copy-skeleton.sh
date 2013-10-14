@@ -11,8 +11,11 @@ startswith() {
 
 if startswith "$PLATFORM_PREFIX" "gflt"; then
   PLATFORM_SUFFIX=gfiberlt
-else
+elif startswith "$PLATFORM_PREFIX" "gftv"; then
   PLATFORM_SUFFIX=gfibertv
+else
+  echo "$0 exiting, bad platform prefix: '$PLATFORM_PREFIX'"
+  exit 1
 fi
 
 if [ -d "$TARGET_SKELETON" ]; then \
