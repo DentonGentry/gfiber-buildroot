@@ -9,14 +9,18 @@ startswith() {
   [ "${1#$2}" != "$1" ]
 }
 
-if startswith "$PLATFORM_PREFIX" "gflt"; then
-  PLATFORM_SUFFIX=gfiberlt
-elif startswith "$PLATFORM_PREFIX" "gftv"; then
-  PLATFORM_SUFFIX=gfibertv
-else
-  echo "$0 exiting, bad platform prefix: '$PLATFORM_PREFIX'"
-  exit 1
-fi
+case "$PLATFORM_PREFIX" in
+  gflt*)
+    PLATFORM_SUFFIX=gfiberlt
+    ;;
+  gftv*|gfrg*|gfibertv|kvm)
+    PLATFORM_SUFFIX=gfibertv
+    ;;
+  *)
+    echo "$0 exiting, bad platform prefix: '$PLATFORM_PREFIX'"
+    exit 1
+    ;;
+esac
 
 if [ -d "$TARGET_SKELETON" ]; then \
   if [ "$PLATFORM_SUFFIX" != "" ]; then

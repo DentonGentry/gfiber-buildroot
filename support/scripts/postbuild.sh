@@ -1,5 +1,6 @@
 #!/bin/sh
 set -x
+set -e
 TARGET_DIR=$1
 TARGET_SKELETON=$2
 PLATFORM_PREFIX=$3
