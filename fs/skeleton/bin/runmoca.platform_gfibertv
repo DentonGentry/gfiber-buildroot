@@ -53,12 +53,15 @@ mocad_pid=$!
 # so that we can be run under babysit and it will know whether or not to
 # restart us.
 for i in $(seq 20); do
-  pgrep -x mocad >/dev/null || exit 1  # mocad exited
+  if ! kill -0 "$mocad_pid" 2>/dev/null; then
+    echo "weird: mocad died before it started?" >&2
+    exit 1  # mocad exited unexpectedly, so report an error
+  fi
   msleep 250
   if try_start; then
     echo "mocad started!" >&2
     wait $mocad_pid
-    exit $?  # return mocad exit code
+    exit $?  # return real mocad exit code
   else
     echo "moca start: code $?" >&2
   fi
