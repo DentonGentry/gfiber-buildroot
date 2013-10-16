@@ -330,6 +330,7 @@ source "package/pango/Config.in"
 source "package/pixman/Config.in"
 source "package/tiff/Config.in"
 source "package/webkit/Config.in"
+source "package/webp/Config.in"
 endmenu
 
 menu "Hardware handling"

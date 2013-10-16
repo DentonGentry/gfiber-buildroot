@@ -1,0 +1,6 @@
+config BR2_PACKAGE_WEBP
+	bool "webp"
+	help
+	  Library for loading WEBP images.
+
+	  https://developers.google.com/speed/webp/
