@@ -9,6 +9,8 @@
         <cpuRxQueue>6</cpuRxQueue>
         <!--  OMCI CPU TX queue number    -->
         <cpuTxQueue>6</cpuTxQueue>
+        <!--  SWF only -Software forwarding only-: false = Use TPM to program relevant flows; true = TPM is not used to program flows i.e. SWF   -->
+        <swForwardingOnly enabled="false"   />
     </OMCI>
 
     <OMCI_MIB>
@@ -16,7 +18,6 @@
         <custVlanMod       enabled="true"  />
         <!--  The action for OMCI default rules come from OMCI itself.  0:pass all packet, 1:discard all packet -->
         <defaultAction     type="0"  />
-        
         <!--  Enable or disable MAC add learning in switch UNI port -->
         <macLearn          enabled="true"  />
         <!--  Enable or disable multicast flooding  -->
@@ -81,7 +82,9 @@
         
         <!--  OMCI frame capture in VBS format  -->
         <omciCellCap       enabled="true"  />
-        
+
+        <!-- The SW download window size: the value proposed by the ONT in the SW Download window size negotiation    -->
+        <swDownloadWindowSize windowSize="232"  />
     </OMCI_MIB>
 
     <OMCI_DEBUG>
