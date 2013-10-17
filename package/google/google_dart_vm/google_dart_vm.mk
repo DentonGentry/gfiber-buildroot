@@ -1,6 +1,6 @@
 GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/bleeding_edge/deps/standalone.deps
 GOOGLE_DART_VM_SITE_METHOD=gclient
-GOOGLE_DART_VM_VERSION=27672
+GOOGLE_DART_VM_VERSION=28355
 
 GOOGLE_DART_VM_MAKE_VARS=\
 BUILDTYPE=ReleaseMIPS \
