@@ -28,6 +28,13 @@ if is-tv-box; then
   mode=waitpower
   if [ -e /tmp/runapp ] ; then
     mode=app
+    read appname opts </tmp/runapp
+    # For now don't let opts through
+    opts=
+    if [ "$appname" = "miniclient" ]; then
+      mode=miniclient
+      mv /tmp/runapp /tmp/runappold
+    fi
   fi
 else
   opts="$opts --encodemode"
