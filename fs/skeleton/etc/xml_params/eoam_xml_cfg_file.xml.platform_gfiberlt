@@ -1,5 +1,13 @@
 <?xml version="1.0"?>
 <cnfg>
+
+  <ONU_SN>
+    <!--oam_softver_from_xml: soft version configured by xml, only for Test
+      0 = softver not from xml; 1 = softver from xml
+    -->
+    <oam_softver_from_xml>0</oam_softver_from_xml>
+  </ONU_SN>
+
   <!--  Management of loop detection  1 = disactivated, 2 = activated   -->
   <ONU_LOOPDETECT>
     <port id="1" loopdetect="1"/>

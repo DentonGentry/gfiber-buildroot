@@ -29,7 +29,7 @@
         <attrib name="HW version" value="AVANTA A0" />
 
         <!--SW version: STRING(64).     -->
-        <attrib name="SW version" value="2.6.25" />
+        <attrib name="SW version" value="2.7.25" />
 
         <!--Addtional HW version: STRING(64).     -->
         <attrib name="Addtional HW version" value="0" />
