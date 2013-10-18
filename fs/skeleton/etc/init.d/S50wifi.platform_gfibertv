@@ -13,7 +13,10 @@ case "$1" in
     fi
     # Qualcomm Atheros WLAN
     if runnable iwconfig; then
-      iwconfig ath0 essid GFRG200
+      serial=$(hnvram -br 1st_serial_number)
+      [ -z "$serial" ] && serial=unknown
+      iwconfig ath0 essid GFRG_${serial}_11n
+      iwconfig ath1 essid GFRG_${serial}_11ac
     fi
     ;;
   stop)

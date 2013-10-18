@@ -40,7 +40,8 @@ if [ -e ${EXTRA_MODULE_PATH}/ath_hal.ko ] && runnable wlanconfig; then
   done
   # TODO(danielmentz): Determine if this sleep cmd is really required
   sleep 1
-  wlanconfig ath create wlandev wifi0 wlanmode ap
-  iwpriv ath0 mode 11ACVHT80
-  # iwconfig ath0 channel 48
+  NETDEV_11n=$(wlanconfig ath create wlandev wifi0 wlanmode ap)
+  iwpriv ${NETDEV_11n} mode 11NGHT40PLUS
+  NETDEV_11ac=$(wlanconfig ath create wlandev wifi1 wlanmode ap)
+  iwpriv ${NETDEV_11ac} mode 11ACVHT80
 fi
