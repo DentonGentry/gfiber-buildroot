@@ -110,11 +110,9 @@ case "$1" in
     echo "Adding interfaces... "
     # Move any existing network info from primary network interfaces to
     # the bridge.
-    # TODO(apenwarr): don't bridge the wan interface!  Firewall it instead.
     for x in \
         /sys/class/net/[ea]th[0-9] \
         /sys/class/net/lan[0-9] \
-        /sys/class/net/wan[0-9] \
         /sys/class/net/moca[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
@@ -166,6 +164,13 @@ case "$1" in
       babysit 30 runmoca 2>&1 | logos mocad &
     fi
 
+    if [ -e /sys/class/net/wan0 ]; then
+      echo "Bringing up the WAN port..."
+      ifup wan0
+      sysctl net.ipv4.conf.all.forwarding=1
+      sysctl net.ipv6.conf.all.forwarding=1
+    fi
+
     # Enable hardware offloads, do this at the end to avoid
     # invalid access caused by powered down core
     ethtool -K eth0 rx on tx on sg on gso on gro on
@@ -174,6 +179,10 @@ case "$1" in
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
+      if [ -e /sys/class/net/wan0 ]; then
+        echo "Shutting down the WAN port..."
+        ifdown wan0
+      fi
       for x in $(ls /sys/class/net); do
         if [ -n /sys/class/net/$x/bridge ]; then
           ifdown $x

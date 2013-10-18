@@ -1,0 +1,2 @@
+iface=$1
+run-dhclient $iface
