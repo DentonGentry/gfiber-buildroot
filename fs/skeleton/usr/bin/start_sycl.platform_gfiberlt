@@ -1,3 +1,18 @@
+#!/bin/sh
+
 cd /
 export CLISH_PATH=/etc/xml_commands
+
+# sycl starts omci binary which uses fw_printenv, and
+# fw_printenv needs a valid fw_env.config.
+# Setup the fw_config file.
+mtd=$(grep env /proc/mtd)
+if [ -z "$mtd" ]; then
+  echo "Error:  no uboot environment mapping."
+else
+  device=$(echo $mtd | cut -f 1 -d ':')
+  erase_size=$(echo $mtd | cut -f 3 -d ' ')
+  echo "/dev/$device 0x00000 0x1000 0x$erase_size" >/tmp/fw_env.config
+fi
+
 sycl
