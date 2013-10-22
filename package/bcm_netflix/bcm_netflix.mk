@@ -5,7 +5,7 @@ BCM_NETFLIX_DEPENDENCIES=\
 	google_licenses google_hdcp \
 	libpng jpeg zlib freetype openssl expat \
 	libcurl libxml2 libxslt fontconfig \
-	sqlite pixman cairo google_platform libcares
+	sqlite pixman cairo google_platform libcares webp
 
 define BCM_NETFLIX_CONFIGURE_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
