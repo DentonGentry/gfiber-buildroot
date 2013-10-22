@@ -1,0 +1,12 @@
+#!/bin/sh
+
+interval=$1
+if [ -z "$interval" ]; then
+  interval=15
+fi
+
+while :; do
+  read line </sys/block/sda/stat
+  echo "$line"
+  sleep "$interval"
+done
