@@ -1,0 +1,14 @@
+Our old toolchain doesn't have utmpx.h, we suck.
+
+--- a/toys.h
++++ b/toys.h
+@@ -47,7 +47,9 @@
+ #include <time.h>
+ #include <unistd.h>
+ #include <utime.h>
++#if 0
+ #include <utmpx.h>
++#endif
+ 
+ // Internationalization support
+ 

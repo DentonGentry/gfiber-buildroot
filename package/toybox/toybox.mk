@@ -2,7 +2,7 @@
 # toybox, a busybox replacement
 #
 
-TOYBOX_VERSION=0.2.1
+TOYBOX_VERSION=0.4.6
 TOYBOX_SOURCE=toybox-$(TOYBOX_VERSION).tar.bz2
 TOYBOX_SITE=http://landley.net/toybox/downloads
 
