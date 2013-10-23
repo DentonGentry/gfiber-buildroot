@@ -19,6 +19,7 @@ define BCM_NETFLIX_CONFIGURE_CMDS
 endef
 
 define BCM_NETFLIX_BUILD_CMDS
+	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
 	$(BCM_MAKE_ENV) NEXUS=${BCM_NEXUS_DIR} $(MAKE) $(NETFLIX_MAKEFLAGS) \
 	APPLIBS_TOP=$(@D) NETFLIX_DIR=$(@D)/thirdparty/netflix/4.0/src/nrd NETFLIX_BUILD=single -C $(@D)/thirdparty/netflix/4.0 all
 endef
