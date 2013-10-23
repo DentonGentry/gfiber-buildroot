@@ -2,10 +2,12 @@
 case "$1" in
   start)
     (
-      wait-until-created /tmp/startupvideo.done
-      SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
-      PLATFORM=$(cat /etc/platform)
-      /app/client/dialserver -M $PLATFORM -U $SERIALNUMBER 2>&1 | logos dialserver &
+      if is-tv-box; then
+        wait-until-created /tmp/startupvideo.done
+        SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
+        PLATFORM=$(cat /etc/platform)
+        /app/client/dialserver -M $PLATFORM -U $SERIALNUMBER 2>&1 | logos dialserver &
+      fi
     ) &
     ;;
   stop)
