@@ -11,8 +11,9 @@
 # something, or there may be some third kind of box that's for neither
 # storage nor TV.  Use "is-storage-box" instead to detect storage features.
 #
+. /etc/utils.sh
 read plat </etc/platform
-if [ "$plat" != "${plat#GFHD}" ]; then
+if startswith "$plat" "GFHD" ; then
   exit 0
 else
   exit 1
