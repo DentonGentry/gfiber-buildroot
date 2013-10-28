@@ -1,0 +1,7 @@
+#!/bin/sh
+
+x=$(smartctl.real "$@" 2>&1)
+ret=$?
+echo "called by pid:$PPID with parms='$@'" | logos smartctl
+echo "$x"
+exit $ret
