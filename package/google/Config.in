@@ -34,4 +34,5 @@ source "package/google/google_ookla/Config.in"
 source "package/google/google_platform/Config.in"
 source "package/google/google_prism/Config.in"
 source "package/google/google_dart_vm/Config.in"
+source "package/google/google_oregano/Config.in"
 endmenu

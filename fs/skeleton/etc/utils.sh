@@ -44,3 +44,29 @@ filecontains() {
   grep "$1" $2 >/dev/null
   [ $? -eq 0 ]
 }
+
+export RC_PIPE=/tmp/rc_pipe
+rc_pipe_init() {
+  if is-tv-box; then
+    [ -e $RC_PIPE ] && rm $RC_PIPE
+    mknod $RC_PIPE p
+    chown root.video $RC_PIPE
+    chmod 620 $RC_PIPE # give sage write permissions
+    babysit 30 soft_rc -i $RC_PIPE 2>&1 | logos soft_rc &
+  fi
+}
+
+rc_pipe_deinit() {
+    pkillwait -x soft_rc
+    rm -f $RC_PIPE
+}
+
+start_sagesrv() {
+  LD_LIBRARY_PATH=/app/sage:/app/sage/lib
+  # Start up native streaming server
+  SAGESRV_UID=$(id -u video)
+  SAGESRV_GID=$(id -g video)
+  babysit 10 alivemonitor /tmp/sagesrvalive 80 10 120 /app/sage/sagesrv -l6 -m5 \
+    -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
+}
+
