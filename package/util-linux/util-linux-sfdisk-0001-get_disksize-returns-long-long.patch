@@ -1,0 +1,47 @@
+From c4730f108e4fa9869739a457d55ba19d450675e2 Mon Sep 17 00:00:00 2001
+From: Petr Uzel <petr.uzel@suse.cz>
+Date: Mon, 19 Sep 2011 15:29:12 +0200
+Subject: [PATCH] sfdisk: get_disksize() returns long long
+
+unsigned long is 4 bytes long on i586, which is not enough for big
+HDD's with 512B sectors. Use unsigned long long, which is 8 bytes.
+
+Signed-off-by: Petr Uzel <petr.uzel@suse.cz>
+---
+ fdisk/sfdisk.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fdisk/sfdisk.c b/fdisk/sfdisk.c
+index 820e23e..9c94185 100644
+--- a/fdisk/sfdisk.c
++++ b/fdisk/sfdisk.c
+@@ -928,7 +928,7 @@ unitsize(int format) {
+     }
+ }
+ 
+-static unsigned long
++static unsigned long long
+ get_disksize(int format) {
+     if (B.total_size && leave_last)
+ 	/* don't use last cylinder (--leave-last option) */
+@@ -1266,7 +1266,7 @@ partitions_ok(struct disk_desc *z) {
+ 
+     /* Do they start past zero and end before end-of-disk? */
+     {
+-	unsigned long ds = get_disksize(F_SECTOR);
++	unsigned long long ds = get_disksize(F_SECTOR);
+ 	for (p = partitions; p < partitions + partno; p++)
+ 	    if (p->size) {
+ 		if (p->start == 0) {
+@@ -1925,7 +1925,7 @@ first_free(int pno, int is_extended, struct part_desc *ep, int format,
+ static unsigned long
+ max_length(int pno, int is_extended, struct part_desc *ep, int format,
+ 	   unsigned long start, struct disk_desc *z) {
+-    unsigned long fu;
++    unsigned long long fu;
+     unsigned long unit = unitsize(format);
+     struct part_desc *partitions = &(z->partitions[0]), *pp = 0;
+ 
+-- 
+1.8.1.5-x20-1
+
