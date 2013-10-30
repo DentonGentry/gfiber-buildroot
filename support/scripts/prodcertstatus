@@ -1,0 +1,5 @@
+#!/bin/sh
+# This script can be added to your PATH to workaround the certificate check in
+# builder.py
+echo "$0: WARNING: lying about prod cert status" >&2
+echo "LOAS cert expires in 99:00"
