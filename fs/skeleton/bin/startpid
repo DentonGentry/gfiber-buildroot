@@ -1,0 +1,16 @@
+#!/bin/sh
+# Start the given program and save its pid in the given pidfile.
+# If a program is already running with that pidfile, kill it first.
+. /etc/utils.sh
+
+pidfile=$1
+shift
+
+if [ -z "$pidfile" -o -z "$1" ]; then
+  echo "Usage: $0 <pidfile> <command...>" >&2
+  exit 99
+fi
+
+killpid "$pidfile"
+atomic "$pidfile" $$
+exec "$@"

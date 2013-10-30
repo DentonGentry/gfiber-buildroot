@@ -1,0 +1,36 @@
+#!/bin/sh
+# Kill the pid referenced by a pidfile, if any.
+
+log() {
+  echo "$@" >&2
+}
+
+
+die() {
+  log "Fatal:" "$@"
+  exit 1
+}
+
+
+pidfile=$1
+if [ -z "$pidfile" ]; then
+  log "Usage: $0 <pidfile>"
+  exit 99
+fi
+
+[ -e "$pidfile" ] || exit 0
+
+read pid junk <"$pidfile"
+
+[ -n "$pid" ] || die "'$pidfile' exists but has no pid inside"
+[ "$pid" -gt 1 ] || die "'$pidfile' pid is '$pid'; must be > 1"
+
+kill -15 "$pid" 2>/dev/null
+for d in $(seq 20); do
+  kill -0 "$pid" 2>/dev/null || break
+  msleep 100
+done
+kill -9 "$pid" 2>/dev/null
+
+# return an error if the process *does* exist
+! kill -0 "$pid" 2>/dev/null

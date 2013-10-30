@@ -88,9 +88,12 @@ case "$1" in
     brctl addbr br0 || exit 1
     brctl setfd br0 1
     brctl stp br0 on
-    # If fat bruno, set bridge priority to 0x7990 so that
-    # it will be used as the root for the spanning tree.
-    if is-storage-box; then
+    # Storage and network boxes should have higher precedence (lower value)
+    #  when choosing the root of the spanning tree.
+    #  The default in Linux is 0x8000.
+    if is-network-box; then
+      brctl setbridgeprio br0 0x7980
+    elif is-storage-box; then
       brctl setbridgeprio br0 0x7990
     fi
     [ -e /sys/class/net/eth0/address ] && \
@@ -148,13 +151,8 @@ case "$1" in
         ip route add default via "$gatewayip"
       fi
     done
-    if [ ! -e /tmp/NFS ]; then
-      echo "Bringing up the bridge..."
-      ifup br0
-    else
-      # nfsroot; network is already up.  ifup would normally do the following.
-      upload-logs-now
-    fi
+    echo "Bringing up the bridge..."
+    ifup br0
 
     echo "distribute IRQ handling between cores"
     redistribute_irqs
@@ -169,10 +167,6 @@ case "$1" in
       ifup wan0
       sysctl net.ipv4.conf.all.forwarding=1
       sysctl net.ipv6.conf.all.forwarding=1
-    fi
-    if is-network-box; then
-      babysit 30 dnsmasq -d -i br0 \
-        --dhcp-range=br0,192.168.42.10,192.168.42.250 2>&1 | logos dnsmasq &
     fi
 
     # Enable hardware offloads, do this at the end to avoid
@@ -203,12 +197,7 @@ case "$1" in
         pkillwait mocad
       fi
     fi
-    if is-network-box; then
-      pkillwait dnsmasq
-    fi
-    if ip link show dev br0 2>&1 > /dev/null; then
-      brctl delbr br0
-    fi
+    [ -e /sys/class/net/br0 ] && brctl delbr br0
     ;;
   restart|reload)
     "$0" stop

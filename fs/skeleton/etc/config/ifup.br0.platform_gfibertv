@@ -1,9 +1,24 @@
-iface=$1
+ifc=$1
 
-if [ -e /sys/class/net/wan0 ] && ! brctl show $iface | grep -q wan0; then
-  ip addr add 192.168.42.1/24 dev $iface
-  ip link set dev $iface up
+# Run a DHCP server on the LAN on a fixed subnet for now.
+# TODO(apenwarr): make this less hardcoded.
+if [ -e /sys/class/net/wan0 ] && ! brctl show $ifc | grep -q wan0; then
+  ip addr add 192.168.42.1/24 dev $ifc
+  ip link set dev $ifc up
+  killpid /var/run/dnsmasq.$ifc.pid
+  babysit 60 startpid /var/run/dnsmasq.$ifc.pid \
+      dnsmasq -k --log-facility=- \
+          -i $ifc \
+          --dhcp-range=$ifc,192.168.42.5,192.168.42.250 \
+          --dhcp-leasefile=/config/dhcp.leases \
+          -O option:dns-server,8.8.8.8 \
+          2>&1 | logos dnsmasq-$ifc &
   exit 0
 fi
 
-run-dhclient $iface
+if [ -z "$(ip -o -4 addr show $ifc)" ]; then
+  run-dhclient $ifc
+else
+  # dhclient would do this if we had run it
+  upload-logs-now
+fi

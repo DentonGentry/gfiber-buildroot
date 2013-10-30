@@ -15,6 +15,19 @@ if [ -z "$RETRY_TIMEOUT" -o -z "$*" ]; then
   exit 1
 fi
 
+progname() {
+  local first="$1"
+  while [ $# -gt 0 ]; do
+    case $1 in
+      alivemonitor) shift 5 ;;
+      babysit) shift 2 ;;
+      startpid) shift 2 ;;
+      *) echo "$1"; return ;;
+    esac
+  done
+  echo "$first"
+}
+
 run() {
   "$@" &
   local pid=$!
@@ -23,6 +36,7 @@ run() {
 }
 
 # Run until the program manages to exit successfully.
+name=$(progname "$@")
 until run "$@"; do
   RV=$?
   if [ "$RV" = 143 ]; then
@@ -30,11 +44,11 @@ until run "$@"; do
     # We can't treat SIGKILL the same way because it might have been
     # caused by the kernel OOM killer, in which case we definitely want to
     # restart the task.
-    echo "SIGTERM: '$1' was killed explicitly.  Not retrying." >&2
+    echo "SIGTERM: '$name' was killed explicitly.  Not retrying." >&2
     exit $RV
   fi
-  echo "Error: '$1' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2
+  echo "Error: '$name' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2
   sleep $RETRY_TIMEOUT || sleep 1  # just in case $RETRY_TIMEOUT is invalid
 done
-echo "'$1' exited successfully.  Not restarting." >&2
+echo "'$name' exited successfully.  Not restarting." >&2
 exit 0
