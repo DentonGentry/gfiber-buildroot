@@ -170,6 +170,10 @@ case "$1" in
       sysctl net.ipv4.conf.all.forwarding=1
       sysctl net.ipv6.conf.all.forwarding=1
     fi
+    if is-network-box; then
+      babysit 30 dnsmasq -d -i br0 \
+        --dhcp-range=br0,192.168.42.10,192.168.42.250 2>&1 | logos dnsmasq &
+    fi
 
     # Enable hardware offloads, do this at the end to avoid
     # invalid access caused by powered down core
@@ -198,6 +202,9 @@ case "$1" in
         echo -n "mocacfg kill"
         pkillwait mocad
       fi
+    fi
+    if is-network-box; then
+      pkillwait dnsmasq
     fi
     if ip link show dev br0 2>&1 > /dev/null; then
       brctl delbr br0
