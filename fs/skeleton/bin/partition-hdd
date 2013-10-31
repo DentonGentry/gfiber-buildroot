@@ -1,0 +1,43 @@
+#!/bin/sh
+# Wipe /dev/sda, create partitions and filesystems
+#
+# Partition layout
+# /dev/sda1 mounted at /var/media  ext4, size (remaining space)
+# /dev/sda2 mounted at /var/backup ext4, size 512MB
+
+# All sizes in blocks (1KB)
+set -e
+DEV_FILE=/dev/sda
+BACKUP_PART_SIZE=$((512*1024))
+MEDIA_PART_START=4 # Align to 4KB boundary
+FORCE=0
+
+[ -b $DEV_FILE ] || exit 1
+[ "$1" = "-f" ] && FORCE=1
+
+if [ $FORCE != 1 ]; then
+  sdasha1sum=$(dd if=$DEV_FILE bs=1024 count=1024 2>/dev/null | sha1sum |
+    while read a junk; do echo $a; done)
+  if [ $sdasha1sum != 3b71f43ff30f4b15b5cd85dd9e95ebc7e84eb5a3 ]; then
+    echo "$DEV_FILE is not an empty disk. Use -f to force wiping." 1>&2
+    exit 1
+  fi
+fi
+
+TOTAL_SIZE=$(sfdisk -s $DEV_FILE)
+MEDIA_PART_SIZE=$(( (TOTAL_SIZE - BACKUP_PART_SIZE - 4) / 4 * 4 )) # Align to 4KB boundary
+BACKUP_PART_START=$((MEDIA_PART_START + MEDIA_PART_SIZE))
+
+echo Partitioning $DEV_FILE
+sfdisk -q -L -u B $DEV_FILE <<EOF
+$MEDIA_PART_START,$MEDIA_PART_SIZE
+$BACKUP_PART_START,
+EOF
+
+create_fs() {
+  echo Creating filesystem in $1
+  mkfs.ext4 -b 4096 -i 16384 -O extent,flex_bg,large_file $1
+}
+
+create_fs ${DEV_FILE}1
+create_fs ${DEV_FILE}2
