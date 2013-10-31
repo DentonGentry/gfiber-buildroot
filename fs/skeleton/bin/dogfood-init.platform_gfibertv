@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Prepare Storage Box for dogfood:
+# $ dogfood-init
+#
+# Prepare TV box for dogfood:
+# $ dogfood-init [<Storage Box serial number>]
+
+is-storage-box || is-tv-box || (echo "$0 failed"; exit 1)
+
+/etc/init.d/S95sageserver stop
+rm -rf /rw/sage/*
+
+if is-storage-box; then
+  FILE="/rw/sage/Sage.properties"
+  echo "off_the_grid=true" >>$FILE
+  echo "secure_system=false" >>$FILE
+  echo "enable_gvsb_content_auth=true" >>$FILE
+  echo "zzz=true" >>$FILE
+  chmod 644 $FILE
+  chown video.video $FILE
+fi
+
+if is-tv-box; then
+  FILE="/rw/sage/SageClient.properties"
+  echo "off_the_grid=true" >>$FILE
+  echo "secure_system=false" >>$FILE
+  echo "enable_gvsb_content_auth=true" >>$FILE
+  if [ -n "$1" ]; then
+    echo "forced_server_serial=$1" >>$FILE
+  fi
+  echo "zzz=true" >>$FILE
+  chmod 644 $FILE
+  chown video.video $FILE
+fi
+
+sync
