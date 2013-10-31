@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# For manufacture we offer a mechanism of starting up a telnetd.
+# In production units this will be disabled.
+#
+
+
+case "$1" in
+  start)
+    if runnable glaser; then
+      exit 0
+    fi
+    if [ ! `sysvar_cmd -g PRODUCTION_UNIT` ]; then
+      ip addr add 192.168.10.11/24 dev eth0
+      /usr/sbin/inetd 2>&1 | logos inetd
+    fi
+    ;;
+  stop)
+    ip addr del 192.168.10.11/24 dev eth0
+    pkill -9 -x inetd
+    pkill -9 -x telnetd
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
