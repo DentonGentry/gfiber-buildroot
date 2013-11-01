@@ -20,6 +20,13 @@ has_usb_wifi() {
 
 # Set up WLAN, if present
 if [ "$(has_usb_wifi)" = 'bcm43236-nofirmware' ]; then
+  # reset the chip, AON_GPIO_015
+  brcmgpio -a 15 -l
+  usleep 10000
+  brcmgpio -a 15 -h
+  usleep 10000
+
+  # push its firmware to it
   bcmdl /lib/firmware/bcm43236-nohotplug.bin
 fi
 if [ ! -z "$(has_usb_wifi)" ]; then
