@@ -51,13 +51,19 @@ is_ipv6() {
 merge_resolv_conf() {
     # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
     # and then also add /tmp/resolv.conf.dhclient6
-    atomic /tmp/resolv.conf \
-        "$(cat /tmp/resolv.conf.dhclient)"
-    log_file_contents /tmp/resolv.conf
+    local confs=""
 
-    if [ -e /tmp/ipv6_dns_ok ]; then
-      atomic /tmp/resolv.conf \
-        "$(cat /tmp/resolv.conf.dhclient6)"
+    if [ -e "/tmp/resolv.conf.dhclient" ] ; then
+        confs="$confs /tmp/resolv.conf.dhclient"
+    fi
+
+    if [ -e /tmp/ipv6_dns_ok ] && [ -e "/tmp/resolv.conf.dhclient6" ]; then
+        confs="$confs /tmp/resolv.conf.dhclient6"
+    fi
+
+    if [ -n "$confs" ] ; then
+        atomic /tmp/resolv.conf "$(cat $confs)"
+        log_file_contents /tmp/resolv.conf
     fi
 }
 

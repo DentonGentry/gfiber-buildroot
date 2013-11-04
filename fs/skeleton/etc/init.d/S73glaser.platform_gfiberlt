@@ -1,8 +1,12 @@
 #!/bin/sh
-# TODO(zixia): change be placed between S70pon and S72wan
-# Pending 802.3ah OAM implementation
 
 . /etc/utils.sh
+
+GLASER_PATH="/tmp/glaser"
+GLASER_CHANNEL_FILE="$GLASER_PATH/channel"
+
+mkdir -p $GLASER_PATH
+sysvar_cmd -g LASER_CHANNEL > $GLASER_CHANNEL_FILE
 
 case "$1" in
   start)
@@ -11,10 +15,12 @@ case "$1" in
       && ! contains "$(kernopt diag)" "nolaser" \
       && ! contains "$(kernopt diag)" "prbs"; then
       echo "Starting glaser."
-      babysit 60 glaser 2>&1 | logos glaser &
+      babysit 5 glasermonitor 5 2>&1 | logos glasermonitor &
+      babysit 60 glaser -v 4090 -p pon0 2>&1 | logos glaser &
     fi
     ;;
   stop)
+    pkillwait -x glasermonitor
     pkillwait -x glaser
     ;;
   restart)
@@ -25,3 +31,4 @@ case "$1" in
     exit 1
     ;;
 esac
+

@@ -26,11 +26,10 @@ case $1 in
     if runnable glaser; then
       if [ -z "$mgmt_vlan" ]; then
         # TODO(apenwarr): we should never rely on arbitrary delays like this.
-        (sleep 3 && tpmadm -w "$wan_port" $lan_arg -v) &
+        sleep 3 && tpmadm -w "$wan_port" $lan_arg -v
       else
-        (sleep 3 && tpmadm -w "$wan_port" $lan_arg -m "$mgmt_vlan" -v) &
+        sleep 3 && tpmadm -w "$wan_port" $lan_arg -m "$mgmt_vlan" -v
         ip link add link "$wan_port" name man type vlan id "$mgmt_vlan"
-        ifup man
       fi
     elif runnable start_sycl; then
       echo "Starting sycl"

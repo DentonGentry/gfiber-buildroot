@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# This script monitors GLASER_PATH folder and decides GLASER status
+
+GLASER_PATH="/tmp/glaser"
+LED_PATH="/tmp/ledmonitor"
+GLASER_CHANNEL_FILE="$GLASER_PATH/channel"
+LED_GLASER_STATUS_FILE="$LED_PATH/glaserstatus"
+GLASER_STATUS_FILE="$GLASER_PATH/status"
+
+mkdir -p $GLASER_PATH
+mkdir -p $LED_PATH
+
+set_glaser_port_status() {
+  local status="$1"
+
+  if [ "$status" = "CONNECTING" ]; then
+    echo "Bring down man port"
+    ifdown man
+  elif [ "$status" = "CONNECTED" ]; then
+    echo "Bring up man port"
+    ifup man
+    sysvar_cmd -s LASER_CHANNEL $(cat $GLASER_CHANNEL_FILE)
+  else
+    echo "False status"
+  fi
+}
+
+while [ 1 ]; do
+  if [ -e "$GLASER_STATUS_FILE" ]; then
+    glaser_status="$(cat $GLASER_STATUS_FILE)"
+    led_glaser_status=""
+
+    if [ -e "$LED_GLASER_STATUS_FILE" ]; then
+      led_glaser_status="$(cat $LED_GLASER_STATUS_FILE)"
+    fi
+
+    if [ "$led_glaser_status" != "$glaser_status" ]; then
+      echo "$glaser_status" > "$LED_GLASER_STATUS_FILE.tmp"
+      mv "$LED_GLASER_STATUS_FILE.tmp" "$LED_GLASER_STATUS_FILE"
+      set_glaser_port_status "$glaser_status"
+    fi
+  fi
+  sleep $1
+done
