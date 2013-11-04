@@ -106,7 +106,7 @@ while [ -z "$led_state" ] || read event; do
 
   if ! is_interface_up "$PON_IFACE" ; then
     set_led_state "$BLINK_MODE" "$RED_LED"
-  elif [ "$network_status" != "$NETWORK_STATUS_CONNECTED" ] ; then
+  elif [ runnable glaser -a "$network_status" != "$NETWORK_STATUS_CONNECTED" ] ; then
     set_led_state "$FAST_MODE" "$RED_LED"
   elif ! has_ip_address "$MAN_IFACE" ; then
     set_led_state "$BLINK_MODE" "$BLUE_LED"
