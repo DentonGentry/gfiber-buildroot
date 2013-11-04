@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if is-html-tv-ui; then
+  echo "configured for chrome"
+  exit 0
+fi
+
 start() {
   # TODO: remove in non-test builds
   if [ -e /rw/startupmods ]; then

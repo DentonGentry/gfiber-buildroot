@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GOOGLE_OREGANO
+	bool "google_oregano"
+	depends on BR2_PACKAGE_GOOGLE_TV_BOX
+	select BR2_PACKAGE_GOOGLE_DART_VM
+	help
+	  Include the utilities for supporting Oregano (Marjoram & Basil)
