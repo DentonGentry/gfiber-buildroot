@@ -1,0 +1,19 @@
+config BR2_TARGET_BAREBOX_ULOADER
+	bool "Barebox uloader"
+	help
+	  First-stage bootloader based on barebox.
+
+	  http://www.barebox.org
+
+if BR2_TARGET_BAREBOX_ULOADER
+
+config BR2_TARGET_BAREBOX_ULOADER_URL
+	string "URL of custom Git repository"
+
+config BR2_TARGET_BAREBOX_ULOADER_BOARD_DEFCONFIG
+	string "board defconfig"
+	help
+	  Name of the board for which uloader should be built, without
+	  the _defconfig suffix.
+
+endif

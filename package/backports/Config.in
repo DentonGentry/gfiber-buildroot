@@ -1,0 +1,5 @@
+config BR2_PACKAGE_BACKPORTS
+	bool "Linux kernel driver backports"
+	help
+	  The backports package includes many Linux drivers from recent
+	  kernels, backported to older ones.
