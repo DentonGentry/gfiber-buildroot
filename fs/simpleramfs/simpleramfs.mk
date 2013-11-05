@@ -92,7 +92,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		ln -f	$(TARGET_DIR)/lib/modules/*/extra/pfe.ko \
 			$(@D)/fs/lib/modules/ && \
 		ln -f	$(TARGET_DIR)/lib/firmware/* \
-			$(@D)/fs/lib/firmware/
+			$(@D)/fs/lib/firmware/; \
 	fi
 
 	# strip all the binaries
