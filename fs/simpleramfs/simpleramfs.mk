@@ -86,14 +86,13 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(@D)/fs/bin/
 
 	# driver firmware and modules
+	ln -f	fs/skeleton/sbin/hotplug $(@D)/fs/sbin/
 	if [ "$(BR2_PACKAGE_MINDSPEED_DRIVERS)" = "y" ]; then \
 		mkdir -p $(@D)/fs/lib/modules $(@D)/fs/lib/firmware && \
 		ln -f	$(TARGET_DIR)/lib/modules/*/extra/pfe.ko \
 			$(@D)/fs/lib/modules/ && \
 		ln -f	$(TARGET_DIR)/lib/firmware/* \
-			$(@D)/fs/lib/firmware/ && \
-		ln -f	$(TARGET_DIR)/sbin/hotplug \
-			$(@D)/fs/sbin/; \
+			$(@D)/fs/lib/firmware/
 	fi
 
 	# strip all the binaries

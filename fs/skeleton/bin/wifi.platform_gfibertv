@@ -1,0 +1,196 @@
+#!/bin/sh
+band=5
+ssid=$(serial)_TestWifi
+crypto=WPA2_PSK_AES
+channel=auto
+# use $WIFI_PSK from the environment if given.
+# You shouldn't pass passwords as command-line options because they show up
+# in 'ps' even to users other than you.
+psk=${WIFI_PSK-1234567890}
+
+. /etc/utils.sh
+
+
+log() {
+  echo "$@" >&2
+}
+
+
+die() {
+  log "Fatal:" "$@"
+  exit 99
+}
+
+
+bin=$(basename "$0")
+USAGE="
+Usage: $bin set [options...]
+ -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default=$band)
+ -c <channel>     Channel to use (default=$channel)
+ -s <ssid>        SSID to use (default=$ssid)
+ -e <encryption>  Encryption type to use (WPA_PSK_AES,
+                    WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
+                    WEP, or NONE) (default=$crypto)
+"
+usage() {
+  echo "$USAGE"
+  exit 1
+}
+
+
+WL() {
+  log "wl" "$@"
+  wl "$@" || die "wl $*: failed"
+}
+
+
+IWCONFIG() {
+  log "iwconfig" "$@"
+  iwconfig "$@" || die "iwconfig $*: failed"
+}
+
+
+# Only 'set' command exists right now, but use it for extensibility later
+cmd=$1
+if [ "$cmd" != "set" ]; then
+  usage
+fi
+shift
+
+
+while getopts "b:s:e:c:" opt
+do
+  case $opt in
+    b) band=$OPTARG ;;
+    c) channel=$OPTARG ;;
+    s) ssid=$OPTARG ;;
+    e) crypto=$OPTARG ;;
+    *) usage ;;
+  esac
+done
+
+if runnable wl; then
+  log "Configuring broadcom wifi."
+  WL radio on
+  WL down
+  WL ssid ""
+  [ "$channel" = "auto" ] || band=auto
+  case $band in
+    5)    WL band a ;;
+    2.4)  WL band b ;;
+    auto) WL band auto ;;
+    *) die "invalid band '$band'" ;;
+  esac
+  WL ap 0
+  WL up
+  if [ "$channel" = "auto" ]; then
+    # We can only run autochannel when ap=0, but setting ap=1 later will
+    # wipe the value.  So we have to capture the autochannel setting, then
+    # set it later.  'wl autochannel 2' is thus useless.
+    WL autochannel 1
+    sleep 3  # enough time to scan all the 2.4 or 5 GHz channels at 100ms each
+    channel=$(WL autochannel | ( read chan junk; echo "$chan"; ))
+  fi
+  WL ap 1
+  WL chanspec "$channel"
+  WL auth 0
+  WL infra 1
+  case $crypto in
+    *_AES)  WL wsec 4 ;;
+    *_TKIP) WL wsec 2 ;;
+    WEP)    WL wsec 1 ;;
+    NONE)   WL wsec 0 ;;
+    *) die "invalid crypto '$crypto'" ;;
+  esac
+  WL sup_wpa 1
+  case $crypto in
+    WPA_*)    WL wpa_auth 4 ;;
+    WPA2_*)   WL wpa_auth 128 ;;
+    WEP|NONE) WL wpa_auth 0 ;;
+    *) die "invalid crypto '$crypto'" ;;
+  esac
+  WL up
+  case $crypto in
+    *_PSK_*)
+      # WPA keys must be added *before* setting the SSID
+      WL set_pmk "$psk"
+      WL ssid "$ssid"
+      ;;
+    WEP)
+      # WEP keys must be added *after* setting the SSID
+      WL ssid "$ssid"
+      WL addwep 0 "$psk"
+      ;;
+    NONE)
+      WL ssid "$ssid"
+      ;;
+    *)
+      die "invalid crypto '$crypto'"
+      ;;
+  esac
+elif runnable iwconfig; then
+  log "Configuring atheros wifi."
+  ifc=$(
+    ifcname=
+    iwlist channel 2>/dev/null |
+    while read word channum colon freq junk; do
+      case $word in
+        Channel)
+          startswith "$freq" "$band" || continue
+          if [ "$channel" = "auto" ] ||
+             [ "$channum" = "$channel" -o "$channum" = "0$channel" ]; then
+            echo "$ifcname"
+            break
+          fi
+          ;;
+        *)
+          ifcname=$word
+          ;;
+      esac
+    done
+  )
+  [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
+  log "Using wifi interface: '$ifc'"
+  IWC() {
+    IWCONFIG "$ifc" "$@"
+  }
+  IWC essid ""
+  IWC mode master
+  IWC channel "$channel"  # may be "auto"
+  case $crypto in
+    WPA_*) auth_algs=1; wpa=1 ;;
+    WPA2_*) auth_algs=1; wpa=2 ;;
+    WEP) auth_algs=3; wpa=0 ;;
+    NONE) auth_algs=1; wpa=0 ;;
+    *) die "invalid crypto protocol in '$crypto'" ;;
+  esac
+  case $crypto in
+    *_AES) wpa_pairwise=CCMP ;;
+    *_TKIP) wpa_pairwise=TKIP ;;
+    WEP|NONE) wpa_pairwise=CCMP ;;
+    *) die "invalid crypto alg in '$crypto'" ;;
+  esac
+  atomic /tmp/hostapd.conf.${band}g "
+interface=$ifc
+ssid=$ssid
+auth_algs=$auth_algs
+wpa=$wpa
+wpa_passphrase=$psk
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=$wpa_pairwise
+"
+  case $crypto in
+    WPA2_*|WPA_*|WEP|NONE)
+      pidfile=/tmp/hostapd.pid.${band}g
+      babysit 60 startpid /tmp/hostapd.pid.${band}g \
+          hostapd -dK /tmp/hostapd.conf.${band}g \
+          2>&1 | logos hostapd-${band}g &
+      ;;
+    *)
+      die "invalid crypto '$crypto'"
+      ;;
+  esac
+  IWC essid -- "$ssid"
+else
+  die "No wifi runtime found."
+fi
