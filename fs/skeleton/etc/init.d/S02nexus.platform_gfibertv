@@ -18,8 +18,13 @@ mount -t tmpfs none /shared
 # Populate the platform ID
 PLATFORM=$(hnvram -qr PLATFORM_NAME)
 [ -n "$PLATFORM" ] &&
-echo $PLATFORM >/etc/platform &&
+echo "$PLATFORM" >/etc/platform &&
 chmod 444 /etc/platform
+
+GPN=$(hnvram -qr GPN)
+[ -n "$GPN" ] &&
+echo "$GPN" >/tmp/gpn &&
+chmod 444 /tmp/gpn
 
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
 echo "Starting gpio-mailbox"
@@ -49,3 +54,14 @@ echo -1 >/proc/sys/kernel/sched_rt_runtime_us
 echo "Getting hdcp key"
 hnvram -br HDCP_KEY >/tmp/hdcp_key.tmp
 [ -s /tmp/hdcp_key.tmp ] && mv /tmp/hdcp_key.tmp /tmp/hdcp_key
+
+if [ "$PLATFORM" = GFHD200 ]; then
+  wait-until-created /tmp/gpio/ready
+  if [ "$GPN" = "72001970-01" ]; then
+    # Older units, USB0_PWRON_N is active high
+    brcmgpio -p 106 -h
+  else
+    # newer units, USB0_PWRON_N is active low
+    brcmgpio -p 106 -l
+  fi
+fi
