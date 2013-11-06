@@ -94,7 +94,14 @@ define UBOOT_BUILD_CMDS
 endef
 
 define UBOOT_INSTALL_IMAGES_CMDS
-	cp -dpf $(@D)/$(UBOOT_BIN) $(BINARIES_DIR)/
+	set -x; \
+	set -e; \
+	if [ -f $(@D)/binaries/$(BR2_TARGET_UBOOT_BOARDNAME)/$(UBOOT_BIN) ]; then \
+		cp -dpf $(@D)/binaries/$(BR2_TARGET_UBOOT_BOARDNAME)/$(UBOOT_BIN) $(BINARIES_DIR)/; \
+		cp -dpf $(@D)/$(UBOOT_BIN) $(BINARIES_DIR)/$(UBOOT_BIN).built; \
+	else \
+		cp -dpf $(@D)/$(UBOOT_BIN) $(BINARIES_DIR)/; \
+	fi
 endef
 
 $(eval $(call GENTARGETS))
