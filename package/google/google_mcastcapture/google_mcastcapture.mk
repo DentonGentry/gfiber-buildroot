@@ -17,15 +17,15 @@ endef
 define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/sagesrv \
           $(TARGET_DIR)/app/sage/sagesrv
-        $(INSTALL) -D -m 0755 $(@D)/libtxsrv.so \
+        $(INSTALL) -D -m 0755 $(@D)/media_pull_server/libtxsrv.so \
           $(TARGET_DIR)/app/sage/lib/libtxsrv.so
-        $(INSTALL) -D -m 0755 $(@D)/libstreamer.so \
+        $(INSTALL) -D -m 0755 $(@D)/media_push_server/libstreamer.so \
           $(TARGET_DIR)/app/sage/lib/libstreamer.so
-        $(INSTALL) -D -m 0755 $(@D)/libptsindex.so \
+        $(INSTALL) -D -m 0755 $(@D)/pts_index/libptsindex.so \
           $(TARGET_DIR)/app/sage/lib/libptsindex.so
-        $(INSTALL) -D -m 0755 $(@D)/libtvformat.so \
+        $(INSTALL) -D -m 0755 $(@D)/tv_format/libtvformat.so \
           $(TARGET_DIR)/app/sage/lib/libtvformat.so
-        $(INSTALL) -D -m 0755 $(@D)/libads.so \
+        $(INSTALL) -D -m 0755 $(@D)/ads/libads.so \
           $(TARGET_DIR)/app/sage/lib/libads.so
 endef
 
