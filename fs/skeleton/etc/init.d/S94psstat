@@ -2,9 +2,11 @@
 case "$1" in
   start)
     babysit 60 psstat 60 2>&1 | logos ps &
+    babysit 60 irqstat 300 2>&1 | logos irq &
     ;;
   stop)
     pkillwait -x psstat
+    pkillwait -x irqstat
     ;;
   restart|reload)
     ;;
