@@ -70,3 +70,8 @@ start_sagesrv() {
     -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
 }
 
+stop_sagesrv() {
+  pkillwait -f '(babysit.*)(sagesrv)'
+  pkillwait -x 'sagesrv'
+  pkillwait -f '(alivemonitor.*)(sagesrv)'
+}
