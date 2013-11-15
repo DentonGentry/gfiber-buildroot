@@ -1,0 +1,4 @@
+config BR2_PACKAGE_BCM_MIRACAST
+	bool "Build Broadcom Miracast package"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD
