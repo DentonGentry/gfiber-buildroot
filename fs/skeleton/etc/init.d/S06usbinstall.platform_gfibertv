@@ -1,7 +1,9 @@
 #!/bin/sh
 # Install an image from a USB stick if there's one plugged in and a file
-# named *.gi exists in its root directory.
+# named <platformprefix>-*.gi exists in its root directory.
 #
+. /etc/utils.sh
+
 log()
 {
   echo "$(basename $0):" "$@" >&2
@@ -20,6 +22,8 @@ findall()
 try_install()
 {
   any=
+  current_ver=$(cat /etc/version)
+  platform_prefix=${current_ver%%-*}
   for path in $(findall /sys/block/sd*/removable); do
     if [ "$(cat $path)" = "1" ]; then
       any=1
@@ -36,22 +40,27 @@ try_install()
           # one has the highest version number so it's the best choice.
           lastimg=
           for img in $(findall /tmp/installsrc/*.gi); do
-            log "  considering $(basename $img)"
-            lastimg=$img
+            imgbase=$(basename "$img")
+            if startswith "$imgbase" "$platform_prefix-"; then
+              log "  considering $imgbase"
+              lastimg=$img
+            else
+              log "  skipping $imgbase (wrong platform)"
+            fi
           done
-          if [ "$(basename $lastimg)" = "$(cat /etc/version).gi" ]; then
+          if [ "$(basename $lastimg)" = "$current_ver.gi" ]; then
             log "  already installed; skipping."
           elif [ -n "$lastimg" ]; then
             log "  installing $(basename $lastimg)"
             leds 15 0 15 0 15 0  # super noisy leds while doing update
             if ginstall.py -t "$lastimg" -p other; then
               log "  installed successfully."
-              umount /tmp/installsrc
               leds 0  # turn off leds, indicating finished + halted
             else
               log "  ...install failed!"
               leds 1 0  # blinking red means install tried and failed
             fi
+            umount /tmp/installsrc
             log "Please remove USB and reboot."
             while sleep 10; do
               echo -n '.'
