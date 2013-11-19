@@ -5,6 +5,7 @@ case "$1" in
   start|restart|reload)
     $0 stop
     if [ -e /sys/class/net/wan0 ]; then
+      # TODO(apenwarr): filter IPv6!
       modprobe -a \
           iptable_filter \
           iptable_nat \
@@ -17,11 +18,60 @@ case "$1" in
           ipt_REJECT \
           ipt_MASQUERADE
 
-      # TODO(apenwarr): Add actual filtering rules!
-      #  Without filtering, this is totally insecure.
+      # Do these first to reduce race conditions
+      if [ -e /tmp/NFS ]; then
+        # Workaround because we can't have a temporary network dropout
+        # when NFS booted.
+        iptables -P INPUT ACCEPT
+      else
+        iptables -P INPUT DROP
+      fi
+      iptables -P FORWARD DROP
+
+      # Incoming connections
+      # TODO(apenwarr): Whitelist ports here too for added safety.
+      if [ -e /tmp/NFS ]; then
+        # Workaround because netfilter conntracking loaded *after* the NFS
+        # session was established.
+        iptables -A INPUT -p tcp --sport 2049 -j ACCEPT
+      fi
+      iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      # I wanted to use '!wan0' here but, it doesn't work as documented.
+      for ifc in lo br0; do
+        iptables -A INPUT -i "$ifc" -j ACCEPT
+      done
+
+      # Outgoing connections
+      # TODO(apenwarr): Add a whitelist on OUTPUT for -o wan0.
+      # In particular we should have one for samba ports.
 
       # Forwarding/NATting
+      iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      iptables -A FORWARD -i br0 -j ACCEPT
       iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
+
+      # TODO(apenwarr): Remove this when we have real port forwarding controls.
+      if [ -e /tmp/DEBUG ]; then
+        iptables -A INPUT -p tcp --dport 22 -j ACCEPT    # ssh
+        iptables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
+        iptables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
+        iptables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
+      fi
+
+      # Log packets which weren't explicitly accepted by above rules
+      iptables -N log
+      iptables -A log -m pkttype -m limit \
+          --pkt-type unicast \
+          --limit 1/second \
+          -j LOG --log-prefix "FW: "
+      iptables -A INPUT -i wan0 -j log
+      iptables -A FORWARD -i wan0 -j log
+
+      # Default DROP policy above is safe, but REJECT is friendlier.
+      # But you can't use REJECT as a policy, so add a catchall rule at the
+      # bottom.
+      iptables -A INPUT -j REJECT
+      iptables -A FORWARD -j REJECT
     fi
     ;;
   stop)
