@@ -1,0 +1,38 @@
+#!/bin/sh
+. /etc/utils.sh
+
+case "$1" in
+  start|restart|reload)
+    $0 stop
+    if [ -e /sys/class/net/wan0 ]; then
+      modprobe -a \
+          iptable_filter \
+          iptable_nat \
+          ipt_tcp \
+          ipt_udp \
+          ipt_conntrack \
+          ipt_pkttype \
+          ipt_limit \
+          ipt_LOG \
+          ipt_REJECT \
+          ipt_MASQUERADE
+
+      # TODO(apenwarr): Add actual filtering rules!
+      #  Without filtering, this is totally insecure.
+
+      # Forwarding/NATting
+      iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
+    fi
+    ;;
+  stop)
+    if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/wan0 ]; then
+      iptables -F
+      iptables -X
+      iptables -t nat -F
+      iptables -t nat -X
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
