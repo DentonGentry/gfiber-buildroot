@@ -18,6 +18,6 @@
         <!--  PM enabled/disabled flag, true:enabled PM functions, false:disabled PM functions. -->
         <apm_pm_activation enabled="true" />
         <!--  AVC enabled/disabled flag, true:enabled AVC functions, false:disabled AVC functions. -->
-        <apm_avc_activation enabled="true" />
+        <apm_avc_activation enabled="false" />
     </APM>
 </cnfg>
