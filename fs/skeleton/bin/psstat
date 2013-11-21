@@ -30,6 +30,21 @@ freemem()
 }
 
 
+dfspace()
+{
+  df -k | {
+    out=
+    read header
+    while read dev blocks used avail percent fs junk; do
+      if [ "$used" != 0 ]; then
+        out="$out$fs:$used "
+      fi
+    done
+    echo "$1 $out"
+  }
+}
+
+
 carriers()
 {
   ip link show | {
@@ -163,6 +178,7 @@ while :; do
   printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
   echo "loadavg: $(cat /proc/loadavg)"
   freemem "mem:"
+  dfspace "df:"
   carriers "carriers:"
 
   # these can cause network activity, so /tmp/disable_pings is a way to
