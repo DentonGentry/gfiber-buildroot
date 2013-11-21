@@ -4,10 +4,19 @@
 # some period of time.
 #
 
+MONITOR_PATH="/tmp/ledmonitor"
+MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
+
 start() {
 	# Turn it into a production unit.
-	if [ $(cat /etc/platform) = "GFLT110" -a ! `sysvar_cmd -g PRODUCTION_UNIT` ]; then
-		setprodflag | logos setprodflag &
+	if [ $(cat /etc/platform) = "GFLT110" ]; then
+		prod_unit=$(sysvar_cmd -g PRODUCTION_UNIT)
+		if [ -z "$prod_unit" ]; then
+			setprodflag 2>&1 | logos setprodflag &
+		elif [ "$prod_unit" = "0" ]; then
+			mkdir -p $MONITOR_PATH
+			touch $MFG_MODE_FILE
+		fi
 	fi
 }
 
