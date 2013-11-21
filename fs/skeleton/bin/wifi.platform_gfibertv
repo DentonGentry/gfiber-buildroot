@@ -154,6 +154,12 @@ elif runnable iwconfig; then
   IWC() {
     IWCONFIG "$ifc" "$@"
   }
+  for mode in 11ACVHT80 11ACVHT40 11NGHT40 11ACVHT20 11NGHT20; do
+    if iwpriv "$ifc" mode "$mode" 2>/dev/null; then
+      log "Mode for $ifc is $mode"
+      break
+    fi
+  done
   IWC essid ""
   IWC mode master
   IWC channel "$channel"  # may be "auto"

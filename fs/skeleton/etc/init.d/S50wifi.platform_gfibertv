@@ -16,9 +16,11 @@ case "$1" in
     if runnable iwconfig; then
       serial=$(serial)
       [ -z "$serial" ] && serial=unknown
+      # TODO(apenwarr): WPA2 doesn't work reliably in current driver version.
+      #  So for now we'll test with no encryption.
       export WIFI_PSK=gfdogfood
-      wifi set -b 2.4 -s GFRG_${serial}_11n
-      wifi set -b 5   -s GFRG_${serial}_11ac
+      wifi set -b 2.4 -s GFRG_${serial}_11n  -e NONE
+      wifi set -b 5   -s GFRG_${serial}_11ac -e NONE
     fi
     ;;
   stop)
