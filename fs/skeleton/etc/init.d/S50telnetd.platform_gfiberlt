@@ -10,7 +10,8 @@ case "$1" in
     if runnable glaser; then
       exit 0
     fi
-    if [ ! `sysvar_cmd -g PRODUCTION_UNIT` ]; then
+    prod_unit=$(sysvar_cmd -g PRODUCTION_UNIT)
+    if [ "$prod_unit" != "1" ]; then
       ip addr add 192.168.10.11/24 dev eth0
       /usr/sbin/inetd 2>&1 | logos inetd
     fi

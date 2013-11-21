@@ -3,6 +3,7 @@
 . /etc/utils.sh
 
 MONITOR_PATH="/tmp/ledmonitor"
+MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
 NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
@@ -104,7 +105,13 @@ while [ -z "$led_state" ] || read event; do
     network_status="$(cat "$NETWORK_STATUS_FILE")"
   fi
 
-  if ! is_interface_up "$PON_IFACE" ; then
+  if [ -e "$MFG_MODE_FILE" ] ; then
+    # Override the led to to blink super fast if we're in manufacture mode.
+    # This should never happen for an installer, if it does then they'll know
+    # something is wrong.
+    blink_led "$RED_LED" "250" "250"
+    blink_led "$BLUE_LED" "250" "250"
+  elif ! is_interface_up "$PON_IFACE" ; then
     set_led_state "$BLINK_MODE" "$RED_LED"
   elif [ runnable glaser -a "$network_status" != "$NETWORK_STATUS_CONNECTED" ] ; then
     set_led_state "$FAST_MODE" "$RED_LED"
