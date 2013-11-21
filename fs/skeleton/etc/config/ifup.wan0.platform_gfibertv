@@ -1,2 +1,4 @@
-iface=$1
-run-dhclient $iface
+ifc=$1
+if [ -z "$(ip -o -4 addr show $ifc)" ]; then
+  run-dhclient $ifc
+fi

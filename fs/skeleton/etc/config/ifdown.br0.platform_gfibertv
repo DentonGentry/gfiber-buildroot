@@ -1,7 +1,0 @@
-ifc=$1
-killpid /var/run/dnsmasq.$ifc.pid
-killpid /var/run/dhclient.$ifc.pid
-killpid /var/run/dhclient-v6.$ifc.pid
-ip -4 addr flush dev $ifc label $ifc:0
-ip -4 addr flush dev $ifc label $ifc
-ip link set dev $ifc down
