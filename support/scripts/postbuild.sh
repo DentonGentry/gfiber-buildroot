@@ -22,9 +22,12 @@ repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 #  Right now it only uses buildroot.  I have a plan for this
 #  involving git submodules, just don't want to change too much
 #  in this code all at once.  This should work for now.
-version=$(git describe --match="gfiber*" | cut -d- -f2-)
-echo -n "$PLATFORM_PREFIX-$version" \
-  >"$TARGET_DIR/etc/version" 2>/dev/null
+tagname=$(
+  git describe --match="$PLATFORM_PREFIX*" 2>/dev/null ||
+  git describe --match="gfiber*"
+)
+version="$PLATFORM_PREFIX-${tagname#*-}"
+echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
 
 if [ "$PROD" != "y" ]; then
   (echo -n '-'; whoami | cut -c1-2) >>$TARGET_DIR/etc/version;
