@@ -1,9 +1,8 @@
 GOOGLE_OREGANO_SITE=repo://vendor/google/oregano
-GOOGLE_OREGANO_DEPENDENCIES=\
-	bcm_chromium google_miniclient google_dart_vm
+GOOGLE_OREGANO_DEPENDENCIES=google_dart_vm
 
 define GOOGLE_OREGANO_BUILD_CMDS
-	# Surprise, its just a script that runs in the dartvm
+	TARGET=$(TARGET_CROSS) CFLAGS="$(TARGET_CFLAGS)" INCLUDES=-I$(STAGING_DIR)/usr/local/include $(MAKE) -C $(@D)
 endef
 
 define GOOGLE_OREGANO_INSTALL_TARGET_CMDS
