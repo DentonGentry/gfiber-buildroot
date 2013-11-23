@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GOOGLE_SKELMIR
         bool "google_skelmir"
+        depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
         help
           Installs the Skelmir Java VM
