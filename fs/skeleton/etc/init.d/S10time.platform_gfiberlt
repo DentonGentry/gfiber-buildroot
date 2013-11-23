@@ -11,7 +11,7 @@ logtosys()
       fi
     done
     if [ "$lasttime" -gt 0 ]; then
-      date +%s -s $lasttime
+      toolbox date +%s -s $lasttime
     fi
     #TODO(irinams): create the TIME_FILE only when we have a way to approximate
     # how much time was spent during reboot to add it to to lasttime
