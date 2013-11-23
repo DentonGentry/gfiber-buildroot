@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /etc/utils.sh
+
 if is-html-tv-ui; then
   echo "configured for chrome"
   exit 0
