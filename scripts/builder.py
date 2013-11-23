@@ -227,13 +227,6 @@ class BuildRootBuilder(object):
     self._LogDone('Building app')
 
 
-def CheckLoasCertificate():
-  if subprocess.call(['prodcertstatus', '--check_remaining_hours', '2']) != 0:
-    Error('Your LOAS certificate is only good for less than 2 hours.\n'
-          'Please use prodaccess to renew your LOAS certificate.\n')
-    sys.exit(1)
-
-
 def main():
   os.chdir(os.path.dirname(sys.argv[0]) + '/..')
   o = options.Options(optspec)
@@ -251,10 +244,6 @@ def main():
   else:
     base_dir = os.path.abspath('../out')
     Warn('Default output dir: %s', base_dir)
-  #TODO(apenwarr): put LOAS check in the buildroot packages as a "pre-depends"
-  #  or something (so it runs early, but only when needed, and doesn't
-  #  depend on this script).
-  CheckLoasCertificate()
   builder = BuildRootBuilder(base_dir, opt)
   builder.Build()
 
