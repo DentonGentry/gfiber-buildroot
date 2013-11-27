@@ -1,5 +1,6 @@
 menu "Qualcomm Drivers"
 	config BR2_PACKAGE_QUALCOMM_DRIVERS
 		bool "Enable Qualcomm drivers"
+		depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
 		default n
 endmenu
