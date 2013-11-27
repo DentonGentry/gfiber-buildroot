@@ -1,6 +1,7 @@
 menu "Broadcom Drivers"
 	config BR2_PACKAGE_BCM_DRIVERS
 		bool "Enable Broadcom driver base"
+		depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
 		select BR2_PACKAGE_BCM_COMMON
 		default n
 	config BR2_PACKAGE_BCM_DRIVER_MOCA
