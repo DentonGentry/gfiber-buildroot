@@ -1,5 +1,6 @@
 config BR2_PACKAGE_BCM_COMMON
 	bool "Build Broadcom common package"
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
 config BR2_PACKAGE_BCM_COMMON_PLATFORM
 	string "Broadcom target platform"
 	default "97425"

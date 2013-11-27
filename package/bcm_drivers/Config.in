@@ -6,6 +6,7 @@ menu "Broadcom Drivers"
 	config BR2_PACKAGE_BCM_DRIVER_MOCA
 		bool "Enable Broadcom MoCA Driver v1"
 		select BR2_PACKAGE_BCM_COMMON
+		depends on BR2_PACKAGE_BCM_DRIVERS
 		depends on !BR2_PACKAGE_BCM_DRIVER_MOCA2
 		default n
 		help
@@ -13,17 +14,19 @@ menu "Broadcom Drivers"
 	config BR2_PACKAGE_BCM_DRIVER_MOCA2
 		bool "Enable Broadcom MoCA Driver v2"
 		select BR2_PACKAGE_BCM_COMMON
+		depends on BR2_PACKAGE_BCM_DRIVERS
 		default n
 		help
 		  Includes Broadcom MoCA 2.0 driver for 6802/6803/742x.
 	config BR2_PACKAGE_BCM_DRIVER_WIFI
 		bool "Enable Broadcom WiFi Driver"
 		select BR2_PACKAGE_BCM_COMMON
+		depends on BR2_PACKAGE_BCM_DRIVERS
 		default n
 		help
 		  Includes Broadcom Wifi driver.
-    config BR2_PACKAGE_BCM_DRIVER_WIFI_USB
-        bool "Enable Broadcom WiFi Driver for USB dongles"
-        default n
-        depends on BR2_PACKAGE_BCM_DRIVER_WIFI
+	config BR2_PACKAGE_BCM_DRIVER_WIFI_USB
+		bool "Enable Broadcom WiFi Driver for USB dongles"
+		default n
+		depends on BR2_PACKAGE_BCM_DRIVER_WIFI
 endmenu
