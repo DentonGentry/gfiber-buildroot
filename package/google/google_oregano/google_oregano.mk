@@ -7,7 +7,8 @@ endef
 
 define GOOGLE_OREGANO_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/app/oregano/
-	$(INSTALL) -m 0755 -D package/google/google_oregano/S99oregano $(TARGET_DIR)/etc/init.d/S99oregano;
+	$(INSTALL) -m 0755 -D package/google/google_oregano/S99oregano $(TARGET_DIR)/etc/init.d/S99oregano
+	$(INSTALL) -m 0755 -D package/google/google_oregano/authTokens.dart $(TARGET_DIR)/app/oregano/authTokens.dart
 	$(INSTALL) -D -m 0755 package/google/google_oregano/runoregano $(TARGET_DIR)/app/oregano/runoregano
 	cp -af $(@D)/* $(TARGET_DIR)/app/oregano/
 endef

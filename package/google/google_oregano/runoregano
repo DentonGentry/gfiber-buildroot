@@ -5,8 +5,7 @@
 cd "$(dirname "$0")"
 
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
-export SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
-[ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(hnvram -qr SERIAL_NO)
+export SERIALNUMBER=$(serial)
 
 ulimit -c 49152
 
@@ -16,32 +15,37 @@ if is-tv-box; then
   babysit 10 \
       dart -p . isp/fiber/marjoram/src/basil.dart 2>&1 | logos basil 0 20000000 &
 
-  #TODO(codefu): make this url less hard-coded.
   cd /usr/local/bin/webkitGl2
 
-  read epoch < /tmp/client_epoch && PARAMS="${PARAMS}&epoch=$epoch"
-  read screenHost < /tmp/screeenHost && PARAMS="${PARAMS}&screenhost=$screenHost"
-
-  #TODO(codefu): Handle authentication.
-
-  #TODO(codefu): Ask spicerack for this either before, or have Oregano query.
+  #TODO(codefu): Have oregano query the storage box from Spicerack
   storageHost="192.168.4.6"
   read storageHost < /tmp/storageHost
-  PARAMS="${PARAMS}&storageHost=$storageHost"
+  PARAMS="storageHost=$storageHost"
   PARAMS="${PARAMS}&tvBoxSerial=$SERIALNUMBER"
 
-  echo Oregano params = $PARAMS
+  #Authorize client with the backend.
+  PARAMS="$PARAMS"$(dart /app/oregano/authTokens.dart)
+
+  #Allow developer overriding default parameters, as they are tagged on last they
+  #will override all matching settings above.
+  read devParams  < /tmp/client_params
+  PARAMS="$PARAMS&$devParams"
+
   #TODO(codefu) use Spicerack redirector when its implemented.
-  address="https://fiber.google.com/oregano/3/oregano.html"
+  address="https://fiber.google.com/oregano/4/oregano.html"
   read address < /tmp/client_address
   address="$address?$PARAMS"
-  echo Oregano addres = $address
+
+  echo Oregano address = $address
   babysit 10 \
       ./start --allow-unsecure-content --remote-debugging-port=9222 --disable-web-security "${address}" 2>&1 | logos oregano 0 20000000 &
 else
   start_sagesrv
 
+  #Authorize server with the backend.
+  PARAMS=$(dart /app/oregano/authTokens.dart --separator=" --")
+  echo marjoram PARAMS=$PARAMS
   # Start up the scheduler / websocket server / spicerack proxy
   babysit 10 \
-      setuid video:video dart -p . isp/fiber/marjoram/src/marjoram.dart 2>&1 | logos marjoram 0 20000000 &
+      setuid video:video dart -p . isp/fiber/marjoram/src/marjoram.dart $PARAMS 2>&1 | logos marjoram 0 20000000 &
 fi
