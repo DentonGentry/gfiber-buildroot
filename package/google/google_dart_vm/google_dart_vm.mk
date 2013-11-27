@@ -5,8 +5,18 @@ GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
 BTYPE=ReleaseARM
-else
+else ifeq ($(ARCH),armeb)
+BTYPE=ReleaseARM
+else ifeq ($(ARCH),mips)
 BTYPE=ReleaseMIPS
+else ifeq ($(ARCH),mipsel)
+BTYPE=ReleaseMIPS
+else ifeq ($(ARCH),i386)
+BTYPE=ReleaseIA32
+else ifeq ($(ARCH),x86_64)
+BTYPE=ReleaseX64
+else
+$(error Unsupported architecture)
 endif
 
 GOOGLE_DART_VM_MAKE_VARS=\
