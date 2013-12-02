@@ -17,11 +17,12 @@ if is-tv-box; then
 
   cd /usr/local/bin/webkitGl2
 
-  #TODO(codefu): Have oregano query the storage box from Spicerack
-  storageHost="192.168.4.6"
+  PARAMS="tvBoxSerial=$SERIALNUMBER"
+  storageHost=""
   read storageHost < /tmp/storageHost
-  PARAMS="storageHost=$storageHost"
-  PARAMS="${PARAMS}&tvBoxSerial=$SERIALNUMBER"
+  if [ $storageHost ]; then
+    PARAMS="${PARAMS}&storageHost=$storageHost"
+  fi
 
   #Authorize client with the backend.
   PARAMS="$PARAMS"$(dart /app/oregano/authTokens.dart)
