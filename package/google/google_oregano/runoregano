@@ -33,7 +33,7 @@ if is-tv-box; then
   PARAMS="$PARAMS&$devParams"
 
   #TODO(codefu) use Spicerack redirector when its implemented.
-  address="https://fiber.google.com/oregano/4/oregano.html"
+  address="https://fiber.google.com/oregano/5/oregano.html"
   read address < /tmp/client_address
   address="$address?$PARAMS"
 
