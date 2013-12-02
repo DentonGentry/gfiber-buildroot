@@ -7,6 +7,10 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/tcp
     mkdir -p /tmp/cwmp/monitoring/ts
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
+    if is-storage-box; then
+      [ ! -d /var/media/swimage ] && mkdir -p /var/media/swimage
+      rm /var/media/swimage/*.gi
+    fi
     babysit 60 cwmp_monitor | logos cwmp_monitor &
     # With default CWMPRetryIntervalMultiplier, CWMP
     # maximum exponential backoff is 5120 seconds.
