@@ -4,7 +4,7 @@
 #
 #############################################################
 
-NETPERF_VERSION = 2.5.0
+NETPERF_VERSION = 2.6.0
 NETPERF_SITE = ftp://ftp.netperf.org/netperf
 NETPERF_CONF_ENV = ac_cv_func_setpgrp_void=set
 
@@ -19,5 +19,8 @@ define NETPERF_UNINSTALL_TARGET_CMDS
 	rm -f $(TARGET_DIR)/usr/bin/netperf
 	rm -f $(TARGET_DIR)/usr/bin/netserver
 endef
+
+NETPERF_CONF_OPT = \
+        --enable-demo
 
 $(eval $(call AUTOTARGETS))
