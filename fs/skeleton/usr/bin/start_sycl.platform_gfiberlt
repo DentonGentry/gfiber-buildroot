@@ -1,7 +1,31 @@
 #!/bin/sh
 
+set -x
+
 cd /
 export CLISH_PATH=/etc/xml_commands
+
+# pon types: epon=0, gpon=1, p2p=2, none=3
+PON_ID=$(sysvar_cmd -g PON_TYPE)
+if [ -z "$PON_ID" ]; then
+  # default to p2p
+  PON_ID="2"
+fi
+
+if [ "$PON_ID" != 1 ]; then
+  # For gpon there is no need to copy gpon config files over because
+  # that is the default, and the init scripts have
+  # already copied them over.
+
+  # epon/p2p case.  For p2p to work we really do have
+  # to copy over the epon files or the kernel hangs somewhere.
+  cp -f /etc/xml_params/epon_xml_cfg_file.xml \
+    /etc/xml_params/pon_xml_cfg_file.xml
+  cp -f /etc/xml_params/tpm_xml_cfg_file_epon.xml \
+    /etc/xml_params/tpm_xml_cfg_file.xml
+  cp -f /etc/xml_params/pon_type_xml_cfg_file_p2p.xml \
+    /etc/xml_params/pon_type_xml_cfg_file.xml
+fi
 
 # sycl starts omci binary which uses fw_printenv, and
 # fw_printenv needs a valid fw_env.config.
@@ -15,4 +39,23 @@ else
   echo "/dev/$device 0x00000 0x1000 0x$erase_size" >/tmp/fw_env.config
 fi
 
-sycl
+sycl &
+
+if [ "$PON_ID" != 1 ]; then
+  # For p2p case we have to program some forwarding info into the tpm,
+  # but wait 15 seconds for the auto-detect to have a chance to work.
+  sleep 15
+
+  # This sets 2 rules,
+  # 0 - forward any traffic from UNI -> ANI
+  # 1 - forward any traffic from ANI -> UNI
+  ##### FORWARDING_KEY #####
+  cd /sys/devices/platform/tpm/cfg_frwd
+  echo frwd_ds 0x40000 1 1500 > frwd_rule_set
+  echo frwd_us 0x00001 1 1500 > frwd_rule_set
+
+  cd /sys/devices/platform/tpm/cfg_l2
+  ##### Default Traffic Hardware Forwarding Rules #####
+  echo 1 WAN      0 0x0000 0x0000  0x06 done l2_key_empty frwd_ds mod_empty 0x0000 > l2_rule_add
+  echo 1 UNI_ANY  1 0x0000 0x0000  0x06 done l2_key_empty frwd_us mod_empty 0x0000 > l2_rule_add
+fi
