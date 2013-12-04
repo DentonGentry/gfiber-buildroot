@@ -1,0 +1,24 @@
+From 149f3e9ce0dbc975eb9a9b7f10d3999ec4a5e511 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 27 Nov 2013 16:45:44 -0500
+Subject: [PATCH] Remove iperf3_profile build.
+
+---
+ src/Makefile.am |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index ec674ac..a7094cd 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -1,6 +1,6 @@
+ lib_LIBRARIES           = libiperf.a                                    # Build and install a static iperf library
+ bin_PROGRAMS            = iperf3                                        # Build and install an iperf binary
+-noinst_PROGRAMS         = t_timer t_units t_uuid iperf3_profile         # Build, but don't install the test programs and a profiled version of iperf3
++noinst_PROGRAMS         = t_timer t_units t_uuid
+ include_HEADERS         = iperf_api.h # Defines the headers that get installed with the program
+ 
+ 
+-- 
+1.7.9.dirty
+
