@@ -1,0 +1,25 @@
+# Don't Fast Forward FTP traffic
+config fastforward ftp
+	option proto		tcp
+	option port		21
+config fastforward sip
+	option proto		udp
+	option port		5060
+
+#WiFi fastforward configuration
+#direct_path_rx-This option/optimization is implmented for atheros/QCA driver.
+#               For other devices/drivers this option should be disabled.
+config wifi_fastforward
+	option ifname ath0
+	option direct_path_rx 1
+
+config wifi_fastforward
+	option ifname ath1
+	option direct_path_rx 1
+
+config logging
+	option file	-
+	option command	1
+	option error	1
+	option warning	1
+	option info	0

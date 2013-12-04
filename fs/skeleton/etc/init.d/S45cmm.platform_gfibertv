@@ -1,0 +1,26 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    if CMM=$(which cmm) && runnable $CMM; then
+      modprobe -a nfnetlink fci
+      MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
+      [ -c /dev/vwd0 ] || mknod /dev/vwd0 c $MAJOR 0
+      echo 1> /sys/devices/platform/pfe.0/vwd_fast_path_enable
+      babysit 30 cmm -F -f /etc/fastforward.config 2>&1 | logos cmm &
+    fi
+    ;;
+  stop)
+    if CMM=$(which cmm) && runnable $CMM; then
+      pkillwait -x cmm
+      grep -q fci /proc/modules && rmmod fci
+    fi
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
