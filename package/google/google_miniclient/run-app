@@ -53,7 +53,11 @@ case $appname in
     export sw_picture_decode=y
     chmod 755 /user/netflix/nrd
     verify_drm_state
-    netflix $opts 2>&1 | logos netflix
+    FRIENDLYNAME="Google Fiber TV Box"
+    if [ -e /config/nickname ]; then
+      FRIENDLYNAME="$(cat /config/nickname)"
+    fi
+    netflix --dpi-friendlyname "$FRIENDLYNAME" $opts 2>&1 | logos netflix
     ;;
   vudu)
     cd /usr/local/bin
