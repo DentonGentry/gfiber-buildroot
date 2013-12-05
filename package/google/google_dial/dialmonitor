@@ -1,0 +1,16 @@
+#!/bin/sh
+
+NICKNAME=
+if [ -e /config/nickname ]; then
+  NICKNAME="$(cat /config/nickname)"
+fi
+
+NEWNICKNAME=
+watch-dir /config | while read f; do
+  [ -e /config/nickname ] && NEWNICKNAME="$(cat /config/nickname)"
+  if [ "$NICKNAME" != "$NEWNICKNAME" ]; then
+    echo 'Nickname changed, restarting dialserver'
+    restart dialserver
+    NICKNAME="$NEWNICKNAME"
+  fi
+done
