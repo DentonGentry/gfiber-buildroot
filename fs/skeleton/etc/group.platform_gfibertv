@@ -18,3 +18,6 @@ _ntp:x:30:
 nfsnobody:x:65534:
 utmp:x:22:
 video:x:200:video
+lp:x:7:
+netdev:x:113:
+dbus:x:105:
