@@ -12,6 +12,11 @@ define GOOGLE_MCASTCAPTURE_INSTALL_STAGING_CMDS
           $(STAGING_DIR)/usr/include/pts_index
         $(INSTALL) -D -m 0444 $(@D)/pts_index/verify_index.h \
           $(STAGING_DIR)/usr/include/pts_index
+        $(INSTALL) -D -m 0444 $(@D)/pts_index/pts_indexer.h \
+          $(STAGING_DIR)/usr/include/pts_index
+        mkdir -p $(STAGING_DIR)/app/sage/lib
+        $(INSTALL) -D -m 0755 $(@D)/pts_index/libptsindex.so \
+          $(STAGING_DIR)/app/sage/lib
 endef
 
 define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS

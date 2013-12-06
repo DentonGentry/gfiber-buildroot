@@ -47,6 +47,7 @@ else
   PARAMS=$(dart /app/oregano/authTokens.dart --separator=" --")
   echo marjoram PARAMS=$PARAMS
   # Start up the scheduler / websocket server / spicerack proxy
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/sage/lib
   babysit 10 \
       setuid video:video dart -p . isp/fiber/marjoram/src/marjoram.dart $PARAMS 2>&1 | logos marjoram 0 20000000 &
 fi
