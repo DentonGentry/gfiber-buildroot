@@ -1,0 +1,13 @@
+diff --git a/file_hasher.h b/file_hasher.h
+index e26ef96..b086f96 100644
+--- a/file_hasher.h
++++ b/file_hasher.h
+@@ -25,6 +25,8 @@ class FileHasher {
+                  destination_(NULL),
+                  block_limit_(0),
+                  alg_(NULL) { }
++  virtual ~FileHasher() { }
++
+   // TODO(wad) add initialized_ variable to check.
+   virtual bool Initialize(simple_file::File *source,
+                           simple_file::File *destination,
