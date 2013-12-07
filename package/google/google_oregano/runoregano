@@ -34,7 +34,7 @@ if is-tv-box; then
   read devParams  < /tmp/client_params
   PARAMS="$PARAMS&$devParams"
 
-  address="$address?$PARAMS"
+  address="$address$PARAMS"
 
   echo Oregano address = $address
   babysit 10 \
