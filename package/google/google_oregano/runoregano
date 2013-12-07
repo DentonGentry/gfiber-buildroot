@@ -17,24 +17,23 @@ if is-tv-box; then
 
   cd /usr/local/bin/webkitGl2
 
-  PARAMS="tvBoxSerial=$SERIALNUMBER"
+  #Authorize and get application URL from Spicerack - allow for developer override
+  address=""
+  read address < /tmp/client_address
+  address=$(dart /app/oregano/authTokens.dart --url="$address" --separator="&")
+
+  PARAMS="&tvBoxSerial=$SERIALNUMBER"
   storageHost=""
   read storageHost < /tmp/storageHost
   if [ $storageHost ]; then
     PARAMS="${PARAMS}&storageHost=$storageHost"
   fi
 
-  #Authorize client with the backend.
-  PARAMS="$PARAMS"$(dart /app/oregano/authTokens.dart)
-
   #Allow developer overriding default parameters, as they are tagged on last they
   #will override all matching settings above.
   read devParams  < /tmp/client_params
   PARAMS="$PARAMS&$devParams"
 
-  #TODO(codefu) use Spicerack redirector when its implemented.
-  address="https://fiber.google.com/oregano/5/oregano.html"
-  read address < /tmp/client_address
   address="$address?$PARAMS"
 
   echo Oregano address = $address
@@ -44,7 +43,7 @@ else
   start_sagesrv
 
   #Authorize server with the backend.
-  PARAMS=$(dart /app/oregano/authTokens.dart --separator=" --")
+  PARAMS=$(dart /app/oregano/authTokens.dart)
   echo marjoram PARAMS=$PARAMS
   # Start up the scheduler / websocket server / spicerack proxy
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/sage/lib

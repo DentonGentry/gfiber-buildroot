@@ -8,16 +8,51 @@ const String SPICERACK_AUTH =
     "https://www-googleapis-staging.sandbox.google.com/rpc";
 
 const String separatorFlag = "--separator=";
+const String urlFlag = "--url=";
+
+// Default address to a well known release.
+String address;
+String separator = " --";
+
+Map flags = {
+  separatorFlag: {
+    'desc': "defaults to ' --' for command line parameters",
+    'onParse': (String val) => separator = val.substring(separatorFlag.length)
+  },
+  urlFlag: {
+    'desc': "Add URL; if non-empty use as forced url override.",
+    'onParse': (String val) => address = val.substring(urlFlag.length)
+  },
+  '-h': {
+    'desc': "print this help",
+    'onParse': (_) {
+      print("Oregano boot-strap support - get authenticated");
+      flags.forEach((k,v) => print("  $k   ${v['desc']}"));
+    }
+  }
+};
+
 
 main(List<String> args) {
-  int now = new DateTime.now().millisecondsSinceEpoch;
 
-  String separator = "&";
-  // I don't want to import a 3rd party arguments parser for a simple script.
-  // Allow the caller to switch between '&flag=' and ' --flag='
-  if (args.length > 0 && args[0].startsWith(separatorFlag) ) {
-    separator = args[0].substring(separatorFlag.length);
+  if (args.length > 0) {
+    Iterator<String> it = args.iterator;
+    while (it.moveNext()) {
+      bool found = false;
+      flags.forEach((k,v) {
+        if (it.current.startsWith(k)) {
+          found = true;
+          v['onParse'](it.current);
+        }
+      });
+      if (!found) {
+        flags['-h']['onParse'](null);
+        exit(-1);
+      }
+    }
   }
+
+  int now = new DateTime.now().millisecondsSinceEpoch;
 
   String serialNumber;
   ProcessResult rslt = Process.runSync("serial", []);
@@ -26,17 +61,26 @@ main(List<String> args) {
   makeSignature(now).then((String signature) {
     getAuthCode(serialNumber, signature). then((authResponse) {
       Map json = JSON.decode(authResponse)['result'];
+      if (address != null && address.isEmpty) {
+        address = json['spiceUrl'];
+      }
+      if (!address.endsWith("?")) address = "$address?";
+
       var oauthClientId = json['oauthClientId'];
       var oauthAddress = json['oauthAddress'];
       var oauthClientSecret = json['oauthClientSecret'];
       getOAuth2Tokens(json['authorizationCode'], oauthAddress, oauthClientId,
           oauthClientSecret).then((tokens) {
         Map json = JSON.decode(tokens);
-        print(
-            "${separator}clientId=$oauthClientId"
-            "${separator}clientSecret=$oauthClientSecret"
-            "${separator}oauth2Url=$oauthAddress"
-            "${separator}refreshToken=${json['refresh_token']}");
+        StringBuffer buff = new StringBuffer();
+        if (address != null) {
+          buff.write(address);
+        }
+        buff.write("${separator}clientId=$oauthClientId");
+        buff.write("${separator}clientSecret=$oauthClientSecret");
+        buff.write("${separator}oauth2Url=$oauthAddress");
+        buff.write("${separator}refreshToken=${json['refresh_token']}");
+        print(buff);
       });
     });
   });
