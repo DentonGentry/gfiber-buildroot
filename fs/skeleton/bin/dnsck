@@ -10,6 +10,7 @@ $ dnsck 2001:4860:4860::8888 2001:4860:4860::8844 8.8.8.8 8.8.4.4
 """
 
 import dns.resolver
+import re
 import sys
 import time
 
@@ -19,12 +20,34 @@ except ImportError:
   pass
 
 
+EXTRA_NAMESERVER_FILE = '/tmp/dnsck_servers'
+
+
 _time = getattr(time, 'monotime', time.time)
 
 
 def GetDefaultNameservers():
   s = dns.resolver.Resolver(configure=True)
   return s.nameservers
+
+
+def GetExtraNameservers():
+  """Return contents of EXTRA_NAMESERVER_FILE as a list.
+
+  EXTRA_NAMESERVER_FILE is expected to contain a comma-separated list
+  of IP addresses.
+
+  Returns:
+    a list of IP addresses, or an empty list if the file does
+    not exist.
+  """
+  try:
+    with open(EXTRA_NAMESERVER_FILE) as f:
+      line = f.read(8192).strip()
+      ips = re.split(r'[\s,;]', line)
+      return set(ips)
+  except IOError:
+    return set()
 
 
 def DnsCheck(server, qname):
@@ -50,9 +73,11 @@ def main():
   servers = set(GetDefaultNameservers())
   if (len(sys.argv) > 1):
     servers |= set(sys.argv[1:])
+  servers |= GetExtraNameservers()
   output = []
   for server in servers:
-    output.append(DnsCheck(server, qname='gstatic.com'))
+    if server:
+      output.append(DnsCheck(server, qname='gstatic.com'))
   print ' '.join(output)
 
 
