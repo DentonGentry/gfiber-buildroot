@@ -3,18 +3,12 @@ case "$1" in
   start)
     (
       if is-tv-box; then
-        wait-until-created /tmp/startupvideo.done
-        SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
-        PLATFORM=$(cat /etc/platform)
-        FRIENDLYNAME="Google Fiber TV Box"
-        if [ -e /config/nickname ]; then
-          FRIENDLYNAME="$(cat /config/nickname)"
-        fi
-        /app/client/dialserver -M $PLATFORM -U $SERIALNUMBER -F "$FRIENDLYNAME" 2>&1 | logos dialserver &
+        /app/client/rundialserver
       fi
     ) &
     ;;
   stop)
+    pkillwait -x rundialserver
     pkillwait -x dialserver
     ;;
   restart)
