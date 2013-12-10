@@ -42,45 +42,27 @@ fi
 sycl &
 
 if [ "$PON_ID" != 1 ]; then
-  PON_MAC=$(cat /sys/class/net/pon0/address)
-  ETH_MAC=$(cat /sys/class/net/eth0/address)
-
   # For p2p case we have to program some forwarding info into the tpm,
   # but wait 15 seconds for the auto-detect to have a chance to work.
   sleep 15
 
-  # This sets 2 rules,
-  # 0 - forward any traffic from UNI -> ANI
-  # 1 - forward any traffic from ANI -> UNI
-  ##### FORWARDING_KEY #####
+  # This sets up 3 forwarding rules that are used for the manufacture
+  # throughput testing.
+  # 1. vlan2 from ani -> uni
+  # 2. vlan2 from uni -> ani
+  # 3. anything else from uni -> cpu
+  VLAN_NUM=2
+  ETH_MAC=$(cat /sys/class/net/eth0/address)
   cd /sys/devices/platform/tpm/cfg_frwd
   echo frwd_ds 0x40000 1 1500 >frwd_rule_set
   echo frwd_us 0x00001 1 1500 >frwd_rule_set
-  echo frwd_us_cpu 0x20001 1 1500 > frwd_rule_set
+  cd /sys/devices/platform/tpm/cfg_vlan
+  echo vlan_${VLAN_NUM} 0x8100 0xffff ${VLAN_NUM} 0xffff 0 0x00 1 0x00 >vlan_rule_set
 
-  # Any packet that matches this devices mac will get punted to the cpu.
   cd /sys/devices/platform/tpm/cfg_l2
+  echo l2_vlan_${VLAN_NUM} vlan_${VLAN_NUM} vlan_empty >l2_key_vlan_rule_set
   echo mtm_eth0 00:00:00:00:00:00 00:00:00:00:00:00 ${ETH_MAC} FF:FF:FF:FF:FF:FF >l2_key_mac_addr_rule_set
-  echo mtm_pon0 00:00:00:00:00:00 00:00:00:00:00:00 ${PON_MAC} FF:FF:FF:FF:FF:FF >l2_key_mac_addr_rule_set
-
-  # Broadcast packets will get forwarded and punted to the cpu.
-  echo mac_bc 00:00:00:00:00:00 00:00:00:00:00:00 FF:FF:FF:FF:FF:FF FF:FF:FF:FF:FF:FF >l2_key_mac_addr_rule_set
-
-  cd /sys/devices/platform/tpm/cfg_l2
-  # ETH MAC Match
-  echo 1 UNI_ANY  0 0x0001 0x0000 0x0000 done mtm_eth0  frwd_empty  mod_empty 0x0000 >l2_rule_add
-
-  # PON MAC Match
-  echo 1 WAN  1 0x0001 0x0000 0x0000 done mtm_pon0  frwd_empty  mod_empty 0x0000 >l2_rule_add
-
-  # Broadcast packet match on the ETH port, this forwards the packet to the WAN
-  # and also copies it to the CPU.
-  echo 1 UNI_ANY  2 0x0001 0x0000 0x0016 done mac_bc    frwd_us_cpu mod_empty 0x0000 > l2_rule_add
-
-  # We don't do broadcast matching on the WAN interface.  The OLT will do MAC
-  # learning and be able to send responses directly to our MAC address.
-
-  ##### Default Traffic Hardware Forwarding Rules #####
-  echo 1 WAN      3 0x0000 0x0000  0x06 done l2_key_empty frwd_ds mod_empty 0x0000 >l2_rule_add
-  echo 1 UNI_ANY  4 0x0000 0x0000  0x06 done l2_key_empty frwd_us mod_empty 0x0000 >l2_rule_add
+  echo 1 WAN      0 0x0004 0x0000  0x06 done l2_vlan_${VLAN_NUM} frwd_ds mod_empty 0x0000 >l2_rule_add
+  echo 1 UNI_ANY  1 0x0004 0x0000  0x06 done l2_vlan_${VLAN_NUM} frwd_us mod_empty 0x0000 >l2_rule_add
+  echo 1 UNI_ANY  2 0x0000 0x0000 0x0000 done l2_key_empty  frwd_empty  mod_empty 0x0000 >l2_rule_add
 fi
