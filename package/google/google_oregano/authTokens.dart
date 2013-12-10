@@ -64,7 +64,7 @@ main(List<String> args) {
       if (address != null && address.isEmpty) {
         address = json['spiceUrl'];
       }
-      if (!address.endsWith("?")) address = "$address?";
+      if (address != null  && !address.endsWith("?")) address = "$address?";
 
       var oauthClientId = json['oauthClientId'];
       var oauthAddress = json['oauthAddress'];
