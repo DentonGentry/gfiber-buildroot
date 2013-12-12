@@ -26,7 +26,7 @@ start() {
 
   # TODO: remove in non-test builds
   if [ -e /rw/poststartupmods ]; then
-    echo Executing poststartupmods 
+    echo Executing poststartupmods
     . /rw/poststartupmods
   fi
   echo "Started sageserver $(cat /etc/version)"
@@ -36,6 +36,7 @@ stop() {
   pkillwait -f '(babysit.*)(runsage|chsrv|sage.Sage)'
   pkillwait -x 'runsage|chsrv|siege|java'
   stop_sagesrv
+  stop_adloader
 }
 
 case "$1" in

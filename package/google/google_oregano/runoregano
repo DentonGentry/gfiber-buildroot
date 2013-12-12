@@ -43,6 +43,7 @@ if is-tv-box; then
   babysit 10 \
       ./start --allow-unsecure-content --remote-debugging-port=9222 --disable-web-security "${address}" 2>&1 | logos oregano 0 20000000 &
 else
+  start_adloader
   start_sagesrv
 
   #Authorize server with the backend.
