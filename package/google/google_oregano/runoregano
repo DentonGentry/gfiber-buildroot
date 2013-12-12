@@ -36,7 +36,10 @@ if is-tv-box; then
 
   address="$address$PARAMS"
 
-  echo Oregano address = $address
+  # in case we're transitioning from a sage environment to oregano.
+  rm -f /tmp/gpio/ledcontrol/waitpower
+
+  echo "Oregano address = $address"
   babysit 10 \
       ./start --allow-unsecure-content --remote-debugging-port=9222 --disable-web-security "${address}" 2>&1 | logos oregano 0 20000000 &
 else
