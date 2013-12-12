@@ -394,4 +394,3 @@ enable_vudu_leanback=true
 ui/allow_ui_selector=true
 ui/channel/auto_accept=true
 enable_youtube_leanback=false
-ui/loader=sage.ui.x.FiberTVDark
