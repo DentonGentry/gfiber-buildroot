@@ -4,4 +4,4 @@
 # is an HTML TV UI, and 1 (false) otherwise.
 . /etc/utils.sh
 
-filecontains "oregano" /config/uitype
+[ -f /config/uitype ] && filecontains "oregano" /config/uitype
