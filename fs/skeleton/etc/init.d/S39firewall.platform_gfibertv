@@ -3,7 +3,6 @@
 
 case "$1" in
   start|restart|reload)
-    $0 stop
     if [ -e /sys/class/net/wan0 ]; then
       # TODO(apenwarr): filter IPv6!
       modprobe -a \
@@ -17,6 +16,8 @@ case "$1" in
           ipt_LOG \
           ipt_REJECT \
           ipt_MASQUERADE
+
+      $0 stop
 
       # Do these first to reduce race conditions
       if [ -e /tmp/NFS ]; then
