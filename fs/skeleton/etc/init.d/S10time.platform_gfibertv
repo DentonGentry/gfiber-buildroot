@@ -33,7 +33,9 @@ case "$1" in
       echo : >"$TIME_FILE"
     ) &
 
-    babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logos rollback &
+    if [ -f /proc/ar_clock ]; then
+      babysit 60 antirollback -u bin -p $ANTIROLLBACK 2>&1 | logos rollback &
+    fi
     ;;
   stop)
     pkillwait -x antirollback
