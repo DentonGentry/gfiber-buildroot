@@ -144,7 +144,7 @@ make_volume()
   fi
 
   # echo "Make '$1' volume on /dev/ubi$2 (size:$3)"
-  if [ $3 -eq "0" ]; then
+  if [ $3 = "0" ]; then
     size_args="-m"
   else
     size_args="-s $3"
