@@ -18,7 +18,7 @@ while :; do
     if reset-button-held 10000; then
       log "factory reset requested."
       leds 0 15 0 15 0 15  # noisy leds to indicate full on factory reset
-      zap --i-really-mean-it
+      zap --i-really-mean-it --erase-backups
       log "factory reset: rebooting in 10 seconds..."
       sleep 10
     else

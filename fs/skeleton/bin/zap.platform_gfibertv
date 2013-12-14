@@ -1,6 +1,25 @@
 #!/bin/sh
 
-if [ "$1" != "--i-really-mean-it" ]; then
+OPT=$(getopt -n "$0" -o er -l i-really-mean-it,erase-backups -- "$@")
+if [ $? != 0 ]; then
+  echo "getopt failed"
+  exit 1
+fi
+eval set -- "$OPT"
+
+ireallymeanit=0
+erasebackups=0
+while true; do
+  case "$1" in
+    -r|--i-really-mean-it ) ireallymeanit=1 ;;
+    -e|--erase-backups ) erasebackups=1 ;;
+    -- ) shift; break ;;
+    * ) echo "***Illegal option: $1" >&2; exit 1 ;;
+  esac
+  shift
+done
+
+if [ $ireallymeanit -eq 0 ]; then
   echo
   echo "                       *    *    *"
   echo "THIS PROGRAM WILL WIPE ALL DATA IN THE FLASH PARTITIONS!"
@@ -10,6 +29,7 @@ if [ "$1" != "--i-really-mean-it" ]; then
   read yesno
   [ "$yesno" = "y" ] || exit 1
   echo
+  ireallymeanit=1
 fi
 
 leds 0 15 0 15 0 15  # noisy leds as we wipe things
@@ -21,7 +41,10 @@ for mtdname in "data+ubi"; do
   fi
 done
 
-rm -f /var/media/Wiz.bak /var/media/ManufacturingBurnin.mov
+if [ $erasebackups -ne 0 ]; then
+  echo "Erasing backup files..."
+  rm -f /var/media/Wiz.bak /var/media/ManufacturingBurnin.mov
+fi
 
 leds 0  # done
 
