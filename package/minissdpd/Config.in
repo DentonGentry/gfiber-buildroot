@@ -1,0 +1,8 @@
+config BR2_PACKAGE_MINISSDPD
+	bool "minissdpd"
+	help
+	minissdpd is an SSDP proxy to allow multiple UPnP programs to share port 1900.
+
+	miniupnpd requires it in the runtime.
+
+	http://miniupnp.free.fr/

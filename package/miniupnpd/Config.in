@@ -1,0 +1,9 @@
+config BR2_PACKAGE_MINIUPNPD
+	bool "miniupnpd"
+	select BR2_PACKAGE_MINISSDPD
+	help
+	miniupnpd is an IGD and NAT-PMP daemon
+
+	miniupnpd requires minissdpd in the runtime, but not to compile
+
+	http://miniupnp.free.fr/
