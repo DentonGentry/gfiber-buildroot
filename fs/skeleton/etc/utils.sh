@@ -64,14 +64,46 @@ rc_pipe_deinit() {
 start_sagesrv() {
   LD_LIBRARY_PATH=/app/sage:/app/sage/lib
   # Start up native streaming server
-  SAGESRV_UID=$(id -u video)
-  SAGESRV_GID=$(id -g video)
+  VIDEO_UID=$(id -u video)
+  VIDEO_GID=$(id -g video)
   babysit 10 alivemonitor /tmp/sagesrvalive 80 10 120 /app/sage/sagesrv -l6 -m5 \
-    -U $SAGESRV_UID -G $SAGESRV_GID -f 2>&1 | logos z 0 20000000 &
+    -U $VIDEO_UID -G $VIDEO_GID -f 2>&1 | logos z 0 20000000 &
 }
 
 stop_sagesrv() {
   pkillwait -f '(babysit.*)(sagesrv)'
   pkillwait -x 'sagesrv'
   pkillwait -f '(alivemonitor.*)(sagesrv)'
+}
+
+start_adloader()
+{
+  if [ -e /app/sage/adloader ]; then
+    mkdir -p /var/media/ads
+    mkdir -p /var/media/ads/contracts
+    mkdir -p /var/media/ads/metadata
+    chmod 666 /var/media/ads
+    chmod 666 /var/media/ads/contracts
+    chmod 666 /var/media/ads/metadata
+    chown video.video /var/media/ads
+    chown video.video /var/media/ads/*
+    chown video.video /var/media/ads/contracts/*
+    chown video.video /var/media/ads/metadata/*
+
+    VIDEO_UID=$(id -u video)
+    VIDEO_GID=$(id -g video)
+    # TODO(irinams): call the alivemonitor after adding threadmon to adloader
+    #babysit 10 alivemonitor /tmp/adloaderalive 80 10 1200000 /app/sage/adloader \
+    babysit 10 /app/sage/adloader -U $VIDEO_UID -G $VIDEO_GID 2>&1 \
+      | logos adsld 0 20000000 &
+  fi
+}
+
+stop_adloader()
+{
+  if [ -e /app/sage/adloader ]; then
+    pkillwait -f '(babysit.*)(adloader)'
+    pkillwait -x 'adloader'
+    pkillwait -f '(alivemonitor.*)(adloader)'
+  fi
 }
