@@ -2,12 +2,13 @@
 
 . /etc/utils.sh
 
-MONITOR_PATH="/tmp/ledmonitor"
+BASE_PATH="/tmp/gpio"
+MONITOR_PATH="$BASE_PATH/ledcontrol"
 MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
 NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
-LED_STATE_FILE="/tmp/ledstate"
+LED_STATE_FILE="$BASE_PATH/ledstate"
 LED_PATH="/sys/class/leds/sys-"
 BLUE_LED="blue"
 RED_LED="red"

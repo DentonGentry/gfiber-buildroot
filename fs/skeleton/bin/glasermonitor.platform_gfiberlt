@@ -3,7 +3,7 @@
 # This script monitors GLASER_PATH folder and decides GLASER status
 
 GLASER_PATH="/tmp/glaser"
-LED_PATH="/tmp/ledmonitor"
+LED_PATH="/tmp/gpio/ledcontrol"
 GLASER_CHANNEL_FILE="$GLASER_PATH/channel"
 LED_GLASER_STATUS_FILE="$LED_PATH/glaserstatus"
 GLASER_STATUS_FILE="$GLASER_PATH/status"
