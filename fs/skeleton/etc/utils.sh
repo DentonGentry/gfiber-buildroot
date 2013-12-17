@@ -82,9 +82,9 @@ start_adloader()
     mkdir -p /var/media/ads
     mkdir -p /var/media/ads/contracts
     mkdir -p /var/media/ads/metadata
-    chmod 666 /var/media/ads
-    chmod 666 /var/media/ads/contracts
-    chmod 666 /var/media/ads/metadata
+    chmod 770 /var/media/ads
+    chmod 770 /var/media/ads/contracts
+    chmod 770 /var/media/ads/metadata
     chown video.video /var/media/ads
     chown video.video /var/media/ads/*
     chown video.video /var/media/ads/contracts/*
