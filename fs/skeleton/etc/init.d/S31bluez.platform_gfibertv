@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Bluetooth is needed only on TV Box
+! is-tv-box && exit 0
+
+# Start BlueZ stack only if /config/BLUEZ exists
+[ ! -e /config/BLUEZ ] && exit 0
+
+case "$1" in
+  start)
+    babysit 30 bluetoothd -n -d 2>&1 | logos bluetoothd &
+    ;;
+  stop)
+    pkillwait -x bluetoothd
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
