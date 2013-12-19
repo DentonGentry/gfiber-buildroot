@@ -15,6 +15,23 @@ update_config()
   export SERVER_NAME
 }
 
+update_server()
+{
+  SERVER=127.0.0.1
+  if is-tv-box && [ -e /config/uitype ] ; then
+    read uimode uiserver uires uiremote < /config/uitype
+    if [ "$uimode" = "extender" ] ; then
+      if [ "$uiserver" = "auto" ] ; then
+        SERVER=`/app/client/miniclient`
+      else
+        SERVER=$uiserver
+      fi
+      [ -n "$uires" ] && export VIDEO_RESOLUTION=$uires
+      [ -n "$uiremote" ] && export RCMODE=$uiremote
+    fi
+  fi
+}
+
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
 export SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
 [ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(hnvram -qr SERIAL_NO)
@@ -41,7 +58,8 @@ else
   mode=miniclient
 fi
 
-SERVER=127.0.0.1
+
+update_server
 SERVER_MAC=
 
 while :; do
@@ -53,7 +71,7 @@ while :; do
       [ -n "$SERVER_MAC" ] && [ ! -e /tmp/goalone ] && ether-wake $SERVER_MAC
       ./miniclient $opts "$SERVER"
       mcstate=$?
-      SERVER=127.0.0.1
+      update_server
       if [ "$mcstate" != "0" ]; then
         echo "Unexpected exit, miniclient restarting after a delay"
         sleep 10  # prevent high-speed spinning in a loop
