@@ -1,0 +1,12 @@
+config BR2_PACKAGE_PYTHON_GOBJECT
+	bool "python-gobject"
+	depends on BR2_PACKAGE_PYTHON
+	depends on BR2_USE_WCHAR
+	select BR2_PACKAGE_LIBGLIB2
+	help
+	  Python bindings for GObject
+
+	  https://wiki.gnome.org/action/show/Projects/PyGObject
+
+comment "python-gobject requires a toolchain with WCHAR support"
+	depends on BR2_PACKAGE_PYTHON && !BR2_USE_WCHAR

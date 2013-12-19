@@ -1,0 +1,21 @@
+--- python-gobject-2.28.6-orig/configure
++++ python-gobject-2.28.6/configure
+@@ -14936,6 +14936,10 @@
+ py_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.prefix)"`
+ py_exec_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.exec_prefix)"`
+ PYTHON_CONFIG=`which $PYTHON`-config
++if ${am_cv_python_includes+:} false; then :
++  $as_echo_n "(cached) " >&6
++  PYTHON_INCLUDES=${am_cv_python_includes}
++else
+ if test -x "$PYTHON_CONFIG"; then
+ PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
+ else
+@@ -14944,6 +14948,7 @@
+   PYTHON_INCLUDES="$PYTHON_INCLUDES -I${py_exec_prefix}/include/python${PYTHON_VERSION}"
+ fi
+ fi
++fi
+ 
+ save_CPPFLAGS="$CPPFLAGS"
+ CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"

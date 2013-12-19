@@ -256,6 +256,7 @@ if BR2_PACKAGE_PYTHON
 menu "external python modules"
 source "package/python-crypto/Config.in"
 source "package/python-dpkt/Config.in"
+source "package/python-gobject/Config.in"
 source "package/python-mad/Config.in"
 source "package/python-netifaces/Config.in"
 source "package/python-pygame/Config.in"
