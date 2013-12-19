@@ -1,10 +1,18 @@
 #!/bin/sh
+
 . /etc/utils.sh
+
+ip46tables()
+{
+  iptables $*
+  ip6tables $*
+}
 
 flush()
 {
-  iptables -F
-  iptables -X
+  ip46tables -F
+  ip46tables -X
+  # ipv4 only
   iptables -t nat -F
   iptables -t nat -X
 }
@@ -12,7 +20,6 @@ flush()
 case "$1" in
   start|restart|reload)
     if [ -e /sys/class/net/wan0 ]; then
-      # TODO(apenwarr): filter IPv6!
       modprobe -a \
           iptable_filter \
           iptable_nat \
@@ -23,7 +30,16 @@ case "$1" in
           ipt_limit \
           ipt_LOG \
           ipt_REJECT \
-          ipt_MASQUERADE
+          ipt_MASQUERADE \
+          \
+          ip6table_filter \
+          ip6t_tcp \
+          ip6t_udp \
+          nf_conntrack_ipv6 \
+          ip6t_pkttype \
+          ip6t_limit \
+          ip6t_LOG \
+          ip6t_REJECT \
 
       flush
 
@@ -31,25 +47,26 @@ case "$1" in
       if [ -e /tmp/NFS ]; then
         # Workaround because we can't have a temporary network dropout
         # when NFS booted.
-        iptables -P INPUT ACCEPT
+        ip46tables -P INPUT ACCEPT
       else
-        iptables -P INPUT DROP
+        ip46tables -P INPUT DROP
       fi
-      iptables -P FORWARD DROP
+      ip46tables -P FORWARD DROP
 
-      iptables -A INPUT -p icmp --icmp-type 8 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
 
       # Incoming connections
       # TODO(apenwarr): Whitelist ports here too for added safety.
       if [ -e /tmp/NFS ]; then
         # Workaround because netfilter conntracking loaded *after* the NFS
         # session was established.
-        iptables -A INPUT -p tcp --sport 2049 -j ACCEPT
+        ip46tables -A INPUT -p tcp --sport 2049 -j ACCEPT
       fi
-      iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
       # I wanted to use '!wan0' here but, it doesn't work as documented.
       for ifc in lo br0; do
-        iptables -A INPUT -i "$ifc" -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -j ACCEPT
       done
 
       # Outgoing connections
@@ -57,39 +74,40 @@ case "$1" in
       # In particular we should have one for samba ports.
 
       # Forwarding/NATting
-      iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-      iptables -A FORWARD -i br0 -j ACCEPT
+      ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -A FORWARD -i br0 -j ACCEPT
+      # v4 only
       iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
 
       # TODO(apenwarr): Remove this when we have real port forwarding controls.
       if [ -e /tmp/DEBUG ]; then
-        iptables -A INPUT -p tcp --dport 22 -j ACCEPT    # ssh
-        iptables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
-        iptables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
-        iptables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
+        ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT    # ssh
+        ip46tables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
+        ip46tables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
+        ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
       fi
 
       # Log packets which weren't explicitly accepted by above rules
-      iptables -N log
-      iptables -A log -m pkttype -m limit \
+      ip46tables -N log
+      ip46tables -A log -m pkttype -m limit \
           --pkt-type unicast \
           --limit 1/second \
           -j LOG --log-prefix "FW: "
-      iptables -A INPUT -i wan0 -j log
-      iptables -A FORWARD -i wan0 -j log
+      ip46tables -A INPUT -i wan0 -j log
+      ip46tables -A FORWARD -i wan0 -j log
 
       # Default DROP policy above is safe, but REJECT is friendlier.
       # But you can't use REJECT as a policy, so add a catchall rule at the
       # bottom.
-      iptables -A INPUT -j REJECT
-      iptables -A FORWARD -j REJECT
+      ip46tables -A INPUT -j REJECT
+      ip46tables -A FORWARD -j REJECT
     fi
     ;;
   stop)
     if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/wan0 ]; then
       flush
-      iptables -P INPUT ACCEPT
-      iptables -P FORWARD ACCEPT
+      ip46tables -P INPUT ACCEPT
+      ip46tables -P FORWARD ACCEPT
     fi
     ;;
   *)
