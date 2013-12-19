@@ -1,6 +1,14 @@
 #!/bin/sh
 . /etc/utils.sh
 
+flush()
+{
+  iptables -F
+  iptables -X
+  iptables -t nat -F
+  iptables -t nat -X
+}
+
 case "$1" in
   start|restart|reload)
     if [ -e /sys/class/net/wan0 ]; then
@@ -17,7 +25,7 @@ case "$1" in
           ipt_REJECT \
           ipt_MASQUERADE
 
-      $0 stop
+      flush
 
       # Do these first to reduce race conditions
       if [ -e /tmp/NFS ]; then
@@ -28,6 +36,8 @@ case "$1" in
         iptables -P INPUT DROP
       fi
       iptables -P FORWARD DROP
+
+      iptables -A INPUT -p icmp --icmp-type 8 -j ACCEPT
 
       # Incoming connections
       # TODO(apenwarr): Whitelist ports here too for added safety.
@@ -77,10 +87,9 @@ case "$1" in
     ;;
   stop)
     if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/wan0 ]; then
-      iptables -F
-      iptables -X
-      iptables -t nat -F
-      iptables -t nat -X
+      flush
+      iptables -P INPUT ACCEPT
+      iptables -P FORWARD ACCEPT
     fi
     ;;
   *)
