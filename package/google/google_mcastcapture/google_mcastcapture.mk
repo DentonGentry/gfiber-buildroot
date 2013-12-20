@@ -26,6 +26,10 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
           $(TARGET_DIR)/app/sage/lib/libtxsrv.so
         $(INSTALL) -D -m 0755 $(@D)/media_push_server/libstreamer.so \
           $(TARGET_DIR)/app/sage/lib/libstreamer.so
+        $(INSTALL) -D -m 0755 $(@D)/media_push_client/libpushclient.so \
+          $(TARGET_DIR)/app/sage/lib/libpushclient.so
+        $(INSTALL) -D -m 0755 $(@D)/media_push_client/pushclientcli \
+          $(TARGET_DIR)/app/sage/pushclientcli
         $(INSTALL) -D -m 0755 $(@D)/pts_index/libptsindex.so \
           $(TARGET_DIR)/app/sage/lib/libptsindex.so
         $(INSTALL) -D -m 0755 $(@D)/tv_format/libtvformat.so \
