@@ -657,6 +657,7 @@ endmenu
 
 menu "Drivers"
 source "package/backports/Config.in"
+source "package/firmware/Config.in"
 endmenu
 
 endmenu

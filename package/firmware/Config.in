@@ -1,0 +1,12 @@
+config BR2_PACKAGE_FIRMWARE
+	bool "Include vendor firmware blobs"
+
+if BR2_PACKAGE_FIRMWARE
+
+config BR2_PACKAGE_FIRMWARE_FILENAMES
+	string "Firmware filenames"
+	default ""
+	help
+	  Space-separated list of filenames relative to /lib/firmware/
+
+endif
