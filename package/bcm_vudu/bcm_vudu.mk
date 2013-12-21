@@ -22,7 +22,7 @@ define BCM_VUDU_INSTALL_STAGING_CMDS
 endef
 
 define BCM_VUDU_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 0700 $(VUDU_SRC)/vudu-bcm7231-example $(TARGET_DIR)/usr/local/bin/vudu
+	$(INSTALL) -D -m 0700 $(VUDU_SRC)/vudu-bcm7231-example $(TARGET_DIR)/usr/local/bin/vudu
 	$(INSTALL) -m 0700 $(VUDU_SRC)/vudu-bcm7231-multimedia-driver-test $(TARGET_DIR)/usr/local/bin/
 	cp -pr $(VUDU_DIR)/lib/* $(TARGET_DIR)/usr/lib
 	mkdir -p $(TARGET_DIR)/etc/cert && \
