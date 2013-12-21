@@ -10,7 +10,7 @@ BACKPORTS_MAKE_ENV = \
 	KLIB=$(TARGET_DIR)
 
 define BACKPORTS_CONFIGURE_CMDS
-	cp package/backports/config $(@D)/.config
+	cp package/backports/$(BR2_PACKAGE_BACKPORTS_DEFCONFIG) $(@D)/.config
 	$(BACKPORTS_MAKE_ENV) $(MAKE) -C $(@D) olddefconfig
 endef
 
@@ -23,5 +23,21 @@ define BACKPORTS_INSTALL_TARGET_CMDS
 		INSTALL_MOD_DIR=backports \
 		modules_install
 endef
+
+# Convenience wrappers:
+# Do 'make backports-oldconfig' or 'make backports-menuconfig' from your out/
+# directory to run 'make oldconfig' or 'make menuconfig' in the backports
+# dir, as configured for your cross compiler and kernel.
+backports-oldconfig backports-menuconfig: backports-configure
+	# intentionally don't use $(MAKE) here, to avoid $(LOGLINEAR)
+	$(BACKPORTS_MAKE_ENV) make -C $(BACKPORTS_DIR) \
+		$(patsubst backports-%,%,$@) </dev/tty >/dev/tty 2>&1
+
+# Same as above, but for 'make savedefconfig'.  Also copies the new defconfig
+# into the defconfig file for this platform.
+backports-savedefconfig:
+	$(BACKPORTS_MAKE_ENV) $(MAKE) -C $(BACKPORTS_DIR) savedefconfig
+	cp $(BACKPORTS_DIR)/defconfig \
+		package/backports/$(BR2_PACKAGE_BACKPORTS_DEFCONFIG)
 
 $(eval $(call GENTARGETS))

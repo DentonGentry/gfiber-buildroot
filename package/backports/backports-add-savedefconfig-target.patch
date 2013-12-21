@@ -1,0 +1,31 @@
+From e8275af83bd6cb9610fca7d03074b711bc09be6c Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 21 Dec 2013 02:36:45 -0500
+Subject: [PATCH] Makefile: add savedefconfig target.
+
+This writes a file called 'defconfig' which contains only the deltas from
+the default configuration.  It's suitable for use as an input defconfig file
+for later builds.
+---
+ Makefile.real |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/Makefile.real b/Makefile.real
+index c09663c..3216d61 100644
+--- a/Makefile.real
++++ b/Makefile.real
+@@ -32,6 +32,11 @@ usedefconfig:
+ 	@$(MAKE) -C kconf conf
+ 	@./kconf/conf --defconfig=defconfig Kconfig
+ 
++.PHONY: savedefconfig
++savedefconfig:
++	@$(MAKE) -C kconf conf
++	@./kconf/conf --savedefconfig=defconfig Kconfig
++
+ defconfig-%::
+ 	@$(MAKE) -C kconf conf
+ 	@./kconf/conf --defconfig=defconfigs/$(@:defconfig-%=%) Kconfig
+-- 
+1.7.9.dirty
+

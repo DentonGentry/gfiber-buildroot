@@ -3,3 +3,13 @@ config BR2_PACKAGE_BACKPORTS
 	help
 	  The backports package includes many Linux drivers from recent
 	  kernels, backported to older ones.
+
+if BR2_PACKAGE_BACKPORTS
+
+config BR2_PACKAGE_BACKPORTS_DEFCONFIG
+	string "Backports defconfig file"
+	default "defconfig"
+	help
+	  Default config file for backports package for your platform.
+
+endif
