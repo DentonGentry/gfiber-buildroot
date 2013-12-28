@@ -46,8 +46,12 @@ change_state() {
   fi
 }
 
+does_interface_exist() {
+  [ -e "/sys/class/net/$1" ]
+}
+
 is_interface_up() {
-  [ -n "$(ip link show $1 | grep LOWER_UP)" ]
+  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
 }
 
 has_ip_address() {
@@ -56,16 +60,24 @@ has_ip_address() {
 }
 
 is_link_up() {
-  # Check eth0 (ethernet interface) for storage and tv boxes too, and
-  # eth1 (MoCA interface) only for tv boxes.
-  is_interface_up eth0 || (is-tv-box && is_interface_up eth1)
+  # If there is an explicit WAN link, use that.
+  # Otherwise for TV Boxes, check MoCA and Ethernet
+  # and for Storage Boxes check only Ethernet
+  if does_interface_exist wan0; then
+    is_interface_up wan0
+    return $?
+  fi
+  if is-tv-box; then
+    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0
+  else
+    is_interface_up eth0
+  fi
 }
 
 is_manufactured_recently() {
   if [ ! "$is_manufactured_recently_status" ]; then
     # Check if the device is made within or after 2013 by checking serial number.
-    hnvram_serial=$(hnvram -r 1ST_SERIAL_NUMBER)
-    serial="${hnvram_serial#1ST_SERIAL_NUMBER=}"
+    serial=$(serial)
 
     # Serial number format: GABCYWWSSSSS.
     # Check if the serial number matches this format (starting from G)
