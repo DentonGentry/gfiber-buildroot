@@ -95,7 +95,7 @@ while read f; do
     change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
   elif [ -f "$HALT_FILE" ]; then
     change_state HALT "$HALT_LED_ON"
-  elif [ -f "$KEYBOX_FILE" ]; then
+  elif [ -f "$KEYBOX_FILE" -a ! -f /rw/ignore-bad-keybox ]; then
     change_state INVALID_KEYBOX "$HW_FAIL_LED_ON"
   elif [ -f "$OVERTEMP_FILE" ]; then
     change_state OVERTEMP "$HW_FAIL_LED_ON"
