@@ -8,6 +8,10 @@ define HUMAX_MISC_BUILD_CMDS
 	TARGET=$(TARGET_CROSS) $(MAKE) -C $(@D)/libupgrade
 endef
 
+define HOST_HUMAX_MISC_BUILD_CMDS
+	$(MAKE) -C $(@D)/libupgrade
+endef
+
 define HUMAX_MISC_INSTALL_STAGING_CMDS
 	mkdir -p $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH) && \
 	$(INSTALL) -m 0755 $(@D)/makehdf $(STAGING_DIR)/$(HUMAX_MISC_STAGING_PATH)
@@ -15,4 +19,10 @@ define HUMAX_MISC_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_nvram.h $(STAGING_DIR)/usr/include/humax
 endef
 
+define HOST_HUMAX_MISC_INSTALL_CMDS
+	$(INSTALL) -m 0755 $(@D)/libupgrade/libhmxupgrade.a $(HOST_DIR)/usr/lib/libhmxupgrade.a
+	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_nvram.h $(HOST_DIR)/usr/include/humax
+endef
+
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
