@@ -10,6 +10,7 @@ SAMBA_SUBDIR = source3
 SAMBA_INSTALL_STAGING = YES
 
 SAMBA_DEPENDENCIES = popt \
+	gettext \
 	$(if $(BR2_PACKAGE_SAMBA_RPCCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_SMBCLIENT),readline) \
 	$(if $(BR2_PACKAGE_SAMBA_AVAHI),avahi) \
