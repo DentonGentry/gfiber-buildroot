@@ -4,23 +4,23 @@ GOOGLE_DART_VM_VERSION=30104
 GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
-BTYPE=ReleaseARM
+GOOGLE_DART_VM_BTYPE=ReleaseARM
 else ifeq ($(ARCH),armeb)
-BTYPE=ReleaseARM
+GOOGLE_DART_VM_BTYPE=ReleaseARM
 else ifeq ($(ARCH),mips)
-BTYPE=ReleaseMIPS
+GOOGLE_DART_VM_BTYPE=ReleaseMIPS
 else ifeq ($(ARCH),mipsel)
-BTYPE=ReleaseMIPS
+GOOGLE_DART_VM_BTYPE=ReleaseMIPS
 else ifeq ($(ARCH),i386)
-BTYPE=ReleaseIA32
+GOOGLE_DART_VM_BTYPE=ReleaseIA32
 else ifeq ($(ARCH),x86_64)
-BTYPE=ReleaseX64
+GOOGLE_DART_VM_BTYPE=ReleaseX64
 else
-$(error Unsupported architecture)
+$(error Unsupported architecture '$(ARCH)')
 endif
 
 GOOGLE_DART_VM_MAKE_VARS=\
-BUILDTYPE=$(BTYPE) \
+BUILDTYPE=$(GOOGLE_DART_VM_BTYPE) \
 NM.target="$(TARGET_NM)" \
 CC.target="$(TARGET_CC)" \
 LINK.target="$(TARGET_CXX)" \
@@ -29,7 +29,7 @@ AR.target="$(TARGET_AR)"
 
 define GOOGLE_DART_VM_BUILD_CMDS
 	$(MAKE) -C $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart $(GOOGLE_DART_VM_MAKE_VARS)
-	$(TARGET_STRIP) $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(BTYPE)/dart
+	$(TARGET_STRIP) $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(GOOGLE_DART_VM_BTYPE)/dart
 endef
 
 
@@ -42,7 +42,7 @@ endef
 
 
 define GOOGLE_DART_VM_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 0755 -D $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(BTYPE)/dart $(TARGET_DIR)/usr/bin
+	$(INSTALL) -m 0755 -D $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(GOOGLE_DART_VM_BTYPE)/dart $(TARGET_DIR)/usr/bin
 endef
 
 $(eval $(call GENTARGETS))

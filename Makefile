@@ -387,7 +387,7 @@ _DIRS=$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) \
 	$(TARGET_DIR) $(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
 MK_DIRS=$(STAMP_DIR)/.dirs
 $(MK_DIRS): | $(_DIRS)
-	$(MAKE) $(_DIRS)  # _DIRS
+	$(MAKE) $(EXTRAMAKEARGS) $(_DIRS)  # _DIRS
 	touch $@
 dirs: $(MK_DIRS)
 
@@ -427,18 +427,18 @@ dependencies: dirs
 WORLD_STAMP = $O/.stamp.world-setup
 
 $(WORLD_STAMP):
-	$(MAKE) O=$O depcheck
-	$(MAKE) O=$O source
-	$(MAKE) O=$O dependencies
-	$(MAKE) O=$O compiler
-	$(MAKE) O=$O cross
-	$(MAKE) O=$O patchtargets
+	$(MAKE) $(EXTRAMAKEARGS) depcheck
+	$(MAKE) $(EXTRAMAKEARGS) source
+	$(MAKE) $(EXTRAMAKEARGS) dependencies
+	$(MAKE) $(EXTRAMAKEARGS) compiler
+	$(MAKE) $(EXTRAMAKEARGS) cross
+	$(MAKE) $(EXTRAMAKEARGS) patchtargets
 	touch $@
 
 worldsetup: $(WORLD_STAMP)
 
 world: worldsetup
-	$(MAKE) O=$O finaltargets
+	$(MAKE) $(EXTRAMAKEARGS) finaltargets
 
 $(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
 	mkdir -p $(@D)
