@@ -1,5 +1,6 @@
 menu "Qualcomm Switch SDK"
 	config BR2_PACKAGE_QUALCOMM_SWITCH
 		bool "Qualcomm Ethernet Switch SDK"
+		depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
 		default n
 endmenu
