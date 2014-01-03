@@ -1,16 +1,16 @@
-From ad557de2c31ac61ef253fc71e3d8a803982e460b Mon Sep 17 00:00:00 2001
+From adf4f7a9bfdf3a8fe3a51ecedf358a368feb6069 Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Sat, 23 Feb 2013 00:22:01 -0500
 Subject: [PATCH] Make it compile on linux.
 
 ---
- .gitignore |    3 +++
- Makefile   |   17 ++++++++---------
- file.c     |    8 +++++++-
- grep.c     |    7 ++++---
- mmfile.c   |    2 --
- util.c     |    8 ++++++++
- 6 files changed, 30 insertions(+), 15 deletions(-)
+ .gitignore |  3 +++
+ Makefile   | 17 ++++++++---------
+ file.c     | 10 +++++++++-
+ grep.c     |  7 ++++---
+ mmfile.c   |  2 --
+ util.c     |  8 ++++++++
+ 6 files changed, 32 insertions(+), 15 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -49,7 +49,7 @@ index 5c066d2..3752f46 100644
 +clean:
 +	rm -f *~ grep *.o
 diff --git a/file.c b/file.c
-index 1787ac0..b565aab 100644
+index 1787ac0..bdd48a7 100644
 --- a/file.c
 +++ b/file.c
 @@ -53,6 +53,8 @@ struct file {
@@ -61,7 +61,16 @@ index 1787ac0..b565aab 100644
  };
  
  #ifndef NOZ
-@@ -133,6 +135,8 @@ grep_open(char *path, char *mode)
+@@ -104,6 +106,8 @@ grep_fdopen(int fd, char *mode)
+ 		snprintf(fname, sizeof fname, "(fd %d)", fd);
+ 
+ 	f = grep_malloc(sizeof *f);
++	f->buf = NULL;
++	f->n = 0;
+ 
+ #ifndef NOZ
+ 	if (Zflag) {
+@@ -133,6 +137,8 @@ grep_open(char *path, char *mode)
  
  	f = grep_malloc(sizeof *f);
  	f->noseek = 0;
@@ -70,7 +79,7 @@ index 1787ac0..b565aab 100644
  
  #ifndef NOZ
  	if (Zflag) {
-@@ -182,7 +186,8 @@ grep_fgetln(file_t *f, size_t *l)
+@@ -182,7 +188,8 @@ grep_fgetln(file_t *f, size_t *l)
  {
  	switch (f->type) {
  	case FILE_STDIO:
@@ -80,7 +89,7 @@ index 1787ac0..b565aab 100644
  	case FILE_MMAP:
  		return mmfgetln(f->mmf, l);
  #ifndef NOZ
-@@ -198,6 +203,7 @@ grep_fgetln(file_t *f, size_t *l)
+@@ -198,6 +205,7 @@ grep_fgetln(file_t *f, size_t *l)
  void
  grep_close(file_t *f)
  {
@@ -158,5 +167,5 @@ index 028ddc6..fb9e18e 100644
  
  int
 -- 
-1.7.9.dirty
+1.8.1.5-x20-1
 
