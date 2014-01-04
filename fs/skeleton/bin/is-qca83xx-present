@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import sys
+
+try:
+  import qca83xx
+  if qca83xx.IsQCA83xx():
+    sys.exit(0)
+except ImportError:
+  pass
+except qca83xx.SdkError:
+  pass
+
+sys.exit(1)

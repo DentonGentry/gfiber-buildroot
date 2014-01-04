@@ -1,0 +1,25 @@
+#!/usr/bin/python
+
+import options
+import qca83xx
+import signal
+import sys
+
+optspec = """
+qca83xx [options...]
+--
+s,stats   Enable per-port MIB stats collection
+"""
+
+def main():
+  # set an alarm, in case the SDK (or anything else) hangs
+  # for any reason
+  signal.alarm(60)
+
+  o = options.Options(optspec)
+  (opt, unused_flags, unused_extra) = o.parse(sys.argv[1:])
+  if opt.stats:
+    qca83xx.enable_stats(enable=True)
+
+if __name__ == '__main__':
+  main()
