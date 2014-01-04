@@ -91,7 +91,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		mkdir -p $(@D)/fs/lib/modules $(@D)/fs/lib/firmware && \
 		ln -f	$(TARGET_DIR)/lib/modules/*/extra/pfe.ko \
 			$(@D)/fs/lib/modules/ && \
-		ln -f	$(TARGET_DIR)/lib/firmware/* \
+		ln -f	$(TARGET_DIR)/lib/firmware/*c2000*.elf \
 			$(@D)/fs/lib/firmware/; \
 	fi
 
