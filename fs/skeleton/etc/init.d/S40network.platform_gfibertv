@@ -57,6 +57,8 @@ case "$1" in
     fi
 
     [ -e /usr/lib/modules/bmoca.ko ] && insmod /usr/lib/modules/bmoca.ko
+    modprobe -a ath9k ath10k_pci mwifiex_sdio mwifiex_usb ath9k_htc \
+        2>/dev/null
 
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
@@ -116,7 +118,8 @@ case "$1" in
     for x in \
         /sys/class/net/[ea]th[0-9] \
         /sys/class/net/lan[0-9] \
-        /sys/class/net/moca[0-9]; do
+        /sys/class/net/moca[0-9] \
+        /sys/class/net/wlan[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
       ip link set $x up &&
