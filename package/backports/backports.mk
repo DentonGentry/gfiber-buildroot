@@ -1,4 +1,4 @@
-BACKPORTS_VERSION = 3.11.6
+BACKPORTS_VERSION = 3.13-rc2
 BACKPORTS_SOURCE  = backports-$(BACKPORTS_VERSION)-1.tar.bz2
 BACKPORTS_SITE    = http://www.kernel.org/pub/linux/kernel/projects/backports/stable/v$(BACKPORTS_VERSION)
 BACKPORTS_DEPENDENCIES = linux
