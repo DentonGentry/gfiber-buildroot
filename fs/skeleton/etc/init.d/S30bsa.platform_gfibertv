@@ -11,8 +11,8 @@ BT_BSA_STARTUP_DELAY=2
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
 
-# Skip Broadcom BSA stack if /config/BLUEZ exists
-[ -e /config/BLUEZ ] && exit 0
+# Start Broadcom BSA stack only on select platforms
+is-bluez-platform && exit 0
 
 case "$1" in
   start)
