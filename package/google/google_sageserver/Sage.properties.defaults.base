@@ -395,3 +395,4 @@ ui/allow_ui_selector=true
 ui/channel/auto_accept=true
 enable_youtube_leanback=true
 ui/loader=sage.ui.x.FiberTVDark
+seeker/enable_continual_record=false
