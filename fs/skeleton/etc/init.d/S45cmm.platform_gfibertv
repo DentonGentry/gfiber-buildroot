@@ -2,7 +2,7 @@
 
 case "$1" in
   start)
-    if CMM=$(which cmm) && runnable $CMM; then
+    if runnable cmm; then
       modprobe -a nfnetlink fci
       MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
       [ -c /dev/vwd0 ] || mknod /dev/vwd0 c $MAJOR 0
@@ -11,7 +11,7 @@ case "$1" in
     fi
     ;;
   stop)
-    if CMM=$(which cmm) && runnable $CMM; then
+    if runnable cmm; then
       pkillwait -x cmm
       grep -q fci /proc/modules && rmmod fci
     fi
