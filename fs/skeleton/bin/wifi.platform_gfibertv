@@ -3,6 +3,8 @@ band=5
 ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
 channel=auto
+autotype=NONDFS
+width=20
 # use $WIFI_PSK from the environment if given.
 # You shouldn't pass passwords as command-line options because they show up
 # in 'ps' even to users other than you.
@@ -27,14 +29,26 @@ USAGE="
 Usage: $bin set [options...]
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default=$band)
  -c <channel>     Channel to use (default=$channel)
+ -a <autotype>    Autochannel method to use (LOW, HIGH, DFS, NONDFS, ANY,
+                    OVERLAP) (default=$autotype)
  -s <ssid>        SSID to use (default=$ssid)
  -e <encryption>  Encryption type to use (WPA_PSK_AES,
                     WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
+ -w <20|40|80>    Channel with to use, in MHz (default=$width)
 "
 usage() {
   echo "$USAGE"
   exit 1
+}
+
+
+includes() {
+  local want="$1" list="$2"
+  for i in $list; do
+    [ "$want" = "$i" ] && return 0
+  done
+  return 1
 }
 
 
@@ -44,9 +58,9 @@ WL() {
 }
 
 
-IWCONFIG() {
-  log "iwconfig" "$@"
-  iwconfig "$@" || die "iwconfig $*: failed"
+IW() {
+  log "iw" "$@"
+  iw "$@" || die "iw $*: failed"
 }
 
 
@@ -58,16 +72,42 @@ fi
 shift
 
 
-while getopts "b:s:e:c:" opt
+while getopts "b:c:a:s:e:w:" opt
 do
   case $opt in
     b) band=$OPTARG ;;
     c) channel=$OPTARG ;;
+    a) autotype=$OPTARG ;;
     s) ssid=$OPTARG ;;
     e) crypto=$OPTARG ;;
+    w) width=$OPTARG ;;
     *) usage ;;
   esac
 done
+
+
+C_24MAIN="2412 2432 2462"
+C_24OVERLAP="2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462"
+C_5LOW="5180 5200 5220 5240"
+C_5HIGH="5745 5765 5785 5805 5825"
+C_5DFS="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
+case "$autotype" in
+  LOW) permit_freq="$C_24MAIN $C_5LOW" ;;
+  HIGH) permit_freq="$C_24MAIN $C_5HIGH" ;;
+  DFS) permit_freq="$C_5DFS" ;;
+  NONDFS) permit_freq="$C_24MAIN $C_5LOW $C_5HIGH" ;;
+  ANY) permit_freq="$C_24MAIN $C_5LOW $C_5HIGH $C_5DFS" ;;
+  OVERLAP) permit_freq="$C_24OVERLAP $ANY" ;;
+  *) die "unknown autochannel type '$autotype'" ;;
+esac
+
+
+case "$width" in
+  20) ;;
+  40|80) die "widths other than 20 are not supported yet" ;;
+  *) die "invalid channel width='$width'"
+esac
+
 
 if runnable wl; then
   log "Configuring broadcom wifi."
@@ -130,40 +170,142 @@ if runnable wl; then
   esac
 elif runnable iw; then
   log "Configuring cfg80211 wifi."
-  ifc=$(
-    ifcname=
-    # TODO(apenwarr): iwlist is deprecated and iw is unparseable.
-    #  So we'll keep using iwlist for now.  We should probably write a new
-    #  iw-like tool with more sensible inputs/outputs.
-    iwlist channel 2>/dev/null |
-    while read word channum colon freq junk; do
-      case $word in
-        Channel)
-          startswith "$freq" "$band" || continue
-          if [ "$channel" = "auto" ] ||
-             [ "$channum" = "$channel" -o "$channum" = "0$channel" ]; then
-            echo "$ifcname"
+  phy=$(
+    phy=
+    channum=
+    IW phy | while IFS=" []" read a b c d junk; do
+      if [ "$a" = "Wiphy" ]; then
+        phy=$b
+      elif [ "$c" = "MHz" ]; then
+        freq=$b
+        channum=$d
+        if [ "$channel" = "$channum" ]; then
+          echo "$phy"
+          break
+        elif [ "$channel" = "auto" ]; then
+          if startswith "$band" 2 && startswith $freq 2; then
+            echo "$phy"
+            break
+          elif startswith "$band" 5 && startswith $freq 5; then
+            echo "$phy"
             break
           fi
-          ;;
-        *)
-          ifcname=$word
-          ;;
-      esac
+        fi
+      fi
+    done
+  )
+  [ -n "$phy" ] || die "no wifi phy for band='$band' channel='$channel'"
+  phynum=${phy#phy}
+  log "phy='$phy' phynum='$phynum'"
+  ifc=$(
+    thisphynum=
+    ifcname=
+    IW dev | while read a b junk; do
+      if startswith "$a" "phy#"; then
+        thisphynum=${a#phy#}
+      elif [ "$a" = "Interface" ] && ! startswith "$b" "mon."; then
+        if [ "$thisphynum" = "$phynum" ]; then
+          echo "$b"
+          break
+        fi
+      fi
     done
   )
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
-  log "Using wifi interface: '$ifc'"
-  IW() {
+  log "ifc='$ifc'"
+
+  IWC() {
     IW dev "$ifc" "$@"
   }
+
+  pidfile=/tmp/hostapd.pid.${ifc}
+  log "pidfile='$pidfile'"
+  killpid "$pidfile"
+
+  # TODO(apenwarr): Play more with hostapd's auto channel selection.
+  #  I read comments elsewhere that it's rather incomplete, and glancing
+  #  through the code it looks like it doesn't handle all the interesting
+  #  cases.  But neither does this code yet...
+  if [ "$channel" = "auto" ]; then
+    # TODO(apenwarr): we really want to clear any old survey results first.
+    #  But there seems to be no iw command for that yet...
+    # TODO(apenwarr): This only scans each channel for 100ms.
+    #  Ideally it should scan for longer, to get a better activity sample.
+    #  It would also be nice to continue scanning in the background while
+    #  hostapd is running, using 'iw offchannel'.
+    IWC scan passive >/dev/null
+
+    # TODO(apenwarr): this algorithm doesn't deal with overlapping channels.
+    #  Just because channel 1 looks good doesn't mean we should use it;
+    #  activity in overlapping channels could destroy performance.  In fact,
+    #  overlapping channel activity is much worse than activity on the main
+    #  channel.  Also, if using 40 MHz or 80 MHz channel width, we should
+    #  count activity in all the 20 MHz sub-channels separately, and choose
+    #  the least-active sub-channel as the primary.
+    bestfreq=$(
+      bestfreq=
+      bestnoise=
+      bestratio=
+      freq=
+      IWC survey dump | {
+        # TODO(apenwarr): Randomize the order of channels.
+        #  Otherwise when channels are all about equally good, we'd always
+        #  choose exactly the same channel, which might be bad in the case
+        #  of hidden nodes.
+        while read a b c d e junk; do
+          if [ "$a" = "frequency:" ]; then
+            freq=$b
+            noise=
+            active=
+            busy=
+          elif [ "$a" = "noise:" ]; then
+            noise="$b"
+          elif [ "$a $b $c" = "channel active time:" ]; then
+            active=$d
+          elif [ "$a $b $c" = "channel receive time:" ]; then
+            busy=$d
+            ratio=$(( ($active+1) * 1000 / ($busy+1) ))
+            includes "$freq" "$permit_freq" || continue
+            # some radios support both bands, but we only want to match
+            # channels on the band we've chosen.
+            startswith "$band" 2 && ! startswith "$freq" 2 && continue
+            startswith "$band" 5 && ! startswith "$freq" 5 && continue
+            log "freq=$freq ratio=$ratio noise=$noise"
+            if [ -z "$bestnoise" ] ||
+               [ "$(($bestnoise - 15))" -gt "$noise" ] ||
+               [ "$bestratio" -lt "$ratio" ]; then
+              bestfreq=$freq
+              bestratio=$ratio
+              bestnoise=$noise
+            fi
+          fi
+        done
+        echo "$bestfreq"
+      }
+    )
+    [ -n "$bestfreq" ] || die "no valid channels for band='$band' autotype='$autotype'"
+    log "autofreq='$bestfreq'"
+
+    channel=$(
+      IW phy | while IFS=" []" read a b c d junk; do
+        if [ "$c" = "MHz" ]; then
+          freq=$b
+          channum=$d
+          if [ "$freq" = "$bestfreq" ]; then
+            echo "$channum"
+            break
+          fi
+        fi
+      done
+    )
+    [ -n "$channel" ] || die "no channel number matched freq='$bestfreq'"
+    log "autochannel='$channel'"
+  fi
+
   # TODO(apenwarr): enable 802.11ac modes on devices that support them.
-  # TODO(apenwarr): mainline hostapd doesn't support auto channel yet?!
-  #   So we'll just hardcode the channel here for now, although that's
-  #   obviously gross.
   case $band in
-    2.4) hostapd_band=g; hostapd_channel=1 ;;
-    5) hostapd_band=a; hostapd_channel=157 ;;
+    2.4) hostapd_band=g ;;
+    5) hostapd_band=a ;;
     *) die "invalid band in '$band'" ;;
   esac
   case $crypto in
@@ -179,7 +321,7 @@ elif runnable iw; then
     WEP|NONE) wpa_pairwise=CCMP ;;
     *) die "invalid crypto alg in '$crypto'" ;;
   esac
-  atomic /tmp/hostapd.conf.${band}g "
+  atomic /tmp/hostapd.conf.$ifc "
 interface=$ifc
 bridge=br0
 ssid=$ssid
@@ -189,16 +331,21 @@ wpa_passphrase=$psk
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=$wpa_pairwise
 hw_mode=$hostapd_band
-channel=$hostapd_channel
+channel=$channel
+country_code=US
+ieee80211d=1
+ieee80211h=1
 ieee80211n=1
-ht_capab=[HT40+][SHORT-GI-20][SHORT-GI-40]
+# TODO(apenwarr): enabling 80211ac mode makes hostapd not work.  Hmm...
+#ieee80211ac=1
+# TODO(apenwarr): 40 MHz support disabled until we do autochannel better.
+#ht_capab=[HT40+][SHORT-GI-20][SHORT-GI-40]
 "
   case $crypto in
     WPA2_*|WPA_*|WEP|NONE)
-      pidfile=/tmp/hostapd.pid.${band}g
-      babysit 60 startpid /tmp/hostapd.pid.${band}g \
-          hostapd -dK /tmp/hostapd.conf.${band}g \
-          2>&1 | logos hostapd-${band}g &
+      babysit 60 startpid "$pidfile" \
+          hostapd -dK /tmp/hostapd.conf.$ifc \
+          2>&1 | logos hostapd-$ifc &
       ;;
     *)
       die "invalid crypto '$crypto'"

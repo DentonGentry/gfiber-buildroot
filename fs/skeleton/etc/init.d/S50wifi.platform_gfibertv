@@ -21,7 +21,7 @@ case "$1" in
         [ -z "$serial" ] && serial=unknown
         export WIFI_PSK=gfdogfood
         wifi set -b 2.4 -s GFRG_${serial}_11n  -e WPA2_PSK_AES
-        wifi set -b 5   -s GFRG_${serial}_11ac -e WPA2_PSK_AES
+        wifi set -b 5   -s GFRG_${serial}_11ac -e WPA2_PSK_AES -a HIGH
       fi
     fi
     ;;
