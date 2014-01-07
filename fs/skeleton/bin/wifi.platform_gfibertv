@@ -128,10 +128,13 @@ if runnable wl; then
       die "invalid crypto '$crypto'"
       ;;
   esac
-elif runnable iwconfig; then
-  log "Configuring atheros wifi."
+elif runnable iw; then
+  log "Configuring cfg80211 wifi."
   ifc=$(
     ifcname=
+    # TODO(apenwarr): iwlist is deprecated and iw is unparseable.
+    #  So we'll keep using iwlist for now.  We should probably write a new
+    #  iw-like tool with more sensible inputs/outputs.
     iwlist channel 2>/dev/null |
     while read word channum colon freq junk; do
       case $word in
@@ -151,18 +154,18 @@ elif runnable iwconfig; then
   )
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
   log "Using wifi interface: '$ifc'"
-  IWC() {
-    IWCONFIG "$ifc" "$@"
+  IW() {
+    IW dev "$ifc" "$@"
   }
-  for mode in 11ACVHT80 11ACVHT40 11NGHT40 11ACVHT20 11NGHT20; do
-    if iwpriv "$ifc" mode "$mode" 2>/dev/null; then
-      log "Mode for $ifc is $mode"
-      break
-    fi
-  done
-  IWC essid ""
-  IWC mode master
-  IWC channel "$channel"  # may be "auto"
+  # TODO(apenwarr): enable 802.11ac modes on devices that support them.
+  # TODO(apenwarr): mainline hostapd doesn't support auto channel yet?!
+  #   So we'll just hardcode the channel here for now, although that's
+  #   obviously gross.
+  case $band in
+    2.4) hostapd_band=g; hostapd_channel=1 ;;
+    5) hostapd_band=a; hostapd_channel=157 ;;
+    *) die "invalid band in '$band'" ;;
+  esac
   case $crypto in
     WPA_*) auth_algs=1; wpa=1 ;;
     WPA2_*) auth_algs=1; wpa=2 ;;
@@ -178,12 +181,17 @@ elif runnable iwconfig; then
   esac
   atomic /tmp/hostapd.conf.${band}g "
 interface=$ifc
+bridge=br0
 ssid=$ssid
 auth_algs=$auth_algs
 wpa=$wpa
 wpa_passphrase=$psk
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=$wpa_pairwise
+hw_mode=$hostapd_band
+channel=$hostapd_channel
+ieee80211n=1
+ht_capab=[HT40+][SHORT-GI-20][SHORT-GI-40]
 "
   case $crypto in
     WPA2_*|WPA_*|WEP|NONE)
@@ -196,7 +204,6 @@ wpa_pairwise=$wpa_pairwise
       die "invalid crypto '$crypto'"
       ;;
   esac
-  IWC essid -- "$ssid"
 else
   die "No wifi runtime found."
 fi
