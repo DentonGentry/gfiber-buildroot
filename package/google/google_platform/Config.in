@@ -19,6 +19,13 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fibler devices.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
+	bool "include hnvram access tools"
+    default n
+    select BR2_PACKAGE_HUMAX_MISC
+    help
+      NVRAM manipulation utility for Google platforms.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
@@ -96,6 +103,7 @@ config BR2_PACKAGE_GOOGLE_STORAGE_BOX
 	select BR2_PACKAGE_GOOGLE_MPEGPARSER
 	select BR2_PACKAGE_GOOGLE_OOKLA if BR2_mipsel
 	select BR2_PACKAGE_GOOGLE_OREGANO if !BR2_x86_64
+	select BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
 	select BR2_PACKAGE_GOOGLE_PULLREADER
 	select BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
 	select BR2_PACKAGE_GOOGLE_SAGEJNI
@@ -122,6 +130,7 @@ config BR2_PACKAGE_GOOGLE_TV_BOX
 	select BR2_PACKAGE_GOOGLE_MPEGPARSER
 	select BR2_PACKAGE_GOOGLE_OOKLA if BR2_mipsel
 	select BR2_PACKAGE_GOOGLE_OREGANO
+	select BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
 	select BR2_PACKAGE_GOOGLE_SAGE_ANALYTICS_PLUGIN
 	select BR2_PACKAGE_GOOGLE_SAGEJNI
 	select BR2_PACKAGE_GOOGLE_SAGESERVER
