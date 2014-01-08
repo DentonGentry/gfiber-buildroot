@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this platform should use BlueZ Bluetooth stack.
+# Returns 1 (false) otherwise.
+
+BT_MRVL_PATH="/sys/bus/mmc/devices/mmc0:0001/mmc0:0001:2"
+
+if [ -e "$BT_MRVL_PATH" ] &&
+   [ -e "$BT_MRVL_PATH/vendor" ] && [ -e "$BT_MRVL_PATH/device" ]; then
+  VENDOR=$(cat "$BT_MRVL_PATH/vendor")
+  DEVICE=$(cat "$BT_MRVL_PATH/device")
+  [ "$VENDOR" = 0x02df ] && [ "$DEVICE" = 0x912e ] && exit 0
+fi
+
+exit 1
