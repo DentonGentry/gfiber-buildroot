@@ -62,7 +62,7 @@ case "$1" in
         sleep $BT_BSA_STARTUP_DELAY
 
         # Start app_gtv.
-        babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos app_gtv &
+        babysit 30 app_gtv -a "$BT_MAC" -n "$BT_NAME" -k 2>&1 | logos appgtv &
       fi
 
     ) &
