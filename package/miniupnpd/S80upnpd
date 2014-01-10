@@ -9,51 +9,84 @@
 # wan is wan0 on optimus/gfrg200
 wan=wan0
 
+wanipv4=$(ip -4 -o addr show $wan)
+wanipv4=${wanipv4#* inet }
+wanipv4=${wanipv4%%/*}
+
 setup()
 {
   if [ ! -f /tmp/upnpd-enabled ]; then
     echo '/tmp/upnpd-enabled does not exist, refusing to setup.'
     return
   fi
-  wanipv4=$(ip addr show $wan | grep 'inet ' | head -n 1)
-  wanipv4=${wanipv4%%/*}
-  wanipv4=${wanipv4##* }
 
   # ipv6 and ipv4
   for iptables in ip6tables iptables; do
-    $iptables -t filter -F MINIUPNPD
     $iptables -t filter -N MINIUPNPD
-    $iptables -t filter -I FORWARD 4 -i $wan ! -o $wan -j MINIUPNPD
+    $iptables -t filter -N MINIUPNPD-FORWARD &&
+      $iptables -t filter -I MINIUPNPD-FORWARD -i $wan ! -o $wan -j MINIUPNPD &&
+      $iptables -t filter -I FORWARD -j MINIUPNPD-FORWARD
   done
 
   # just ipv4
   for iptables in iptables; do
-    $iptables -t nat -F MINIUPNPD
     $iptables -t nat -N MINIUPNPD
-    $iptables -t nat -A PREROUTING -d "$wanipv4" -i $wan -j MINIUPNPD
+    $iptables -t nat -N MINIUPNPD-PREROUTING &&
+      $iptables -t nat -I MINIUPNPD-PREROUTING -d "$wanipv4" -i $wan -j MINIUPNPD &&
+      $iptables -t nat -I PREROUTING -j MINIUPNPD-PREROUTING
   done
+}
+
+# rebuild the rule with the wan ip in case it changed
+refresh()
+{
+    iptables -t nat -F MINIUPNPD-PREROUTING
+    iptables -t nat -I MINIUPNPD-PREROUTING -d "$wanipv4" -i $wan -j MINIUPNPD
+}
+
+clean_table_chain()
+{
+  local iptables table chain
+  iptables=$1
+  table=$2
+  chain=$3
+
+  if $iptables -t $table -L 2>&1 | grep -q MINIUPNPD; then
+    # if script misbehaves, it can add several of the following, so remove them all
+    while $iptables -t $table -D $chain -j MINIUPNPD-$chain >/dev/null 2>&1; do :; done
+    $iptables -t $table -F MINIUPNPD-$chain
+    $iptables -t $table -X MINIUPNPD-$chain
+    $iptables -t $table -F MINIUPNPD
+    $iptables -t $table -X MINIUPNPD
+  fi
 }
 
 cleanup()
 {
+  # ipv6 and ipv4
   for iptables in ip6tables iptables; do
-    $iptables -t filter -F MINIUPNPD
-    $iptables -t filter -D FORWARD -i $wan ! -o $wan -j MINIUPNPD
-    $iptables -t filter -X MINIUPNPD
+    clean_table_chain $iptables filter FORWARD
+  done
 
-    $iptables -t nat -F MINIUPNPD
-    $iptables -t nat -D PREROUTING -i $wan -j MINIUPNPD
-    $iptables -t nat -X MINIUPNPD
+  # just ipv4
+  for iptables in iptables; do
+    clean_table_chain $iptables nat PREROUTING
   done
 }
 
 show()
 {
   for iptables in ip6tables iptables; do
-    $iptables -v -n -t nat -L PREROUTING
-    $iptables -v -n -t nat -L MINIUPNPD
-    $iptables -v -n -t filter -L FORWARD
+    echo === filter $iptables ======================
+    $iptables -v -n -t filter -L FORWARD | grep MINIUPNPD-FORWARD
+    $iptables -v -n -t filter -L MINIUPNPD-FORWARD
     $iptables -v -n -t filter -L MINIUPNPD
+  done
+  for iptables in iptables; do
+    echo === nat $iptables ======================
+    $iptables -v -n -t nat -L PREROUTING | grep MINIUPNPD-PREROUTING
+    $iptables -v -n -t nat -L MINIUPNPD-PREROUTING
+    $iptables -v -n -t nat -L MINIUPNPD
   done
 }
 
@@ -64,22 +97,22 @@ start()
     return
   fi
   if [ ! -s /config/upnp.uuid ]; then
-    uuidgen > /config/upnp.uuid
+    uuidgen >/config/upnp.uuid
   fi
   uuid=$(cat /config/upnp.uuid)
 
   sn=$(serial)
   model=$(cat /etc/platform)
 
-  if [ -e /config/nickname]; then
+  if [ -e /config/nickname ]; then
     friendly=$(cat /config/nickname)
   else
     friendly=$(uname -n)
   fi
 
-  lanipv4=$(ip addr show br0 | grep 'inet ' | head -n 1)
+  lanipv4=$(ip -4 -o addr show br0)
+  lanipv4=${lanipv4#* inet }
   lanipv4=${lanipv4%%/*}
-  lanipv4=${lanipv4##* }
 
   cmd="minissdpd -i br0 -6"
   echo "Running: $cmd"
@@ -104,7 +137,6 @@ stop()
 
 case "$1" in
   start)
-    cleanup
     setup
     start
     ;;
@@ -114,19 +146,28 @@ case "$1" in
     ;;
   restart)
     stop
+    cleanup
+    setup
     start
     ;;
   show)
+    # show all iptables entries
     show
     ;;
   setup)
+    # create all iptables entries
     setup
     ;;
   cleanup)
+    # remove all iptables entries
     cleanup
     ;;
+  refresh)
+    # reload the wan ip
+    refresh
+    ;;
   *)
-    echo "Usage: $0 {start|stop|restart|show|setup|cleanup}"
+    echo "Usage: $0 {start|stop|restart|show|setup|cleanup|refresh}"
     exit 1
     ;;
 esac
