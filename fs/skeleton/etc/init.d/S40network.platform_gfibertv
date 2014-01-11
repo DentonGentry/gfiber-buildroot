@@ -57,7 +57,7 @@ case "$1" in
     fi
 
     [ -e /usr/lib/modules/bmoca.ko ] && insmod /usr/lib/modules/bmoca.ko
-    modprobe -a ath9k ath10k_pci mwifiex_sdio mwifiex_usb ath9k_htc \
+    modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb ath9k_htc \
         2>/dev/null
 
     # if the file exists and it isn't empty
