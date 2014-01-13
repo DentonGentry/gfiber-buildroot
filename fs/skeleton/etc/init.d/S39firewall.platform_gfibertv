@@ -87,6 +87,12 @@ case "$1" in
         ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
       fi
 
+      # ipv6 addressing
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-solicitation -j ACCEPT
+
       # Log packets which weren't explicitly accepted by above rules
       ip46tables -N log
       ip46tables -A log -m pkttype -m limit \
