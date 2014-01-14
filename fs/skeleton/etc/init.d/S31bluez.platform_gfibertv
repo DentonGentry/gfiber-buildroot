@@ -1,4 +1,5 @@
 #!/bin/sh
+PATH="/usr/bin/bluetooth:${PATH}"
 
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
@@ -8,14 +9,12 @@
 
 case "$1" in
   start)
-    modprobe btmrvl
-    modprobe btmrvl_sdio
+    modprobe -a bluetooth hidp btmrvl btmrvl_sdio
     babysit 30 bluetoothd -n -d 2>&1 | logos bluetoothd &
     ;;
   stop)
     pkillwait -x bluetoothd
-    rmmod btmrvl_sdio
-    rmmod btmrvl
+    rmmod btmrvl_sdio btmrvl hidp bluetooth
     ;;
   restart)
     $0 stop; $0 start

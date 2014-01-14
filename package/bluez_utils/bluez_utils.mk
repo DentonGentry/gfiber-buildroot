@@ -4,12 +4,18 @@
 #
 #############################################################
 
-BLUEZ_UTILS_VERSION = 4.98
-BLUEZ_UTILS_SOURCE = bluez-$(BLUEZ_UTILS_VERSION).tar.gz
-BLUEZ_UTILS_SITE = $(BR2_KERNEL_MIRROR)/linux/bluetooth
-BLUEZ_UTILS_INSTALL_STAGING = YES
+BLUEZ_UTILS_SITE = repo://vendor/opensource/bluez
 BLUEZ_UTILS_DEPENDENCIES = dbus libglib2
-BLUEZ_UTILS_CONF_OPT = --enable-test --enable-tools
+BLUEZ_UTILS_CONF_OPT = \
+	--prefix=/usr \
+	--libexecdir=/usr/bin \
+	--localstatedir=/user/bluez \
+	--enable-test \
+	--disable-udev \
+	--disable-cups \
+	--disable-obex \
+	--disable-client \
+	--disable-systemd
 BLUEZ_UTILS_AUTORECONF = YES
 
 # BlueZ 3.x compatibility
@@ -44,5 +50,13 @@ else
 BLUEZ_UTILS_CONF_OPT +=	\
 	--disable-usb
 endif
+
+define BLUEZ_UTILS_TARGET_TWEAKS
+	mv $(TARGET_DIR)/usr/lib/bluez/test/* $(TARGET_DIR)/usr/bin/bluetooth/
+	rm -rf $(TARGET_DIR)/usr/lib/bluez/
+	rm -rf $(TARGET_DIR)/user/bluez/
+endef
+
+BLUEZ_UTILS_POST_INSTALL_TARGET_HOOKS += BLUEZ_UTILS_TARGET_TWEAKS
 
 $(eval $(call AUTOTARGETS))
