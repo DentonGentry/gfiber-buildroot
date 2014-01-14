@@ -1,0 +1,37 @@
+From 59bd17898ea9557991e1eee949836e807d12a890 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 11 Jan 2014 05:38:34 -0500
+Subject: [PATCH] Use /dev/urandom instead of /dev/random.
+
+Kernel randomness is used only for generating session keys, as opposed to
+long-lived host keys (like SSL certificates or SSH keys).  General consensus
+seems to be that session keys are okay to get from /dev/urandom.
+---
+ src/crypto/random.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/crypto/random.c b/src/crypto/random.c
+index 053740e..754c053 100644
+--- a/src/crypto/random.c
++++ b/src/crypto/random.c
+@@ -230,7 +230,7 @@ int random_pool_ready(void)
+ 	 * so use non-blocking read to avoid blocking the application
+ 	 * completely.
+ 	 */
+-	fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
++	fd = open("/dev/urandom", O_RDONLY | O_NONBLOCK);
+ 	if (fd < 0) {
+ #ifndef CONFIG_NO_STDOUT_DEBUG
+ 		int error = errno;
+@@ -415,7 +415,7 @@ void random_init(const char *entropy_file)
+ 	if (random_fd >= 0)
+ 		return;
+ 
+-	random_fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
++	random_fd = open("/dev/urandom", O_RDONLY | O_NONBLOCK);
+ 	if (random_fd < 0) {
+ #ifndef CONFIG_NO_STDOUT_DEBUG
+ 		int error = errno;
+-- 
+1.7.9.dirty
+
