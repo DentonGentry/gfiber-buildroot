@@ -1,6 +1,9 @@
-BACKPORTS_VERSION = 3.13-rc2
-BACKPORTS_SOURCE  = backports-$(BACKPORTS_VERSION)-1.tar.bz2
-BACKPORTS_SITE    = http://www.kernel.org/pub/linux/kernel/projects/backports/stable/v$(BACKPORTS_VERSION)
+BACKPORTS_YYYY    = 2014
+BACKPORTS_MM      = 01
+BACKPORTS_DD      = 17
+BACKPORTS_VERSION = ${BACKPORTS_YYYY}${BACKPORTS_MM}${BACKPORTS_DD}
+BACKPORTS_SOURCE  = backports-$(BACKPORTS_VERSION).tar.gz
+BACKPORTS_SITE    = https://www.kernel.org/pub/linux/kernel/projects/backports/${BACKPORTS_YYYY}/${BACKPORTS_MM}/${BACKPORTS_DD}
 BACKPORTS_DEPENDENCIES = linux
 
 BACKPORTS_MAKE_ENV = \
