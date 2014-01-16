@@ -9,12 +9,21 @@ PATH="/usr/bin/bluetooth:${PATH}"
 
 case "$1" in
   start)
-    modprobe -a bluetooth hidp btmrvl btmrvl_sdio
-    babysit 30 bluetoothd -n -d 2>&1 | logos bluetoothd &
+    (
+    babysit 30 bluetoothd -n -d 2>&1 | logos bluez-daemon &
+    sleep 1
+    babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
+    sleep 1
+    hciconfig hci0 up
+    echo >/tmp/S31bluez_done
+    ) &
     ;;
   stop)
+    wait-until-created /tmp/S31bluez_done
+    hciconfig hci0 down
+    pkillwait -x gfiber-agent
     pkillwait -x bluetoothd
-    rmmod btmrvl_sdio btmrvl hidp bluetooth
+    rm -f /tmp/S31bluez_done
     ;;
   restart)
     $0 stop; $0 start
