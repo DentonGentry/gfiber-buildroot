@@ -660,4 +660,8 @@ source "package/backports/Config.in"
 source "package/firmware/Config.in"
 endmenu
 
+menu "Manufacturing support"
+source "package/mrvl_mfg/Config.in"
+endmenu
+
 endmenu

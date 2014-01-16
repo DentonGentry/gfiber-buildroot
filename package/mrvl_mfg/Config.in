@@ -1,0 +1,6 @@
+menu "Marvell manufacturing support"
+	config BR2_PACKAGE_MRVL_MFG
+		bool "Enable Marvell manufacturing software"
+		depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+		default n
+endmenu
