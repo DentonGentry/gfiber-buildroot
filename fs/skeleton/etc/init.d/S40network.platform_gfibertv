@@ -172,9 +172,10 @@ case "$1" in
 
     if [ -e /sys/class/net/wan0 ]; then
       echo "Bringing up the WAN port..."
-      ifup wan0
       sysctl net.ipv4.conf.all.forwarding=1
       sysctl net.ipv6.conf.all.forwarding=1
+      sysctl net.ipv6.conf.wan0.accept_ra=2
+      ifup wan0
     fi
 
     # Enable hardware offloads, do this at the end to avoid
