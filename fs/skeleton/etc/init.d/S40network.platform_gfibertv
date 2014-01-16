@@ -172,10 +172,13 @@ case "$1" in
 
     if [ -e /sys/class/net/wan0 ]; then
       echo "Bringing up the WAN port..."
+      ip link add link wan0 name wan0.2 type vlan id 2
       sysctl net.ipv4.conf.all.forwarding=1
       sysctl net.ipv6.conf.all.forwarding=1
       sysctl net.ipv6.conf.wan0.accept_ra=2
+      sysctl net.ipv6.conf.wan0/2.accept_ra=2
       ifup wan0
+      ifup wan0.2
     fi
 
     # Enable hardware offloads, do this at the end to avoid
@@ -189,6 +192,8 @@ case "$1" in
       if [ -e /sys/class/net/wan0 ]; then
         echo "Shutting down the WAN port..."
         ifdown wan0
+        ifdown wan0.2
+        ip link del wan0.2
       fi
       for x in $(ls /sys/class/net); do
         if [ -n /sys/class/net/$x/bridge ]; then

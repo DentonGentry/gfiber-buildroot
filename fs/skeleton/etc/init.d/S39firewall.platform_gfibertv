@@ -62,6 +62,7 @@ case "$1" in
       ip46tables -A FORWARD -i br0 -j ACCEPT
       # v4 only
       iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -o wan0.2 -j MASQUERADE
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
       for ifc in lo br0; do
@@ -106,6 +107,8 @@ case "$1" in
           -j LOG --log-prefix "FW: "
       ip46tables -A INPUT -i wan0 -j log
       ip46tables -A FORWARD -i wan0 -j log
+      ip46tables -A INPUT -i wan0.2 -j log
+      ip46tables -A FORWARD -i wan0.2 -j log
 
       # Default DROP policy above is safe, but REJECT is friendlier.
       # But you can't use REJECT as a policy, so add a catchall rule at the
