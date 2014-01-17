@@ -53,6 +53,22 @@ case "$1" in
       fi
       ip46tables -P FORWARD DROP
 
+      # multicast
+      ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
+
+      # Forwarding/NATting
+      ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -A FORWARD -i br0 -j ACCEPT
+      # v4 only
+      iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
+
+      # I wanted to use '!wan0' here but, it doesn't work as documented.
+      for ifc in lo br0; do
+        ip46tables -A INPUT -i "$ifc" -j ACCEPT
+      done
+
+      # ping
       iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
 
@@ -63,21 +79,10 @@ case "$1" in
         # session was established.
         ip46tables -A INPUT -p tcp --sport 2049 -j ACCEPT
       fi
-      ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-      # I wanted to use '!wan0' here but, it doesn't work as documented.
-      for ifc in lo br0; do
-        ip46tables -A INPUT -i "$ifc" -j ACCEPT
-      done
 
       # Outgoing connections
       # TODO(apenwarr): Add a whitelist on OUTPUT for -o wan0.
       # In particular we should have one for samba ports.
-
-      # Forwarding/NATting
-      ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-      ip46tables -A FORWARD -i br0 -j ACCEPT
-      # v4 only
-      iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
 
       # TODO(apenwarr): Remove this when we have real port forwarding controls.
       if [ -e /tmp/DEBUG ]; then
