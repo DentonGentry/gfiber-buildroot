@@ -88,9 +88,16 @@ define DNSMASQ_BUILD_CMDS
 	$(DNSMASQ_MAKE_ENV) $(MAKE1) -C $(@D) $(DNSMASQ_MAKE_OPT) all$(DNSMASQ_I18N)
 endef
 
+define DNSMASQ_INSTALL_TARGET_EXTRAS
+	$(INSTALL) -m 755 -D package/dnsmasq/S80dnsmasq $(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -m 755 -D package/dnsmasq/dnsmasq.conf $(TARGET_DIR)/etc/
+endef
+
+
 define DNSMASQ_INSTALL_TARGET_CMDS
 	$(DNSMASQ_MAKE_ENV) $(MAKE) -C $(@D) $(DNSMASQ_MAKE_OPT) install$(DNSMASQ_I18N)
 	mkdir -p $(TARGET_DIR)/var/lib/misc/
+	$(DNSMASQ_INSTALL_TARGET_EXTRAS)
 endef
 
 define DNSMASQ_UNINSTALL_TARGET_CMDS

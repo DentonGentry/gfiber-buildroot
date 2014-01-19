@@ -1,0 +1,35 @@
+#!/bin/sh
+
+start()
+{
+  mkdir -p /config/dnsmasq
+  args="--pid-file=/var/run/dnsmasq.pid --conf-file=/etc/dnsmasq.conf"
+  args="$args --keep-in-foreground --log-facility=-"
+  for conf in /config/dnsmasq/*.conf; do
+    args="$args --conf-file=$conf"
+  done
+  cmd="dnsmasq $args"
+  echo "Running: $cmd"
+  eval "babysit 60 $cmd | logos dnsmasq &"
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    if [ -f /var/run/dnsmasq.pid ]; then
+      kill -TERM $(cat /var/run/dnsmasq.pid)
+      rm -f /var/run/dnsmasq.pid
+    fi
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0
