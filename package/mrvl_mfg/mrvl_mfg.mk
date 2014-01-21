@@ -17,9 +17,13 @@ endef
 define MRVL_MFG_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/lib/modules/mfg
 	install -D -m 0644 $(@D)/ZOMG/wlan_src/*.ko $(TARGET_DIR)/lib/modules/mfg
-	$(STRIPCMD) $(TARGET_DIR)/lib/modules/mfg/*.ko
 	install -D -m 0755 $(@D)/userspace/bridge/mfgbridge $(TARGET_DIR)/usr/sbin
 	$(STRIPCMD) $(TARGET_DIR)/usr/sbin/mfgbridge
+	mkdir -p $(TARGET_DIR)/lib/firmware/mrvl
+	install -D -m 0755 $(@D)/FwImage/sdio8897_sdio_combo.bin \
+		$(TARGET_DIR)/lib/firmware/mrvl
+	install -D -m 0755 $(@D)/FwImage/sdio8897_uart_combo.bin \
+		$(TARGET_DIR)/lib/firmware/mrvl
 endef
 
 $(eval $(call GENTARGETS))
