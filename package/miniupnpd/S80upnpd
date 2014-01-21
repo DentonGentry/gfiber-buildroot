@@ -6,6 +6,8 @@
 # this script should be run before catawampus (S85catawampus) since catawampus may restart it
 # if /tmp/upnpd-enabled is not present, it will be a no-op (catawampus manages that file)
 
+enabler=/tmp/upnpd-enabled
+
 # wan is wan0 on optimus/gfrg200
 wan=wan0
 
@@ -13,87 +15,10 @@ wanipv4=$(ip -4 -o addr show $wan)
 wanipv4=${wanipv4#* inet }
 wanipv4=${wanipv4%%/*}
 
-setup()
-{
-  if [ ! -f /tmp/upnpd-enabled ]; then
-    echo '/tmp/upnpd-enabled does not exist, refusing to setup.'
-    return
-  fi
-
-  # ipv6 and ipv4
-  for iptables in ip6tables iptables; do
-    $iptables -t filter -N MINIUPNPD
-    $iptables -t filter -N MINIUPNPD-FORWARD &&
-      $iptables -t filter -I MINIUPNPD-FORWARD -i $wan ! -o $wan -j MINIUPNPD &&
-      $iptables -t filter -I FORWARD -j MINIUPNPD-FORWARD
-  done
-
-  # just ipv4
-  for iptables in iptables; do
-    $iptables -t nat -N MINIUPNPD
-    $iptables -t nat -N MINIUPNPD-PREROUTING &&
-      $iptables -t nat -I MINIUPNPD-PREROUTING -d "$wanipv4" -i $wan -j MINIUPNPD &&
-      $iptables -t nat -I PREROUTING -j MINIUPNPD-PREROUTING
-  done
-}
-
-# rebuild the rule with the wan ip in case it changed
-refresh()
-{
-    iptables -t nat -F MINIUPNPD-PREROUTING
-    iptables -t nat -I MINIUPNPD-PREROUTING -d "$wanipv4" -i $wan -j MINIUPNPD
-}
-
-clean_table_chain()
-{
-  local iptables table chain
-  iptables=$1
-  table=$2
-  chain=$3
-
-  if $iptables -t $table -L 2>&1 | grep -q MINIUPNPD; then
-    # if script misbehaves, it can add several of the following, so remove them all
-    while $iptables -t $table -D $chain -j MINIUPNPD-$chain >/dev/null 2>&1; do :; done
-    $iptables -t $table -F MINIUPNPD-$chain
-    $iptables -t $table -X MINIUPNPD-$chain
-    $iptables -t $table -F MINIUPNPD
-    $iptables -t $table -X MINIUPNPD
-  fi
-}
-
-cleanup()
-{
-  # ipv6 and ipv4
-  for iptables in ip6tables iptables; do
-    clean_table_chain $iptables filter FORWARD
-  done
-
-  # just ipv4
-  for iptables in iptables; do
-    clean_table_chain $iptables nat PREROUTING
-  done
-}
-
-show()
-{
-  for iptables in ip6tables iptables; do
-    echo === filter $iptables ======================
-    $iptables -v -n -t filter -L FORWARD | grep MINIUPNPD-FORWARD
-    $iptables -v -n -t filter -L MINIUPNPD-FORWARD
-    $iptables -v -n -t filter -L MINIUPNPD
-  done
-  for iptables in iptables; do
-    echo === nat $iptables ======================
-    $iptables -v -n -t nat -L PREROUTING | grep MINIUPNPD-PREROUTING
-    $iptables -v -n -t nat -L MINIUPNPD-PREROUTING
-    $iptables -v -n -t nat -L MINIUPNPD
-  done
-}
-
 start()
 {
-  if [ ! -f /tmp/upnpd-enabled ]; then
-    echo '/tmp/upnpd-enabled does not exist, refusing to start.'
+  if [ ! -f $enabler ]; then
+    echo "$enabler does not exist, refusing to start."
     return
   fi
   if [ ! -s /config/upnp.uuid ]; then
@@ -116,11 +41,11 @@ start()
 
   cmd="minissdpd -i br0 -6"
   echo "Running: $cmd"
-  eval "$cmd"
+  eval "$cmd 2>&1 | logos upnpd"
 
   cmd="miniupnpd -i $wan -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N"
   echo "Running: $cmd"
-  eval "$cmd"
+  eval "$cmd 2>&1 | logos upnpd"
 }
 
 stop()
@@ -137,37 +62,24 @@ stop()
 
 case "$1" in
   start)
-    setup
     start
     ;;
   stop)
     stop
-    cleanup
     ;;
   restart)
     stop
-    cleanup
-    setup
     start
     ;;
-  show)
-    # show all iptables entries
-    show
-    ;;
-  setup)
-    # create all iptables entries
-    setup
-    ;;
-  cleanup)
-    # remove all iptables entries
-    cleanup
-    ;;
-  refresh)
-    # reload the wan ip
-    refresh
+  isrunning)
+    if [ -f /var/run/miniupnpd.pid ] || [ -f /var/run/minissdpd.pid ]; then
+      exit 0
+    else
+      exit 1
+    fi
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|show|setup|cleanup|refresh}"
+    echo "Usage: $0 {start|stop|restart|isrunning}"
     exit 1
     ;;
 esac
