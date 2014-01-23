@@ -1,19 +1,28 @@
 BCM_NEXUS_SITE=repo://vendor/broadcom/nexus
 BCM_NEXUS_DEPENDENCIES=linux bcm_magnum bcm_bseav host-pkg-config
-BCM_NEXUS_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/nexus
 BCM_NEXUS_INSTALL_STAGING=YES
 BCM_NEXUS_INSTALL_TARGET=YES
 
 BCM_NEXUS_STAGING_PATH=usr/lib/nexus
 
+define BCM_NEXUS_CONFIGURE_CMDS
+	ln -sf $(@D) $(BUILD_DIR)/nexus
+	mkdir -p $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)
+	ln -sf $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM) \
+		$(@D)/../obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)
+	mkdir -p $(@D)/obj.mipsel-linux
+	ln -sf $(@D)/obj.mipsel-linux $(@D)/../obj.mipsel-linux
+	ln -sf $(@D)/../obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/nexus/bin \
+		$(BUILD_DIR)/nexus/bin
+endef
 
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
 	$(BCM_MAKE_ENV) NEXUS_MODE=client $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples pkg-config
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples B_REFSW_REAL_MAKE=1 pkg-config
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/utils all
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples apps install
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/examples B_REFSW_REAL_MAKE=1 apps install
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/os
 	cd $(@D)/../BSEAV/lib/playbackdevice && $(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) NEXUS_MGR_DIR=$(@D)/../BSEAV/lib/playbackdevice/nexusMgr/ $(MAKE) $(BCM_MAKEFLAGS) all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/media/build
