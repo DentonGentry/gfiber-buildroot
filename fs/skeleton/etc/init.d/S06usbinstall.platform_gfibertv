@@ -21,6 +21,7 @@ findall()
 
 try_install()
 {
+  wait-scsi usb
   any=
   current_ver=$(cat /etc/version)
   platform_prefix=${current_ver%%-*}
@@ -53,7 +54,7 @@ try_install()
           elif [ -n "$lastimg" ]; then
             log "  installing $(basename $lastimg)"
             leds 15 0 15 0 15 0  # super noisy leds while doing update
-            if ginstall.py -t "$lastimg" -p other; then
+            if ginstall -t "$lastimg" -p other; then
               log "  installed successfully."
               leds 0  # turn off leds, indicating finished + halted
             else

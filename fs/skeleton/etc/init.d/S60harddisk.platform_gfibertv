@@ -19,15 +19,15 @@ check_pairing() {
   pairedSerial=$(hnvram -rq PAIRED_DISK)
   echo "Attached HDD Serial:$attachedSerial, Paired HDD Serial:$pairedSerial"
   if [ "$attachedSerial" = "$pairedSerial" ]; then
-    echo "MATCH!"
+    echo "   MATCH!"
   else
     if [ "$pairedSerial" = "" ]; then
-      echo "NO PAIR; PAIRING:$attachedSerial"
-      $(hnvram -w PAIRED_DISK="$attachedSerial")
+      echo "   NO PAIR; PAIRING:$attachedSerial"
+      hnvram -w PAIRED_DISK="$attachedSerial"
     else
-      echo "NO MATCH; NO MOUNT"
+      echo "   NO MATCH; NO MOUNT"
       echo 1 >/tmp/gpio/ledcontrol/hdd_bad_pair
-      exit 0;
+      exit 0
     fi
   fi
 }
@@ -35,15 +35,21 @@ check_pairing() {
 FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
 case "$1" in
   start)
+    if ! is-storage-box; then
+      echo "Not a storage box."
+      exit 0
+    fi
     failure_media=0
     failure_backup=0
     mediafs=$(kernopt mediafs)
-    if is-storage-box && [ ! -e /dev/sda ]; then
-      echo "No drive found in Storage Box; rescanning."
+    wait-scsi
+    if ! [ -e /dev/sda ]; then
+      echo "No drive found; rescanning."
       # "ata1.00: both IDENTIFYs aborted, assuming NODEV"
       # This happens sometimes, make it rescan.
-      echo "0 0 0" >/sys/class/scsi_host/host0/scan
-      echo "0 0 0" >/sys/class/scsi_host/host1/scan
+      for d in /sys/class/scsi_host/host*/scan; do
+        [ -e "$d" ] && echo "0 0 0" >$d
+      done
       sleep 5
     fi
     if startswith "$mediafs" "9p:"; then
@@ -82,8 +88,8 @@ case "$1" in
   stop)
     # Unmount SATA device
     echo "Unmounting SATA device"
-    umount /var/media 2>&1 >/dev/null
-    umount /var/backup 2>&1 >/dev/null
+    umount /var/media >/dev/null 2>&1
+    umount /var/backup >/dev/null 2>&1
     ;;
   restart|reload)
     $0 stop

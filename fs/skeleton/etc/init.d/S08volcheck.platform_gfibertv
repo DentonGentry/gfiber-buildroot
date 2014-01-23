@@ -190,6 +190,8 @@ recover_ext4fs()
 
 case "$1" in
   start)
+    wait-scsi &   # pre-start this so later scripts can use the result
+
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
 

@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Wait up to a few seconds for each hotplug-detected SCSI interface to have
+# at least one hotplug-detected disk attached.  This includes usb-storage
+# and SATA.
+#
+# The assumption that if any device is present, the polling of that SCSI bus
+# is finished, is probably not 100% valid, but it should be pretty close,
+# especially in the modern world where every disk always seems to get its
+# own bus anyway.
+#
+NUM_PROBES=6
+PROBE_DELAY_MS=500
+
+# If this is non-empty, only matches scsi hosts that contain the given
+# name prefix in their path (example: usb)
+TYPE=$1
+
+. /etc/utils.sh
+
+realdir() {
+  # should not need to set PWD=, but our /bin/pwd implementation seems
+  # to use it, unlike the normal Linux one.
+  (cd "$1" && PWD= /bin/pwd)
+}
+
+
+: >>/tmp/wait-scsi.done
+
+# capture the list of hosts once at the start, in case new interfaces arrive
+# during our probe; we don't want to give them a partial timeout, so we'll
+# ignore them entirely for this run.
+for hostpath in /sys/bus/scsi/devices/host*; do
+  [ -e "$hostpath" ] || continue
+  hostpath=$(realdir "$hostpath")
+  if [ -n "$TYPE" ] && ! contains "$hostpath" "/$TYPE"; then
+    continue
+  fi
+  hostpaths="$hostpaths $hostpath"
+  echo "wait-scsi: $hostpath" >&2
+done
+
+for timeout in $(seq "$NUM_PROBES"); do
+  ok=1
+  for hostpath in $hostpaths; do
+    [ -e "$hostpath" ] || continue
+    hostpath=$(realdir "$hostpath")
+    if grep -q "$hostpath" /tmp/wait-scsi.done; then
+      # another running instance might have finished polling this
+      # interface while we were here; if it timed out this interface
+      # already, then we don't need to poll it anymore.
+      continue
+    fi
+    found=
+    for d in /sys/block/sd*; do
+      [ -e "$d" ] || continue
+      devpath=$(realdir "$d/device")
+      if startswith "$devpath" "$hostpath"; then
+        found=1
+        break
+      fi
+    done
+    # if any host doesn't have a device attached, we're not done yet.
+    [ -z "$found" ] && ok=
+  done
+  [ "$ok" = 1 ] && break
+  msleep "$PROBE_DELAY_MS"
+done
+
+# We've waited for these hosts already, no need to wait again later
+for d in $hostpaths; do
+  echo "$d"
+done >>/tmp/wait-scsi.done
