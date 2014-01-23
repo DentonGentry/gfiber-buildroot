@@ -3,7 +3,6 @@
 # The initial system boot script.  This only does one thing: try to find
 # the root filesystem and mount it if possible.
 #
-mknod /dev/kmsg c 1 11
 exec 9>&1 >/dev/kmsg 2>&1
 
 echo "---- initramfs ('$0')"
