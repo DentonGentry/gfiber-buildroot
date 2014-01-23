@@ -8,21 +8,11 @@ fi
 
 case "$1" in
   start)
-    if [ -e /rw/startupmods ]; then
-      echo Executing startupmods
-      . /rw/startupmods
-    fi
-
     (
       wait-until-created /tmp/startupvideo.done
       rc_pipe_init
       /app/oregano/runoregano 2>&1 | logos spicystart 0 20000000 &
     ) &
-
-    if [ -e /rw/poststartupmods ]; then
-      echo Executing poststartupmods
-      . /rw/poststartupmods
-    fi
     ;;
   stop)
     pkillwait -x startupvideo # if it's running, prevents miniclient from starting up
