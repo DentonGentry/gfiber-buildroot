@@ -1,0 +1,23 @@
+# wget -O altnet-zero.patch 'https://494098.bugs.gentoo.org/attachment.cgi?id=365184&action=diff&collapsed=&context=patch&format=raw&headers=1'
+--- igmpproxy-0.1.orig/src/config.c	2009-10-05 22:19:26.000000000 +0400
++++ igmpproxy-0.1/src/config.c	2013-10-31 01:58:14.400152448 +0400
+@@ -336,15 +336,16 @@ 
+     tmpStr = strtok(NULL, "/");
+     if(tmpStr != NULL) {
+         int bitcnt = atoi(tmpStr);
+-        if(bitcnt <= 0 || bitcnt > 32) {
++        if(bitcnt < 0 || bitcnt > 32) {
+             my_log(LOG_WARNING, 0, "The bits part of the address is invalid : %d.",tmpStr);
+             return NULL;
+         }
+ 
+-        mask <<= (32 - bitcnt);
++        if ( bitcnt > 0 )  { mask <<= (32 - bitcnt); } else mask = 0 ;
+     }
+ 
+-    if(addr == -1 || addr == 0) {
++//    if(addr == -1 || addr == 0) {
++    if(addr == -1) {
+         my_log(LOG_WARNING, 0, "Unable to parse address token '%s'.", addrstr);
+         return NULL;
+     }

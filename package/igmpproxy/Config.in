@@ -1,0 +1,4 @@
+config BR2_PACKAGE_IGMPPROXY
+	bool "igmpproxy"
+	help
+	igmpproxy forwards multicast from wan to lan

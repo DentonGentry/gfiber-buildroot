@@ -197,6 +197,9 @@ exit_with_hooks() {
   case $reason in
     BOUND|RENEW|REBIND|REBOOT)
       write_ntp_conf_new /tmp/ntpd4.conf
+      if [ "$addr_added" = 1 ]; then
+        restart igmpproxy
+      fi
       ;;
 
     BOUND6|RENEW6|REBIND6|REBOOT6)
@@ -297,6 +300,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
 
     $ip -4 addr add ${new_ip_address}${new_mask} ${new_broadcast_arg} \
                 dev ${interface} label ${interface} 2>/dev/null
+    addr_added=1
     if [ -n "$new_interface_mtu" ]; then
       # set MTU
       $ip link set dev ${interface} mtu ${new_interface_mtu}

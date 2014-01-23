@@ -1,0 +1,22 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    if runnable igmpproxy && runnable igmpproxy.start; then
+      babysit 30 igmpproxy.start 2>&1 | logos igmpproxy &
+    fi
+    ;;
+  stop)
+    if runnable igmpproxy; then
+      pkillwait -x igmpproxy
+      pkillwait -x igmpproxy.start
+    fi
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
