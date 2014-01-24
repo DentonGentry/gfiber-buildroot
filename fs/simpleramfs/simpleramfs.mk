@@ -129,7 +129,8 @@ define SIMPLERAMFS_BUILD_CMDS
 endef
 
 define SIMPLERAMFS_INSTALL_IMAGES_CMDS
-	(cd $(@D)/fs && ((find; echo /dev/console) | cpio -oH newc)) \
+	(cd $(@D)/fs && \
+	 ((find; echo /dev/console; echo /dev/kmsg) | cpio -oH newc)) \
 		>$(BINARIES_DIR)/simpleramfs.cpio.new
 	mv $(BINARIES_DIR)/simpleramfs.cpio.new \
 	   $(BINARIES_DIR)/simpleramfs.cpio
