@@ -214,6 +214,11 @@ elif runnable iw; then
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
   log "ifc='$ifc'"
 
+  # TODO(apenwarr): ath10k crashes if we don't do this (20140117 kernel).
+  #  Obviously not the right long-term fix. Symptom is that killing hostapd
+  #  causes a kernel dump crash if we don't down the interface first.
+  ip link set "$ifc" down
+
   IWC() {
     IW dev "$ifc" "$@"
   }
@@ -221,6 +226,7 @@ elif runnable iw; then
   pidfile=/tmp/hostapd.pid.${ifc}
   log "pidfile='$pidfile'"
   killpid "$pidfile"
+  ip link set "$ifc" up
 
   # TODO(apenwarr): Play more with hostapd's auto channel selection.
   #  I read comments elsewhere that it's rather incomplete, and glancing

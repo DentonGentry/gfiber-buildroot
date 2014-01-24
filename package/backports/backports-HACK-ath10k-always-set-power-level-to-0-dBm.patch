@@ -1,0 +1,28 @@
+From 29992ff5a2ba7c2470cb49f18ff9d135ac670acd Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 24 Jan 2014 04:39:24 -0500
+Subject: [PATCH 1/2] HACK: ath10k: always set power level to 0 dBm.
+
+On our device, if we set it any higher, it currently causes distortion.  We
+need to figure out why that is, but for now, this is a workaround.
+---
+ drivers/net/wireless/ath/ath10k/mac.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
+index 20a3707..9f530e2 100644
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -2179,6 +2179,9 @@ static int ath10k_config(struct ieee80211_hw *hw, u32 changed)
+ 				    hw->conf.power_level, ret);
+ 
+ 		param = ar->wmi.pdev_param->txpower_limit5g;
++		printk("power level: %d\n", hw->conf.power_level);
++		hw->conf.power_level = 0;
++		printk("HACK: new power level: %d\n", hw->conf.power_level);
+ 		ret = ath10k_wmi_pdev_set_param(ar, param,
+ 						hw->conf.power_level * 2);
+ 		if (ret)
+-- 
+1.7.9.dirty
+
