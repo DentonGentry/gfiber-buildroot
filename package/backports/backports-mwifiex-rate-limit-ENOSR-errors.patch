@@ -1,0 +1,31 @@
+From f4c493a9374f9809edea8fe6ca24fc943f139567 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 24 Jan 2014 03:06:54 -0500
+Subject: [PATCH 1/2] mwifiex: rate limit ENOSR errors.
+
+These occur frequently with the usb8897 adapter using iperf, but don't seem
+to hurt anything.
+---
+ drivers/net/wireless/mwifiex/txrx.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/mwifiex/txrx.c b/drivers/net/wireless/mwifiex/txrx.c
+index 37f26af..361d8e1 100644
+--- a/drivers/net/wireless/mwifiex/txrx.c
++++ b/drivers/net/wireless/mwifiex/txrx.c
+@@ -111,9 +111,10 @@ int mwifiex_process_tx(struct mwifiex_private *priv, struct sk_buff *skb,
+ 	}
+ 
+ 	switch (ret) {
+-	case -ENOSR:
+-		dev_dbg(adapter->dev, "data: -ENOSR is returned\n");
++	case -ENOSR: {
++		printk_ratelimited("data: -ENOSR is returned\n");
+ 		break;
++	}
+ 	case -EBUSY:
+ 		if ((GET_BSS_ROLE(priv) == MWIFIEX_BSS_ROLE_STA) &&
+ 		    (adapter->pps_uapsd_mode) && (adapter->tx_lock_flag)) {
+-- 
+1.7.9.dirty
+
