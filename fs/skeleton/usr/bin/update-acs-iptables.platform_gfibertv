@@ -1,0 +1,130 @@
+#! /bin/sh
+# Copyright 2014 Google Inc. All Rights Reserved.
+#
+
+# refreshes the rules in the acsrules chains based on acs settings
+
+ip46tables()
+{
+  iptables $*
+  ip6tables $*
+}
+
+# wan is wan0 on optimus/gfrg200
+wan=wan0
+
+wanipv4=$(ip -4 -o addr show $wan)
+wanipv4=${wanipv4#* inet }
+wanipv4mask=${wanipv4%% *}
+wanipv4=${wanipv4%%/*}
+
+lanipv4=$(ip -4 -o addr show br0)
+lanipv4=${lanipv4#* inet }
+lanipv4mask=${lanipv4%% *}
+lanipv4=${lanipv4%%/*}
+
+wanipv6=$(ip -6 -o addr show $wan)
+wanipv6=${wanipv6#* inet }
+wanipv6mask=${wanipv6%% *}
+wanipv6=${wanipv6%%/*}
+
+lanipv6=$(ip -6 -o addr show br0)
+lanipv6=${lanipv6#* inet6 }
+lanipv6mask=${lanipv6%% *}
+lanipv6=${lanipv6%%/*}
+
+# resumes acsrules chains are created (by S39firewall)
+
+acs=/tmp/acs
+
+# clear out any existing rules
+ip46tables -t filter -F acsrules-filter-forward
+iptables -t nat -F acsrules-nat-prerouting
+
+# port mapping rules
+if [ -d $acs/portsv4 ]; then
+  for n in $acs/portsv4/*; do
+    if [ "$n" = "$acs/portsv4/*" ]; then
+      continue;
+    fi
+    set -- $(cat $n)
+    # proto src gw dst sport dport enabled
+    proto="$1"
+    src="$2"
+    gw="$3"             # external router addr, in case there are several.  Use 0/0 for all
+    dst="$4"
+    sport="$5"
+    dport="$6"
+    enabled="$7"
+    if [ "$enabled" != 1 ]; then
+      continue;
+    fi
+    nolan=0
+    iptables -A acsrules-filter-forward -p $proto -d $dst --dport $dport -j ACCEPT
+    iptables -t nat -A acsrules-nat-prerouting -p $proto -d "$gw" --dport $sport -j DNAT --to $dst:$dport
+    iptables -t nat -A acsrules-nat-postrouting -p $proto -s $lanipv4mask -d $dst --dport $dport -j SNAT --to $lanipv4
+    # this adds a lan rule so internal hosts can use the lan router ip to get the same mapping
+    if [ "$gw" = "$wanipv4" ] || [ "$gw" = "0/0" ]; then
+      iptables -t nat -A acsrules-nat-prerouting -p $proto -d "$lanipv4" --dport $sport -j DNAT --to $dst:$dport
+    fi
+  done
+fi
+if [ -d $acs/portsv6 ]; then
+  for n in $acs/portsv6/*; do
+    if [ "$n" = "$acs/portsv6/*" ]; then
+      continue;
+    fi
+    set -- $(cat $n)
+    # proto src gw dst sport dport enabled
+    proto="$1"
+    src="$2"
+    gw="$3"
+    dst="$4"
+    sport="$5"
+    dport="$6"
+    enabled="$7"
+    if [ "$enabled" != 1 ]; then
+      continue;
+    fi
+    ip6tables -A acsrules-filter-forward -p $proto -d $dst --dport $dport -j ACCEPT
+  done
+fi
+
+# upnp IGD (firewall pinholes)
+# MINIUPNPD is maintained by miniupnpd
+if [ -f $acs/upnpd_enabled ]; then
+  ip46tables -t filter -A acsrules-filter-forward -i $wan ! -o $wan -j MINIUPNPD
+  iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wan -j MINIUPNPD
+  ! /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd start
+else
+  /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd stop
+fi
+
+# ftp server
+if [ -f $acs/ftpserverv4 ]; then
+  ftpserverv4=$(cat $acs/ftpserverv4)
+  iptables -t nat -A acsrules-nat-prerouting -p tcp ---dport 20 -j DNAT --to "$ftpserverv4":20
+  iptables -t nat -A acsrules-nat-prerouting -p tcp --dport 21 -j DNAT --to "$ftpserverv4":21
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 21 -m conntrack --ctstate NEW,ESTABLISHED ftp -j ACCEPT
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 20 -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 1024: -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+fi
+if [ -f $acs/ftpserverv6 ]; then
+  ftpserverv6=$(cat $acs/ftpserverv6)
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 21 -m conntrack --ctstate NEW,ESTABLISHED ftp -j ACCEPT
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 20 -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 1024: -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+fi
+
+# DMZ, goes last
+if [ -f $acs/dmzhostv4 ]; then
+  dmzhostv4=$(cat $acs/dmzhostv4)
+  iptables -t nat -A acsrules-nat-prerouting -i $wan -s 0/0 -d "$wanipv4" -j DNAT --to "$dmzhostv4"
+  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv4" -j ACCEPT
+fi
+if [ -f $acs/dmzhostv6 ]; then
+  dmzhostv4=$(cat $acs/dmzhostv6)
+  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv6" -j ACCEPT
+fi
+
+exit 0
