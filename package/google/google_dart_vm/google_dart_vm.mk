@@ -1,6 +1,7 @@
 GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/bleeding_edge/deps/standalone.deps
 GOOGLE_DART_VM_SITE_METHOD=gclient
-GOOGLE_DART_VM_VERSION=30104
+#Version 1.1.2 Stable
+GOOGLE_DART_VM_VERSION=32062
 GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
