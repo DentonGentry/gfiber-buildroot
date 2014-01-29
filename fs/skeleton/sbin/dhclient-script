@@ -162,6 +162,13 @@ write_ntp_conf_new()
   )"
 }
 
+write_new_radvd() {
+  atomic /tmp/radvd.conf "$(
+  local prefix64=$(echo "$new_ip6_prefix" | sed -e 's@/..$@/64@')
+  cat /etc/radvd.conf.tmpl | sed -e "s@__PREFIX__@$prefix64@g"
+  )"
+}
+
 # Must be used on exit.   Invokes the local dhcp client exit hooks, if any.
 exit_with_hooks() {
   exit_status=$1
@@ -171,6 +178,14 @@ exit_with_hooks() {
       ;;
 
     BOUND6|RENEW6|REBIND6|REBOOT6)
+      if [ -n "${old_ip6_prefix}" ] || [ -n "${new_ip6_prefix}" ]; then
+        if [ -n "${new_ip6_prefix}" ]; then
+          write_new_radvd
+        else
+          # TODO(jnewlin):  Stop radvd here.
+          echo "Prefix removed:  stop radvd"
+        fi
+      fi
       write_ntp_conf_new /tmp/ntpd6.conf
       ;;
 

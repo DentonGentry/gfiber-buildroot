@@ -1,0 +1,10 @@
+# Template radvd that contains a prefix that will get substituted later.
+
+interface br0 {
+  AdvSendAdvert on;
+  prefix __PREFIX__
+  {
+    AdvOnLink on;
+    AdvAutonomous on;
+  };
+};
