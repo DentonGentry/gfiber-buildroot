@@ -1,0 +1,112 @@
+From 4c096cc52d63ec91ea46797a8aa9ffff848d48fd Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 28 Jan 2014 20:31:20 -0500
+Subject: [PATCH 2/2] ath10k: minor changes to reset, and some extra debug
+ printk's.
+
+This patch will probably go away eventually, but it adds some
+messages that I want to watch.  It also adds some delay between
+setting the reset line and releasing it during a cold boot,
+because I'm superstitious.
+---
+ drivers/net/wireless/ath/ath10k/core.c |    1 +
+ drivers/net/wireless/ath/ath10k/pci.c  |   14 ++++++++++++--
+ drivers/net/wireless/ath/ath10k/wmi.c  |    2 +-
+ drivers/net/wireless/ath/ath10k/wmi.h  |    4 ++--
+ 4 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
+index 3b59af3..8ee1dd7 100644
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -568,6 +568,7 @@ static int ath10k_init_download_firmware(struct ath10k *ar)
+ {
+ 	int ret;
+ 
++	printk("ath10k: downloading firmware.\n");
+ 	ret = ath10k_download_board_data(ar);
+ 	if (ret)
+ 		return ret;
+diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
+index 475b4da..ca58dc6 100644
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -1999,6 +1999,7 @@ static int ath10k_pci_warm_reset(struct ath10k *ar)
+ 	u32 val;
+ 
+ 	ath10k_dbg(ATH10K_DBG_BOOT, "performing warm chip reset\n");
++	printk("ath10k: warm reset.\n");
+ 
+ 	ret = ath10k_do_pci_wake(ar);
+ 	if (ret)
+@@ -2626,6 +2627,15 @@ static int ath10k_pci_cold_reset(struct ath10k *ar)
+ {
+ 	int i, ret;
+ 	u32 val;
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++
++	printk("ath10k: cold reset: ");
++	printk("%x ", ioread32(ar_pci->mem + 0x0));
++	printk("%x ", ioread32(ar_pci->mem + 0x00004000));
++	printk("%x ", ioread32(ar_pci->mem + 0x00008000));
++	printk("%x ", ioread32(ar_pci->mem + 0x00080000));
++	printk("%x ", ioread32(ar_pci->mem + 0x00080008));
++	printk("\n");
+ 
+ 	ret = ath10k_do_pci_wake(ar);
+ 	if (ret) {
+@@ -2640,10 +2650,10 @@ static int ath10k_pci_cold_reset(struct ath10k *ar)
+ 	ath10k_pci_reg_write32(ar, SOC_GLOBAL_RESET_ADDRESS, val);
+ 
+ 	for (i = 0; i < ATH_PCI_RESET_WAIT_MAX; i++) {
++		msleep(30);
+ 		if (ath10k_pci_reg_read32(ar, RTC_STATE_ADDRESS) &
+ 					  RTC_STATE_COLD_RESET_MASK)
+ 			break;
+-		msleep(1);
+ 	}
+ 
+ 	/* Pull Target, including PCIe, out of RESET. */
+@@ -2651,10 +2661,10 @@ static int ath10k_pci_cold_reset(struct ath10k *ar)
+ 	ath10k_pci_reg_write32(ar, SOC_GLOBAL_RESET_ADDRESS, val);
+ 
+ 	for (i = 0; i < ATH_PCI_RESET_WAIT_MAX; i++) {
++		msleep(35);
+ 		if (!(ath10k_pci_reg_read32(ar, RTC_STATE_ADDRESS) &
+ 					    RTC_STATE_COLD_RESET_MASK))
+ 			break;
+-		msleep(1);
+ 	}
+ 
+ 	ath10k_do_pci_sleep(ar);
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
+index 58a3c59..50f9a67 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -628,7 +628,7 @@ static int ath10k_wmi_cmd_send(struct ath10k *ar, struct sk_buff *skb,
+ 
+ 		ret = ath10k_wmi_cmd_send_nowait(ar, skb, cmd_id);
+ 		(ret != -EAGAIN);
+-	}), 3*HZ);
++	}), WMI_UNIFIED_READY_TIMEOUT_HZ);
+ 
+ 	if (ret)
+ 		dev_kfree_skb_any(skb);
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.h b/drivers/net/wireless/ath/ath10k/wmi.h
+index 4b5e7d3..e3b2a90 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -1172,8 +1172,8 @@ struct wmi_service_ready_event_10x {
+ } __packed;
+ 
+ 
+-#define WMI_SERVICE_READY_TIMEOUT_HZ (5*HZ)
+-#define WMI_UNIFIED_READY_TIMEOUT_HZ (5*HZ)
++#define WMI_SERVICE_READY_TIMEOUT_HZ (1*HZ)
++#define WMI_UNIFIED_READY_TIMEOUT_HZ (1*HZ)
+ 
+ struct wmi_ready_event {
+ 	__le32 sw_version;
+-- 
+1.7.9.dirty
+
