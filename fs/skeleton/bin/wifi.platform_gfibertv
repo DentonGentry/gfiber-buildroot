@@ -346,6 +346,15 @@ ieee80211n=1
 #ieee80211ac=1
 # TODO(apenwarr): 40 MHz support disabled until we do autochannel better.
 #ht_capab=[HT40+][SHORT-GI-20][SHORT-GI-40]
+
+# Obnoxiously short rekey intervals to maximize the chance of discovering
+# bugs caused by rekeying at inopportune times.
+# TODO(apenwarr): make these more sensible before final release.
+wep_rekey_period=30
+wpa_group_rekey=30
+wpa_strict_rekey=1
+wpa_gmk_rekey=59
+wpa_ptk_rekey=30
 "
   case $crypto in
     WPA2_*|WPA_*|WEP|NONE)
