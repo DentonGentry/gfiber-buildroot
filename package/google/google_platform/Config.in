@@ -15,6 +15,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_SYSVINIT
 	select BR2_PACKAGE_GOOGLE_SIGNING
 	select BR2_PACKAGE_CURL
+	select BR2_PACKAGE_SED
 	help
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fibler devices.
