@@ -21,6 +21,12 @@ PLATFORM=$(hnvram -qr PLATFORM_NAME)
 echo "$PLATFORM" >/etc/platform &&
 chmod 444 /etc/platform
 
+# Populate the serial number file.
+SERIAL=$(hnvram -br 1st_serial_number)
+[ -n "$SERIAL" ] &&
+echo "$SERIAL" >/etc/serial &&
+chmod 444 /etc/serial
+
 GPN=$(hnvram -qr GPN)
 [ -n "$GPN" ] &&
 echo "$GPN" >/tmp/gpn &&
