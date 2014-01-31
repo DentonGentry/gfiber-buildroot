@@ -1,0 +1,36 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+if ! runnable radvd; then
+  # Only the RG should receive a delegated prefix.  Either the RG doesn't have
+  # radvd, or some other device received a DP which is not supposed to happen.
+  echo "ERROR: radvd not installed."
+  exit 1
+fi
+
+case "$1" in
+  start)
+    echo "Starting radvd"
+    babysit 60 radvd -p /var/run/radvd.pid --logmethod stderr 2>&1 | logos radvd
+    ;;
+  stop)
+    echo "Stopping radvd"
+    pkillwait -x radvd
+    rm -f /var/run/radvd.pid
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  update)
+    if [ ! -e /var/run/radvd.pid ]; then
+      $0 start
+    else
+      kill -HUP $(cat /var/run/radvd.pid)
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
