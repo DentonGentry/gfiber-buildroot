@@ -3,7 +3,7 @@
 case "$1" in
   start)
     if runnable cmm; then
-      modprobe -a nfnetlink fci
+      modprobe -a nfnetlink fci auto_bridge
       MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
       [ -c /dev/vwd0 ] || mknod /dev/vwd0 c $MAJOR 0
       echo 1 >/sys/devices/platform/pfe.0/vwd_fast_path_enable
