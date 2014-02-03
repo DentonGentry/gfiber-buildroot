@@ -41,8 +41,12 @@ ulimit -c 49152
 SERVER_MAC=
 opts=
 if is-tv-box; then
-  # TV box starts in powered-off mode
-  mode=waitpower
+  # TV box starts in last mode before power off
+  if [ -e /rw/TVUIon ] ; then
+    mode=miniclient
+  else
+    mode=waitpower
+  fi
   if [ -e /tmp/runapp ] ; then
     mode=app
     read appname opts </tmp/runapp
