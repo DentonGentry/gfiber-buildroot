@@ -172,7 +172,7 @@ write_new_radvd() {
 
 update_bridge_ipv6() {
   if [ x"${new_ip6_prefix}" = x"${old_ip6_prefix}" ]; then
-    exit 0
+    return
   fi
 
   # Remove an old ip6 address if the prefix changed.
