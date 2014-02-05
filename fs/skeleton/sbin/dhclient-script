@@ -28,6 +28,7 @@
 
 ip=ip
 wifi_ifc=eth2
+bridge_ifc=br0
 
 log() {
   echo "$@" >&2
@@ -169,6 +170,21 @@ write_new_radvd() {
   )"
 }
 
+update_bridge_ipv6() {
+  if [ x"${new_ip6_prefix}" = x"${old_ip6_prefix}" ]; then
+    exit 0
+  fi
+
+  # Remove an old ip6 address if the prefix changed.
+  if [ -n "${old_ip6_prefix}" ]; then
+    $ip -6 route del "${old_ip6_prefix}" dev $bridge_ifc
+  fi
+  # Add the new ip6 address based on the prefix.
+  if [ -n "${new_ip6_prefix}" ]; then
+    $ip -6 route add "${new_ip6_prefix}" dev $bridge_ifc
+  fi
+}
+
 radvd_cmd() {
   if runnable radvd.start; then
     radvd.start $1
@@ -189,10 +205,10 @@ exit_with_hooks() {
           write_new_radvd
           radvd_cmd restart
         else
-          # TODO(jnewlin):  Stop radvd here.
           echo "Prefix removed:  stopping radvd"
           radvd_cmd stop
         fi
+        update_bridge_ipv6
       fi
 
       if runnable rdisc6 && [ -n "${new_ip6_address}" ] && [ -n "${interface}" ]; then
