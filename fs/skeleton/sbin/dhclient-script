@@ -186,6 +186,15 @@ exit_with_hooks() {
           echo "Prefix removed:  stop radvd"
         fi
       fi
+
+      if runnable rdisc6 && [ -n "${new_ip6_address}" ] && [ -n "${interface}" ]; then
+        if [ "${new_ip6_address}" != "${old_ip6_address}" ]; then
+          # If we received a new address, force a router solicitation to
+          # be sent, which will force a router advertisement.  We need the
+          # RA for setting our default route.
+          rdisc6 -1 "${interface}" &
+        fi
+      fi
       write_ntp_conf_new /tmp/ntpd6.conf
       ;;
 
