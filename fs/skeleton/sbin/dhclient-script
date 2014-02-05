@@ -169,6 +169,12 @@ write_new_radvd() {
   )"
 }
 
+radvd_cmd() {
+  if runnable radvd.start; then
+    radvd.start $1
+  fi
+}
+
 # Must be used on exit.   Invokes the local dhcp client exit hooks, if any.
 exit_with_hooks() {
   exit_status=$1
@@ -181,9 +187,11 @@ exit_with_hooks() {
       if [ -n "${old_ip6_prefix}" ] || [ -n "${new_ip6_prefix}" ]; then
         if [ -n "${new_ip6_prefix}" ]; then
           write_new_radvd
+          radvd_cmd restart
         else
           # TODO(jnewlin):  Stop radvd here.
-          echo "Prefix removed:  stop radvd"
+          echo "Prefix removed:  stopping radvd"
+          radvd_cmd stop
         fi
       fi
 
