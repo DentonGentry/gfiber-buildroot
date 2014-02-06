@@ -1,0 +1,17 @@
+#!/bin/sh
+case "$1" in
+  start)
+    mkdir -p /config/staticip
+    for f in /config/staticip/*; do
+      . $f
+    done
+    ;;
+  stop)
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

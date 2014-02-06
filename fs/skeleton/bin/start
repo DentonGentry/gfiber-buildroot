@@ -51,7 +51,7 @@ for prog in "$@"; do
       break
     fi
   done
-  if [ -z "$found" ]; then
+  if [ -z "$found" ] && [ -z "$QUIET" ]; then
     log "Error: no /etc/init.d script matches '$prog'" >&2
     log "Error: suggestion:" $(suggestions "$prog")
     rv=1

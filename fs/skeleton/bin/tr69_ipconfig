@@ -1,0 +1,33 @@
+#!/bin/sh
+. /etc/utils.sh
+
+log()
+{
+  echo "$@" >&2
+}
+
+usage()
+{
+  log "Usage: $0 <dev> [ip1/mask1] [ip2/mask2] ..."
+  log "  dev = the interface, like eth0 or wlan1"
+  log "  ip# = w.x.y.z"
+  log "  mask# = CIDR mask length, like '24'"
+  exit 1
+}
+
+if [ $# -lt 1 ]; then
+  usage
+fi
+
+dev=$1; shift
+cmd="ip -4 addr flush dev $dev"
+
+while [ $# -ge 1 ]; do
+  cmd="$cmd && ip addr add $1 dev $dev"
+  shift
+done
+
+atomic /config/staticip/$dev "$cmd"
+. /config/staticip/$dev
+
+exit 0

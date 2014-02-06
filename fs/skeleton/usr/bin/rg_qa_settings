@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Restores the same settings which used to be hard-coded on GFRG2x0.
+
+cwmp add Device.IP.Interface.256.IPv4Address
+cwmp set Device.IP.Interface.256.IPv4Address.1.IPAddress 192.168.42.1
+cwmp set Device.IP.Interface.256.IPv4Address.1.SubnetMask 255.255.255.0
+
+cwmp add Device.DHCPv4.Server.Pool
+cwmp set Device.DHCPv4.Server.Pool.1.MinAddress 192.168.42.5
+cwmp set Device.DHCPv4.Server.Pool.1.MaxAddress 192.168.42.250
+cwmp set Device.DHCPv4.Server.Pool.1.Enable True
+
+# The hard-coded defaults included 8.8.8.8 as a DNS server... but
+# we'd already filed bugs about the lack of a DNS cache. Left blank,
+# dnsmasq sends its own IP address as the DNS server (which is what
+# we want).
+# cwmp set Device.DHCPv4.Server.Pool.1.DNSServers 8.8.8.8

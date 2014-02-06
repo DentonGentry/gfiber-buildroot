@@ -2,11 +2,11 @@
 case "$1" in
   start)
     if is-tv-box; then
-      dialmonitor | logos dialmonitor &
+      nicknamer | logos nicknamer &
     fi
     ;;
   stop)
-    pkillwait -x dialmonitor
+    pkillwait -x nicknamer
     ;;
   restart)
     $0 stop; $0 start
