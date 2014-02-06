@@ -144,6 +144,11 @@ case "$1" in
       ip46tables -A INPUT -j REJECT
       ip46tables -A FORWARD -j REJECT
 
+      # Set the WAN 802.1q pbits
+      iptables -t mangle -A OUTPUT --protocol all -j CLASSIFY --set-class 0:3
+      iptables -t mangle -A OUTPUT --protocol igmp -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT --protocol icmpv6 -j CLASSIFY --set-class 0:4
+
       # parse acs state into acsrules chains
       update-acs-iptables
     fi
