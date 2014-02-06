@@ -6,7 +6,9 @@ start()
   args="--pid-file=/var/run/dnsmasq.pid --conf-file=/etc/dnsmasq.conf"
   args="$args --keep-in-foreground --log-facility=-"
   for conf in /config/dnsmasq/*.conf; do
-    args="$args --conf-file=$conf"
+    if [ -e "$conf" ]; then
+      args="$args --conf-file=$conf"
+    fi
   done
   cmd="dnsmasq $args"
   echo "Running: $cmd"
