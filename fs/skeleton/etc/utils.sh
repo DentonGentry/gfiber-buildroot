@@ -107,3 +107,29 @@ stop_adloader()
     pkillwait -f '(alivemonitor.*)(adloader)'
   fi
 }
+
+mac_addr_increment()
+{
+  echo "$1" | (
+    IFS=: read m1 m2 m3 m4 m5 m6
+    m6d=$(printf "%d" "0x$m6")
+    m6d=$(($m6d + $2))
+    if [ $m6d -ge 256 ]; then
+      m6d=$(($m6d - 256))
+      m5d=$(printf "%d" "0x$m5")
+      m5d=$(($m5d + 1))
+      if [ $m5d -ge 256 ]; then
+        m5d=$(($m5d - 256))
+        m4d=$(printf "%d" "0x$m4")
+        m4d=$(($m4d + 1))
+        if [ $m4d -ge 256 ]; then
+          m4d=$(($m4d - 256))
+        fi
+        m4=$(printf "%02x" $m4d)
+      fi
+      m5=$(printf "%02x" $m5d)
+    fi
+    m6=$(printf "%02x" $m6d)
+    echo "$m1:$m2:$m3:$m4:$m5:$m6"
+  )
+}
