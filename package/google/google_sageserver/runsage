@@ -121,7 +121,7 @@ babysit 10 alivemonitor /tmp/sagetvalive 300 60 600 setuid video "$JVM" \
     -Dsage.embedded=1 \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -Djava.lang.runtime.exec.vfork \
-    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-146.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$GFIBERJARS \
+    -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-150.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$GFIBERJARS \
     $HEAPSIZE \
     -verbose:gc \
     $SIEGEOPT \
