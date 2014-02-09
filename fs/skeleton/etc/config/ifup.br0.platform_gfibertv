@@ -1,8 +1,0 @@
-ifc=$1
-
-if [ -z "$(ip -o -4 addr show $ifc)" ]; then
-  run-dhclient $ifc
-else
-  # dhclient would do this if we had run it
-  upload-logs-now
-fi

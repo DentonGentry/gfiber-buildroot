@@ -7,5 +7,6 @@ cat >/tmp/dhclient.conf <<-EOF
 	request subnet-mask, broadcast-address, routers,
 		domain-name, domain-name-servers, ntp-servers;
 	send host-name "$(hostname)";
+	send dhcp-client-identifier "$(serial)";
 	script "/sbin/dhclient-script";
 EOF
