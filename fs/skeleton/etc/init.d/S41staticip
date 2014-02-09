@@ -3,7 +3,7 @@ case "$1" in
   start)
     mkdir -p /config/staticip
     for f in /config/staticip/*; do
-      . $f
+      [ -e $f ] && . $f
     done
     ;;
   stop)
