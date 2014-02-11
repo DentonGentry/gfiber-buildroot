@@ -32,7 +32,9 @@ case "$1" in
           ipt_REJECT \
           ipt_MASQUERADE \
           nf_nat_ftp \
+          nf_nat_tftp \
           nf_conntrack_ftp \
+          nf_conntrack_tftp \
           \
           ip6table_filter \
           ip6t_tcp \
