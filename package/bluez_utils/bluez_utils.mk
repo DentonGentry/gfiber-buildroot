@@ -11,6 +11,7 @@ BLUEZ_UTILS_CONF_OPT = \
 	--prefix=/usr \
 	--libexecdir=/usr/bin \
 	--localstatedir=/user/bluez \
+	--sysconfdir=/user/bluez/etc \
 	--enable-test \
 	--enable-library \
 	--disable-udev \
