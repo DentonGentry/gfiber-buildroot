@@ -16,6 +16,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	python \
 	python-setuptools \
 	host-python-setuptools \
+	protobuf \
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM),y)
 GOOGLE_PLATFORM_DEPENDENCIES += humax_misc
