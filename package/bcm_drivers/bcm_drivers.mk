@@ -65,12 +65,20 @@ define BCM_DRIVERS_BUILD_MOCA
 		LINUXDIR="$(LINUX_DIR)" \
 		ARCH="$(KERNEL_ARCH)" \
 		-C $(@D)/moca2/
+	cd $(@D)/google/py_moca2 && \
+		PYTHONPATH=$(TARGET_PYTHONPATH) \
+		CC="$(TARGET_CC)" \
+		LD="$(TARGET_LD)" \
+		LDSHARED="$(TARGET_CC) -shared" \
+		CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/python2.7 \
+		    -I$(@D)/moca2/lib -L$(@D)/moca2/bin " \
+		$(HOST_DIR)/usr/bin/python setup.py build
 endef
 
 define BCM_DRIVERS_INSTALL_STAGING_MOCA
 	$(INSTALL) -m 0644 \
-		$(@D)/moca2/bin/libmoca.a \
-		$(@D)/moca2/bin/libmocacli.a \
+		$(@D)/moca2/bin/libmoca.so \
+		$(@D)/moca2/bin/libmocacli.so \
 		$(STAGING_DIR)/usr/lib/
 	$(INSTALL) -d -m 0755 \
 		$(STAGING_DIR)/usr/include/moca
@@ -107,6 +115,13 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	$(INSTALL) -m 0644 \
 		$(@D)/moca2/bmoca/bmoca.ko \
 		$(TARGET_DIR)/usr/lib/modules
+	$(INSTALL) -m 0644 \
+		$(@D)/moca2/bin/*.so \
+		$(TARGET_DIR)/usr/lib/
+	cd $(@D)/google/py_moca2 && \
+		PYTHONPATH=$(TARGET_PYTHONPATH) \
+		$(HOST_DIR)/usr/bin/python setup.py install \
+			--prefix=$(TARGET_DIR)/usr
 endef
 endif  # MOCA2
 
