@@ -57,8 +57,12 @@ case "$1" in
     fi
 
     [ -e /usr/lib/modules/bmoca.ko ] && insmod /usr/lib/modules/bmoca.ko
-    modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb ath9k_htc \
-        2>/dev/null
+    if [ "$(kernopt wifical)" != "1" ]; then
+      # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
+      # the production firmware at all, or it barfs.
+      modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb \
+        ath9k_htc 2>/dev/null
+    fi
 
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then

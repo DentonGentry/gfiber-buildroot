@@ -39,6 +39,8 @@ fi
 if ! is-bluez-platform; then
   [ -e ${MODULE_PATH}/btusb.ko ] && insmod ${MODULE_PATH}/btusb.ko
   [ -e ${MODULE_PATH}/bthid.ko ] && insmod ${MODULE_PATH}/bthid.ko
-else
+elif [ "$(kernopt wifical)" != "1" ]; then
+  # If we're trying to calibrate Wifi/BT, loading
+  # the production driver disrupts the process.
   modprobe -a bluetooth hidp btmrvl btmrvl_sdio btusb
 fi
