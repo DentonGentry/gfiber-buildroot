@@ -1,6 +1,10 @@
 #!/bin/sh
 
 PATH="/usr/bin/bluetooth:${PATH}"
+BLUEZ_STOR_DIR="/user/bluez/lib/bluetooth"
+BLUEZ_CONF_DIR="/user/bluez/etc/bluetooth"
+BLUEZ_MAIN_CONF="${BLUEZ_CONF_DIR}/main.conf"
+BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
@@ -10,26 +14,47 @@ PATH="/usr/bin/bluetooth:${PATH}"
 
 case "$1" in
   start)
-    (
+    # Configure BT adapter MAC address
     BT_MAC=$(hnvram -rq MAC_ADDR_BT)
-    if [ -z "$BT_MAC" ]; then
+    if [ -z "${BT_MAC}" ]; then
       MAC=$(hnvram -rq MAC_ADDR)
-      if [ -z "$MAC" ]; then
+      if [ -z "${MAC}" ]; then
         echo "$0: ERROR: TV Box has no MAC_ADDR nor MAC_ADDR_BT"
         exit 1
       fi
       . /etc/utils.sh
-      BT_MAC=$(mac_addr_increment "$MAC" 2)
+      BT_MAC=$(mac_addr_increment "${MAC}" 2)
     fi
-    echo "$BT_MAC" >/tmp/btmacaddress
-    bdaddr -i hci0 "$BT_MAC"
+
     hciconfig hci0 reset
     hciconfig hci0 up
-    sleep 1
-    babysit 30 bluetoothd -n -d 2>&1 | logos bluez-daemon &
-    sleep 1
-    babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
-    echo >/tmp/S31bluez_done
+    bdaddr -i hci0 "${BT_MAC}"
+    hciconfig hci0 reset
+    hciconfig hci0 up
+    echo "${BT_MAC}" >/tmp/btmacaddress
+
+    # Create BlueZ directories and config files
+    [ ! -e "${BLUEZ_STOR_DIR}" ] && mkdir -p "${BLUEZ_STOR_DIR}"
+    [ ! -e "${BLUEZ_CONF_DIR}" ] && mkdir -p "${BLUEZ_CONF_DIR}"
+
+    if [ ! -e "${BLUEZ_MAIN_CONF}" ]; then
+      echo "[General]" >"${BLUEZ_MAIN_CONF}"
+      echo "Name=$(cat /etc/platform)" >>"${BLUEZ_MAIN_CONF}"
+    fi
+
+    if [ ! -e "${BLUEZ_INPUT_CONF}" ]; then
+      echo "[General]" >"${BLUEZ_INPUT_CONF}"
+      echo "HIDPInUserspace=true" >>"${BLUEZ_INPUT_CONF}"
+    fi
+
+    # Start BlueZ stack
+    (
+      echo "$0: Starting bluetoothd"
+      babysit 30 bluetoothd -n -d 2>&1 | logos bluez-daemon &
+      sleep 3
+      echo "$0: Starting gfiber-agent"
+      babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
+      echo >/tmp/S31bluez_done
     ) &
     ;;
   stop)
