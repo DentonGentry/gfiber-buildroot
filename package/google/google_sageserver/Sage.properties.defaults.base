@@ -396,4 +396,4 @@ ui/channel/auto_accept=true
 enable_youtube_leanback=true
 ui/loader=sage.ui.x.FiberTVDark
 seeker/enable_continual_record=false
-fiber/allow_channel_restrictions=false
+fiber/allow_channel_restrictions=true
