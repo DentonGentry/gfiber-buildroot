@@ -1,3 +1,11 @@
+From f4c493a9374f9809edea8fe6ca24fc943f139567 Mon Sep 17 00:00:00 2001
+From: Tim Shepard <shep@alum.mit.edu>
+Date: Fri, 24 Jan 2014 03:06:54 -0500
+Subject: [PATCH] mwifiex: create an AP interface instead of STA interface.
+
+hostapd doesn't know how to do this automatically.
+
+--
 diff --git a/drivers/net/wireless/mwifiex/main.c b/drivers/net/wireless/mwifiex/main.c
 index 8bb8988..9d3d059 100644
 --- a/drivers/net/wireless/mwifiex/main.c
