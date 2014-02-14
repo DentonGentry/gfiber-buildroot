@@ -109,7 +109,7 @@ case "$width" in
 esac
 
 
-if runnable wl; then
+if runnable wl && [ -z "$(iw list 2>/dev/null)" ]; then
   log "Configuring broadcom wifi."
   WL radio on
   WL down
