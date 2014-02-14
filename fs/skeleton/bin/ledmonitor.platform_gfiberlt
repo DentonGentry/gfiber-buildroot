@@ -35,7 +35,7 @@ set_led_dim() {
   # the driver waits until both the on and off durations are non-zero before
   # enabling blinking.
   echo 1 > "$path/delay_on"
-  echo 20 > "$path/delay_off"
+  echo 5 > "$path/delay_off"
 }
 
 set_led_brightness() {
@@ -59,7 +59,7 @@ blink_led() {
   # only set the trigger if it's not already set, otherwise the kernel will
   # first disable the blink, then re-enable it, possibly glitching the led.
   # 'none' is always the first listed trigger.
-  if ! startswith "$trigger" "[none]"; then
+  if startswith "$trigger" "[none]"; then
     echo timer > "$path/trigger"
   fi
 
