@@ -1,11 +1,15 @@
 #!/bin/sh
 band=5
 show_bands="2.4 5"
+bridge=br0
 ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
 channel=auto
 autotype=NONDFS
 width=20
+enable_wmm=
+guard_interval=
+extra_short_timeouts=
 # use $WIFI_PSK from the environment if given.
 # You shouldn't pass passwords as command-line options because they show up
 # in 'ps' even to users other than you.
@@ -36,7 +40,11 @@ Usage: $bin set [options...]
  -e <encryption>  Encryption type to use (WPA_PSK_AES,
                     WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
+ -m               Enable wmm extensions (needed for block acks)
+ -g               Enable short guard interval
  -w <20|40|80>    Channel with to use, in MHz (default=$width)
+ -B <bridge>      Bridge device to use (default=$bridge)
+ -X               Use extra short timeout intervals for stress testing
 $bin show
  print all known parameters
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
@@ -159,7 +167,7 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:w:" opt
+while getopts "b:c:a:s:e:w:mgB:X" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
@@ -168,6 +176,10 @@ do
     s) ssid=$OPTARG ;;
     e) crypto=$OPTARG ;;
     w) width=$OPTARG ;;
+    m) enable_wmm="wmm_enabled=1" ;;
+    g) guard_interval="[SHORT-GI-20][SHORT-GI-40]" ;;
+    B) bridge=$OPTARG ;;
+    X) extra_short_timeouts=1 ;;
     *) usage ;;
   esac
 done
@@ -184,25 +196,48 @@ fi
 
 # set
 
-C_24MAIN="2412 2432 2462"
-C_24OVERLAP="2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462"
-C_5LOW="5180 5200 5220 5240"
-C_5HIGH="5745 5765 5785 5805 5825"
-C_5DFS="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
-case "$autotype" in
-  LOW) permit_freq="$C_24MAIN $C_5LOW" ;;
-  HIGH) permit_freq="$C_24MAIN $C_5HIGH" ;;
-  DFS) permit_freq="$C_5DFS" ;;
-  NONDFS) permit_freq="$C_24MAIN $C_5LOW $C_5HIGH" ;;
-  ANY) permit_freq="$C_24MAIN $C_5LOW $C_5HIGH $C_5DFS" ;;
-  OVERLAP) permit_freq="$C_24OVERLAP $ANY" ;;
+C_24MAIN_20="2412 2432 2462"
+C_24MAIN_40="2412"
+C_24MAIN_80=""
+C_24OVERLAP_20="2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462"
+C_24OVERLAP_40="2412"
+C_24OVERLAP_80=""
+C_5LOW_20="5180 5200 5220 5240"
+C_5LOW_40="5180 5220"
+C_5LOW_80="5180"
+C_5HIGH_20="5745 5765 5785 5805 5825"
+C_5HIGH_40="5745 5785"
+C_5HIGH_80="5745"
+C_5DFS_20="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
+C_5DFS_40=""  # TODO(apenwarr): figure out which 40/80 MHz DFS are allowed
+C_5DFS_80=""
+case "$autotype-$width" in
+  LOW-20) permit_freq="$C_24MAIN_20 $C_5LOW_20" ;;
+  LOW-40) permit_freq="$C_24MAIN_40 $C_5LOW_40" ;;
+  LOW-80) permit_freq="$C_24MAIN_80 $C_5LOW_80" ;;
+  HIGH-20) permit_freq="$C_24MAIN_20 $C_5HIGH_20" ;;
+  HIGH-40) permit_freq="$C_24MAIN_40 $C_5HIGH_40" ;;
+  HIGH-80) permit_freq="$C_24MAIN_80 $C_5HIGH_80" ;;
+  DFS-20) permit_freq="$C_5DFS_20" ;;
+  DFS-40) permit_freq="$C_5DFS_40" ;;
+  DFS-80) permit_freq="$C_5DFS_80" ;;
+  NONDFS-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20" ;;
+  NONDFS-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40" ;;
+  NONDFS-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80" ;;
+  ANY-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20 $C_5DFS_20" ;;
+  ANY-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40 $C_5DFS_40" ;;
+  ANY-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80 $C_5DFS_80" ;;
+  OVERLAP-20) permit_freq="$C_24OVERLAP_20 $ANY_20" ;;
+  OVERLAP-40) permit_freq="$C_24OVERLAP_40 $ANY_40" ;;
+  OVERLAP-80) permit_freq="$C_24OVERLAP_80 $ANY_80" ;;
   *) die "unknown autochannel type '$autotype'" ;;
 esac
 
 
 case "$width" in
   20) ;;
-  40|80) die "widths other than 20 are not supported yet" ;;
+  40) ;;
+  80) ;;
   *) die "invalid channel width='$width'"
 esac
 
@@ -374,7 +409,6 @@ elif runnable iw; then
     log "autochannel='$channel'"
   fi
 
-  # TODO(apenwarr): enable 802.11ac modes on devices that support them.
   case $band in
     2.4) hostapd_band=g ;;
     5) hostapd_band=a ;;
@@ -393,40 +427,73 @@ elif runnable iw; then
     WEP|NONE) wpa_pairwise=CCMP ;;
     *) die "invalid crypto alg in '$crypto'" ;;
   esac
-  atomic /tmp/hostapd.conf.$ifc "
-interface=$ifc
-bridge=br0
-ssid=$ssid
-auth_algs=$auth_algs
-wpa=$wpa
-wpa_passphrase=$psk
-wpa_key_mgmt=WPA-PSK
-wpa_pairwise=$wpa_pairwise
-hw_mode=$hostapd_band
-channel=$channel
-country_code=US
-ieee80211d=1
-ieee80211h=1
-ieee80211n=1
-# TODO(apenwarr): enabling 80211ac mode makes hostapd not work.  Hmm...
-#ieee80211ac=1
-# TODO(apenwarr): 40 MHz support disabled until we do autochannel better.
-#ht_capab=[HT40+][SHORT-GI-20][SHORT-GI-40]
+  hostconf=$(cat <<-EOF
+	interface=$ifc
+	bridge=$bridge
+	ssid=$ssid
+	auth_algs=$auth_algs
+	wpa=$wpa
+	wpa_passphrase=$psk
+	wpa_key_mgmt=WPA-PSK
+	wpa_pairwise=$wpa_pairwise
+	hw_mode=$hostapd_band
+	channel=$channel
+	country_code=US
+	ieee80211d=1
+	ieee80211h=1
+	ieee80211n=1
+	$enable_wmm
+	EOF
+  )
+  case "$width" in
+    20) hostconf=$(cat <<-EOF
+		$hostconf
+		ht_capab=$guard_interval
+		EOF
+        ) ;;
+    40) hostconf=$(cat <<-EOF
+		$hostconf
+		ht_capab=[HT40+]$guard_interval
+		EOF
+        ) ;;
+    80) hostconf=$(cat <<-EOF
+		$hostconf
+		ieee80211ac=1
+		ht_capab=[HT40+]$guard_interval
+		vht_oper_chwidth=1
 
-# Obnoxiously short rekey intervals to maximize the chance of discovering
-# bugs caused by rekeying at inopportune times.
-# TODO(apenwarr): make these more sensible before final release.
-wep_rekey_period=30
-wpa_group_rekey=30
-wpa_strict_rekey=1
-wpa_gmk_rekey=59
-wpa_ptk_rekey=30
-"
+		# Wifi channel numbers define the center of a 20 MHz
+		# channel.  40 MHz channels are defined as one channel plus
+		# the next one 4 up.  80 MHz channels go back to defining by
+		# center.  If you think about it long enough, you eventually
+		# discover that the center is 6 channels up from the base 20
+		# MHz channel, although this isn't very intuitive.
+		vht_oper_centr_freq_seg0_idx=$(($channel + 6))
+		EOF
+        ) ;;
+  esac
+  if [ -n "$extra_short_timeouts" ]; then
+    hostconf=$(cat <<-EOF
+	$hostconf
+
+	# Obnoxiously short rekey intervals to maximize the chance of discovering
+	# bugs caused by rekeying at inopportune times.
+	wep_rekey_period=30
+	wpa_group_rekey=30
+	wpa_strict_rekey=1
+	wpa_gmk_rekey=59
+	wpa_ptk_rekey=30
+	EOF
+    )
+  fi
+  atomic /tmp/hostapd.conf.$ifc "$hostconf"
   case $crypto in
     WPA2_*|WPA_*|WEP|NONE)
+      opts="-ddK"
+      pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
       babysit 60 startpid "$pidfile" \
-          hostapd -dK /tmp/hostapd.conf.$ifc \
-          2>&1 | logos hostapd-$ifc &
+          hostapd $opts "/tmp/hostapd.conf.$ifc" \
+          2>&1 | logos "hostapd-$ifc" &
       ;;
     *)
       die "invalid crypto '$crypto'"
