@@ -6,7 +6,7 @@ PLATFORM_PREFIX=$3
 
 # Returns true if the string $1 starts with the string $2.
 startswith() {
-  [ "${1#$2}" != "$1" ]
+  [ "${1#"$2"}" != "$1" ]
 }
 
 case "$PLATFORM_PREFIX" in
