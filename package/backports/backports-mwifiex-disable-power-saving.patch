@@ -1,0 +1,69 @@
+From 9d4a2861110d472b09905d1fbcae5a10cdff4117 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 13 Feb 2014 10:11:22 -0500
+Subject: [PATCH 2/2] mwifiex: disable power saving.
+
+If the system rebooted while the driver was running and the chip entered
+automatic power saving mode, the driver wouldn't be able to load again on
+the next boot, presumably because it wasn't able to wake it up.
+
+In AP mode we don't need power saving mode anyway, so this should be ok.
+---
+ drivers/net/wireless/mwifiex/cmdevt.c  | 6 +++---
+ drivers/net/wireless/mwifiex/sta_cmd.c | 2 ++
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/wireless/mwifiex/cmdevt.c b/drivers/net/wireless/mwifiex/cmdevt.c
+index 1ddc8b2..ea54d72 100644
+--- a/drivers/net/wireless/mwifiex/cmdevt.c
++++ b/drivers/net/wireless/mwifiex/cmdevt.c
+@@ -1278,7 +1278,7 @@ int mwifiex_cmd_enh_power_mode(struct mwifiex_private *priv,
+ 	u16 cmd_size = 0;
+ 
+ 	cmd->command = cpu_to_le16(HostCmd_CMD_802_11_PS_MODE_ENH);
+-	if (cmd_action == DIS_AUTO_PS) {
++	if (cmd_action == DIS_AUTO_PS || cmd_action == EN_AUTO_PS) {
+ 		psmode_enh->action = cpu_to_le16(DIS_AUTO_PS);
+ 		psmode_enh->params.ps_bitmap = cpu_to_le16(ps_bitmap);
+ 		cmd->size = cpu_to_le16(S_DS_GEN + sizeof(psmode_enh->action) +
+@@ -1288,7 +1288,7 @@ int mwifiex_cmd_enh_power_mode(struct mwifiex_private *priv,
+ 		psmode_enh->params.ps_bitmap = cpu_to_le16(ps_bitmap);
+ 		cmd->size = cpu_to_le16(S_DS_GEN + sizeof(psmode_enh->action) +
+ 					sizeof(psmode_enh->params.ps_bitmap));
+-	} else if (cmd_action == EN_AUTO_PS) {
++	} else if (0 && cmd_action == EN_AUTO_PS) {
+ 		psmode_enh->action = cpu_to_le16(EN_AUTO_PS);
+ 		psmode_enh->params.ps_bitmap = cpu_to_le16(ps_bitmap);
+ 		cmd_size = S_DS_GEN + sizeof(psmode_enh->action) +
+@@ -1365,7 +1365,7 @@ int mwifiex_ret_enh_power_mode(struct mwifiex_private *priv,
+ 	dev_dbg(adapter->dev,
+ 		"info: %s: PS_MODE cmd reply result=%#x action=%#X\n",
+ 		__func__, resp->result, action);
+-	if (action == EN_AUTO_PS) {
++	if (0 && action == EN_AUTO_PS) {
+ 		if (auto_ps_bitmap & BITMAP_AUTO_DS) {
+ 			dev_dbg(adapter->dev, "cmd: Enabled auto deep sleep\n");
+ 			priv->adapter->is_deep_sleep = true;
+diff --git a/drivers/net/wireless/mwifiex/sta_cmd.c b/drivers/net/wireless/mwifiex/sta_cmd.c
+index 23b9e9d..5fe53b6 100644
+--- a/drivers/net/wireless/mwifiex/sta_cmd.c
++++ b/drivers/net/wireless/mwifiex/sta_cmd.c
+@@ -1647,6 +1647,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
+ 	if (ret)
+ 		return -1;
+ 
++#if 0
+ 	if (first_sta && priv->adapter->iface_type != MWIFIEX_USB &&
+ 	    priv->bss_type != MWIFIEX_BSS_TYPE_UAP) {
+ 		/* Enable auto deep sleep */
+@@ -1659,6 +1660,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
+ 		if (ret)
+ 			return -1;
+ 	}
++#endif
+ 
+ 	if (priv->bss_type != MWIFIEX_BSS_TYPE_UAP) {
+ 		/* Send cmd to FW to enable/disable 11D function */
+-- 
+1.9.0.rc1.175.g0b1dcb5
+
