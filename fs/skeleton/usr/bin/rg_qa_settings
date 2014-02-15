@@ -2,10 +2,12 @@
 
 # Restores the same settings which used to be hard-coded on GFRG2x0.
 
+# LAN IP address
 cwmp add Device.IP.Interface.256.IPv4Address
 cwmp set Device.IP.Interface.256.IPv4Address.1.IPAddress 192.168.42.1
 cwmp set Device.IP.Interface.256.IPv4Address.1.SubnetMask 255.255.255.0
 
+# DHCP server
 cwmp add Device.DHCPv4.Server.Pool
 cwmp set Device.DHCPv4.Server.Pool.1.MinAddress 192.168.42.5
 cwmp set Device.DHCPv4.Server.Pool.1.MaxAddress 192.168.42.250
@@ -16,3 +18,20 @@ cwmp set Device.DHCPv4.Server.Pool.1.Enable True
 # dnsmasq sends its own IP address as the DNS server (which is what
 # we want).
 # cwmp set Device.DHCPv4.Server.Pool.1.DNSServers 8.8.8.8
+
+# Wifi
+serial=$(serial)
+[ -z "$serial" ] && serial=unknown
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.BeaconType 'WPAand11i'
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.IEEE11iEncryptionModes 'AESEncryption'
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.KeyPassphrase gfdogfood
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID "GFRG_${serial}_11n"
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.Enable True
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.RadioEnabled True
+
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.BeaconType 'WPAand11i'
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.IEEE11iEncryptionModes 'AESEncryption'
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.KeyPassphrase gfdogfood
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.SSID "GFRG_${serial}_11ac"
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.Enable True
+cwmp set InternetGatewayDevice.LANDevice.1.WLANConfiguration.2.RadioEnabled True
