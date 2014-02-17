@@ -1,0 +1,7 @@
+config BR2_PACKAGE_BCM_BMOCA
+	bool "Enable Broadcom MoCA v1/v2 kernel module"
+	default n
+	help
+	  Includes Broadcom MoCA 1.0/2.0 kernel portion for 6802/6803/742x.
+	  You must also enable BR2_PACKAGE_BCM_DRIVER_{MOCA,MOCA2} to get
+	  a complete driver.

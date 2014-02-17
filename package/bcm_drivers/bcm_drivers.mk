@@ -14,15 +14,6 @@ define BCM_DRIVERS_BUILD_MOCA
 		LINUXDIR="$(LINUX_DIR)" \
 		ARCH="$(KERNEL_ARCH)" \
 		-C $(@D)/moca/
-	# Note: we build the moca2 kernel module.  It's compatible.
-	$(TARGET_MAKE_ENV) $(MAKE1) \
-		CROSS=$(TARGET_CROSS) \
-		CC="$(TARGET_CC)" \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS)" \
-		EXTRA_LDFLAGS="$(TARGET_LDFLAGS)" \
-		LINUXDIR="$(LINUX_DIR)" \
-		ARCH="$(KERNEL_ARCH)" \
-		-C $(@D)/moca2/ bmoca/bmoca.ko
 endef
 
 define BCM_DRIVERS_INSTALL_STAGING_MOCA
@@ -48,10 +39,6 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	$(INSTALL) -m 0644 \
 		$(@D)/moca/mocacore-*.bin \
 		$(TARGET_DIR)/etc/moca/
-	# Note: we install the moca2 kernel module.  It's compatible.
-	$(INSTALL) -m 0644 \
-		$(@D)/moca2/bmoca/bmoca.ko \
-		$(TARGET_DIR)/usr/lib/modules
 endef
 endif  # MOCA1
 
@@ -112,9 +99,6 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	$(INSTALL) -m 0644 \
 		$(@D)/moca2/moca20core-*.bin \
 		$(TARGET_DIR)/etc/moca/
-	$(INSTALL) -m 0644 \
-		$(@D)/moca2/bmoca/bmoca.ko \
-		$(TARGET_DIR)/usr/lib/modules
 	$(INSTALL) -m 0644 \
 		$(@D)/moca2/bin/*.so \
 		$(TARGET_DIR)/usr/lib/

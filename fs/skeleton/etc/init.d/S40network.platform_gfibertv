@@ -56,7 +56,7 @@ case "$1" in
       mocaifc=eth1
     fi
 
-    [ -e /usr/lib/modules/bmoca.ko ] && insmod /usr/lib/modules/bmoca.ko
+    modprobe bmoca 2>/dev/null
     if [ "$(kernopt wifical)" != "1" ]; then
       # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
       # the production firmware at all, or it barfs.

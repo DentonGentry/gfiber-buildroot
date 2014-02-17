@@ -7,15 +7,17 @@ menu "Broadcom Drivers"
 		bool "Enable Broadcom MoCA Driver v1"
 		depends on BR2_PACKAGE_BCM_DRIVERS
 		depends on !BR2_PACKAGE_BCM_DRIVER_MOCA2
+		select BR2_PACKAGE_BCM_BMOCA
 		default n
 		help
-		  Includes Broadcom MoCA 1.x driver for 742x only.
+		  Includes Broadcom MoCA 1.x userspace for 742x only.
 	config BR2_PACKAGE_BCM_DRIVER_MOCA2
 		bool "Enable Broadcom MoCA Driver v2"
 		depends on BR2_PACKAGE_BCM_DRIVERS
+		select BR2_PACKAGE_BCM_BMOCA
 		default n
 		help
-		  Includes Broadcom MoCA 2.0 driver for 6802/6803/742x.
+		  Includes Broadcom MoCA 2.0 userspace for 6802/6803/742x.
 	config BR2_PACKAGE_BCM_DRIVER_WIFI
 		bool "Enable Broadcom WiFi Driver"
 		depends on BR2_PACKAGE_BCM_DRIVERS
