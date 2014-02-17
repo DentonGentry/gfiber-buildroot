@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Invoked by dnsmasq when there is lease activity
+# Fingerprints compatible with fingerbank.
+# https://github.com/inverse-inc/fingerbank/blob/master/dhcp_fingerprints.conf
+
+. /etc/utils.sh
+
+fingerprint="$DNSMASQ_REQUESTED_OPTIONS"
+cmd="$1"
+mac="$2"
+# dnsmasq also passes in:
+# ip="$3"
+# hostname="$4"
+
+FILE="/config/dhcp.fingerprints"
+
+if [ -z "$mac" ]; then
+  exit 0
+fi
+
+otherprints=$(head -n 256 "$FILE" | grep -vs "$mac")
+if [ "$cmd" = "del" ]; then
+  atomic "$FILE" "$otherprints"
+  exit 0
+fi
+
+if [ -z "$fingerprint" ]; then
+  exit 0
+fi
+
+newprints="$mac ${fingerprint}
+${otherprints}"
+
+atomic "$FILE" "$newprints"
+
+exit 0
