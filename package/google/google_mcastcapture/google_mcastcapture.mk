@@ -2,8 +2,14 @@ GOOGLE_MCASTCAPTURE_SITE=repo://vendor/google/mcastcapture
 GOOGLE_MCASTCAPTURE_DEPENDENCIES=google_fallocate openssl libcurl
 GOOGLE_MCASTCAPTURE_INSTALL_STAGING = YES
 
+HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest
+
 define GOOGLE_MCASTCAPTURE_BUILD_CMDS
         TARGET=$(TARGET_CROSS) FALLOCATE_GLIBC_MISSING=yes $(MAKE) -C $(@D)
+endef
+
+define HOST_GOOGLE_MCASTCAPTURE_BUILD_CMDS
+        $(HOST_MAKE_ENV) $(MAKE) -C $(@D)
 endef
 
 define GOOGLE_MCASTCAPTURE_INSTALL_STAGING_CMDS
@@ -40,8 +46,9 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
           $(@D)/ads/adloader $(TARGET_DIR)/app/sage/adloader
 endef
 
-define GOOGLE_MCASTCAPTURE_TEST_CMDS
-        $(MAKE) -C $(@D) test
+define HOST_GOOGLE_MCASTCAPTURE_TEST_CMDS
+        HOSTDIR=$(HOST_DIR) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) host-test
 endef
 
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
