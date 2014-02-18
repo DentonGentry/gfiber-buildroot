@@ -1,0 +1,27 @@
+From 00e09dda4cf8f545dca6a6f14c5f0d7c21088170 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 15 Feb 2014 04:48:38 -0500
+Subject: [PATCH] Add fflush() before each iteration of the event loop.
+
+Without this, if writing logs to stdout and redirecting those logs to a
+pipe, messages could be delayed indefinitely.
+---
+ src/utils/eloop.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/utils/eloop.c b/src/utils/eloop.c
+index e983edc..364ad12 100644
+--- a/src/utils/eloop.c
++++ b/src/utils/eloop.c
+@@ -805,7 +805,7 @@ void eloop_run(void)
+ 			_tv.tv_usec = tv.usec;
+ #endif /* CONFIG_ELOOP_POLL */
+ 		}
+-
++		fflush(stdout);
+ #ifdef CONFIG_ELOOP_POLL
+ 		num_poll_fds = eloop_sock_table_set_fds(
+ 			&eloop.readers, &eloop.writers, &eloop.exceptions,
+-- 
+1.9.0.rc1.175.g0b1dcb5
+
