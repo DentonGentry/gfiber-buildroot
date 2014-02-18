@@ -1,0 +1,98 @@
+From 82e768857ce41c98ad181386a2100aa98c14ef63 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 18 Feb 2014 06:37:44 -0500
+Subject: [PATCH] mwifiex: stop individual BSSes at shutdown time.
+
+This shouldn't be necessary; CMD_FUNC_SHUTDOWN is supposed to do this
+automatically.  But adding this greatly increases the probability that
+CMD_FUNC_INIT will succeed on the next load of the driver.
+
+This symptom specifically occurs if there is a nonzero number of stations
+connected at driver unload time.  If there aren't any stations connected,
+the problem does not occur.
+
+Also, run CMD_FUNC_SHUTDOWN for CMD_FUNC_INIT fails.  This might help
+prevent the firmware from continuing to advertise its SSID when it's broken.
+---
+ drivers/net/wireless/mwifiex/main.h    |  1 +
+ drivers/net/wireless/mwifiex/sdio.c    |  6 +++++-
+ drivers/net/wireless/mwifiex/sta_cmd.c |  5 ++++-
+ drivers/net/wireless/mwifiex/util.c    | 12 ++++++++++++
+ 4 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/mwifiex/main.h b/drivers/net/wireless/mwifiex/main.h
+index d8ad554..7d907f4 100644
+--- a/drivers/net/wireless/mwifiex/main.h
++++ b/drivers/net/wireless/mwifiex/main.h
+@@ -1049,6 +1049,7 @@ mwifiex_11h_get_csa_closed_channel(struct mwifiex_private *priv)
+ 	return priv->csa_chan;
+ }
+ 
++int mwifiex_stop_bss(struct mwifiex_private *priv);
+ int mwifiex_init_shutdown_fw(struct mwifiex_private *priv,
+ 			     u32 func_init_shutdown);
+ int mwifiex_add_card(void *, struct semaphore *, struct mwifiex_if_ops *, u8);
+diff --git a/drivers/net/wireless/mwifiex/sdio.c b/drivers/net/wireless/mwifiex/sdio.c
+index de8562e..01c7e8b 100644
+--- a/drivers/net/wireless/mwifiex/sdio.c
++++ b/drivers/net/wireless/mwifiex/sdio.c
+@@ -190,11 +190,15 @@ mwifiex_sdio_remove(struct sdio_func *func)
+ 			mwifiex_sdio_resume(adapter->dev);
+ #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34)) */
+ 
+-		for (i = 0; i < adapter->priv_num; i++)
++		for (i = 0; i < adapter->priv_num; i++) {
+ 			if ((GET_BSS_ROLE(adapter->priv[i]) ==
+ 						MWIFIEX_BSS_ROLE_STA) &&
+ 			    adapter->priv[i]->media_connected)
+ 				mwifiex_deauthenticate(adapter->priv[i], NULL);
++			if (GET_BSS_ROLE(adapter->priv[i]) ==
++						MWIFIEX_BSS_ROLE_UAP)
++				mwifiex_stop_bss(adapter->priv[i]);
++		}
+ 
+ 		priv = mwifiex_get_priv(adapter, MWIFIEX_BSS_ROLE_ANY);
+ 		mwifiex_disable_auto_ds(priv);
+diff --git a/drivers/net/wireless/mwifiex/sta_cmd.c b/drivers/net/wireless/mwifiex/sta_cmd.c
+index 5fe53b6..cd7bb31 100644
+--- a/drivers/net/wireless/mwifiex/sta_cmd.c
++++ b/drivers/net/wireless/mwifiex/sta_cmd.c
+@@ -1561,8 +1561,11 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
+ 
+ 		ret = mwifiex_send_cmd_sync(priv, HostCmd_CMD_FUNC_INIT,
+ 					    HostCmd_ACT_GEN_SET, 0, NULL);
+-		if (ret)
++		if (ret) {
++			mwifiex_send_cmd_sync(priv, HostCmd_CMD_FUNC_SHUTDOWN,
++					HostCmd_ACT_GEN_SET, 0, NULL);
+ 			return -1;
++		}
+ 
+ 		/* Download calibration data to firmware.
+ 		 * The cal-data can be read from device tree and/or
+diff --git a/drivers/net/wireless/mwifiex/util.c b/drivers/net/wireless/mwifiex/util.c
+index 9b82e22..845148b 100644
+--- a/drivers/net/wireless/mwifiex/util.c
++++ b/drivers/net/wireless/mwifiex/util.c
+@@ -55,6 +55,18 @@ int mwifiex_shutdown_fw_complete(struct mwifiex_adapter *adapter)
+ }
+ 
+ /*
++ * This function sends the stop BSS command to firmware for a particular
++ * BSS.
++ */
++int mwifiex_stop_bss(struct mwifiex_private *priv)
++{
++	printk("doing STOP for priv %p\n", priv);
++	return mwifiex_send_cmd_sync(priv, HostCmd_CMD_UAP_BSS_STOP,
++					HostCmd_ACT_GEN_SET, 0, NULL);
++}
++EXPORT_SYMBOL_GPL(mwifiex_stop_bss);
++
++/*
+  * This function sends init/shutdown command
+  * to firmware.
+  */
+-- 
+1.9.0.rc1.175.g0b1dcb5
+
