@@ -1,2 +1,23 @@
-iface=$1
-ip link set dev $iface up
+iface="$1"
+uplink=0
+
+if is-network-box; then
+  if [ "$iface" = wan0 ] || [ "$iface" = wan0.2 ]; then
+    uplink=1
+  fi
+else
+  if [ "$iface" = br0 ]; then
+    uplink=1
+  fi
+fi
+
+if [ "$uplink" = 1 ]; then
+  if [ -z "$(ip -o -4 addr show $iface)" ]; then
+    run-dhclient "$iface"
+  else
+    # dhclient would do this if we had run it
+    upload-logs-now
+  fi
+else
+  ip link set dev "$iface" up
+fi
