@@ -76,20 +76,16 @@ stop_sagesrv() {
   pkillwait -f '(alivemonitor.*)(sagesrv)'
 }
 
-start_adloader()
-{
-  if [ -e /app/sage/adloader ]; then
-    mkdir -p /var/media/ads
-    mkdir -p /var/media/ads/contracts
-    mkdir -p /var/media/ads/metadata
-    chmod 770 /var/media/ads
-    chmod 770 /var/media/ads/contracts
-    chmod 770 /var/media/ads/metadata
-    chown video.video /var/media/ads
-    chown video.video /var/media/ads/*
-    chown video.video /var/media/ads/contracts/*
-    chown video.video /var/media/ads/metadata/*
+setup_adloader() {
+  mkdir -p /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
+  chmod 770 /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
+  chown video.video /var/media/ads /var/media/ads/* /var/media/ads/contracts/* \
+    /var/media/ads/metadata/*
+}
 
+start_adloader() {
+  setup_adloader
+  if [ -e /app/sage/adloader ]; then
     VIDEO_UID=$(id -u video)
     VIDEO_GID=$(id -g video)
     # TODO(irinams): call the alivemonitor after adding threadmon to adloader
@@ -99,8 +95,7 @@ start_adloader()
   fi
 }
 
-stop_adloader()
-{
+stop_adloader() {
   if [ -e /app/sage/adloader ]; then
     pkillwait -f '(babysit.*)(adloader)'
     pkillwait -x 'adloader'
@@ -108,8 +103,7 @@ stop_adloader()
   fi
 }
 
-mac_addr_increment()
-{
+mac_addr_increment() {
   echo "$1" | (
     IFS=: read m1 m2 m3 m4 m5 m6
     m6d=$(printf "%d" "0x$m6")
