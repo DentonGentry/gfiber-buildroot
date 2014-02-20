@@ -1,5 +1,6 @@
 #!/bin/sh
 band=5
+show_bands="2.4 5"
 ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
 channel=auto
@@ -36,6 +37,9 @@ Usage: $bin set [options...]
                     WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
  -w <20|40|80>    Channel with to use, in MHz (default=$width)
+$bin show
+ print all known parameters
+ -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
 "
 usage() {
   echo "$USAGE"
@@ -64,18 +68,101 @@ IW() {
 }
 
 
-# Only 'set' command exists right now, but use it for extensibility later
-cmd=$1
-if [ "$cmd" != "set" ]; then
+iw_find_phy() {
+  band=$1
+  channel=$2
+  phy=
+  channum=
+  iw phy | while IFS=" []" read a b c d junk; do
+    if [ "$a" = "Wiphy" ]; then
+      phy=$b
+    elif [ "$c" = "MHz" ]; then
+      freq=$b
+      channum=$d
+      if [ "$channel" = "$channum" ]; then
+        echo "$phy"
+        break
+      elif [ "$channel" = "auto" ]; then
+        if startswith "$band" 2 && startswith "$freq" 2; then
+          echo "$phy"
+          break
+        elif startswith "$band" 5 && startswith "$freq" 5; then
+          echo "$phy"
+          break
+        fi
+      fi
+    fi
+  done
+}
+
+iw_find_ifc() {
+  phynum=$1
+  thisphynum=
+  ifcname=
+  iw dev | while read a b junk; do
+    if startswith "$a" "phy#"; then
+      thisphynum=${a#phy#}
+    elif [ "$a" = "Interface" ] && ! startswith "$b" "mon."; then
+      if [ "$thisphynum" = "$phynum" ]; then
+        echo "$b"
+        break
+      fi
+    fi
+  done
+}
+
+showwifi() {
+  if runnable iw; then
+    band=$1
+    channel=$2
+    # TODO(dgentry): iw says 'Do NOT screenscrape this tool,
+    # we don't consider its output stable.'
+    # should we write an iwget tool using iwlib, where the API is more stable?
+    phy=$(iw_find_phy "$band" "$channel")
+    [ -n "$phy" ] || die "no wifi phy for band='$band'"
+    phynum=${phy#phy}
+    ifc=$(iw_find_ifc "$phynum")
+    [ -n "$ifc" ] || die "no wifi interface for band='$band'"
+
+    echo "Band: $band"
+    output=$(iw reg get)
+    country=${output##country }
+    country=${country%%:*}
+    echo "RegDomain: $country"
+
+    myinterface=0
+    iw dev "$ifc" info | while read a b junk; do
+      [ "$a" = "channel" ] && echo "Channel: $b"
+      [ "$a" = "ssid" ] && echo "SSID: $b"
+      [ "$a" = "addr" ] && echo "BSSID: $b"
+    done
+
+    if [ -e "/tmp/autochan.$ifc" ]; then
+      echo "AutoChannel: TRUE"
+    else
+      echo "AutoChannel: FALSE"
+    fi
+    if [ -e "/tmp/autotype.$ifc" ]; then
+      echo "AutoType: $(cat /tmp/autotype.$ifc)"
+    fi
+
+    echo "Station List for band: $band"
+    iw dev "$ifc" station dump
+    echo
+  fi
+}
+
+if [ $# -eq 0 ]; then
   usage
 fi
-shift
 
+cmd=$1
+shift
 
 while getopts "b:c:a:s:e:w:" opt
 do
   case $opt in
-    b) band=$OPTARG ;;
+    b) band=$OPTARG; show_bands=$OPTARG ;;
     c) channel=$OPTARG ;;
     a) autotype=$OPTARG ;;
     s) ssid=$OPTARG ;;
@@ -85,6 +172,17 @@ do
   esac
 done
 
+if [ "$cmd" = "show" ]; then
+  for b in $show_bands; do
+    showwifi $b $channel
+  done
+  exit 0
+elif [ "$cmd" != "set" ]; then
+  usage
+fi
+
+
+# set
 
 C_24MAIN="2412 2432 2462"
 C_24OVERLAP="2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462"
@@ -170,47 +268,11 @@ if runnable wl && [ -z "$(iw list 2>/dev/null)" ]; then
   esac
 elif runnable iw; then
   log "Configuring cfg80211 wifi."
-  phy=$(
-    phy=
-    channum=
-    IW phy | while IFS=" []" read a b c d junk; do
-      if [ "$a" = "Wiphy" ]; then
-        phy=$b
-      elif [ "$c" = "MHz" ]; then
-        freq=$b
-        channum=$d
-        if [ "$channel" = "$channum" ]; then
-          echo "$phy"
-          break
-        elif [ "$channel" = "auto" ]; then
-          if startswith "$band" 2 && startswith $freq 2; then
-            echo "$phy"
-            break
-          elif startswith "$band" 5 && startswith $freq 5; then
-            echo "$phy"
-            break
-          fi
-        fi
-      fi
-    done
-  )
+  phy=$(iw_find_phy "$band" "$channel")
   [ -n "$phy" ] || die "no wifi phy for band='$band' channel='$channel'"
   phynum=${phy#phy}
   log "phy='$phy' phynum='$phynum'"
-  ifc=$(
-    thisphynum=
-    ifcname=
-    IW dev | while read a b junk; do
-      if startswith "$a" "phy#"; then
-        thisphynum=${a#phy#}
-      elif [ "$a" = "Interface" ] && ! startswith "$b" "mon."; then
-        if [ "$thisphynum" = "$phynum" ]; then
-          echo "$b"
-          break
-        fi
-      fi
-    done
-  )
+  ifc=$(iw_find_ifc "$phynum")
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
   log "ifc='$ifc'"
 
@@ -232,6 +294,10 @@ elif runnable iw; then
   #  I read comments elsewhere that it's rather incomplete, and glancing
   #  through the code it looks like it doesn't handle all the interesting
   #  cases.  But neither does this code yet...
+  [ "$channel" = "auto" ] && atomic "/tmp/autochan.$ifc" ""
+  [ ! "$channel" = "auto" ] && rm -f "/tmp/autochan.$ifc"
+  atomic "/tmp/autotype.$ifc" "$autotype"
+
   if [ "$channel" = "auto" ]; then
     # TODO(apenwarr): we really want to clear any old survey results first.
     #  But there seems to be no iw command for that yet...
@@ -255,7 +321,7 @@ elif runnable iw; then
       freq=
       IWC survey dump | {
         # TODO(apenwarr): Randomize the order of channels.
-        #  Otherwise when channels are all about equally good, we'd always
+        #  Otherwise when channels are all about equally good, we would always
         #  choose exactly the same channel, which might be bad in the case
         #  of hidden nodes.
         while read a b c d e junk; do
@@ -273,7 +339,7 @@ elif runnable iw; then
             ratio=$(( ($active+1) * 1000 / ($busy+1) ))
             includes "$freq" "$permit_freq" || continue
             # some radios support both bands, but we only want to match
-            # channels on the band we've chosen.
+            # channels on the band we have chosen.
             startswith "$band" 2 && ! startswith "$freq" 2 && continue
             startswith "$band" 5 && ! startswith "$freq" 5 && continue
             log "freq=$freq ratio=$ratio noise=$noise"
@@ -366,6 +432,7 @@ wpa_ptk_rekey=30
       die "invalid crypto '$crypto'"
       ;;
   esac
+
 else
   die "No wifi runtime found."
 fi
