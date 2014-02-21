@@ -6,6 +6,11 @@ define GOOGLE_SAGESERVER_BUILD_CMDS
 	PATH=$(HOST_DIR)/usr/bin:$$PATH ./buildsage.sh
 endef
 
+define GOOGLE_SAGESERVER_TEST_CMDS
+	cd $(@D)/build/bruno/sage && \
+	PATH=$(HOST_DIR)/usr/bin:$$PATH ./rununittests.sh
+endef
+
 #TODO(apenwarr): There are probably unnecessary files included here.
 #  I just wrote it to duplicate as precisely as possible the set of files
 #  that were included in the earlier manually-generated tarball releases of
