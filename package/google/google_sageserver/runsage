@@ -93,7 +93,7 @@ fi
 (
   cat Sage.properties.defaults.base
   [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver && cat Sage.properties.defaults.mobileapi
-  [ "$MODE" = "client" ] && cat SageClient.properties.defaults.analytics
+  cat SageClient.properties.defaults.analytics
 ) >/tmp/Sage.properties.defaults
 
 read junk1 memtotal junk2 </proc/meminfo
