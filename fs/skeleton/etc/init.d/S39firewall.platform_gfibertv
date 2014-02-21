@@ -73,6 +73,9 @@ case "$1" in
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
       done
 
+      # igmp group membership control
+      ip46tables -A INPUT -p igmp -j ACCEPT
+
       # ping
       iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
@@ -141,12 +144,6 @@ case "$1" in
       ip46tables -A INPUT -i wan0.2 -j log
       ip46tables -A FORWARD -i wan0.2 -j log
 
-      # Default DROP policy above is safe, but REJECT is friendlier.
-      # But you can't use REJECT as a policy, so add a catchall rule at the
-      # bottom.
-      ip46tables -A INPUT -j REJECT
-      ip46tables -A FORWARD -j REJECT
-
       # Set the WAN 802.1q pbits
       iptables -t mangle -A OUTPUT -p all -j CLASSIFY --set-class 0:2
       iptables -t mangle -A OUTPUT -p igmp -j CLASSIFY --set-class 0:6
@@ -155,6 +152,14 @@ case "$1" in
       # DHCP and DHCPv6
       iptables -t mangle -A OUTPUT -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
       ip6tables -t mangle -A OUTPUT -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
+
+      # Default DROP policy above is safe, but REJECT is friendlier.
+      # But you can't use REJECT as a policy, so add a catchall rule at the
+      # bottom.
+      ip46tables -A INPUT -j REJECT
+      ip46tables -A FORWARD -j REJECT
+
+      # don't add any rules after the REJECTs above
 
       # parse acs state into acsrules chains
       update-acs-iptables
