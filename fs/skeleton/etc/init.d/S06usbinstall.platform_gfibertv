@@ -25,8 +25,8 @@ try_install()
   any=
   current_ver=$(cat /etc/version)
   platform_prefix=${current_ver%%-*}
-  for path in $(findall /sys/block/sd*/removable); do
-    if [ "$(cat $path)" = "1" ]; then
+  for path in $(findall /sys/block/sd*/device); do
+    if realpath $path | grep -q -e "/usb[0-9]*/"; then
       any=1
       dev=$(basename $(dirname $path))
       log "Checking $dev for installable images."
