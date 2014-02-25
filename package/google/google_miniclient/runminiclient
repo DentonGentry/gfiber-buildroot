@@ -42,7 +42,7 @@ SERVER_MAC=
 opts=
 if is-tv-box; then
   # TV box starts in last mode before power off
-  if [ -e /rw/TVUIon ] ; then
+  if [ -e /rw/sage/TVUIon ] ; then
     mode=miniclient
   else
     mode=waitpower
