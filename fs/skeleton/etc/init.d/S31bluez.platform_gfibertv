@@ -14,7 +14,7 @@ BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
 case "$1" in
   start)
-    # Configure BT adapter MAC address
+    # Get Bluetooth adapter MAC address
     BT_MAC=$(hnvram -rq MAC_ADDR_BT)
     if [ -z "${BT_MAC}" ]; then
       MAC=$(hnvram -rq MAC_ADDR)
@@ -25,12 +25,6 @@ case "$1" in
       . /etc/utils.sh
       BT_MAC=$(mac_addr_increment "${MAC}" 2)
     fi
-
-    hciconfig hci0 reset
-    hciconfig hci0 up
-    bdaddr -i hci0 "${BT_MAC}"
-    hciconfig hci0 reset
-    hciconfig hci0 up
     echo "${BT_MAC}" >/tmp/btmacaddress
 
     # Create BlueZ directories and config files
@@ -49,9 +43,18 @@ case "$1" in
 
     # Start BlueZ stack
     (
+      echo "$0: Configuring Bluetooth adapter"
+      if hciconfig hci0 | grep -q INIT; then
+        sleep 1
+      fi
+      hciconfig hci0 reset
+      bdaddr -i hci0 "${BT_MAC}"
+      hciconfig hci0 reset
+
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez-daemon &
       sleep 3
+
       echo "$0: Starting gfiber-agent"
       babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
       echo >/tmp/S31bluez_done
