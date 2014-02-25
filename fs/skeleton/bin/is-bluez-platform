@@ -3,15 +3,24 @@
 # Returns 0 (true) if this platform should use BlueZ Bluetooth stack.
 # Returns 1 (false) otherwise.
 
-BT_MRVL_PATH="/sys/bus/mmc/devices/mmc0:0001/mmc0:0001:2"
+SDIO_DEV_DIR="/sys/bus/mmc/devices"
 
 [ -e "/config/BLUEZ" ] && exit 0
+[ -e "/config/NOBLUEZ" ] && exit 1
 
-if [ -e "$BT_MRVL_PATH" ] &&
-   [ -e "$BT_MRVL_PATH/vendor" ] && [ -e "$BT_MRVL_PATH/device" ]; then
-  VENDOR=$(cat "$BT_MRVL_PATH/vendor")
-  DEVICE=$(cat "$BT_MRVL_PATH/device")
-  [ "$VENDOR" = 0x02df ] && [ "$DEVICE" = 0x912e ] && exit 0
+if [ -e "${SDIO_DEV_DIR}" ]; then
+  cd "${SDIO_DEV_DIR}"
+  for sdio_dev in *; do
+    [ ! -e "${sdio_dev}" ] && continue
+    btmrvl_dev="${sdio_dev}/${sdio_dev}:2"
+    btmrvl_vid="${btmrvl_dev}/vendor"
+    btmrvl_did="${btmrvl_dev}/device"
+    if [ -e "${btmrvl_vid}" ] && [ -e "${btmrvl_did}" ]; then
+      vid=$(cat "${btmrvl_vid}")
+      did=$(cat "${btmrvl_did}")
+      [ "${vid}" = 0x02df ] && [ "${did}" = 0x912e ] && exit 0
+    fi
+  done
 fi
 
 exit 1
