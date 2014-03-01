@@ -38,6 +38,7 @@ case "$1" in
 
     if [ ! -e "${BLUEZ_INPUT_CONF}" ]; then
       echo "[General]" >"${BLUEZ_INPUT_CONF}"
+      echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
       echo "HIDPInUserspace=true" >>"${BLUEZ_INPUT_CONF}"
     fi
 
