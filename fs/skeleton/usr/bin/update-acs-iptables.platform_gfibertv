@@ -1,4 +1,5 @@
-#! /bin/sh
+#! /usr/bin/zsh
+
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 
@@ -33,60 +34,101 @@ lanipv6=${lanipv6#* inet6 }
 lanipv6mask=${lanipv6%% *}
 lanipv6=${lanipv6%%/*}
 
-# resumes acsrules chains are created (by S39firewall)
+# presumes acsrules chains are created (by S39firewall)
 
 acs=/tmp/acs
 
 # clear out any existing rules
 ip46tables -t filter -F acsrules-filter-forward
 iptables -t nat -F acsrules-nat-prerouting
+iptables -t nat -F acsrules-nat-postrouting
 
-# port mapping rules
-if [ -d $acs/portsv4 ]; then
-  for n in $acs/portsv4/*; do
-    if [ "$n" = "$acs/portsv4/*" ]; then
-      continue;
+# ipv4 port mapping rules
+file=/tmp/cwmp_iptables
+if [ -f $file ]; then
+  declare -A cwmp
+  line=0
+  while IFS="=" read -r key value; do
+    line=$(($line + 1))
+    if [ -z "$key" ]; then
+      echo "$0: $file:$line: ignoring empty key" 1>&2
+      continue
     fi
-    set -- $(cat $n)
-    # proto src gw dst sport dport enabled
-    proto="$1"
-    src="$2"
-    gw="$3"             # external router addr, in case there are several.  Use 0/0 for all
-    dst="$4"
-    sport="$5"
-    dport="$6"
-    enabled="$7"
+    cwmp[$key]="$value"
+  done < $file
+
+  rule=1
+  while true; do
+    tag="CWMP_${rule}_"
+
+    comment=${cwmp[${tag}COMMENT]}
+    protocol=${cwmp[${tag}PROTOCOL]}
+    source=${cwmp[${tag}SOURCE]}
+    gateway=${cwmp[${tag}GATEWAY]}
+    dest=${cwmp[${tag}DEST]}
+    sport=${cwmp[${tag}SPORT]}
+    dport=${cwmp[${tag}DPORT]}
+    enabled=${cwmp[${tag}ENABLE]}
+
+    rule=$(($rule + 1))
+    # 1 means proceed, 0 means skip, others mean abort
     if [ "$enabled" != 1 ]; then
-      continue;
+      if [ "$enabled" != 0 ]; then
+        # end of rules
+        break
+      fi
+      # not enabled
+      continue
     fi
-    nolan=0
-    iptables -A acsrules-filter-forward -p $proto -d $dst --dport $dport -j ACCEPT
-    iptables -t nat -A acsrules-nat-prerouting -p $proto -d "$gw" --dport $sport -j DNAT --to $dst:$dport
-    iptables -t nat -A acsrules-nat-postrouting -p $proto -s $lanipv4mask -d $dst --dport $dport -j SNAT --to $lanipv4
+
+    iptables -t nat -A acsrules-nat-prerouting -p $protocol -s $source -d $gateway --dport $sport -j DNAT --to $dest:$dport -m comment --comment "$comment"
+    iptables -t nat -A acsrules-nat-postrouting -p $protocol -s $lanipv4mask -d $dest --dport $dport -j SNAT --to $lanipv4
+    iptables -A acsrules-filter-forward -p $protocol -d $dest --dport $dport -j ACCEPT
     # this adds a lan rule so internal hosts can use the lan router ip to get the same mapping
-    if [ "$gw" = "$wanipv4" ] || [ "$gw" = "0/0" ]; then
-      iptables -t nat -A acsrules-nat-prerouting -p $proto -d "$lanipv4" --dport $sport -j DNAT --to $dst:$dport
+    if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ $source = 0/0 ]; then
+      iptables -t nat -A acsrules-nat-prerouting -p $protocol -d "$lanipv4" --dport $sport -j DNAT --to $dest:$dport
     fi
   done
 fi
-if [ -d $acs/portsv6 ]; then
-  for n in $acs/portsv6/*; do
-    if [ "$n" = "$acs/portsv6/*" ]; then
-      continue;
+
+# ipv6 port mapping rules
+file=/tmp/cwmp_ip6tables
+if [ -f $file ]; then
+  declare -A cwmp
+  line=0
+  while IFS="=" read -r key value; do
+    line=$(($line + 1))
+    if [ -z "$key" ]; then
+      echo "$0: $file:$line: ignoring empty key" 1>&2
+      continue
     fi
-    set -- $(cat $n)
-    # proto src gw dst sport dport enabled
-    proto="$1"
-    src="$2"
-    gw="$3"
-    dst="$4"
-    sport="$5"
-    dport="$6"
-    enabled="$7"
+    cwmp[$key]="$value"
+  done < $file
+
+  rule=1
+  while true; do
+    tag="CWMP_${rule}_"
+
+    comment=${cwmp[${tag}COMMENT]}
+    protocol=${cwmp[${tag}PROTOCOL]}
+    source=${cwmp[${tag}SOURCE]}
+    dest=${cwmp[${tag}DEST]}
+    sport=${cwmp[${tag}SPORT]}
+    dport=${cwmp[${tag}DPORT]}
+    enabled=${cwmp[${tag}ENABLE]}
+
+    rule=$(($rule + 1))
+    # 1 means proceed, 0 means skip, others mean abort
     if [ "$enabled" != 1 ]; then
-      continue;
+      if [ "$enabled" != 0 ]; then
+        # end of rules
+        break
+      fi
+      # not enabled
+      continue
     fi
-    ip6tables -A acsrules-filter-forward -p $proto -d $dst --dport $dport -j ACCEPT
+
+    ip6tables -A acsrules-filter-forward -p $proto -s $source -d $dest --sport $sport --dport $dport -j ACCEPT -m comment --comment "$comment"
   done
 fi
 
