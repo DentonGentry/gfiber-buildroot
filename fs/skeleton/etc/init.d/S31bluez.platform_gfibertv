@@ -2,7 +2,7 @@
 
 PATH="/usr/bin/bluetooth:${PATH}"
 BLUEZ_STOR_DIR="/user/bluez/lib/bluetooth"
-BLUEZ_CONF_DIR="/user/bluez/etc/bluetooth"
+BLUEZ_CONF_DIR="/tmp/bluez/etc/bluetooth"
 BLUEZ_MAIN_CONF="${BLUEZ_CONF_DIR}/main.conf"
 BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
@@ -28,19 +28,15 @@ case "$1" in
     echo "${BT_MAC}" >/tmp/btmacaddress
 
     # Create BlueZ directories and config files
-    [ ! -e "${BLUEZ_STOR_DIR}" ] && mkdir -p "${BLUEZ_STOR_DIR}"
-    [ ! -e "${BLUEZ_CONF_DIR}" ] && mkdir -p "${BLUEZ_CONF_DIR}"
+    mkdir -p "${BLUEZ_STOR_DIR}"
+    mkdir -p "${BLUEZ_CONF_DIR}"
 
-    if [ ! -e "${BLUEZ_MAIN_CONF}" ]; then
-      echo "[General]" >"${BLUEZ_MAIN_CONF}"
-      echo "Name=$(cat /etc/platform)" >>"${BLUEZ_MAIN_CONF}"
-    fi
+    echo "[General]" >"${BLUEZ_MAIN_CONF}"
+    echo "Name=$(cat /etc/platform)" >>"${BLUEZ_MAIN_CONF}"
 
-    if [ ! -e "${BLUEZ_INPUT_CONF}" ]; then
-      echo "[General]" >"${BLUEZ_INPUT_CONF}"
-      echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
-      echo "HIDPInUserspace=true" >>"${BLUEZ_INPUT_CONF}"
-    fi
+    echo "[General]" >"${BLUEZ_INPUT_CONF}"
+    echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
+    echo "HIDPInUserspace=true" >>"${BLUEZ_INPUT_CONF}"
 
     # Start BlueZ stack
     (
