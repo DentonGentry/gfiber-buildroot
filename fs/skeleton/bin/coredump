@@ -17,6 +17,14 @@ log()
   echo "coredump:" $@ >&2;
 }
 
+uniqid=coredump-$$-coredump
+
+alarm()
+{
+  log core took too long to save, quitting to avoid panic, core will be truncated
+  pkill -f "$uniqid"
+}
+
 log "pid $pid ($exe) dying on signal $2"
 
 if [ ! -e "/tmp/DEBUG" ]; then
@@ -29,7 +37,10 @@ else
   # read and compress the core dump from stdin, limiting max output size
   coredump-delay &
   log "dumping core in '$out'"
-  gzip -c | dd bs=1024 count=163840 2>/dev/null >"$out"
+  # abort after 100 seconds.  bruno kernel will panic with hung_task at 120 seconds
+  (sleep 100; alarm) &
+  # --suffix is a trick to be able to pkill exactly this gzip
+  gzip -c --suffix "$uniqid" | dd bs=1024 count=163840 2>/dev/null >"$out"
   upload-logs-now
   log "finished dumping core for pid $pid ($exe)"
 fi
