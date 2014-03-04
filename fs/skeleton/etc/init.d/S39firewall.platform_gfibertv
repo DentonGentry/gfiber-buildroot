@@ -31,10 +31,22 @@ case "$1" in
           ipt_LOG \
           ipt_REJECT \
           ipt_MASQUERADE \
+          \
           nf_nat_ftp \
           nf_nat_tftp \
+          nf_nat_sip \
+          nf_nat_pptp \
+          nf_nat_irc \
+          nf_nat_proto_gre \
+          nf_nat_h323 \
+          \
           nf_conntrack_ftp \
           nf_conntrack_tftp \
+          nf_conntrack_sip \
+          nf_conntrack_pptp \
+          nf_conntrack_irc \
+          nf_conntrack_proto_gre \
+          nf_conntrack_h323 \
           \
           ip6table_filter \
           ip6t_tcp \
