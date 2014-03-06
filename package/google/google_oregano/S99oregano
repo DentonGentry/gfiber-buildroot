@@ -11,7 +11,11 @@ case "$1" in
     (
       wait-until-created /tmp/startupvideo.done
       rc_pipe_init
-      /app/oregano/runoregano 2>&1 | logos spicystart 0 20000000 &
+      if is-tv-box; then
+        /app/oregano/runoregano 2>&1 | logos spicystart 0 20000000 &
+      else
+        /app/oregano/runmarjoram 2>&1 | logos spicystart 0 20000000 &
+      fi
     ) &
     ;;
   stop)
