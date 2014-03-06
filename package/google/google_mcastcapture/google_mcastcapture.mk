@@ -47,7 +47,7 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
 endef
 
 define HOST_GOOGLE_MCASTCAPTURE_TEST_CMDS
-        HOSTDIR=$(HOST_DIR) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) host-test
+        HOSTDIR=$(HOST_DIR) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) test
 endef
 
 $(eval $(call GENTARGETS))

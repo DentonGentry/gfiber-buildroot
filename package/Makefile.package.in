@@ -781,6 +781,11 @@ $(1)-build:		$$($(2)_TARGET_BUILD)
 
 $(1)-test:		$$($(2)_TARGET_TEST)
 
+# Run host tests as part of test if configured.
+ifneq ($$(HOST_$(2)_TEST_CMDS),)
+$(1)-test:	host-$(1)-test
+endif
+
 $(2)_DEPENDS_STAMPS =	$$(patsubst %,$(STAMP_DIR)/%,$$(filter-out $(1),$$($(2)_DEPENDENCIES) $(PRE_DEPENDS)))
 
 $(1)-dp:
