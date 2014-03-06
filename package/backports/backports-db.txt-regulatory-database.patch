@@ -1,7 +1,7 @@
-From 913b2d7b86c947da3f8b418db995afe34cd382d6 Mon Sep 17 00:00:00 2001
+From 9be893c755abaec7fb08bf7ab5b959b5b8a6355f Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Sat, 4 Jan 2014 06:25:30 -0500
-Subject: [PATCH] Import a "real" db.txt regulatory database.
+Subject: [PATCH 05/11] Import a "real" db.txt regulatory database.
 
 This way we can skip the unnecessary complexity of the CRDA+udev service,
 whose only purpose was to avoid the need to recompile the kernel.
@@ -9,8 +9,8 @@ whose only purpose was to avoid the need to recompile the kernel.
 Obtained from:
 git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-regdb.git
 ---
- net/wireless/db.txt |  862 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 845 insertions(+), 17 deletions(-)
+ net/wireless/db.txt | 862 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 845 insertions(+), 17 deletions(-)
 
 diff --git a/net/wireless/db.txt b/net/wireless/db.txt
 index 6232a12..fcab208 100644
@@ -880,5 +880,5 @@ index 6232a12..fcab208 100644
 +	(5490 - 5710 @ 80), (27), DFS
 +
 -- 
-1.7.9.dirty
+1.9.0.279.gdc9e3eb
 

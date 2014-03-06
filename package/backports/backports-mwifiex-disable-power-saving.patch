@@ -1,7 +1,7 @@
-From 9d4a2861110d472b09905d1fbcae5a10cdff4117 Mon Sep 17 00:00:00 2001
+From adcd7119712edc28c3b52195c92938d78e45f2a2 Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Thu, 13 Feb 2014 10:11:22 -0500
-Subject: [PATCH 2/2] mwifiex: disable power saving.
+Subject: [PATCH 06/11] mwifiex: disable power saving.
 
 If the system rebooted while the driver was running and the chip entered
 automatic power saving mode, the driver wouldn't be able to load again on
@@ -14,7 +14,7 @@ In AP mode we don't need power saving mode anyway, so this should be ok.
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/wireless/mwifiex/cmdevt.c b/drivers/net/wireless/mwifiex/cmdevt.c
-index 1ddc8b2..ea54d72 100644
+index a6c46f3..58da651 100644
 --- a/drivers/net/wireless/mwifiex/cmdevt.c
 +++ b/drivers/net/wireless/mwifiex/cmdevt.c
 @@ -1278,7 +1278,7 @@ int mwifiex_cmd_enh_power_mode(struct mwifiex_private *priv,
@@ -45,10 +45,10 @@ index 1ddc8b2..ea54d72 100644
  			dev_dbg(adapter->dev, "cmd: Enabled auto deep sleep\n");
  			priv->adapter->is_deep_sleep = true;
 diff --git a/drivers/net/wireless/mwifiex/sta_cmd.c b/drivers/net/wireless/mwifiex/sta_cmd.c
-index 23b9e9d..5fe53b6 100644
+index 8ece485..0ce278a 100644
 --- a/drivers/net/wireless/mwifiex/sta_cmd.c
 +++ b/drivers/net/wireless/mwifiex/sta_cmd.c
-@@ -1647,6 +1647,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
+@@ -1529,6 +1529,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
  	if (ret)
  		return -1;
  
@@ -56,7 +56,7 @@ index 23b9e9d..5fe53b6 100644
  	if (first_sta && priv->adapter->iface_type != MWIFIEX_USB &&
  	    priv->bss_type != MWIFIEX_BSS_TYPE_UAP) {
  		/* Enable auto deep sleep */
-@@ -1659,6 +1660,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
+@@ -1541,6 +1542,7 @@ int mwifiex_sta_init_cmd(struct mwifiex_private *priv, u8 first_sta)
  		if (ret)
  			return -1;
  	}
@@ -65,5 +65,5 @@ index 23b9e9d..5fe53b6 100644
  	if (priv->bss_type != MWIFIEX_BSS_TYPE_UAP) {
  		/* Send cmd to FW to enable/disable 11D function */
 -- 
-1.9.0.rc1.175.g0b1dcb5
+1.9.0.279.gdc9e3eb
 
