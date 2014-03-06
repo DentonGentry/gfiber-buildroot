@@ -1,0 +1,140 @@
+--- a/drivers/bluetooth/btusb.c
++++ b/drivers/bluetooth/btusb.c
+@@ -1375,6 +1375,127 @@
+ 	return 0;
+ }
+ 
++static int btusb_setup_bcm20702(struct hci_dev *hdev)
++{
++	const struct firmware *fw;
++	const u8 *fw_ptr;
++	size_t fw_size;
++	const struct hci_command_hdr *cmd;
++	const u8 *cmd_param;
++	u16 opcode;
++	struct sk_buff *skb;
++	struct hci_rp_read_local_version *ver;
++	long ret;
++
++	ret = request_firmware(&fw, "../../etc/bsa/BCM20702.hcd", &hdev->dev);
++	if (ret < 0) {
++		BT_ERR("%s: BCM20702 FW request failed", hdev->name);
++		return ret;
++	}
++
++	/* Reset */
++	skb = __hci_cmd_sync(hdev, HCI_OP_RESET, 0, NULL, HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: HCI_OP_RESET failed (%ld)", hdev->name, ret);
++		goto failed;
++	}
++	kfree_skb(skb);
++
++	/* Read Local Version Info */
++	skb = __hci_cmd_sync(hdev, HCI_OP_READ_LOCAL_VERSION, 0, NULL,
++			     HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: HCI_OP_READ_LOCAL_VERSION failed (%ld)",
++			hdev->name, ret);
++		goto failed;
++	}
++
++	ver = (struct hci_rp_read_local_version *) skb->data;
++	BT_INFO("%s: BCM20702 FW hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
++		"lmp_subver=%04x", hdev->name, ver->hci_ver, ver->hci_rev,
++		ver->lmp_ver, ver->lmp_subver);
++	kfree_skb(skb);
++
++	/* Start Download */
++	skb = __hci_cmd_sync(hdev, 0xfc2e, 0, NULL, HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: BCM20702 FW Download Minidrv cmd failed (%ld)",
++			hdev->name, ret);
++		goto failed;
++	}
++	kfree_skb(skb);
++
++	/* 50 msec delay after Download Minidrv completes */
++	msleep(50);
++
++	fw_ptr = fw->data;
++	fw_size = fw->size;
++
++	while (fw_size >= sizeof(*cmd)) {
++		cmd = (struct hci_command_hdr *) fw_ptr;
++		fw_ptr += sizeof(*cmd);
++		fw_size -= sizeof(*cmd);
++
++		if (fw_size < cmd->plen) {
++			BT_ERR("%s: BCM20702 FW file is corrupted", hdev->name);
++			ret = -EINVAL;
++			goto failed;
++		}
++
++		cmd_param = fw_ptr;
++		fw_ptr += cmd->plen;
++		fw_size -= cmd->plen;
++
++		opcode = le16_to_cpu(cmd->opcode);
++
++		skb = __hci_cmd_sync(hdev, opcode, cmd->plen, cmd_param,
++				     HCI_INIT_TIMEOUT);
++		if (IS_ERR(skb)) {
++			ret = PTR_ERR(skb);
++			BT_ERR("%s: BCM20702 FW patch cmd 0x%04x failed (%ld)",
++				hdev->name, opcode, ret);
++			goto failed;
++		}
++		kfree_skb(skb);
++	}
++
++	/* 250 msec delay after Launch Ram completes */
++	msleep(250);
++
++failed:
++	/* Reset */
++	skb = __hci_cmd_sync(hdev, HCI_OP_RESET, 0, NULL, HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: HCI_OP_RESET failed (%ld)", hdev->name, ret);
++		goto done;
++	}
++	kfree_skb(skb);
++
++	/* Read Local Version Info */
++	skb = __hci_cmd_sync(hdev, HCI_OP_READ_LOCAL_VERSION, 0, NULL,
++			     HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: HCI_OP_READ_LOCAL_VERSION failed (%ld)",
++			hdev->name, ret);
++		goto done;
++	}
++
++	ver = (struct hci_rp_read_local_version *) skb->data;
++	BT_INFO("%s: BCM20702 FW hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
++		"lmp_subver=%04x", hdev->name, ver->hci_ver, ver->hci_rev,
++		ver->lmp_ver, ver->lmp_subver);
++	kfree_skb(skb);
++
++done:
++	release_firmware(fw);
++	return ret;
++}
++
+ static int btusb_probe(struct usb_interface *intf,
+ 				const struct usb_device_id *id)
+ {
+@@ -1485,6 +1606,9 @@
+ 		hdev->setup = btusb_setup_intel;
+ 	}
+ 
++	if (id->idVendor == 0x0a5c)
++		hdev->setup = btusb_setup_bcm20702;
++
+ 	/* Interface numbers are hardcoded in the specification */
+ 	data->isoc = usb_ifnum_to_if(data->udev, 1);
+ 
