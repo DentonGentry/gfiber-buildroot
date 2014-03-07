@@ -43,6 +43,39 @@ endif
 
 endif  # mipsel
 
+ifeq ($(ARCH),arm)
+# Config strings have quotes around them for some reason, which causes
+# trouble.  This trick removes them.
+LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+_BAREBOX = barebox_signed_release
+ROOTFS_GINSTALL_TYPE=prod
+else
+_BAREBOX = barebox_signed_unlocked
+ROOTFS_GINSTALL_TYPE=unlocked
+endif
+_ULOADER = uloader
+
+# These will be blank if the given files don't exist (eg. if you don't have
+# access to the right repositories) and then we'll just leave them out of
+# the build.  The resulting image will not contain a bootloader, which is
+# ok; we'll just leave the existing bootloader in place.
+BAREBOX     := $(wildcard $(LOADER_DIR)/$(_BAREBOX).bin)
+BAREBOX_SIG := $(wildcard $(LOADER_DIR)/$(_BAREBOX).sig)
+
+ULOADER     := $(wildcard $(LOADER_DIR)/$(_ULOADER).bin)
+ULOADER_SIG := $(wildcard $(LOADER_DIR)/$(_ULOADER).sig)
+
+ifneq ($(BAREBOX),)
+BRUNO_LOADERS_V3 := $(BRUNO_LOADERS_V3) loader.img loader.sig
+endif
+ifneq ($(ULOADER),)
+BRUNO_LOADERS_V3 := $(BRUNO_LOADERS_V3) uloader.img uloader.sig
+endif
+
+endif #arm
+
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 else
@@ -79,6 +112,16 @@ define ROOTFS_GINSTALL_CMD_V3
 		( \
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
+	fi && \
+	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
+		if [ -e '$(BAREBOX)' ]; then \
+			cp $(BAREBOX) $(BINARIES_DIR)/loader.img && \
+			cp $(BAREBOX_SIG) $(BINARIES_DIR)/loader.sig; \
+		fi && \
+		if [ -e '$(ULOADER)' ]; then \
+			cp $(ULOADER) $(BINARIES_DIR)/uloader.img && \
+			cp $(ULOADER_SIG) $(BINARIES_DIR)/uloader.sig; \
+		fi; \
 	fi && \
 	cd $(BINARIES_DIR) && \
 	ln -f rootfs.squashfs rootfs.img && \
