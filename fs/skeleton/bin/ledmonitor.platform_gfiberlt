@@ -17,8 +17,19 @@ BLINK_MODE="blink"
 FAST_MODE="fast"
 PON_IFACE="pon0"
 MAN_IFACE="man"
+GPON_INFO_FILE="/sys/devices/platform/gpon/info/infoGpon"
+GPON_AES_FILE="/sys/devices/platform/gpon/data/showAes0xxx"
 
 led_state=""
+
+# pon types: epon=0, gpon=1, p2p=2, none=3
+PON_TYPE_GPON=1
+PON_TYPE_P2P=2
+PON_TYPE=$(sysvar_cmd -g PON_TYPE)
+if [ -z "$PON_TYPE" ]; then
+  # default to p2p
+  PON_TYPE="2"
+fi
 
 set_led_dim() {
   local color="$1"
@@ -112,7 +123,43 @@ set_led_state() {
 }
 
 is_interface_up() {
-  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
+  # This checks for the P2P case.
+  if runnable glaser || [ "$PON_TYPE" != "$PON_TYPE_GPON" ]; then
+    [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
+    return
+  fi
+
+  # For gpon case read the status file.  OPERATION means the link should be up.
+  # The ONU has the following GPON states:
+  # 1 INITIAL
+  # 2 STANDBY
+  # 3 SERIAL NUMBER
+  # 4 RANGING
+  # 5 OPERATION
+  if [ ! -e $GPON_INFO_FILE ]; then
+    return 1
+  fi
+  x=$(cat $GPON_INFO_FILE | grep "ONU STATE")
+  contains "$x" "OPERATION"
+}
+
+is_provisioned() {
+  if runnable glaser ; then
+    [ "$network_status" != "$NETWORK_STATUS_CONNECTED" ]
+    return
+  fi
+
+  # The output looks like:
+  # [0010]
+  # [0312][0313][0314][0315][0320][0321][0322][0323]
+  #
+  # When unprovsioned this is empty, or has 1 entry.  If there are more
+  # than 7 bytes then we assume the device is provisioned.
+  if [ ! -e $GPON_AES_FILE ]; then
+    return 1
+  fi
+  aes_gems=$(cat $GPON_AES_FILE | grep '\[' | wc -c)
+  [ "$aes_gems" -gt 7 ]
 }
 
 has_ip_address() {
@@ -130,7 +177,7 @@ while [ -z "$led_state" ] || read event; do
   if [ ! -e "$MFG_MODE_FILE" ] ; then
     if ! is_interface_up "$PON_IFACE" ; then
       set_led_state "$BLINK_MODE" "$RED_LED"
-    elif runnable glaser && [ "$network_status" != "$NETWORK_STATUS_CONNECTED" ] ; then
+    elif ! is_provisioned ; then
       set_led_state "$FAST_MODE" "$RED_LED"
     elif ! has_ip_address "$MAN_IFACE" ; then
       set_led_state "$BLINK_MODE" "$BLUE_LED"
