@@ -35,7 +35,8 @@ case $1 in
       echo "Starting sycl"
       ip link add link pon0 name man type vlan id "$mgmt_vlan"
       ifup man
-      start_sycl 2>&1 | logos sycl &
+      start_sycl 2>&1 | \
+        grep --line-buffered -v 'apm_avc_main_loop: type [7-9], param1 0, get state Failed' | logos sycl &
     fi
     ;;
   stop)
