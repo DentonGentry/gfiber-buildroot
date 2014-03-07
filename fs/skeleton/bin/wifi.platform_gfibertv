@@ -7,6 +7,8 @@ crypto=WPA2_PSK_AES
 channel=auto
 autotype=NONDFS
 width=20
+enable_80211n=
+enable_ht=
 enable_wmm=
 guard_interval=
 extra_short_timeouts=
@@ -40,6 +42,7 @@ Usage: $bin set [options...]
  -e <encryption>  Encryption type to use (WPA_PSK_AES,
                     WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
+ -h               Enable HT (802.11n extensions) even in 20 MHz mode
  -m               Enable wmm extensions (needed for block acks)
  -g               Enable short guard interval
  -w <20|40|80>    Channel with to use, in MHz (default=$width)
@@ -167,7 +170,7 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:w:mgB:X" opt
+while getopts "b:c:a:s:e:w:hmgB:X" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
@@ -176,6 +179,7 @@ do
     s) ssid=$OPTARG ;;
     e) crypto=$OPTARG ;;
     w) width=$OPTARG ;;
+    h) enable_ht="[HT20]"; enable_80211n="ieee80211n=1" ;;
     m) enable_wmm="wmm_enabled=1" ;;
     g) guard_interval="[SHORT-GI-20][SHORT-GI-40]" ;;
     B) bridge=$OPTARG ;;
@@ -236,8 +240,7 @@ esac
 
 case "$width" in
   20) ;;
-  40) ;;
-  80) ;;
+  40|80) enable_80211n="ieee80211n=1" ;;
   *) die "invalid channel width='$width'"
 esac
 
@@ -441,25 +444,25 @@ elif runnable iw; then
 	country_code=US
 	ieee80211d=1
 	ieee80211h=1
-	ieee80211n=1
+	$enable_80211n
 	$enable_wmm
 	EOF
   )
   case "$width" in
     20) hostconf=$(cat <<-EOF
 		$hostconf
-		ht_capab=$guard_interval
+		ht_capab=$enable_ht$guard_interval
 		EOF
         ) ;;
     40) hostconf=$(cat <<-EOF
 		$hostconf
-		ht_capab=[HT40+]$guard_interval
+		ht_capab=$enable_ht[HT40+]$guard_interval
 		EOF
         ) ;;
     80) hostconf=$(cat <<-EOF
 		$hostconf
 		ieee80211ac=1
-		ht_capab=[HT40+]$guard_interval
+		ht_capab=$enable_ht[HT40+]$guard_interval
 		vht_oper_chwidth=1
 
 		# Wifi channel numbers define the center of a 20 MHz
