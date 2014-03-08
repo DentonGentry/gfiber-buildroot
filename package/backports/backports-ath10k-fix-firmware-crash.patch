@@ -1,0 +1,29 @@
+From 785e726fa2ed1ae283daefaaac63dfbb329d080f Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 8 Mar 2014 01:45:41 -0500
+Subject: [PATCH 03/11] ath10k: add an mb() in the transmit function to fix
+ firmware crashes.
+
+To be honest, I have no idea why this helps.  I was desperate so I started
+with udelay(1000), which fixed the crashes, then worked my way down to
+ndelay(1) and it still fixed the crashes.  Even mb() fixes the crashes.
+Removing it brings the crashes back instantly.  So this matters.
+---
+ drivers/net/wireless/ath/ath10k/ce.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/wireless/ath/ath10k/ce.c b/drivers/net/wireless/ath/ath10k/ce.c
+index a79499c..a808d82 100644
+--- a/drivers/net/wireless/ath/ath10k/ce.c
++++ b/drivers/net/wireless/ath/ath10k/ce.c
+@@ -291,6 +291,7 @@ int ath10k_ce_send_nolock(struct ath10k_ce_pipe *ce_state,
+ 	if (ret)
+ 		return ret;
+ 
++	mb();
+ 	if (unlikely(CE_RING_DELTA(nentries_mask,
+ 				   write_index, sw_index - 1) <= 0)) {
+ 		ret = -ENOSR;
+-- 
+1.9.0.279.gdc9e3eb
+
