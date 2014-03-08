@@ -16,7 +16,7 @@ if [ -n "$2" ]; then
 else
   baby=$1
 fi
-babysitter="babysit [0-9]+ ($baby)\$"
+babysitter="babysit [0-9]+ ($baby)(\$| )"
 
 pkill -f "$babysitter"
 pkill "$@"
