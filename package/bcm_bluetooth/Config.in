@@ -1,6 +1,22 @@
 config BR2_PACKAGE_BCM_BLUETOOTH
-	bool "Enable Broadcom Bluetooth Driver"
+	bool "Enable Broadcom Bluetooth"
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	default n
+	help
+	  Enable Broadcom Bluetooth
+
+config BR2_PACKAGE_BCM_BLUETOOTH_BSA
+	bool "Enable Broadcom Bluetooth BSA stack"
+	depends on BR2_PACKAGE_BCM_BLUETOOTH
 	select BR2_PACKAGE_BCM_COMMON
 	select BR2_PACKAGE_ALSA_UTILS
+	default n
 	help
-	  Builds for Broadcom Bluetooth Driver
+	  Enable Broadcom Bluetooth BSA stack
+
+config BR2_PACKAGE_BCM_BLUETOOTH_FW
+	bool "Install Broadcom Bluetooth firmware"
+	depends on BR2_PACKAGE_BCM_BLUETOOTH
+	default n
+	help
+	  Install Broadcom Bluetooth firmware

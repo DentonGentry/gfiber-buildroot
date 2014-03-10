@@ -138,7 +138,6 @@ config BR2_PACKAGE_GOOGLE_TV_BOX
 	select BR2_PACKAGE_BCM_CHROMIUM if BR2_mipsel
 	select BR2_PACKAGE_BCM_DIRECTFB if BR2_mipsel
 	select BR2_PACKAGE_BCM_DRIVER_WIFI if BR2_mipsel
-	select BR2_PACKAGE_BCM_BLUETOOTH if BR2_mipsel
 	select BR2_PACKAGE_BCM_BSEAV if BR2_mipsel
 	select BR2_PACKAGE_BCM_NEXUS if BR2_mipsel
 	select BR2_PACKAGE_BCM_NETFLIX if BR2_mipsel

@@ -16,7 +16,7 @@
 +	struct hci_rp_read_local_version *ver;
 +	long ret;
 +
-+	ret = request_firmware(&fw, "../../etc/bsa/BCM20702.hcd", &hdev->dev);
++	ret = request_firmware(&fw, "brcm/BCM20702.hcd", &hdev->dev);
 +	if (ret < 0) {
 +		BT_ERR("%s: BCM20702 FW request failed", hdev->name);
 +		return ret;

@@ -40,14 +40,14 @@ case "$1" in
       if [ -e /dev/btusb0 ]; then
         # BCM20702 USB Bluetooth chip
         BSATTY=/dev/btusb0
-        BSAFIRMWARE="-p /etc/bsa/BCM20702.hcd"
+        BSAFIRMWARE="-p /lib/firmware/brcm/BCM20702.hcd"
 
         wl reset_bt_chip 2>&1
         sleep $BT_RESET_DELAY
       elif [ "$(cat /etc/platform)" = GFHD200 ]; then
         # BCM20705 serial Bluetooth chip
         BSATTY=/dev/ttyS1
-        BSAFIRMWARE="-p /etc/bsa/BCM20705.hcd"
+        BSAFIRMWARE="-p /lib/firmware/brcm/BCM20705.hcd"
       fi
 
       if [ ! -z $BSATTY ]; then
