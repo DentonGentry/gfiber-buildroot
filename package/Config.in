@@ -661,6 +661,7 @@ endmenu
 
 menu "Drivers"
 source "package/backports/Config.in"
+source "package/backports-custom/Config.in"
 source "package/firmware/Config.in"
 endmenu
 

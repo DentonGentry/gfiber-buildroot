@@ -1,0 +1,16 @@
+config BR2_PACKAGE_BACKPORTS_CUSTOM
+	bool "Linux kernel driver backports-custom"
+	depends on !BR2_PACKAGE_BACKPORTS
+	help
+	  The backports package includes many Linux drivers from recent
+	  kernels, backported to older ones.
+
+if BR2_PACKAGE_BACKPORTS_CUSTOM
+
+config BR2_PACKAGE_BACKPORTS_CUSTOM_DEFCONFIG
+	string "Backports-custom defconfig file"
+	default "defconfig"
+	help
+	  Default config file for backports package for your platform.
+
+endif

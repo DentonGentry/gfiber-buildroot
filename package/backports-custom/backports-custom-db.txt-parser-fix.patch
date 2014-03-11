@@ -1,8 +1,8 @@
-From a973d9abc0275f61ee57c30ccda3cae628834810 Mon Sep 17 00:00:00 2001
+From 2426b3871644ff9d12e61df5840cea5c2b0ca60e Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Tue, 7 Jan 2014 00:29:55 -0500
-Subject: [PATCH] genregdb.awk: db.txt actually doesn't include an antenna
- gain parameter.
+Subject: [PATCH 04/11] genregdb.awk: db.txt actually doesn't include an
+ antenna gain parameter.
 
 The db.txt from the wireless-regdb.git project only includes (xx) or (xx mW)
 in parens after each frequency range, referring to the maximum EIRP, not the
@@ -10,11 +10,11 @@ antenna gain.  The code was previously parsing that value into the antenna
 gain slot and leaving maximum power set to zero, causing vastly reduced
 power levels.
 ---
- net/wireless/genregdb.awk |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ net/wireless/genregdb.awk | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/net/wireless/genregdb.awk b/net/wireless/genregdb.awk
-index 42ed274..1293cc8 100644
+index c808619..24dc320 100644
 --- a/net/wireless/genregdb.awk
 +++ b/net/wireless/genregdb.awk
 @@ -63,14 +63,13 @@ active && /^[ \t]*\(/ {
@@ -46,5 +46,5 @@ index 42ed274..1293cc8 100644
  	}
  	flagstr = ""
 -- 
-1.7.9.dirty
+1.9.0.279.gdc9e3eb
 

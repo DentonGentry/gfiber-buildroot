@@ -1,33 +1,28 @@
-From dbba6b0544974e9c46d548c5303e43e4d3c65df5 Mon Sep 17 00:00:00 2001
+From f4c493a9374f9809edea8fe6ca24fc943f139567 Mon Sep 17 00:00:00 2001
 From: Tim Shepard <shep@alum.mit.edu>
 Date: Fri, 24 Jan 2014 03:06:54 -0500
-Subject: [PATCH 07/11] mwifiex: create an AP interface instead of STA
- interface.
+Subject: [PATCH] mwifiex: create an AP interface instead of STA interface.
 
 hostapd doesn't know how to do this automatically.
----
- drivers/net/wireless/mwifiex/main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
+--
 diff --git a/drivers/net/wireless/mwifiex/main.c b/drivers/net/wireless/mwifiex/main.c
-index 809ae26..24c0c75 100644
+index 8bb8988..9d3d059 100644
 --- a/drivers/net/wireless/mwifiex/main.c
 +++ b/drivers/net/wireless/mwifiex/main.c
-@@ -454,10 +454,10 @@ static void mwifiex_fw_dpc(const struct firmware *firmware, void *context)
+@@ -474,11 +474,11 @@ static void mwifiex_fw_dpc(const struct firmware *firmware, void *context)
  	}
  
  	rtnl_lock();
 -	/* Create station interface by default */
--	if (!mwifiex_add_virtual_intf(adapter->wiphy, "mlan%d",
--				      NL80211_IFTYPE_STATION, NULL, NULL)) {
--		dev_err(adapter->dev, "cannot create default STA interface\n");
+-	wdev = mwifiex_add_virtual_intf(adapter->wiphy, "mlan%d",
+-					NL80211_IFTYPE_STATION, NULL, NULL);
 +	/* Create AP interface by default for google fiber boxen */
-+	if (!mwifiex_add_virtual_intf(adapter->wiphy, "wlan%d",
-+				      NL80211_IFTYPE_AP, NULL, NULL)) {
++	wdev = mwifiex_add_virtual_intf(adapter->wiphy, "wlan%d",
++					NL80211_IFTYPE_AP, NULL, NULL);
+ 	if (IS_ERR(wdev)) {
+-		dev_err(adapter->dev, "cannot create default STA interface\n");
 +		dev_err(adapter->dev, "cannot create default AP interface\n");
+ 		rtnl_unlock();
  		goto err_add_intf;
  	}
- 	rtnl_unlock();
--- 
-1.9.0.279.gdc9e3eb
-
