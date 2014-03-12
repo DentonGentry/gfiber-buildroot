@@ -1,0 +1,27 @@
+#!/bin/sh
+. /etc/utils.sh
+
+if ! is-html-tv-ui; then
+  echo "configured for sage"
+  exit 0
+fi
+
+case "$1" in
+  start)
+    (
+      if is-tv-box; then
+        /app/oregano/runbasil 2>&1 | logos basil 0 20000000 &
+      fi
+    ) &
+    ;;
+  stop)
+    pkillwait -f '(babysit.*)(runbasil|dart)'
+    pkillwait -x 'runbasil|dart'
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

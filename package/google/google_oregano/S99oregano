@@ -12,16 +12,16 @@ case "$1" in
       wait-until-created /tmp/startupvideo.done
       rc_pipe_init
       if is-tv-box; then
-        /app/oregano/runoregano 2>&1 | logos spicystart 0 20000000 &
+        /app/oregano/runoregano 2>&1 | logos oregano 0 20000000 &
       else
-        /app/oregano/runmarjoram 2>&1 | logos spicystart 0 20000000 &
+        /app/oregano/runmarjoram 2>&1 | logos marjoram 0 20000000 &
       fi
     ) &
     ;;
   stop)
     pkillwait -x startupvideo # if it's running, prevents miniclient from starting up
-    pkillwait -f '(babysit.*)(runoregano|dart)'
-    pkillwait -x 'runoregano|dart'
+    pkillwait -f '(babysit.*)(runoregano)'
+    pkillwait -x 'runoregano'
     stop_sagesrv
     pkillwait -x waitpower
     pkillwait -x netflix
