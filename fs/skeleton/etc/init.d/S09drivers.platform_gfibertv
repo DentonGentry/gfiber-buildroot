@@ -42,5 +42,5 @@ if ! is-bluez-platform; then
 elif [ "$(kernopt wifical)" != "1" ]; then
   # If we're trying to calibrate Wifi/BT, loading
   # the production driver disrupts the process.
-  modprobe -a bluetooth hidp btmrvl btmrvl_sdio btusb
+  modprobe -a bluetooth hidp btmrvl btmrvl_sdio btusb uhid hid-gfrm
 fi
