@@ -168,6 +168,17 @@ gstatics()
   return $rv
 }
 
+random()
+{
+  hexdump -n 2 -e '/2 "%u"' /dev/urandom
+}
+
+if [ -n "$DELAY" ]; then
+  # Stagger startup after a power outage
+  rand=$(random)
+  sleep $((rand % DELAY))
+fi
+
 while :; do
   # time used by each process, followed by cumulative time (which includes
   # children, including already terminated ones).  Note that the 'cputime'
@@ -188,7 +199,11 @@ while :; do
     pings "ping:" "$gs_retval"
     pings6 "ping6:" "$gs_retval"
     runnable find-servers && echo "find-servers: $(find-servers)"
-    echo "dns: $(dnsck 8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844)"
+    if is-network-box || is-storage-box; then
+      echo "dns: $(dnsck 8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844)"
+    else
+      echo "dns: $(dnsck)"
+    fi
   fi
 
   if [ -n "$DELAY" ]; then
