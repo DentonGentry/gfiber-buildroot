@@ -49,7 +49,7 @@ case "$1" in
       hciconfig hci0 reset
 
       echo "$0: Starting bluetoothd"
-      babysit 30 bluetoothd -n -d 2>&1 | logos bluez-daemon &
+      babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
       sleep 3
 
       echo "$0: Starting gfiber-agent"
