@@ -114,7 +114,13 @@ export SIEGENOGDB=1
 # Prevent siege-on-arm from exiting on changes to stdin
 export SIEGE_BLOCK_GETNEXTEVENT=1
 
-babysit 10 alivemonitor /tmp/sagetvalive 300 60 600 setuid video "$JVM" \
+PREKILL_OPTIONS=
+if [ -e /tmp/DEBUG ]; then
+  PREKILL_OPTIONS="-S 11 -T 15"
+fi
+
+babysit 10 alivemonitor $PREKILL_OPTIONS \
+    /tmp/sagetvalive 300 60 600 setuid video "$JVM" \
     -Djava.io.tmpdir=/tmp \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
