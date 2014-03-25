@@ -3,6 +3,12 @@
 case "$1" in
   start)
     mkdir -p /config/dnsmasq
+    for d in /config/dnsmasq/*; do
+      [ -e "$d" ] || continue
+      echo "--- $d: ---"
+      cat "$d"
+      echo "---"
+    done | logos dnsmasq
     babysit 60 dnsmasq \
         --pid-file=/var/run/dnsmasq.pid \
         --conf-file=/etc/dnsmasq.conf \
