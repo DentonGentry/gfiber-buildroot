@@ -39,6 +39,7 @@ case "$1" in
           nf_nat_irc \
           nf_nat_proto_gre \
           nf_nat_h323 \
+          nf_nat_rtsp \
           \
           nf_conntrack_ftp \
           nf_conntrack_tftp \
@@ -47,6 +48,7 @@ case "$1" in
           nf_conntrack_irc \
           nf_conntrack_proto_gre \
           nf_conntrack_h323 \
+          nf_conntrack_rtsp \
           \
           ip6table_filter \
           ip6t_tcp \
