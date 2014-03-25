@@ -7,25 +7,16 @@ interface_exists() {
 
 case "$1" in
   start)
-    # TODO(apenwarr): don't hardcode this, let catawampus do it eventually.
     if runnable wl && has_wifi && interface_exists eth2; then
       read wifimac </sys/class/net/eth2/address
       wl ap 1
       wl radio off
       wl bssid "$wifimac"
     fi
-    if interface_exists wlan0; then   # at least one cfg80211 interface
-      # TODO(apenwarr): don't hardcode this, let catawampus do it eventually.
-      if runnable iw; then
-        serial=$(serial)
-        [ -z "$serial" ] && serial=unknown
-        export WIFI_PSK=gfdogfood
-        wifi set -b 2.4 -s GFRG_${serial}_11n  -e WPA2_PSK_AES
-        wifi set -b 5   -s GFRG_${serial}_11ac -e WPA2_PSK_AES -a HIGH
-      fi
-    fi
+    wifi restore
     ;;
   stop)
+    wifi stop
     ;;
   restart)
     $0 stop; $0 start

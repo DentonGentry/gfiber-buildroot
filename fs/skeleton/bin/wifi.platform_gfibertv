@@ -1,4 +1,5 @@
 #!/bin/sh
+CONFIG_DIR=/config/wifi
 band=5
 show_bands="2.4 5"
 bridge=br0
@@ -6,16 +7,28 @@ ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
 channel=auto
 autotype=NONDFS
+protos=a/b/g/n/ac
+allow_ab=
+allow_g=
+allow_n=
+allow_ac=
 width=20
 enable_80211n=
-enable_ht=
 enable_wmm=
+hidden=
 guard_interval=
+persist=
 extra_short_timeouts=
+
+chop_multiline()
+{
+  echo "$1" | { read x; echo "$x"; }
+}
+
 # use $WIFI_PSK from the environment if given.
 # You shouldn't pass passwords as command-line options because they show up
 # in 'ps' even to users other than you.
-psk=${WIFI_PSK-1234567890}
+psk=$(chop_multiline "$WIFI_PSK")
 
 . /etc/utils.sh
 
@@ -42,18 +55,27 @@ Usage: $bin set [options...]
  -e <encryption>  Encryption type to use (WPA_PSK_AES,
                     WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
- -h               Enable HT (802.11n extensions) even in 20 MHz mode
- -m               Enable wmm extensions (needed for block acks)
- -g               Enable short guard interval
- -w <20|40|80>    Channel with to use, in MHz (default=$width)
+ -H               Enable hidden mode (disable SSID advertisements)
+ -M               Enable wmm extensions (needed for block acks)
+ -G               Enable short guard interval
+ -p <a/b/g/n/ac>  802.11 levels to allow, slash-delimited [default=$protos]
+ -w <20|40|80>    Channel width to use, in MHz (default=$width)
  -B <bridge>      Bridge device to use (default=$bridge)
  -X               Use extra short timeout intervals for stress testing
-$bin show
+ -P               Persist settings so we can restore them with 'wifi restore'
+$bin <off|stop> [options...]
+ disable wifi on the given band(s)
+ -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
+ -P               Also remove persisted wifi settings
+$bin restore [options...]
+ restore the wifi settings from the last time you used -P
+ -b <band>        Wifi band to restore (default='$show_bands')
+$bin show [options...]
  print all known parameters
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
 "
 usage() {
-  echo "$USAGE"
+  echo "$USAGE" >&2
   exit 1
 }
 
@@ -64,6 +86,16 @@ includes() {
     [ "$want" = "$i" ] && return 0
   done
   return 1
+}
+
+
+split()
+{
+  (
+    IFS=" ,/"
+    set $1
+    echo "$@"
+  )
 }
 
 
@@ -106,6 +138,7 @@ iw_find_phy() {
   done
 }
 
+
 iw_find_ifc() {
   phynum=$1
   thisphynum=
@@ -122,18 +155,85 @@ iw_find_ifc() {
   done
 }
 
-showwifi() {
+
+iw_find_ifc_from_band() {
+  phy=$(iw_find_phy "$band" auto)
+  [ -n "$phy" ] || die "no wifi phy for band='$band'"
+  phynum=${phy#phy}
+  ifc=$(iw_find_ifc "$phynum")
+  [ -n "$ifc" ] || die "no wifi interface for band='$band'"
+  echo "$ifc"
+}
+
+
+iw_start_hostapd() {
+  ifc=$1
+  pidfile=/tmp/hostapd.pid.$ifc
+  opts="-d"
+  pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
+  killpid "$pidfile"
+  rm -f "$pidfile"
+  babysit 60 startpid "$pidfile" \
+      hostapd $opts "/tmp/hostapd.conf.$ifc" \
+      2>&1 | logos "hostapd-$ifc" &
+
+  # Wait for hostapd to start, and return an error if it doesn't
+  for d in $(seq 10); do
+    [ -e "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null && break
+    echo -n . >&2
+    sleep 0.1
+  done
+  # hostapd_cli returns success on command timeouts.  If we time this
+  # perfectly and manage to connect but then hostapd dies right after,
+  # we'd think it succeeded.  So sleep a bit to try to give hostapd
+  # a chance to die from its error before we try to connect to it.
+  sleep 0.5
+  for d in $(seq 50); do
+    kill -0 "$(cat "$pidfile")" 2>/dev/null || break
+    hostapd_cli -i "$ifc" get_config >/dev/null 2>&1 &&
+      echo ok >&2 &&
+      exit 0
+    echo -n . >&2
+    sleep 0.1
+  done
+  echo >&2
+  die "hostapd failed to start. Look at hostapd logs for details."
+}
+
+
+stopwifi() {
+  band=$1
   if runnable iw; then
-    band=$1
-    channel=$2
+    ifc=$(iw_find_ifc_from_band "$band") || die
+    pkillwait -f "hostapd.*/tmp/hostapd.conf.$ifc"
+    [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
+  fi
+}
+
+
+restorewifi() {
+  band=$1
+  if runnable iw; then
+    ifc=$(iw_find_ifc_from_band "$band") || die
+    if [ -r "$CONFIG_DIR/hostapd.conf.$ifc" ]; then
+      atomic "/tmp/hostapd.conf.$ifc" "$(cat "$CONFIG_DIR/hostapd.conf.$ifc")"
+      ( iw_start_hostapd "$ifc" )
+    else
+      stopwifi "$band"
+    fi
+  fi
+}
+
+
+# TODO(apenwarr): extend this to notice actual running settings.
+#  Including whether hostapd is up or down, etc.
+showwifi() {
+  band=$1
+  if runnable iw; then
     # TODO(dgentry): iw says 'Do NOT screenscrape this tool,
     # we don't consider its output stable.'
     # should we write an iwget tool using iwlib, where the API is more stable?
-    phy=$(iw_find_phy "$band" "$channel")
-    [ -n "$phy" ] || die "no wifi phy for band='$band'"
-    phynum=${phy#phy}
-    ifc=$(iw_find_ifc "$phynum")
-    [ -n "$ifc" ] || die "no wifi interface for band='$band'"
+    ifc=$(iw_find_ifc_from_band "$band") || die
 
     echo "Band: $band"
     output=$(iw reg get)
@@ -163,6 +263,7 @@ showwifi() {
   fi
 }
 
+
 if [ $# -eq 0 ]; then
   usage
 fi
@@ -170,32 +271,56 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:w:hmgB:X" opt
+while getopts "b:c:a:s:e:p:w:HMGB:PX" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
     c) channel=$OPTARG ;;
     a) autotype=$OPTARG ;;
-    s) ssid=$OPTARG ;;
+    s) ssid=$(chop_multiline "$OPTARG") ;;
     e) crypto=$OPTARG ;;
+    p) protos=$OPTARG ;;
     w) width=$OPTARG ;;
-    h) enable_ht="[HT20]"; enable_80211n="ieee80211n=1" ;;
-    m) enable_wmm="wmm_enabled=1" ;;
-    g) guard_interval="[SHORT-GI-20][SHORT-GI-40]" ;;
+    H) hidden="ignore_broadcast_ssid=1" ;;
+    M) enable_wmm="wmm_enabled=1" ;;
+    G) guard_interval="[SHORT-GI-20][SHORT-GI-40]" ;;
     B) bridge=$OPTARG ;;
+    P) persist=1; mkdir -p "$CONFIG_DIR" ;;
     X) extra_short_timeouts=1 ;;
     *) usage ;;
   esac
 done
 
-if [ "$cmd" = "show" ]; then
-  for b in $show_bands; do
-    showwifi $b $channel
-  done
-  exit 0
-elif [ "$cmd" != "set" ]; then
-  usage
-fi
+case "$cmd" in
+  show)
+    e=0
+    for b in $show_bands; do
+      showwifi "$b" || e=1
+    done
+    exit $e
+    ;;
+  off|stop)
+    e=0
+    for b in $show_bands; do
+      log "stopping wifi for $b GHz..."
+      stopwifi "$b" || e=1
+    done
+    exit $e
+    ;;
+  restore)
+    e=0
+    for b in $show_bands; do
+      log "restoring wifi for $b GHz..."
+      restorewifi "$b" || e=1
+    done
+    exit $e
+    ;;
+  set)
+    ;;  # fall through
+  *)
+    usage
+    ;;
+esac
 
 
 # set
@@ -237,13 +362,31 @@ case "$autotype-$width" in
   *) die "unknown autochannel type '$autotype'" ;;
 esac
 
+for d in $(split "$protos"); do
+  case "$d" in
+    a|b|ab) allow_ab=1 ;;
+    g) allow_g=1 ;;
+    n) allow_n=1 ;;
+    ac) allow_ac=1 ;;
+    *) die "unknown proto '$d'" ;;
+  esac
+done
 
 case "$width" in
   20) ;;
-  40|80) enable_80211n="ieee80211n=1" ;;
+  40) [ -n "$allow_n" ] || die "'-p n' is needed for 40 MHz channels" ;;
+  80) [ -n "$allow_ac" ] || die "'-p ac' is needed for 80 MHz channels" ;;
   *) die "invalid channel width='$width'"
 esac
 
+case "$crypto" in
+  *_PSK_*|WEP)
+    [ -n "$psk" ] || die "encryption enabled but WIFI_PSK not set"
+    ;;
+  NONE)
+    psk="NOT_ACTUALLY_USED"
+    ;;
+esac
 
 if runnable wl && [ -z "$(iw list 2>/dev/null)" ]; then
   log "Configuring broadcom wifi."
@@ -323,7 +466,7 @@ elif runnable iw; then
     IW dev "$ifc" "$@"
   }
 
-  pidfile=/tmp/hostapd.pid.${ifc}
+  pidfile=/tmp/hostapd.pid.$ifc
   log "pidfile='$pidfile'"
   killpid "$pidfile"
   ip link set "$ifc" up
@@ -413,13 +556,24 @@ elif runnable iw; then
   fi
 
   case $band in
-    2.4) hostapd_band=g ;;
+    2.4) [ -n "$allow_g$allow_n" ] && hostapd_band=g || hostapd_band=b ;;
     5) hostapd_band=a ;;
     *) die "invalid band in '$band'" ;;
   esac
+  enable_80211n=
+  enable_80211ac=
+  require_ht=
+  require_vht=
+  ht20=
+  ht40=
+  vht_settings=
+  [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
+  [ -n "$allow_ac" -a "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
+  [ -n "$allow_ab$allow_g" ] || require_ht="require_ht=1"
+  [ -n "$allow_ab$allow_g$allow_n" ] || require_vht="require_vht=1"
   case $crypto in
-    WPA_*) auth_algs=1; wpa=1 ;;
-    WPA2_*) auth_algs=1; wpa=2 ;;
+    WPA_PSK_*) auth_algs=1; wpa=1 ;;
+    WPA2_PSK_*) auth_algs=1; wpa=2 ;;
     WEP) auth_algs=3; wpa=0 ;;
     NONE) auth_algs=1; wpa=0 ;;
     *) die "invalid crypto protocol in '$crypto'" ;;
@@ -430,7 +584,25 @@ elif runnable iw; then
     WEP|NONE) wpa_pairwise=CCMP ;;
     *) die "invalid crypto alg in '$crypto'" ;;
   esac
+  case "$width" in
+    20) ;;
+    40) ht40="[HT40+]" ;;
+    80) ht40="[HT40+]"
+        vht_settings=$(cat <<-EOF
+		vht_oper_chwidth=1
+
+		# Wifi channel numbers define the center of a 20 MHz
+		# channel.  40 MHz channels are defined as one channel plus
+		# the next one 4 up.  80 MHz channels go back to defining by
+		# center.  If you think about it long enough, you eventually
+		# discover that the center is 6 channels up from the base 20
+		# MHz channel, although this isn't very intuitive.
+		vht_oper_centr_freq_seg0_idx=$(($channel + 6))
+		EOF
+        ) ;;
+  esac
   hostconf=$(cat <<-EOF
+	ctrl_interface=/var/run/hostapd
 	interface=$ifc
 	bridge=$bridge
 	ssid=$ssid
@@ -445,36 +617,15 @@ elif runnable iw; then
 	ieee80211d=1
 	ieee80211h=1
 	$enable_80211n
+	$enable_80211ac
 	$enable_wmm
+	$require_ht
+	$require_vht
+	$hidden
+	ht_capab=$ht20$ht40$guard_interval
+	$vht_settings
 	EOF
   )
-  case "$width" in
-    20) hostconf=$(cat <<-EOF
-		$hostconf
-		ht_capab=$enable_ht$guard_interval
-		EOF
-        ) ;;
-    40) hostconf=$(cat <<-EOF
-		$hostconf
-		ht_capab=$enable_ht[HT40+]$guard_interval
-		EOF
-        ) ;;
-    80) hostconf=$(cat <<-EOF
-		$hostconf
-		ieee80211ac=1
-		ht_capab=$enable_ht[HT40+]$guard_interval
-		vht_oper_chwidth=1
-
-		# Wifi channel numbers define the center of a 20 MHz
-		# channel.  40 MHz channels are defined as one channel plus
-		# the next one 4 up.  80 MHz channels go back to defining by
-		# center.  If you think about it long enough, you eventually
-		# discover that the center is 6 channels up from the base 20
-		# MHz channel, although this isn't very intuitive.
-		vht_oper_centr_freq_seg0_idx=$(($channel + 6))
-		EOF
-        ) ;;
-  esac
   if [ -n "$extra_short_timeouts" ]; then
     hostconf=$(cat <<-EOF
 	$hostconf
@@ -489,20 +640,9 @@ elif runnable iw; then
 	EOF
     )
   fi
-  atomic /tmp/hostapd.conf.$ifc "$hostconf"
-  case $crypto in
-    WPA2_*|WPA_*|WEP|NONE)
-      opts="-ddK"
-      pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
-      babysit 60 startpid "$pidfile" \
-          hostapd $opts "/tmp/hostapd.conf.$ifc" \
-          2>&1 | logos "hostapd-$ifc" &
-      ;;
-    *)
-      die "invalid crypto '$crypto'"
-      ;;
-  esac
-
+  atomic "/tmp/hostapd.conf.$ifc" "$hostconf"
+  [ -n "$persist" ] && atomic "$CONFIG_DIR/hostapd.conf.$ifc" "$hostconf"
+  iw_start_hostapd "$ifc"
 else
   die "No wifi runtime found."
 fi
