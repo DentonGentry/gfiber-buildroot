@@ -8,8 +8,10 @@ endef
 define GOOGLE_HDHOMERUN_PLUGIN_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/hdhr_plugin.so \
           $(TARGET_DIR)/app/sage/lib/hdhr_plugin.so
-        $(INSTALL) -D -m 0755 $(@D)/libhdhomerun.so \
+        $(INSTALL) -D -m 0755 $(@D)/libhdhomerun/libhdhomerun.so \
           $(TARGET_DIR)/app/sage/lib/libhdhomerun.so
+        $(INSTALL) -D -m 0755 $(@D)/libhdhomerun/hdhomerun_config \
+          $(TARGET_DIR)/app/sage/hdhomerun_config
 endef
 
 $(eval $(call GENTARGETS))
