@@ -3,6 +3,15 @@
 case "$1" in
   start)
     mkdir -p /config/dnsmasq
+    mkdir -p /tmp/dnsmasq
+    touch /tmp/dnsmasq/acs.conf
+    touch /tmp/dnsmasq/ipv6.conf
+    if [ ! -e /config/dnsmasq/acs.conf ]; then
+      ln -s /tmp/dnsmasq/acs.conf /config/dnsmasq/acs.conf
+    fi
+    if [ ! -e /config/dnsmasq/ipv6.conf ]; then
+      ln -s /tmp/dnsmasq/ipv6.conf /config/dnsmasq/ipv6.conf
+    fi
     for d in /config/dnsmasq/*; do
       [ -e "$d" ] || continue
       echo "--- $d: ---"
