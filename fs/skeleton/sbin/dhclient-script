@@ -357,7 +357,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
 fi
 
 if [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
-   || [ x$reason = xSTOP ]; then
+   || [ x$reason = xSTOP ] || [ x$reason = xEXPIRE ]; then
   if [ x$alias_ip_address != x ]; then
     # Turn off alias interface.
     $ip -4 addr flush dev ${interface} label ${interface}:0
