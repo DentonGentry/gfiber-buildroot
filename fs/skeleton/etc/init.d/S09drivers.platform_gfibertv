@@ -39,8 +39,16 @@ fi
 if ! is-bluez-platform; then
   [ -e ${MODULE_PATH}/btusb.ko ] && insmod ${MODULE_PATH}/btusb.ko
   [ -e ${MODULE_PATH}/bthid.ko ] && insmod ${MODULE_PATH}/bthid.ko
-elif [ "$(kernopt wifical)" != "1" ]; then
+elif [ "$(kernopt wifical)" = "1" ]; then
   # If we're trying to calibrate Wifi/BT, loading
-  # the production driver disrupts the process.
+  # the production driver disrupts the process, and we need the "primary
+  # kernel" bluetooth core.
+  insmod /lib/modules/$(uname -r)/kernel/net/bluetooth/bluetooth.ko
+  modprobe -a bluetooth
+else  # Not trying to calibrate
+  # With the "real" btmrvl driver we want the bluetooth core from
+  # linux-backports, not the one in the kernel.
+  modprobe -a compat
+  insmod /lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko
   modprobe -a bluetooth hidp btmrvl btmrvl_sdio btusb uhid hid-gfrm
 fi
