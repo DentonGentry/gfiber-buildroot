@@ -49,6 +49,8 @@ endef
 define BCM_NEXUS_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/shared
 	$(INSTALL) -m 644 -D $(@D)/bin/bcmdriver.ko $(TARGET_DIR)/usr/lib/modules/bcmdriver.ko
+	$(INSTALL) -m 700 -D $(@D)/../obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/nexus/utils/playback \
+		$(TARGET_DIR)/usr/local/bin/playback
 	$(call BCM_NEXUS_INSTALL_LIBS,$(TARGET_DIR))
 endef
 
