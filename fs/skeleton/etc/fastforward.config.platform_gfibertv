@@ -5,6 +5,8 @@ config fastforward ftp
 config fastforward sip
 	option proto		udp
 	option port		5060
+config fastforward rtsp
+	option port		554
 
 config logging
 	option file	-
