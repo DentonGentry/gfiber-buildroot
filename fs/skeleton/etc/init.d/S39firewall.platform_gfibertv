@@ -69,11 +69,9 @@ case "$1" in
       fi
       ip46tables -P FORWARD DROP
 
-      # multicast fiber TV
-      ip46tables -A INPUT -m pkttype --pkt-type multicast \
-          -p udp --sport 4000 --dport 2000 -j ACCEPT
-      ip46tables -A FORWARD -m pkttype --pkt-type multicast \
-          -p udp --sport 4000 --dport 2000 -j ACCEPT
+      # multicast (fiber TV, EAS)
+      ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
+      ip46tables -A FORWARD -m pkttype --pkt-type multicast -j ACCEPT
 
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
