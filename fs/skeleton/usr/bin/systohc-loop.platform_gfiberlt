@@ -1,8 +1,0 @@
-#!/bin/sh
-
-wait-until-created /tmp/ntp.synced
-
-while true ; do
-  hwclock --systohc --utc --noadjfile
-  sleep 600
-done

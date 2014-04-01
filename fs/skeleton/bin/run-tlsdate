@@ -1,0 +1,55 @@
+#!/bin/selfclean sh
+# We would run tlsdated here instead of doing it using a sh script, but
+# unfortunately we need a way to create /tmp/ntp.synced after the first
+# sync, and at that point we've already had to implement the retries
+# anyway, so there's little point in using tlsdated with a second
+# implementation of it all.
+
+NORMAL_DELAY=$(randint 55 125)
+STARTUP_DELAY=$(randint 5 15)
+
+
+do_tlsdate()
+{
+  echo "trying host '$1'"
+  tlsdate -v \
+      --timewarp --leap \
+      -C /etc/ssl/certs/ca-certificates.crt \
+      -H "$1"
+}
+
+
+{
+  # run tlsdate once immediately
+  echo start
+
+  # re-run tlsdate on network change
+  tlsdate-routeup &
+
+  # re-run tlsdate periodically
+  while :; do
+    if [ -e /tmp/ntp.synced ]; then
+      sleep $NORMAL_DELAY || sleep 55
+      echo "periodic"
+    else
+      sleep $STARTUP_DELAY || sleep 55
+      echo "start"
+    fi
+  done
+} |
+while read reason; do
+  case $reason in
+    start)    echo "starting up" ;;
+    periodic) echo "periodic update" ;;
+    n)        echo "route changed; setting time" ;;
+    *)        echo "unknown reason ($reason) for time change!"; sleep 55 ;;
+  esac
+
+  # TODO(apenwarr): I'd like to use gfsvc.com or googlefiber.net here.
+  #  ...but I can't, because tlsdate doesn't know how to use TLS SNI,
+  #  so the google front end always responds as "www.google.com" and
+  #  fails the certificate check.
+  if do_tlsdate google.com; then
+    : >/tmp/ntp.synced
+  fi
+done

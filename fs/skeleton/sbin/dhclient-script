@@ -166,7 +166,10 @@ make_new_ntp_conf_and_restart() {
       "$(cat /etc/ntpd.conf.default /tmp/ntpd4.conf /tmp/ntpd6.conf \
           2>/dev/null)"
   log_file_contents /tmp/ntpd.conf
-  restart ntpd
+  # TODO(apenwarr): we don't actually restart ntpd here anymore.
+  #  In fact, our system no longer even contains ntpd.  But we want to
+  #  keep the NTP server information around anyway, so we can serve
+  #  it back out via dnsmasq.
 }
 
 write_ntp_conf_new()
