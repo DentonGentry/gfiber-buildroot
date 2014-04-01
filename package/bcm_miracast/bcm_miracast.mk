@@ -11,13 +11,19 @@ BCM_MIRACAST_DEPENDENCIES=\
 BCM_MIRACAST_INSTALL_STAGING=NO
 BCM_MIRACAST_INSTALL_TARGET=YES
 
+REV_LOWER = $(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM_REV) | tr A-Z a-z)
+INCLUDE_DIR = $(@D)/target/${BR2_PACKAGE_BCM_COMMON_PLATFORM}${REV_LOWER}.mipsel-linux.debug/usr/local/include
+
 define BCM_MIRACAST_CONFIGURE_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
 endef
 
 define BCM_MIRACAST_BUILD_CMDS
-	tar -czf $(@D)/broadcom/netapp/netapp/wlan/aardvark.tgz -C $(BCM_DRIVERS_DIR) wifi/src
-	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) VERBOSE=y HAS_WIFI_BUILT=y WIFI_WPS=n DATABASE=n AARDVARK_DRIVER_VERSION=wifi WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/aardvark.tgz APPLIBS_TOP=$(@D) \
+	tar -czf $(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz -C $(BCM_DRIVERS_DIR) wifi/src
+# Temporary until Broadcom fixes parallel build problem: manually create directory and copy site_typedefs.h
+	mkdir -p ${INCLUDE_DIR}
+	cp $(@D)/broadcom/netapp/netapp/wlan/site_typedefs.h ${INCLUDE_DIR}
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) VERBOSE=y HAS_WIFI_BUILT=y NETAPP_WIFI_WPS=n NETAPP_DATABASE=n AARDVARK_DRIVER_VERSION=wifi WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz APPLIBS_TOP=$(@D) \
 		-C $(@D)/common wfd_libs netapp
 endef
 
