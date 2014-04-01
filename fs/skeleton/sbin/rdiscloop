@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if ! runnable rdisc6; then
+  exit 0
+fi
+
+while :; do
+  x=$(ip -6 route | grep default)
+  # if there is a default route, send a RS every 5 minutes.
+  # If there is no route send every minute.
+  if [ -n "$x" ]; then
+    sleep_time=300
+  else
+    sleep_time=60
+  fi
+  rdisc6 -1 man
+  sleep $sleep_time
+done
