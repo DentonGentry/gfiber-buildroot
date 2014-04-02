@@ -49,6 +49,14 @@ is_ipv6() {
   endswith "$reason" "6"
 }
 
+internal_resolv_conf="
+# Note: these settings are hardcoded so that DHCP-provided settings don't
+# conflict with our log uploader and ACS.  For DHCP-provided settings
+# suitable for end users, use /tmp/resolv.conf.external instead.
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+"
+
 merge_resolv_conf() {
     # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
     # and then also add /tmp/resolv.conf.dhclient6
@@ -63,7 +71,9 @@ merge_resolv_conf() {
     fi
 
     if [ -n "$confs" ] ; then
-        atomic /tmp/resolv.conf "$(cat $confs)"
+        atomic /tmp/resolv.conf.external "$(cat $confs)"
+        log_file_contents /tmp/resolv.conf.external
+        atomic /tmp/resolv.conf "$internal_resolv_conf"
         log_file_contents /tmp/resolv.conf
     fi
 }

@@ -18,9 +18,11 @@ case "$1" in
       cat "$d"
       echo "---"
     done | logos dnsmasq
+    touch /tmp/resolv.conf.external  # just in case
     babysit 60 dnsmasq \
         --pid-file=/var/run/dnsmasq.pid \
         --conf-file=/etc/dnsmasq.conf \
+        --resolv-file=/tmp/resolv.conf.external \
         --keep-in-foreground \
         --log-facility=- 2>&1 | logos dnsmasq &
     ;;
