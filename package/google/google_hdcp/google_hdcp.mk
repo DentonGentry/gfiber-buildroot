@@ -16,7 +16,7 @@ define GOOGLE_HDCP_INSTALL_STAGING_CMDS
 endef
 
 define GOOGLE_HDCP_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0644 $(@D)/libgoogle_hdcp.so $(TARGET_DIR)/usr/lib/libgoogle_hdcp.so
+	$(INSTALL) -D -m 0755 $(@D)/libgoogle_hdcp.so $(TARGET_DIR)/usr/lib/libgoogle_hdcp.so
 endef
 
 $(eval $(call GENTARGETS))

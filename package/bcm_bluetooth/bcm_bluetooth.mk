@@ -32,11 +32,11 @@ define BCM_BLUETOOTH_BSA_BUILD
 endef
 
 define BCM_BLUETOOTH_BSA_INSTALL_TARGET
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/server/build/mips/bsa_server $(TARGET_DIR)/usr/bin/
-	$(INSTALL) -m 0700 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/app_gtv $(TARGET_DIR)/usr/bin/
+	$(INSTALL) -m 0755 $(@D)/bt/3rdparty/embedded/google/bruno/server/build/mips/bsa_server $(TARGET_DIR)/usr/bin/
+	$(INSTALL) -m 0755 $(@D)/bt/3rdparty/embedded/google/bruno/app_gtv/build/mips/app_gtv $(TARGET_DIR)/usr/bin/
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/btusb/btusb.ko $(TARGET_DIR)/usr/lib/modules/btusb.ko
 	$(INSTALL) -D -m 0600 $(@D)/bt/3rdparty/embedded/brcm/linux/bthid/bthid.ko $(TARGET_DIR)/usr/lib/modules/bthid.ko
-	$(INSTALL) -m 0600 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/sharedlib/libbsa.so $(TARGET_DIR)/usr/lib/
+	$(INSTALL) -m 0755 $(@D)/bt/3rdparty/embedded/google/bruno/libbsa/build/mips/sharedlib/libbsa.so $(TARGET_DIR)/usr/lib/
 endef
 else
 define BCM_BLUETOOTH_BSA_CLEAN

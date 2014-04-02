@@ -16,7 +16,7 @@ define TRACEROUTE_NEW_BUILD_CMDS
 endef
 
 define TRACEROUTE_NEW_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0555 $(@D)/traceroute/traceroute \
+	$(INSTALL) -D -m 0755 $(@D)/traceroute/traceroute \
 		$(TARGET_DIR)/usr/bin/traceroute
 endef
 
