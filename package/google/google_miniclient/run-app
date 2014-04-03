@@ -60,10 +60,10 @@ case $appname in
     netflix --dpi-friendlyname "$FRIENDLYNAME" $opts 2>&1 | logos netflix
     ;;
   vudu)
-    cd /usr/local/bin
-    export PATH=$PWD:$PATH
+    cd /usr/local/bin/vudu
+    export LD_LIBRARY_PATH=.
     export VUDU_LINK_INTERFACE=br0
-    vudu $opts 2>&1 | logos vudu
+    ./vudu $opts 2>&1 | logos vudu
     ;;
   youtube)
     cd /usr/local/bin/webkitGl?
