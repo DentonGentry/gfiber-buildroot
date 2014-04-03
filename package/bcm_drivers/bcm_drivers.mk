@@ -99,7 +99,7 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	$(INSTALL) -m 0644 \
 		$(@D)/moca2/moca20core-*.bin \
 		$(TARGET_DIR)/etc/moca/
-	$(INSTALL) -m 0644 \
+	$(INSTALL) -m 0755 \
 		$(@D)/moca2/bin/*.so \
 		$(TARGET_DIR)/usr/lib/
 	cd $(@D)/google/py_moca2 && \
@@ -163,7 +163,7 @@ endef
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI_USB),y)
 define BCM_DRIVERS_INSTALL_TARGET_WIFI_USB
 $(INSTALL) -D -m 0444 $(@D)/wifi/src/wl/linux/obj-mipsel-mips-*/bcm_dbus.ko $(TARGET_DIR)/usr/lib/modules/bcm_dbus.ko
-$(INSTALL) -D -m 0555 $(@D)/wifi/src/usbdev/usbdl/bcmdl $(TARGET_DIR)/usr/bin/bcmdl
+$(INSTALL) -D -m 0755 $(@D)/wifi/src/usbdev/usbdl/bcmdl $(TARGET_DIR)/usr/bin/bcmdl
 $(INSTALL) -D -m 0444 $(@D)/wifi/src/dongle/rte/wl/builds/43236b-bmac/ag-nodis-p2p-mchan-media/rtecdc.bin.trx $(TARGET_DIR)/lib/firmware/bcm43236-firmware.bin
 $(INSTALL) -D -m 0444 $(@D)/wifi/src/dongle/rte/wl/builds/43236b-bmac/ag-p2p-mchan-media/rtecdc.bin.trx $(TARGET_DIR)/lib/firmware/bcm43236-nohotplug.bin
 endef

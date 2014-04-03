@@ -500,9 +500,10 @@ target-finalize:
 ifeq ($(BR2_HAVE_DEVFILES),y)
 	( support/scripts/copy.sh $(STAGING_DIR) $(TARGET_DIR) )
 else
-	rm -rf $(TARGET_DIR)/usr/include $(TARGET_DIR)/usr/lib/pkgconfig $(TARGET_DIR)/usr/share/aclocal
+	rm -rf $(TARGET_DIR)/usr/include $(TARGET_DIR)/usr/local/include $(TARGET_DIR)/usr/lib/pkgconfig $(TARGET_DIR)/usr/share/aclocal
 	find $(TARGET_DIR)/lib \( -name '*.a' -o -name '*.la' \) -print0 | xargs -0 rm -f
 	find $(TARGET_DIR)/usr/lib \( -name '*.a' -o -name '*.la' \) -print0 | xargs -0 rm -f
+	find $(TARGET_DIR)/usr/local/lib \( -name '*.a' -o -name '*.la' \) -print0 | xargs -0 rm -f
 endif
 ifneq ($(BR2_PACKAGE_GDB),y)
 	rm -rf $(TARGET_DIR)/usr/share/gdb
@@ -520,10 +521,10 @@ endif
 ifeq ($(BR2_PACKAGE_PYTHON_PYC_ONLY),y)
 	find $(TARGET_DIR)/usr/lib/ -name '*.py' -print0 | xargs -0 rm -f
 endif
-	find $(TARGET_DIR) -type f -perm +111 '!' -name 'libthread_db*.so*' '!' -name 'libpthread*.so*' | \
-		xargs $(STRIPCMD) 2>/dev/null || true
-	find $(TARGET_DIR)/lib/modules -type f -name '*.ko' | \
-		xargs -r $(KSTRIPCMD) || true
+	find $(TARGET_DIR) -type f -perm +111 '!' -name 'libthread_db*.so*' '!' -name 'libpthread*.so*' -print0 | \
+		xargs -0 -r $(STRIPCMD) 2>&1 | grep -v "File format not recognized" || true
+	find $(TARGET_DIR)/lib/modules -type f -name '*.ko' -print0 | \
+		xargs -0 -r $(KSTRIPCMD) 2>&1 || true
 
 	mkdir -p $(TARGET_DIR)/etc
 	# Mandatory configuration file and auxilliary cache directory
