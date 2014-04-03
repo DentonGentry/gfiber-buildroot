@@ -4,7 +4,7 @@
 # some period of time.
 #
 
-MONITOR_PATH="/tmp/ledmonitor"
+MONITOR_PATH="/tmp/gpio/ledcontrol"
 MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 
 start() {
