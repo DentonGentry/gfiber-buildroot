@@ -1,7 +1,11 @@
 #!/bin/sh
+
 case "$1" in
   start)
     babysit 60 logmark &
+    if runnable sysvar_cmd; then
+      sysvar_cmd -g GOOGLE_SSL_CRT >/dev/random
+    fi
     ;;
   stop)
     pkillwait -x logmark
