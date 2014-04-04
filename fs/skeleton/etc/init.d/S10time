@@ -4,7 +4,6 @@ TIME_FILE=/tmp/time.synced
 
 case "$1" in
   start)
-    cp /etc/ntpd.conf.default /tmp/ntpd.conf
     echo "UTC" > /tmp/TZ
 
     if [ -s $ANTIROLLBACK ]; then

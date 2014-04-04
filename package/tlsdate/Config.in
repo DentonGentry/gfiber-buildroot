@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TLSDATE
+	bool "tlsdate"
+	help
+	  tlsdate is a simple client that extracts the current time from
+	  a TLS/SSL handshake.
+
+	  https://github.com/ioerror/tlsdate/
