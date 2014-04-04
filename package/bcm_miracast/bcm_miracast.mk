@@ -20,16 +20,12 @@ endef
 
 define BCM_MIRACAST_BUILD_CMDS
 	tar -czf $(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz -C $(BCM_DRIVERS_DIR) wifi/src
-# Temporary until Broadcom fixes parallel build problem: manually create directory and copy site_typedefs.h
-	mkdir -p ${INCLUDE_DIR}
-	cp $(@D)/broadcom/netapp/netapp/wlan/site_typedefs.h ${INCLUDE_DIR}
 	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) VERBOSE=y HAS_WIFI_BUILT=y NETAPP_WIFI_WPS=n NETAPP_DATABASE=n AARDVARK_DRIVER_VERSION=wifi WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz APPLIBS_TOP=$(@D) \
 		-C $(@D)/common wfd_libs netapp
 endef
 
 define BCM_MIRACAST_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
-	$(INSTALL) -D -m 0755 $(@D)/broadcom/wifidisplay/prebuilt/StandaloneNexusWFDExec $(TARGET_DIR)/usr/local/bin
 endef
 
 define BCM_MIRACAST_INSTALL_STAGING_CMDS
