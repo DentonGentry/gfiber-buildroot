@@ -26,6 +26,8 @@
 
 . /etc/utils.sh
 
+mkdir -p /tmp/dnsmasq
+
 ip=ip
 wifi_ifc=eth2
 bridge_ifc=br0
@@ -215,14 +217,8 @@ exit_with_hooks() {
         make_dnsmasq_ipv6 $prefix64
         restart_dnsmasq=1
       fi
-      if [ -n "$new_cwmp_acs_url" ]; then
-        if [ "$new_cwmp_acs_url" != "$old_cwmp_acs_url" ]; then
-          make_dnsmasq_acs
-          restart_dnsmasq=1
-        fi
-      else
-        rm /tmp/dnsmasq/acs.conf
-        touch /tmp/dnsmasq/acs.conf
+      if [ -n "$new_cwmp_acs_url" ] && [ "$new_cwmp_acs_url" != "$old_cwmp_acs_url" ]; then
+        make_dnsmasq_acs
         restart_dnsmasq=1
       fi
       if [ $restart_dnsmasq != 0 ]; then
@@ -250,8 +246,8 @@ exit_with_hooks() {
       rm -f /tmp/ntpd6.conf
       # Remove the prefix address that was assigned to the bridge.
       remove_ip6_prefix "$cur_ip6_prefix"
-      atomic /tmp/dnsmasq/ipv6.conf ""
-      atomic /tmp/dnsmasq/acs.conf ""
+      rm -f /tmp/dnsmasq/ipv6.conf
+      rm -f /tmp/dnsmasq/acs.conf
       restart dnsmasq
       ;;
   esac
