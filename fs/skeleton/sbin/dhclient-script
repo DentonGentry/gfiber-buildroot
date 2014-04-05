@@ -171,32 +171,11 @@ make_etc_hosts() {
   log_file_contents /tmp/hosts
 }
 
-make_new_ntp_conf_and_restart() {
-  atomic /tmp/ntpd.conf \
-      "$(cat /etc/ntpd.conf.default /tmp/ntpd4.conf /tmp/ntpd6.conf \
-          2>/dev/null)"
-  log_file_contents /tmp/ntpd.conf
-  # TODO(apenwarr): we don't actually restart ntpd here anymore.
-  #  In fact, our system no longer even contains ntpd.  But we want to
-  #  keep the NTP server information around anyway, so we can serve
-  #  it back out via dnsmasq.
-}
-
 write_ntp_conf_new()
 {
   fname=$1
-
-  if [ -z "$new_ntp_servers" ]; then
-    rm -f "$fname"
-    log "no new ntp servers"
-    return
-  fi
-
-  atomic "$fname" "$(
-    for server in $new_ntp_servers; do
-      echo "server $server"
-    done
-  )"
+  atomic "$fname" "$new_ntp_servers"
+  log_file_contents "$fname"
 }
 
 remove_ip6_prefix() {
@@ -212,7 +191,7 @@ exit_with_hooks() {
   exit_status=$1
   case $reason in
     BOUND|RENEW|REBIND|REBOOT)
-      write_ntp_conf_new /tmp/ntpd4.conf
+      write_ntp_conf_new /tmp/ntpd4.servers
       if [ "$addr_added" = 1 ]; then
         restart igmpproxy
       fi
@@ -250,17 +229,17 @@ exit_with_hooks() {
           rdisc6 -1 "${interface}" &
         fi
       fi
-      write_ntp_conf_new /tmp/ntpd6.conf
+      write_ntp_conf_new /tmp/ntpd6.servers
       ;;
 
     EXPIRE|FAIL|RELEASE|STOP)
       echo "Removing DHCP4 ntp servers on $reason"
-      rm -f /tmp/ntpd4.conf
+      rm -f /tmp/ntpd4.servers
       ;;
 
     EXPIRE6|FAIL6|RELEASE6|STOP6)
       echo "Removing DHCP6 ntp servers on $reason"
-      rm -f /tmp/ntpd6.conf
+      rm -f /tmp/ntpd6.servers
       # Remove the prefix address that was assigned to the bridge.
       remove_ip6_prefix "$cur_ip6_prefix"
       atomic /tmp/dnsmasq/ipv6.conf ""
@@ -268,7 +247,6 @@ exit_with_hooks() {
       restart dnsmasq
       ;;
   esac
-  make_new_ntp_conf_and_restart
   exit $exit_status
 }
 

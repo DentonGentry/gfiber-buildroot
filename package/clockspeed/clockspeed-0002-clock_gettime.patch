@@ -1,0 +1,154 @@
+From 2ac6eadbbe9b9097d998eb2e917d63dc5cc481b3 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 5 Apr 2014 03:08:36 -0400
+Subject: [PATCH 2/2] Add support for clock_gettime(CLOCK_MONOTONIC_RAW) as a
+ clock type.
+
+clockspeed only supports rdtsc (x86-only) and gethrtime() (solaris-only) out
+of the box.  clock_gettime() is the modern posix standard for this.
+---
+ Makefile     |  9 ++++++++-
+ clockspeed.c |  2 ++
+ monotime.h   | 21 +++++++++++++++++++++
+ sntpclock.c  |  1 +
+ timing.h     | 11 +++++++++++
+ trymono.c    |  7 +++++++
+ 6 files changed, 50 insertions(+), 1 deletion(-)
+ create mode 100644 monotime.h
+ create mode 100644 trymono.c
+
+diff --git a/Makefile b/Makefile
+index fd4a071..2a65dba 100644
+--- a/Makefile
++++ b/Makefile
+@@ -74,7 +74,7 @@ clockspeed.1
+ 
+ clockspeed.o: \
+ compile clockspeed.c readwrite.h exit.h select.h scan.h fmt.h str.h \
+-fifo.h open.h error.h auto_home.h timing.h hasrdtsc.h hasgethr.h
++fifo.h open.h error.h auto_home.h timing.h hasrdtsc.h hasgethr.h hasmono.h
+ 	./compile clockspeed.c
+ 
+ clockview: \
+@@ -151,6 +151,13 @@ trymkffo.c compile load
+ 	&& echo \#define HASMKFIFO 1 || exit 0 ) > hasmkffo.h
+ 	rm -f trymkffo.o trymkffo
+ 
++hasmono.h: \
++trymono.c compile load
++	( ( ./compile trymono.c && ./load trymono ) >/dev/null \
++	2>&1 \
++	&& echo \#define HASMONOTIME 1 || exit 0 ) > hasmono.h
++	rm -f trymono.o trymono
++
+ hasrdtsc.h: \
+ tryrdtsc.c compile load
+ 	( ( ./compile tryrdtsc.c && ./load tryrdtsc && ./tryrdtsc \
+diff --git a/clockspeed.c b/clockspeed.c
+index c915256..efaab98 100644
+--- a/clockspeed.c
++++ b/clockspeed.c
+@@ -15,11 +15,13 @@
+ 
+ #ifndef HASRDTSC
+ #ifndef HASGETHRTIME
++#ifndef HASMONOTIME
+ 
+   Error! Need an unadjusted hardware clock.
+ 
+ #endif
+ #endif
++#endif
+ 
+ struct point {
+   timing lowlevel;
+diff --git a/monotime.h b/monotime.h
+new file mode 100644
+index 0000000..b4f8393
+--- /dev/null
++++ b/monotime.h
+@@ -0,0 +1,21 @@
++#ifndef MONOTIME_H
++#define MONOTIME_H
++
++#include <time.h>
++#include "error.h"
++
++#ifndef CLOCK_MONOTONIC_RAW
++#define CLOCK_MONOTONIC_RAW 4
++#endif
++
++static long long monotime()
++{
++  struct timespec ts;
++  if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) < 0) {
++    perror("clock_gettime");
++    _exit(1);
++  }
++  return ts.tv_sec * 1000000000LL + ts.tv_nsec;
++}
++
++#endif
+diff --git a/sntpclock.c b/sntpclock.c
+index d1e334e..9b3a0df 100644
+--- a/sntpclock.c
++++ b/sntpclock.c
+@@ -3,6 +3,7 @@
+ #include <sys/param.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
++#include <unistd.h>
+ #include "strerr.h"
+ #include "ip.h"
+ #include "str.h"
+diff --git a/timing.h b/timing.h
+index f1d537e..45bc3df 100644
+--- a/timing.h
++++ b/timing.h
+@@ -3,6 +3,7 @@
+ 
+ #include "hasrdtsc.h"
+ #include "hasgethr.h"
++#include "hasmono.h"
+ #include <sys/types.h>
+ #include <sys/time.h>
+ 
+@@ -25,6 +26,15 @@ typedef struct { hrtime_t t; } timing;
+ #define timing_diff(x,y) ((double) ((x)->t - (y)->t))
+ 
+ #else
++#ifdef HASMONOTIME
++
++#include "monotime.h"
++
++typedef struct { long long t; } timing;
++#define timing_now(x) ((x)->t = monotime())
++#define timing_diff(x,y) ((double) ((x)->t - (y)->t))
++
++#else
+ 
+ #define timing timing_basic
+ #define timing_now timing_basic_now
+@@ -32,5 +42,6 @@ typedef struct { hrtime_t t; } timing;
+ 
+ #endif
+ #endif
++#endif
+ 
+ #endif
+diff --git a/trymono.c b/trymono.c
+new file mode 100644
+index 0000000..0461af5
+--- /dev/null
++++ b/trymono.c
+@@ -0,0 +1,7 @@
++#include <time.h>
++#include "monotime.h"
++
++main()
++{
++  long long x = monotime();
++}
+-- 
+1.9.1.423.g4596e3a
+

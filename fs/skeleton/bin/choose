@@ -1,0 +1,10 @@
+#!/usr/bin/python -S
+# Randomly prints exactly one of the arguments given on the command line,
+# or if there aren't any, returns nonzero.
+import random
+import sys
+
+if not sys.argv[1:]:
+  sys.exit(1)
+else:
+  print random.choice(sys.argv[1:])

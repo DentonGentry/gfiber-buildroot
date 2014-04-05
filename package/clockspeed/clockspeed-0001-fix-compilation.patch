@@ -1,0 +1,142 @@
+From 0b18df595eac2b187524b3ee3cf7ed0d848bbbe8 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 5 Apr 2014 02:56:43 -0400
+Subject: [PATCH 1/2] Fix compilation problems.
+
+- remove the conf-* files: buildroot will supply these.
+- include some missing include files needed for newer glibc.
+- avoid running auto-str from the Makefile, since that won't work
+  when cross compiling.
+---
+ .gitignore   | 33 +++++++++++++++++++++++++++++++++
+ Makefile     |  2 +-
+ clockspeed.c |  1 +
+ clockview.c  |  1 +
+ conf-cc      |  3 ---
+ conf-home    |  4 ----
+ conf-ld      |  3 ---
+ error.h      |  2 +-
+ 8 files changed, 37 insertions(+), 12 deletions(-)
+ create mode 100644 .gitignore
+ delete mode 100644 conf-cc
+ delete mode 100644 conf-home
+ delete mode 100644 conf-ld
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..0ab8299
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,33 @@
++*~
++*.[oa]
++*.0
++conf-cc
++conf-ld
++conf-home
++.stamp_*
++auto-str
++clockadd
++clockview
++compile
++find-systype
++hasgethr.h
++hasmkffo.h
++hasmono.h
++hasrdtsc.h
++load
++make-compile
++make-load
++make-makelib
++makelib
++select.h
++sntpclock
++socket.lib
++systype
++taiclock
++taiclockd
++uint64.h
++auto-ccld.sh
++auto_home.c
++clockspeed
++install
++instcheck
+diff --git a/Makefile b/Makefile
+index d632e9b..fd4a071 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,7 +21,7 @@ compile auto-str.c substdio.h readwrite.h exit.h
+ 
+ auto_home.c: \
+ auto-str conf-home
+-	./auto-str auto_home `head -1 conf-home` > auto_home.c
++	echo "char auto_home[] = \"`head -1 conf-home`\";" > auto_home.c
+ 
+ auto_home.o: \
+ compile auto_home.c
+diff --git a/clockspeed.c b/clockspeed.c
+index 18a7383..c915256 100644
+--- a/clockspeed.c
++++ b/clockspeed.c
+@@ -1,5 +1,6 @@
+ #include <sys/types.h>
+ #include <sys/time.h>
++#include <time.h>
+ #include "readwrite.h"
+ #include "exit.h"
+ #include "select.h"
+diff --git a/clockview.c b/clockview.c
+index 1e23519..9c19f82 100644
+--- a/clockview.c
++++ b/clockview.c
+@@ -1,5 +1,6 @@
+ #include <sys/types.h>
+ #include <sys/time.h>
++#include <time.h>
+ #include "substdio.h"
+ #include "readwrite.h"
+ #include "strerr.h"
+diff --git a/conf-cc b/conf-cc
+deleted file mode 100644
+index 7f41e18..0000000
+--- a/conf-cc
++++ /dev/null
+@@ -1,3 +0,0 @@
+-gcc -O2
+-
+-This will be used to compile .c files.
+diff --git a/conf-home b/conf-home
+deleted file mode 100644
+index fbf87c6..0000000
+--- a/conf-home
++++ /dev/null
+@@ -1,4 +0,0 @@
+-/usr/local/clockspeed
+-
+-This is the clockspeed home directory. Programs will be installed in
+-.../bin.
+diff --git a/conf-ld b/conf-ld
+deleted file mode 100644
+index 59a0de7..0000000
+--- a/conf-ld
++++ /dev/null
+@@ -1,3 +0,0 @@
+-gcc -s
+-
+-This will be used to link .o files into an executable.
+diff --git a/error.h b/error.h
+index 01bd3dc..5d98c6b 100644
+--- a/error.h
++++ b/error.h
+@@ -1,7 +1,7 @@
+ #ifndef ERROR_H
+ #define ERROR_H
+ 
+-extern int errno;
++#include <errno.h>
+ 
+ extern int error_intr;
+ extern int error_nomem;
+-- 
+1.9.1.423.g4596e3a
+
