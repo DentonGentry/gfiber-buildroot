@@ -92,13 +92,26 @@ while read f; do
 
   if is_link_up; then
     test ! -e "$LINK_DOWN_FILE" || rm -f "$LINK_DOWN_FILE"
-    if has_ip_address br0; then
-      echo "IP address acquired on br0" >"$IP_FILE"
+    success=
+    if does_interface_exist wan0; then
+      ifs="wan0 wan0.2"
+    else
+      ifs="br0"
+    fi
+    for ifname in $ifs; do
+      if has_ip_address $ifname; then
+        success="IP address acquired on $ifname"
+        break
+      fi
+    done
+    if [ -n "$success" ]; then
+      echo "$success" >"$IP_FILE"
     else
       rm -f "$ACS_FILE" "$IP_FILE"
     fi
   else
     echo "Link down" >"$LINK_DOWN_FILE"
+    rm -f "$ACS_FILE" "$IP_FILE"
   fi
 
   if is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
@@ -119,11 +132,11 @@ while read f; do
     change_state POWEROFF "$ALL_LEDS_OFF"
   elif [ -f "$LINK_DOWN_FILE" ]; then
     change_state LINKDOWN "$LINK_DOWN_LED_ON"
-  elif [ -f "$ACS_FILE" ]; then
-    change_state ACSCONTACT "$ACS_LED_ON"
-  elif [ -f "$IP_FILE" ]; then
-    change_state IPV6ACQUIRED "$IP_LED_ON"
+  elif [ ! -f "$IP_FILE" ]; then
+    change_state NOIP "$ANYTHING_ELSE"                  # progress: link but no ip
+  elif [ ! -f "$ACS_FILE" ]; then
+    change_state IPV6ACQUIRED "$IP_LED_ON"              # progress: ip but no acs
   else
-    change_state OTHER "$ANYTHING_ELSE"
+    change_state ACSCONTACT "$ACS_LED_ON"               # success!
   fi
 done
