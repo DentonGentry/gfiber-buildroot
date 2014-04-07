@@ -4,15 +4,13 @@ case "$1" in
   start)
     mkdir -p /config/dnsmasq
     mkdir -p /tmp/dnsmasq
-    touch /tmp/dnsmasq/acs.conf
-    touch /tmp/dnsmasq/ipv6.conf
-    if [ ! -e /config/dnsmasq/acs.conf ]; then
-      ln -s /tmp/dnsmasq/acs.conf /config/dnsmasq/acs.conf
-    fi
-    if [ ! -e /config/dnsmasq/ipv6.conf ]; then
-      ln -s /tmp/dnsmasq/ipv6.conf /config/dnsmasq/ipv6.conf
-    fi
-    for d in /config/dnsmasq/*; do
+    for d in /config/dnsmasq/* /tmp/dnsmasq/*; do
+      # Remove symlinks in /config/dnsmasq.  Some existed in an earlier build
+      # and interfere.
+      if [ -h "$d" ]; then
+        echo " -- Removing $d --"
+        rm -f "$d"
+      fi
       [ -e "$d" ] || continue
       echo "--- $d: ---"
       cat "$d"
