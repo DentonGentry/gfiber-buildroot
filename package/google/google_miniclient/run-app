@@ -70,6 +70,12 @@ case $appname in
     [ -z "$opts" ] && opts='https://www.youtube.com/tv'
     ./start $opts 2>&1 | logos youtube
     ;;
+  miracast)
+    /usr/local/bin/trellis/StandaloneWFDPlayer $opts 2>&1 | logos miracast
+    # Once the session is over, kill the miracast listener.
+    # This will cause us to stop advertising ourselves as a sink.
+    rm -f /tmp/miracast-listener
+    ;;
   waitpower)
     echo 1 > /tmp/poweroff
     ;;

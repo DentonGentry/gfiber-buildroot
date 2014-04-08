@@ -7,7 +7,7 @@
 BCM_MIRACAST_SITE=repo://vendor/broadcom/miracast
 BCM_MIRACAST_DEPENDENCIES=\
 	bcm_bseav bcm_nexus bcm_common bcm_rockford bcm_drivers \
-    openssl avahi
+    openssl avahi google_miniclient
 BCM_MIRACAST_INSTALL_STAGING=NO
 BCM_MIRACAST_INSTALL_TARGET=YES
 
@@ -26,11 +26,17 @@ endef
 
 define BCM_MIRACAST_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
+	$(INSTALL) -m 0755 -D package/google/google_miracast/S98miracast $(TARGET_DIR)/etc/init.d/S98miracast
+	$(INSTALL) -D -m 0755 package/google/google_miracast/runmiracast $(TARGET_DIR)/app/client/runmiracast
+	$(INSTALL) -D -m 0755 package/google/google_miracast/miracast_player $(TARGET_DIR)/app/client/miracast_player
 endef
 
 define BCM_MIRACAST_INSTALL_STAGING_CMDS
 	$(INSTALL) -D -m 0644 $(@D)/src/apps/nexus_sink_app/libwfd_player.a $(STAGING_DIR)/usr/lib/libwfd_player.a
 	$(INSTALL) -D -m 0644 $(@D)/src/apps/nexus_sink_app/libwfd_streamer.a $(STAGING_DIR)/usr/lib/libwfd_streamer.a
+	$(INSTALL) -m 0755 -D package/google/google_miracast/S98miracast $(STAGING_DIR)/etc/init.d/S98miracast
+	$(INSTALL) -D -m 0755 package/google/google_miracast/runmiracast $(STAGING_DIR)/app/client/runmiracast
+	$(INSTALL) -D -m 0755 package/google/google_miracast/miracast_player $(STAGING_DIR)/app/client/miracast_player
 endef
 
 $(eval $(call GENTARGETS))
