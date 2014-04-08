@@ -1,0 +1,25 @@
+From a7dae60024e19b2b55f8a7fdf6bbe29bfc9a3606 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 8 Apr 2014 05:13:33 -0400
+Subject: [PATCH] readwrite.h: avoid compile error
+
+---
+ readwrite.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/readwrite.h b/readwrite.h
+index 2a64968..9423ad6 100644
+--- a/readwrite.h
++++ b/readwrite.h
+@@ -1,7 +1,6 @@
+ #ifndef READWRITE_H
+ #define READWRITE_H
+ 
+-extern int read();
+-extern int write();
++#include <unistd.h>
+ 
+ #endif
+-- 
+1.9.1.423.g4596e3a
+
