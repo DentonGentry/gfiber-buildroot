@@ -1,0 +1,23 @@
+[From http://cr.yp.to/distributors.html on 2014-04-07]
+
+D. J. Bernstein
+
+Frequently asked questions from distributors
+
+This page is for people who want to distribute copies of my software or
+derivative works: for example, an operating system that includes the
+software.
+
+You don't need to read this page if you simply want to use my software. You
+are free to download the software from my web server; you then own that copy
+of the software, and you are free to compile it and run it.
+
+You also don't need to read this page if you simply want to set up a mirror
+of my web pages.
+
+[...]
+What are the distribution terms for clockspeed?
+
+2013.01.09: I hereby place the clockspeed package (in particular,
+clockspeed-0.62.tar.gz, with MD5 checksum 425614174fcfe2ad42d22d3d02e2d567)
+into the public domain. The package is no longer copyrighted.

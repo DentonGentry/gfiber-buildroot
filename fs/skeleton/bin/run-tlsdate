@@ -1,24 +1,51 @@
 #!/bin/selfclean sh
-# We would run tlsdated here instead of doing it using a sh script, but
-# unfortunately we need a way to create /tmp/ntp.synced after the first
-# sync, and at that point we've already had to implement the retries
-# anyway, so there's little point in using tlsdated with a second
-# implementation of it all.
+# tlsdate is great for security, because it validates the SSL certificate
+# of the server you query.  But it's not so great for precision, because
+# the TLS-based timestamp it uses is only accurate to the nearest second or
+# so.
+#
+# Thus, we use tlsdate to initially sync the clock to about the right time,
+# then make a second jump using NTP to get it slightly closer, and finally
+# use djb's clockspeed tool to trim the clock rate to it stays in sync.
+#
+# The clockspeed docs suggest adjusting clockspeed (using an NTP server
+# for example) once at the start, again after a few hours, again after
+# a few days, and again after a few weeks, and again after a few months.
+# Some quick testing suggests that the code is at least good enough to keep
+# millisecond level accuracy for hours at a time.  So let's use very long
+# delays between syncs.
 
-NORMAL_DELAY=$(randint 55 125)
-STARTUP_DELAY=$(randint 5 15)
+MAX_ADJUST_SECS=172800    # max seconds between clock adjusts, once synced
+ADJUST_BACKOFF_FACTOR=4   # multiply backoff timer by up to this much
+
+DEFAULT_NTP_SERVERS="
+    time1.google.com
+    time2.google.com
+    time3.google.com
+    time4.google.com
+"
+
+choose_ntp_server()
+{
+  choose $(dns $(cat /tmp/ntp[46].servers)) ||
+  choose $(dns $DEFAULT_NTP_SERVERS) ||
+  { echo "No NTP servers available.  Waiting..." >&2; sleep 5; }
+}
 
 
 do_tlsdate()
 {
   echo "trying host '$1'"
-  tlsdate -v \
+  tlsdate -V \
       --timewarp --leap \
       -C /etc/ssl/certs/ca-certificates.crt \
       -H "$1"
 }
 
 
+# Loop until we get one successful tlsdate time sync.
+# This is accurate within +/- 1 second or so.
+echo "timewarp tlsdate sync:" >&2
 {
   # run tlsdate once immediately
   echo start
@@ -27,20 +54,14 @@ do_tlsdate()
   tlsdate-routeup &
 
   # re-run tlsdate periodically
-  while :; do
-    if [ -e /tmp/ntp.synced ]; then
-      sleep $NORMAL_DELAY || sleep 55
-      echo "periodic"
-    else
-      sleep $STARTUP_DELAY || sleep 55
-      echo "start"
-    fi
+  while ! [ -e /tmp/ntp.synced ]; do
+    sleep $(randint 5 15)
+    echo "start"
   done
 } |
 while read reason; do
   case $reason in
     start)    echo "starting up" ;;
-    periodic) echo "periodic update" ;;
     n)        echo "route changed; setting time" ;;
     *)        echo "unknown reason ($reason) for time change!"; sleep 55 ;;
   esac
@@ -51,5 +72,40 @@ while read reason; do
   #  fails the certificate check.
   if do_tlsdate google.com; then
     : >/tmp/ntp.synced
+    break
   fi
+done
+
+
+# Now get one successful ntp sync.
+# This should get us within a few milliseconds.
+echo "mini-timewarp ntp sync:" >&2
+while :; do
+  ntpserver=$(choose_ntp_server) || continue
+  echo "using ntp server: $ntpserver" >&2
+  sntpclock "$ntpserver" | clockview
+  if sntpclock "$ntpserver" | clockadd; then
+    : >/tmp/ntp2.synced
+    break
+  fi
+done
+
+
+# Now the clock is as close as it can get with one-off syncs.  We have
+# to start fine tuning the clock rate.
+mkdir -p /tmp/clockspeed/etc
+babysit 60 clockspeed &
+CUR_DELAY=30
+while :; do
+  echo "clockspeed adjustment:" >&2
+  ntpserver=$(choose_ntp_server) || continue
+  echo "using ntp server: $ntpserver" >&2
+  sntpclock "$ntpserver" | clockview
+  sntpclock "$ntpserver" >/tmp/clockspeed/adjust
+  
+  MAX_DELAY=$(($CUR_DELAY * $ADJUST_BACKOFF_FACTOR))
+  [ "$MAX_DELAY" -gt "$MAX_ADJUST_SECS" ] && MAX_DELAY="$MAX_ADJUST_SECS"
+  CUR_DELAY=$(randint "$CUR_DELAY" "$MAX_DELAY")
+  echo "Waiting for $CUR_DELAY seconds..."
+  sleep "$CUR_DELAY"
 done

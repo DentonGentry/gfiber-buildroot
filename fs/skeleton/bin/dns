@@ -1,0 +1,14 @@
+#!/usr/bin/python -S
+# Prints one of the IP addresses of each of the hostnames given on the
+# command line.  If no arguments are given, returns nonzero.
+import socket
+import sys
+
+ok = 0
+for i in sys.argv[1:]:
+  try:
+    print socket.gethostbyname(i)
+    ok = 1
+  except socket.error:
+    pass
+sys.exit(0 if ok else 1)

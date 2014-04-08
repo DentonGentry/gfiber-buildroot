@@ -1,0 +1,34 @@
+From eb99125a12ca69f4513a299a9c78d963e7fbb5a6 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 5 Apr 2014 03:36:28 -0400
+Subject: [PATCH] sntpclock: change maximum delta from +/-2 days to +/- 60
+ seconds.
+
+We're going to initially sync our clock with tlsdate, which is high security
+but low precision (within about 1 second).  We can then use sntpclock for
+the fine tuning.  There's no interesting security attack in confusing us
+into setting our clock wrong by less than a minute, so we can assume nobody
+will bother.
+---
+ sntpclock.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sntpclock.c b/sntpclock.c
+index 9b3a0df..5680e05 100644
+--- a/sntpclock.c
++++ b/sntpclock.c
+@@ -98,9 +98,9 @@ int s;
+ unsigned char query[48];
+ unsigned char response[128];
+ 
+-char initdeltaoffset[] = {0,0,0,0,0,2,163,0,0,0,0,0,0,0,0,0};
++char initdeltaoffset[] = {0,0,0,0,0,0,0,60,0,0,0,0,0,0,0,0};
+ char initdeltamin[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+-char initdeltamax[] = {0,0,0,0,0,5,70,0,0,0,0,0,0,0,0,0};
++char initdeltamax[] = {0,0,0,0,0,0,0,120,0,0,0,0,0,0,0,0};
+ char initerrmin[] = {255,255,255,255,255,255,255,254,0,0,0,0,0,0,0,0};
+ char initerrmax[] = {0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0};
+ struct taia deltaoffset;
+-- 
+1.9.1.423.g4596e3a
+

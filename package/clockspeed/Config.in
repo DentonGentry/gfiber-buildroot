@@ -1,0 +1,7 @@
+config BR2_PACKAGE_CLOCKSPEED
+	bool "djb clockspeed"
+	help
+	  djb clockspeed is a collection of tools for fine-tuning your
+	  system's clock.
+
+	  http://cr.yp.to/clockspeed.html

@@ -1,12 +1,14 @@
 #!/bin/sh
 case "$1" in
   start)
+    mkdir -p /tmp/clockspeed/etc
     babysit 60 run-tlsdate 2>&1 | logos tlsdate &
     ;;
   stop)
     pkillwait -x run-tlsdate
     pkillwait -x tlsdate
     pkillwait -x tlsdate-routeup
+    pkillwait -x clockspeed
     ;;
   restart)
     $0 stop; $0 start
