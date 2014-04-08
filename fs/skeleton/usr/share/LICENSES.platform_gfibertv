@@ -627,8 +627,8 @@ google_sageserver/jcifs.jar
 libprojectM/COPYING.txt
 py-curl/COPYING
 ------------------------------------------------
-		  GNU LESSER GENERAL PUBLIC LICENSE
-		       Version 2.1, February 1999
+                  GNU LESSER GENERAL PUBLIC LICENSE
+                       Version 2.1, February 1999
 
  Copyright (C) 1991, 1999 Free Software Foundation, Inc.
      59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -639,7 +639,7 @@ py-curl/COPYING
  as the successor of the GNU Library Public License, version 2, hence
  the version number 2.1.]
 
-			    Preamble
+                            Preamble
 
   The licenses for most software are designed to take away your
 freedom to share and change it.  By contrast, the GNU General Public
@@ -741,7 +741,7 @@ modification follow.  Pay close attention to the difference between a
 former contains code derived from the library, whereas the latter must
 be combined with the library in order to run.
 
-		  GNU LESSER GENERAL PUBLIC LICENSE
+                  GNU LESSER GENERAL PUBLIC LICENSE
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. This License Agreement applies to any software library or other
@@ -1061,7 +1061,7 @@ decision will be guided by the two goals of preserving the free status
 of all derivatives of our free software and of promoting the sharing
 and reuse of software generally.
 
-			    NO WARRANTY
+                            NO WARRANTY
 
   15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO
 WARRANTY FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
@@ -1084,7 +1084,7 @@ FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGES.
 
-		     END OF TERMS AND CONDITIONS
+                     END OF TERMS AND CONDITIONS
 
            How to Apply These Terms to Your New Libraries
 
@@ -4058,6 +4058,35 @@ catawampus/LICENSE
 
 
 ------------------------------------------------
+clockspeed/LICENSE
+------------------------------------------------
+[From http://cr.yp.to/distributors.html on 2014-04-07]
+
+D. J. Bernstein
+
+Frequently asked questions from distributors
+
+This page is for people who want to distribute copies of my software or
+derivative works: for example, an operating system that includes the
+software.
+
+You don't need to read this page if you simply want to use my software. You
+are free to download the software from my web server; you then own that copy
+of the software, and you are free to compile it and run it.
+
+You also don't need to read this page if you simply want to set up a mirror
+of my web pages.
+
+[...]
+What are the distribution terms for clockspeed?
+
+2013.01.09: I hereby place the clockspeed package (in particular,
+clockspeed-0.62.tar.gz, with MD5 checksum 425614174fcfe2ad42d22d3d02e2d567)
+into the public domain. The package is no longer copyrighted.
+
+
+
+------------------------------------------------
 dash/COPYING
 ------------------------------------------------
 Copyright (c) 1989-1994
@@ -4846,6 +4875,7 @@ sysklogd/COPYING
 sysstat/COPYING
 vconfig/COPYING
 ------------------------------------------------
+
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
@@ -7851,6 +7881,38 @@ Public License instead of this License.
 
 
 ------------------------------------------------
+google_dart_vm/LICENSE
+------------------------------------------------
+Copyright 2013, the Dart project authors. All rights reserved.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+------------------------------------------------
 google_ffmpeg/LICENSE
 ------------------------------------------------
 Most files in FFmpeg are under the GNU Lesser General Public License version 2.1
@@ -8286,6 +8348,18 @@ google_sageserver/servlet-api-2.5-6.1.19.jar
  *   limitations under the License.
  */
 
+
+
+
+------------------------------------------------
+google_sageserver/Base64
+------------------------------------------------
+Author: Robert Harder
+
+I am placing this code in the Public Domain. Do with it as you will.
+This software comes with no guarantees or warranties but with plenty
+of well-wishing instead!  Please visit http://iharder.net/base64
+periodically to check for updates or to contribute improvements.
 
 
 
@@ -9223,6 +9297,94 @@ This data can be used freely under either license.
 
 
 ------------------------------------------------
+igmpproxy/COPYING
+------------------------------------------------
+igmpproxy - IGMP proxy based multicast router
+Copyright (C) 2005 Johnny Egeland <johnny@rlo.org>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+This software is derived work from the following software. The original
+source code has been modified from it's original state by the author
+of igmpproxy.
+
+smcroute 0.92 - Copyright (C) 2001 Carsten Schill <carsten@cschill.de>
+- Licensed under the GNU General Public License, version 2
+
+mrouted 3.9-beta3 - COPYRIGHT 1989 by The Board of Trustees of
+Leland Stanford Junior University.
+- Original license can be found in the Stanford.txt file.
+
+
+
+------------------------------------------------
+igmpproxy/Stanford.txt
+------------------------------------------------
+
+The mrouted program is covered by the following license.  Use of the
+mrouted program represents acceptance of these terms and conditions.
+
+1. STANFORD grants to LICENSEE a nonexclusive and nontransferable license
+to use, copy and modify the computer software ``mrouted'' (hereinafter
+called the ``Program''), upon the terms and conditions hereinafter set
+out and until Licensee discontinues use of the Licensed Program.
+
+2. LICENSEE acknowledges that the Program is a research tool still in
+the development state, that it is being supplied ``as is,'' without any
+accompanying services from STANFORD, and that this license is entered
+into in order to encourage scientific collaboration aimed at further
+development and application of the Program.
+
+3. LICENSEE may copy the Program and may sublicense others to use object
+code copies of the Program or any derivative version of the Program.
+All copies must contain all copyright and other proprietary notices found
+in the Program as provided by STANFORD.  Title to copyright to the
+Program remains with STANFORD.
+
+4. LICENSEE may create derivative versions of the Program.  LICENSEE
+hereby grants STANFORD a royalty-free license to use, copy, modify,
+distribute and sublicense any such derivative works.  At the time
+LICENSEE provides a copy of a derivative version of the Program to a
+third party, LICENSEE shall provide STANFORD with one copy of the source
+code of the derivative version at no charge to STANFORD.
+
+5. STANFORD MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.
+By way of example, but not limitation, STANFORD MAKES NO REPRESENTATION
+OR WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR
+THAT THE USE OF THE LICENSED PROGRAM WILL NOT INFRINGE ANY PATENTS,
+COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. STANFORD shall not be held liable
+for any liability nor for any direct, indirect or consequential damages
+with respect to any claim by LICENSEE or any third party on account of or
+arising from this Agreement or use of the Program.
+
+6. This agreement shall be construed, interpreted and applied in
+accordance with the State of California and any legal action arising
+out of this Agreement or use of the Program shall be filed in a court
+in the State of California.
+
+7. Nothing in this Agreement shall be construed as conferring rights to
+use in advertising, publicity or otherwise any trademark or the name
+of ``Stanford''.
+
+The mrouted program is COPYRIGHT 1989 by The Board of Trustees of
+Leland Stanford Junior University.
+
+
+
+------------------------------------------------
 iperf/COPYING
 ------------------------------------------------
 Copyright (c) 1999-2007, The Board of Trustees of the University of Illinois
@@ -9913,6 +10075,31 @@ Please send bug reports, offers of help, etc. to jpeg-info@jpegclub.org.
 
 
 ------------------------------------------------
+json-c/COPYING
+------------------------------------------------
+Copyright (c) 2004, 2005 Metaparadigm Pte Ltd
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+
+------------------------------------------------
 libaio/COPYING
 ------------------------------------------------
 
@@ -10430,6 +10617,22 @@ Random Hacker.
 That's all there is to it!
 
 
+
+
+
+------------------------------------------------
+libcares/LICENSE
+------------------------------------------------
+Copyright 1998 by the Massachusetts Institute of Technology.
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided that
+the above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+the name of M.I.T. not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior permission.
+M.I.T. makes no representations about the suitability of this software for any
+purpose.  It is provided "as is" without express or implied warranty.
 
 
 
@@ -11005,6 +11208,69 @@ liblockfile/COPYRIGHT
 
 
 ------------------------------------------------
+libmng/LICENSE
+------------------------------------------------
+/* ************************************************************************** */
+/* *                                                                        * */
+/* * COPYRIGHT NOTICE:                                                      * */
+/* *                                                                        * */
+/* * Copyright (c) 2000-2007 Gerard Juyn (gerard@libmng.com)                     * */
+/* * [You may insert additional notices after this sentence if you modify   * */
+/* *  this source]                                                          * */
+/* *                                                                        * */
+/* * For the purposes of this copyright and license, "Contributing Authors" * */
+/* * is defined as the following set of individuals:                        * */
+/* *                                                                        * */
+/* *    Gerard Juyn                                                         * */
+/* *    Glenn Randers-Pehrson                                               * */
+/* *                                                                        * */
+/* * The MNG Library is supplied "AS IS".  The Contributing Authors         * */
+/* * disclaim all warranties, expressed or implied, including, without      * */
+/* * limitation, the warranties of merchantability and of fitness for any   * */
+/* * purpose.  The Contributing Authors assume no liability for direct,     * */
+/* * indirect, incidental, special, exemplary, or consequential damages,    * */
+/* * which may result from the use of the MNG Library, even if advised of   * */
+/* * the possibility of such damage.                                        * */
+/* *                                                                        * */
+/* * Permission is hereby granted to use, copy, modify, and distribute this * */
+/* * source code, or portions hereof, for any purpose, without fee, subject * */
+/* * to the following restrictions:                                         * */
+/* *                                                                        * */
+/* * 1. The origin of this source code must not be misrepresented;          * */
+/* *    you must not claim that you wrote the original software.            * */
+/* *                                                                        * */
+/* * 2. Altered versions must be plainly marked as such and must not be     * */
+/* *    misrepresented as being the original source.                        * */
+/* *                                                                        * */
+/* * 3. This Copyright notice may not be removed or altered from any source * */
+/* *    or altered source distribution.                                     * */
+/* *                                                                        * */
+/* * The Contributing Authors specifically permit, without fee, and         * */
+/* * encourage the use of this source code as a component to supporting     * */
+/* * the MNG and JNG file format in commercial products.  If you use this   * */
+/* * source code in a product, acknowledgment would be highly appreciated.  * */
+/* *                                                                        * */
+/* ************************************************************************** */
+/* *                                                                        * */
+/* * Parts of this software have been adapted from the libpng package.      * */
+/* * Although this library supports all features from the PNG specification * */
+/* * (as MNG descends from it) it does not require the libpng package.      * */
+/* * It does require the zlib library and optionally the IJG jpeg library,  * */
+/* * and/or the "little-cms" library by Marti Maria (depending on the       * */
+/* * inclusion of support for JNG and Full-Color-Management respectively.   * */
+/* *                                                                        * */
+/* * This library's function is primarily to read and display MNG           * */
+/* * animations. It is not meant as a full-featured image-editing           * */
+/* * component! It does however offer creation and editing functionality    * */
+/* * at the chunk level.                                                    * */
+/* * (future modifications may include some more support for creation       * */
+/* *  and or editing)                                                       * */
+/* *                                                                        * */
+/* ************************************************************************** */
+
+
+
+------------------------------------------------
 libpcap/LICENSE
 tcpdump/LICENSE
 ------------------------------------------------
@@ -11176,12 +11442,13 @@ THE SOFTWARE.
 libusb-compat/COPYING
 libusb/COPYING
 lvm2/COPYING.LIB
+python-gobject/COPYING
 ------------------------------------------------
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999
 
  Copyright (C) 1991, 1999 Free Software Foundation, Inc.
- 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+     51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
@@ -12358,6 +12625,71 @@ memstat/COPYRIGHT
  * Distribution subject to the terms of the GPL.
  *
  */
+
+
+
+------------------------------------------------
+minissdpd/LICENSE
+------------------------------------------------
+Copyright (c) 2007-2009, Thomas BERNARD
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * The name of the author may not be used to endorse or promote products
+          derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+
+
+
+------------------------------------------------
+miniupnpd/LICENSE
+------------------------------------------------
+MiniUPnPd
+Copyright (c) 2006-2011, Thomas BERNARD
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * The name of the author may not be used to endorse or promote products
+          derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
 
 
 
@@ -13700,6 +14032,45 @@ necessary.  Here is a sample; alter the names:
   Ty Coon, President of Vice
 
 That's all there is to it!
+
+
+
+------------------------------------------------
+protobuf/COPYING.txt
+------------------------------------------------
+Copyright 2008, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Code generated by the Protocol Buffer compiler is owned by the owner
+of the input file used when generating it.  This code is not
+standalone and requires a support library to be linked with it.  This
+support library is itself covered by the above license.
 
 
 
@@ -15108,6 +15479,42 @@ verity/LICENSE.makefile
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+------------------------------------------------
+webp/COPYING
+------------------------------------------------
+Copyright (c) 2010, Google Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+  * Neither the name of Google nor the names of its contributors may
+    be used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 
 
 
