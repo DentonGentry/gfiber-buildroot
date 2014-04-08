@@ -2,7 +2,8 @@ GOOGLE_MCASTCAPTURE_SITE=repo://vendor/google/mcastcapture
 GOOGLE_MCASTCAPTURE_DEPENDENCIES=google_fallocate openssl libcurl
 GOOGLE_MCASTCAPTURE_INSTALL_STAGING = YES
 
-HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest host-gmock
+HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest host-gmock host-openssl \
+										 host-libcurl
 
 define GOOGLE_MCASTCAPTURE_BUILD_CMDS
         TARGET=$(TARGET_CROSS) FALLOCATE_GLIBC_MISSING=yes $(MAKE) -C $(@D)
