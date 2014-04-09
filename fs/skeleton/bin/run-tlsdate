@@ -15,8 +15,8 @@
 # millisecond level accuracy for hours at a time.  So let's use very long
 # delays between syncs.
 
-MAX_ADJUST_SECS=172800    # max seconds between clock adjusts, once synced
-ADJUST_BACKOFF_FACTOR=4   # multiply backoff timer by up to this much
+MAX_ADJUST_SECS=10800     # max seconds between clock adjusts, once synced
+ADJUST_BACKOFF_FACTOR=3   # multiply backoff timer by up to this much
 
 DEFAULT_NTP_SERVERS="
     time1.google.com
@@ -100,8 +100,7 @@ while :; do
   echo "clockspeed adjustment:" >&2
   ntpserver=$(choose_ntp_server) || continue
   echo "using ntp server: $ntpserver" >&2
-  sntpclock "$ntpserver" | clockview
-  sntpclock "$ntpserver" >/tmp/clockspeed/adjust
+  sntpclock "$ntpserver" | tee /tmp/clockspeed/adjust | clockview
   
   MAX_DELAY=$(($CUR_DELAY * $ADJUST_BACKOFF_FACTOR))
   [ "$MAX_DELAY" -gt "$MAX_ADJUST_SECS" ] && MAX_DELAY="$MAX_ADJUST_SECS"

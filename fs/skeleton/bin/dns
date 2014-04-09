@@ -1,14 +1,31 @@
 #!/usr/bin/python -S
 # Prints one of the IP addresses of each of the hostnames given on the
 # command line.  If no arguments are given, returns nonzero.
+# Only prints addresses that have an active IP route to them.
+import errno
 import socket
 import sys
+
+TEST_PORT = 123
 
 ok = 0
 for i in sys.argv[1:]:
   try:
-    print socket.gethostbyname(i)
-    ok = 1
-  except socket.error:
-    pass
+    ailist = socket.getaddrinfo(i, TEST_PORT,
+                                socket.AF_UNSPEC, socket.SOCK_DGRAM)
+  except socket.error as e:
+    sys.stderr.write('%s: %r: %s\n' % (sys.argv[0], i, e))
+  else:
+    for family, _, _, _, addr in ailist:
+      s = socket.socket(family, socket.SOCK_DGRAM)
+      try:
+        # Datagram sockets don't actually "connect" here.  This just
+        # tests whether we have a route that can handle it.
+        s.connect(addr)
+      except socket.error as e:
+        if e.errno != errno.ENETUNREACH:
+          sys.stderr.write('%s: %r: %s\n' % (sys.argv[0], addr, e))
+      else:
+        print addr[0]
+        ok = 1
 sys.exit(0 if ok else 1)
