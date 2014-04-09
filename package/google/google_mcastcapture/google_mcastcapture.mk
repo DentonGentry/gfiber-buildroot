@@ -5,51 +5,39 @@ HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest host-gmock host-openssl \
 	host-libcurl
 
 define GOOGLE_MCASTCAPTURE_BUILD_CMDS
-	TARGET=$(TARGET_CROSS) FALLOCATE_GLIBC_MISSING=yes $(MAKE) -C $(@D)
+	TARGET=$(TARGET_CROSS) \
+	FALLOCATE_GLIBC_MISSING=yes \
+	$(MAKE) -C $(@D)
 endef
 
 define HOST_GOOGLE_MCASTCAPTURE_BUILD_CMDS
 	LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib:$(HOST_DIR)/lib:$(LD_LIBRARY_PATH) \
-	HOSTDIR=$(HOST_DIR) $(HOST_MAKE_ENV) $(MAKE) -C $(@D)
+	HOSTDIR=$(HOST_DIR) \
+	$(HOST_MAKE_ENV) \
+	$(MAKE) -C $(@D)
 endef
 
 define GOOGLE_MCASTCAPTURE_INSTALL_STAGING_CMDS
-	mkdir -p $(STAGING_DIR)/usr/include/pts_index
-	$(INSTALL) -D -m 0444 $(@D)/pts_index/index_file.h \
-	  $(STAGING_DIR)/usr/include/pts_index
-	$(INSTALL) -D -m 0444 $(@D)/pts_index/verify_index.h \
-	  $(STAGING_DIR)/usr/include/pts_index
-	$(INSTALL) -D -m 0444 $(@D)/pts_index/pts_indexer.h \
-	  $(STAGING_DIR)/usr/include/pts_index
-	mkdir -p $(STAGING_DIR)/app/sage/lib
-	$(INSTALL) -D -m 0755 $(@D)/pts_index/libptsindex.so \
-	  $(STAGING_DIR)/app/sage/lib
+	TARGET=$(TARGET_CROSS) \
+	FALLOCATE_GLIBC_MISSING=yes \
+	STAGING_DIR=$(STAGING_DIR) \
+	TARGET_DIR=$(TARGET_DIR) \
+	$(MAKE) -C $(@D) install_staging
 endef
 
 define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/sagesrv \
-	  $(TARGET_DIR)/app/sage/sagesrv
-	$(INSTALL) -D -m 0755 $(@D)/media_pull_server/libtxsrv.so \
-	  $(TARGET_DIR)/app/sage/lib/libtxsrv.so
-	$(INSTALL) -D -m 0755 $(@D)/media_push_server/libstreamer.so \
-	  $(TARGET_DIR)/app/sage/lib/libstreamer.so
-	$(INSTALL) -D -m 0755 $(@D)/media_push_client/libpushclient.so \
-	  $(TARGET_DIR)/app/sage/lib/libpushclient.so
-	$(INSTALL) -D -m 0755 $(@D)/media_push_client/pushclientcli \
-	  $(TARGET_DIR)/app/sage/pushclientcli
-	$(INSTALL) -D -m 0755 $(@D)/pts_index/libptsindex.so \
-	  $(TARGET_DIR)/app/sage/lib/libptsindex.so
-	$(INSTALL) -D -m 0755 $(@D)/tv_format/libtvformat.so \
-	  $(TARGET_DIR)/app/sage/lib/libtvformat.so
-	$(INSTALL) -D -m 0755 $(@D)/ads/libads.so \
-	  $(TARGET_DIR)/app/sage/lib/libads.so
-	test ! -f $(@D)/adloader || $(INSTALL) -D -m 0755 \
-	  $(@D)/adloader $(TARGET_DIR)/app/sage/adloader
+	TARGET=$(TARGET_CROSS) \
+	FALLOCATE_GLIBC_MISSING=yes \
+	STAGING_DIR=$(STAGING_DIR) \
+	TARGET_DIR=$(TARGET_DIR) \
+	$(MAKE) -C $(@D) install_target
 endef
 
 define HOST_GOOGLE_MCASTCAPTURE_TEST_CMDS
 	LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib:$(HOST_DIR)/lib:$(LD_LIBRARY_PATH) \
-	HOSTDIR=$(HOST_DIR) $(HOST_MAKE_ENV) $(MAKE) -C $(@D) test
+	HOSTDIR=$(HOST_DIR) \
+	$(HOST_MAKE_ENV) \
+	$(MAKE) -C $(@D) test
 endef
 
 $(eval $(call GENTARGETS))
