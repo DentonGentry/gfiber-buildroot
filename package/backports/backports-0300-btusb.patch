@@ -1,23 +1,85 @@
-From 1ab9dbcce1a8261cc68b0fc3d471b323817653ba Mon Sep 17 00:00:00 2001
-From: Petri Gynther <pgynther@google.com>
-Date: Mon, 10 Mar 2014 16:50:53 -0700
-Subject: [PATCH 7/7] Load bcm20702 bluetooth firmware automatically when
- needed.
-
----
- drivers/bluetooth/btusb.c | 124 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 124 insertions(+)
-
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index 0141e80..97fe67a 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
-@@ -1380,6 +1380,127 @@ exit_mfg_deactivate:
+@@ -24,6 +24,8 @@
+ #include <linux/module.h>
+ #include <linux/usb.h>
+ #include <linux/firmware.h>
++#include <linux/kernel.h>
++#include <linux/ctype.h>
+ 
+ #include <net/bluetooth/bluetooth.h>
+ #include <net/bluetooth/hci_core.h>
+@@ -35,6 +37,7 @@
+ static bool ignore_sniffer;
+ static bool disable_scofix;
+ static bool force_scofix;
++static char *bdaddr_base;
+ 
+ static bool reset = 1;
+ 
+@@ -49,6 +52,7 @@
+ #define BTUSB_WRONG_SCO_MTU	0x40
+ #define BTUSB_ATH3012		0x80
+ #define BTUSB_INTEL		0x100
++#define BTUSB_BCM20702_PATCHRAM	0x200
+ 
+ static const struct usb_device_id btusb_table[] = {
+ 	/* Generic Bluetooth USB device */
+@@ -106,6 +110,7 @@
+ 	{ USB_DEVICE(0x0b05, 0x17b5) },
+ 	{ USB_DEVICE(0x0b05, 0x17cb) },
+ 	{ USB_DEVICE(0x413c, 0x8197) },
++	{ USB_DEVICE(0x0a5c, 0x22be), .driver_info = BTUSB_BCM20702_PATCHRAM },
+ 
+ 	/* Foxconn - Hon Hai */
+ 	{ USB_VENDOR_AND_INTERFACE_INFO(0x0489, 0xff, 0x01, 0x01) },
+@@ -1380,6 +1385,218 @@
  	return 0;
  }
  
++static int bachk(const char *str)
++{
++	if (!str)
++		return -1;
++
++	if (strlen(str) != 17)
++		return -1;
++
++	while (*str) {
++		if (!isxdigit(*str++))
++			return -1;
++
++		if (!isxdigit(*str++))
++			return -1;
++
++		if (*str == 0)
++			break;
++
++		if (*str++ != ':')
++			return -1;
++	}
++
++	return 0;
++}
++
++static int str2ba(const char *str, bdaddr_t *ba)
++{
++	int i;
++
++	if (bachk(str) < 0) {
++		memset(ba, 0, sizeof(*ba));
++		return -1;
++	}
++
++	for (i = 5; i >= 0; i--, str += 3)
++		ba->b[i] = simple_strtol(str, NULL, 16);
++
++	return 0;
++}
++
 +static int btusb_setup_bcm20702(struct hci_dev *hdev)
 +{
++	const char *fw_name = "brcm/BCM20702.hcd";
 +	const struct firmware *fw;
 +	const u8 *fw_ptr;
 +	size_t fw_size;
@@ -26,12 +88,15 @@ index 0141e80..97fe67a 100644
 +	u16 opcode;
 +	struct sk_buff *skb;
 +	struct hci_rp_read_local_version *ver;
++	bdaddr_t addr;
 +	long ret;
 +
-+	ret = request_firmware(&fw, "brcm/BCM20702.hcd", &hdev->dev);
++	ret = request_firmware(&fw, fw_name, &hdev->dev);
 +	if (ret < 0) {
-+		BT_ERR("%s: BCM20702 FW request failed", hdev->name);
-+		return ret;
++		BT_INFO("%s: BCM20702: patch %s not found", hdev->name,
++			fw_name);
++		ret = 0;
++		goto get_fw_ver;
 +	}
 +
 +	/* Reset */
@@ -39,7 +104,7 @@ index 0141e80..97fe67a 100644
 +	if (IS_ERR(skb)) {
 +		ret = PTR_ERR(skb);
 +		BT_ERR("%s: HCI_OP_RESET failed (%ld)", hdev->name, ret);
-+		goto failed;
++		goto reset_fw;
 +	}
 +	kfree_skb(skb);
 +
@@ -50,11 +115,19 @@ index 0141e80..97fe67a 100644
 +		ret = PTR_ERR(skb);
 +		BT_ERR("%s: HCI_OP_READ_LOCAL_VERSION failed (%ld)",
 +			hdev->name, ret);
-+		goto failed;
++		goto reset_fw;
++	}
++
++	if (skb->len != sizeof(*ver)) {
++		BT_ERR("%s: HCI_OP_READ_LOCAL_VERSION event length mismatch",
++			hdev->name);
++		kfree_skb(skb);
++		ret = -EIO;
++		goto reset_fw;
 +	}
 +
 +	ver = (struct hci_rp_read_local_version *) skb->data;
-+	BT_INFO("%s: BCM20702 FW hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
++	BT_INFO("%s: BCM20702: patching hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
 +		"lmp_subver=%04x", hdev->name, ver->hci_ver, ver->hci_rev,
 +		ver->lmp_ver, ver->lmp_subver);
 +	kfree_skb(skb);
@@ -63,9 +136,9 @@ index 0141e80..97fe67a 100644
 +	skb = __hci_cmd_sync(hdev, 0xfc2e, 0, NULL, HCI_INIT_TIMEOUT);
 +	if (IS_ERR(skb)) {
 +		ret = PTR_ERR(skb);
-+		BT_ERR("%s: BCM20702 FW Download Minidrv cmd failed (%ld)",
++		BT_ERR("%s: BCM20702: Download Minidrv command failed (%ld)",
 +			hdev->name, ret);
-+		goto failed;
++		goto reset_fw;
 +	}
 +	kfree_skb(skb);
 +
@@ -81,9 +154,10 @@ index 0141e80..97fe67a 100644
 +		fw_size -= sizeof(*cmd);
 +
 +		if (fw_size < cmd->plen) {
-+			BT_ERR("%s: BCM20702 FW file is corrupted", hdev->name);
++			BT_ERR("%s: BCM20702: patch %s is corrupted",
++				hdev->name, fw_name);
 +			ret = -EINVAL;
-+			goto failed;
++			goto reset_fw;
 +		}
 +
 +		cmd_param = fw_ptr;
@@ -96,9 +170,9 @@ index 0141e80..97fe67a 100644
 +				     HCI_INIT_TIMEOUT);
 +		if (IS_ERR(skb)) {
 +			ret = PTR_ERR(skb);
-+			BT_ERR("%s: BCM20702 FW patch cmd 0x%04x failed (%ld)",
++			BT_ERR("%s: BCM20702: patch command %04x failed (%ld)",
 +				hdev->name, opcode, ret);
-+			goto failed;
++			goto reset_fw;
 +		}
 +		kfree_skb(skb);
 +	}
@@ -106,7 +180,7 @@ index 0141e80..97fe67a 100644
 +	/* 250 msec delay after Launch Ram completes */
 +	msleep(250);
 +
-+failed:
++reset_fw:
 +	/* Reset */
 +	skb = __hci_cmd_sync(hdev, HCI_OP_RESET, 0, NULL, HCI_INIT_TIMEOUT);
 +	if (IS_ERR(skb)) {
@@ -116,6 +190,7 @@ index 0141e80..97fe67a 100644
 +	}
 +	kfree_skb(skb);
 +
++get_fw_ver:
 +	/* Read Local Version Info */
 +	skb = __hci_cmd_sync(hdev, HCI_OP_READ_LOCAL_VERSION, 0, NULL,
 +			     HCI_INIT_TIMEOUT);
@@ -126,30 +201,74 @@ index 0141e80..97fe67a 100644
 +		goto done;
 +	}
 +
++	if (skb->len != sizeof(*ver)) {
++		BT_ERR("%s: HCI_OP_READ_LOCAL_VERSION event length mismatch",
++			hdev->name);
++		kfree_skb(skb);
++		ret = -EIO;
++		goto done;
++	}
++
 +	ver = (struct hci_rp_read_local_version *) skb->data;
-+	BT_INFO("%s: BCM20702 FW hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
++	BT_INFO("%s: BCM20702: firmware hci_ver=%02x hci_rev=%04x lmp_ver=%02x "
 +		"lmp_subver=%04x", hdev->name, ver->hci_ver, ver->hci_rev,
 +		ver->lmp_ver, ver->lmp_subver);
 +	kfree_skb(skb);
 +
++	if (!bdaddr_base)
++		goto done;
++
++	if (str2ba(bdaddr_base, &addr) < 0) {
++		BT_ERR("bdaddr_base is invalid");
++		goto done;
++	}
++
++	/* Set BD Address */
++	skb = __hci_cmd_sync(hdev, 0xfc01, sizeof(addr), &addr,
++			     HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: Set BD Address failed (%ld)", hdev->name, ret);
++		goto done;
++	}
++	kfree_skb(skb);
++
++	/* Reset */
++	skb = __hci_cmd_sync(hdev, HCI_OP_RESET, 0, NULL, HCI_INIT_TIMEOUT);
++	if (IS_ERR(skb)) {
++		ret = PTR_ERR(skb);
++		BT_ERR("%s: HCI_OP_RESET failed (%ld)", hdev->name, ret);
++		goto done;
++	}
++	kfree_skb(skb);
++
 +done:
-+	release_firmware(fw);
++	if (fw)
++		release_firmware(fw);
++
 +	return ret;
 +}
 +
  static int btusb_probe(struct usb_interface *intf,
  				const struct usb_device_id *id)
  {
-@@ -1490,6 +1611,9 @@ static int btusb_probe(struct usb_interface *intf,
- 		hdev->setup = btusb_setup_intel;
- 	}
+@@ -1485,6 +1702,9 @@
+ 	if (id->driver_info & BTUSB_BCM92035)
+ 		hdev->setup = btusb_setup_bcm92035;
  
-+	if (id->idVendor == 0x0a5c)
++	if (id->driver_info & BTUSB_BCM20702_PATCHRAM)
 +		hdev->setup = btusb_setup_bcm20702;
 +
- 	/* Interface numbers are hardcoded in the specification */
- 	data->isoc = usb_ifnum_to_if(data->udev, 1);
+ 	if (id->driver_info & BTUSB_INTEL) {
+ 		usb_enable_autosuspend(data->udev);
+ 		hdev->setup = btusb_setup_intel;
+@@ -1711,6 +1931,9 @@
+ module_param(force_scofix, bool, 0644);
+ MODULE_PARM_DESC(force_scofix, "Force fixup of wrong SCO buffers size");
  
--- 
-1.9.1.423.g4596e3a
-
++module_param(bdaddr_base, charp, 0644);
++MODULE_PARM_DESC(bdaddr_base, "Bluetooth adapter base address");
++
+ module_param(reset, bool, 0644);
+ MODULE_PARM_DESC(reset, "Send HCI reset command on initialization");
+ 
