@@ -11,6 +11,8 @@ else
   fi
 fi
 
+ip link set dev "$iface" up
+
 if [ "$uplink" = 1 ]; then
   if [ -z "$(ip -o -4 addr show $iface)" ]; then
     run-dhclient "$iface"
@@ -18,6 +20,4 @@ if [ "$uplink" = 1 ]; then
     # dhclient would do this if we had run it
     upload-logs-now
   fi
-else
-  ip link set dev "$iface" up
 fi
