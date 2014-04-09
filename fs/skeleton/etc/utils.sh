@@ -88,9 +88,7 @@ start_adloader() {
   if [ -e /app/sage/adloader ]; then
     VIDEO_UID=$(id -u video)
     VIDEO_GID=$(id -g video)
-    # TODO(irinams): call the alivemonitor after adding threadmon to adloader
-    #babysit 10 alivemonitor /tmp/adloaderalive 80 10 1200000 /app/sage/adloader \
-    babysit 10 /app/sage/adloader -U $VIDEO_UID -G $VIDEO_GID 2>&1 \
+    babysit 10 ionice -c 3 -n 7 /app/sage/adloader -U $VIDEO_UID -G $VIDEO_GID 2>&1 \
       | logos adsld 0 20000000 &
   fi
 }
