@@ -20,7 +20,7 @@ endef
 
 define BCM_MIRACAST_BUILD_CMDS
 	tar -czf $(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz -C $(BCM_DRIVERS_DIR) wifi/src
-	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) VERBOSE=y HAS_WIFI_BUILT=y NETAPP_WIFI_WPS=n NETAPP_DATABASE=n AARDVARK_DRIVER_VERSION=wifi WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz APPLIBS_TOP=$(@D) \
+	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) VERBOSE=y HAS_WIFI_BUILT=y NETAPP_WIFI_WPS=n NETAPP_SSDP=n NETAPP_ZEROCONF=n NETAPP_DATABASE=n AARDVARK_DRIVER_VERSION=wifi WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz APPLIBS_TOP=$(@D) \
 		-C $(@D)/common wfd_libs netapp
 endef
 
