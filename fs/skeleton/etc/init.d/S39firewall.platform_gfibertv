@@ -129,9 +129,14 @@ case "$1" in
       iptables -t nat -N acsrules-nat-postrouting
       iptables -t nat -A POSTROUTING -j acsrules-nat-postrouting
 
-      # these two are managed by miniupnpd, if running
-      ip46tables -N MINIUPNPD                   # managed by miniupnpd
-      iptables -t nat -N MINIUPNPD              # managed by miniupnpd
+      # these are managed by miniupnpd, if running
+      ip46tables -t filter -N MINIUPNPD
+      ip46tables -t filter -A FORWARD -i wan0 ! -o wan0 -j MINIUPNPD
+      ip46tables -t filter -A FORWARD -i wan0.2 ! -o wan0.2 -j MINIUPNPD
+
+      iptables -t nat -N MINIUPNPD
+      iptables -t nat -A PREROUTING -i wan0 -j MINIUPNPD
+      iptables -t nat -A PREROUTING -i wan0.2 -j MINIUPNPD
 
       # nat
       iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
