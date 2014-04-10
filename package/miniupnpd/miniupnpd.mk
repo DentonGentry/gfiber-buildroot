@@ -9,7 +9,7 @@ MINIUPNPD_SITE_METHOD=null
 MINIUPNPD_DEPENDENCIES = iptables libnfnetlink
 
 MINIUPNPD_ENV = \
-	CONFIG_OPTIONS="--ipv6 --strict" \
+	CONFIG_OPTIONS="--ipv6" \
 	CC="$(TARGET_CC)" \
 	STRIP="$(TARGET_STRIP)" \
 	ARCH=$(BR2_ARCH) \
