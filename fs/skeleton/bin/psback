@@ -4,7 +4,7 @@ pid=$PPID
 out=
 while [ "$pid" -gt 0 ]; do
   read ppid cmd <<-EOF
-	$(ps -o ppid=,comm= $pid)
+        $(ps -o ppid= -o comm= $pid)
 	EOF
   out=$cmd.$out
   pid=$ppid
