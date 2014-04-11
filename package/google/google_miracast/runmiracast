@@ -1,0 +1,60 @@
+#!/bin/sh
+
+export MIRACAST_PID_FILE=/var/run/MiracastTester.pid
+export MIRACAST_LISTENER=/usr/local/bin/MiracastTester
+export MIRACAST_PLAYER=/app/client/miracast_player
+
+runpid()
+{
+    PIDFILE=$1
+    shift
+
+    PROG=$1
+    shift
+
+    $PROG $* &
+
+    PID=$!
+    echo $PID > $PIDFILE
+
+    wait $PID
+    RESULT=$?
+
+    rm $PIDFILE
+
+    return $RESULT
+}
+
+cleanup()
+{
+    if [ -f $MIRACAST_PID_FILE ] ; then
+        kill `cat $MIRACAST_PID_FILE`
+    fi
+    rm -f /tmp/miracast-listener
+}
+
+trap "cleanup" HUP INT TERM
+
+export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+export NETAPP_DEBUG=y
+
+watch-dir /tmp | while read LINE ; do
+    if [ "miracast-listener" = "$LINE" ] ; then
+        if [ -f /tmp/miracast-listener ] ; then
+            echo "Request to start miracast listener"
+            if [ -f $MIRACAST_PID_FILE ] ; then
+                echo "Listener already running"
+            else
+                wl radio on
+                ((runpid $MIRACAST_PID_FILE $MIRACAST_LISTENER $MIRACAST_PLAYER | logos miracast) ; rm -f /tmp/miracast-listener) &
+            fi
+        else
+            echo "Request to stop miracast listener"
+            if [ -f $MIRACAST_PID_FILE ] ; then
+                kill `cat $MIRACAST_PID_FILE`
+            else
+                echo "Listener is not running"
+            fi
+        fi
+    fi
+done

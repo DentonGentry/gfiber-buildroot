@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Only work son TV boxes
+if ! is-tv-box; then
+	exit 0
+fi
+
+. /etc/utils.sh
+
+case "$1" in
+  start)
+      /app/client/runmiracast 2>&1 | logos miracast &
+    ;;
+  stop)
+    pkillwait -x runmiracast
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

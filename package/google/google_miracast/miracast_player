@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Before starting miracast, have to killl miniclient
+MINIPID=`cat /var/run/miniclient.pid`
+
+echo "runmiracast invoked: $*"
+
+echo "miracast $*" > /tmp/runapp
+
+/etc/init.d/S99miniclient restart

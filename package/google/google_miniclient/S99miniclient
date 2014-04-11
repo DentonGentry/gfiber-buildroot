@@ -15,6 +15,7 @@ case "$1" in
     ) &
     ;;
   stop)
+    rm -f /tmp/miracast-listener
     pkillwait -x startupvideo  # if it's running, prevents miniclient from starting up
     pkillwait -x runminiclient
     pkillwait -x miniclient
