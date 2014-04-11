@@ -19,7 +19,7 @@ run_dhclient() {
       -pf "$pidfile" \
       -lf "$leasefile" \
       -cf "$conffile" \
-      2>&1 | logos "dhclient$suffix" &
+      2>&1 | logos "dhclient$suffix.$iface" &
 }
 
 run_dhclient "" ""
