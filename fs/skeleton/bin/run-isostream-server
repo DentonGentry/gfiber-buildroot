@@ -1,0 +1,2 @@
+#!/bin/selfclean sh
+isostream "$@" 2>&1 | logos isostream-server

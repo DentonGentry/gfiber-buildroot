@@ -26,6 +26,7 @@ case "$1" in
     pkillwait -x cwmpd
     pkillwait -f 'alivemonitor.*cwmpd'
     pkillwait -x cwmp_monitor
+    pkillwait -x isostream
     ;;
   restart)
     $0 stop; $0 start
