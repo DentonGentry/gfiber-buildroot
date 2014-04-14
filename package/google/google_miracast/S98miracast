@@ -12,6 +12,7 @@ case "$1" in
       /app/client/runmiracast 2>&1 | logos miracast &
     ;;
   stop)
+    pkillwait -x StandaloneWFDPlayer
     pkillwait -x runmiracast
     ;;
   restart)

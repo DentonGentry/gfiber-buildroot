@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Forces activity manager to switch to external application,
+# regardless of which state it's in, and/or whether miracast
+# session is in progress or mirroring screen is on.
+#
+# The caller is responsible for creating the proper /tmp/runapp
+# file for runminiclient to pick up.
+
+/etc/init.d/S98miracast stop
+/etc/init.d/S99miniclient restart
