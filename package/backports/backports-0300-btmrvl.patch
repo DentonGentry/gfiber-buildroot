@@ -1,0 +1,121 @@
+--- a/drivers/bluetooth/btmrvl_main.c
++++ b/drivers/bluetooth/btmrvl_main.c
+@@ -20,6 +20,8 @@
+ 
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/kernel.h>
++#include <linux/ctype.h>
+ #include <net/bluetooth/bluetooth.h>
+ #include <net/bluetooth/hci_core.h>
+ 
+@@ -28,6 +30,8 @@
+ 
+ #define VERSION "1.0"
+ 
++static char *bdaddr_base;
++
+ /*
+  * This function is called by interface specific interrupt handler.
+  * It updates Power Save & Host Sleep states, and wakes up the main
+@@ -263,6 +267,81 @@
+ }
+ EXPORT_SYMBOL_GPL(btmrvl_enable_hs);
+ 
++static int bachk(const char *str)
++{
++	if (!str)
++		return -1;
++
++	if (strlen(str) != 17)
++		return -1;
++
++	while (*str) {
++		if (!isxdigit(*str++))
++			return -1;
++
++		if (!isxdigit(*str++))
++			return -1;
++
++		if (*str == 0)
++			break;
++
++		if (*str++ != ':')
++			return -1;
++	}
++
++	return 0;
++}
++
++static int str2ba(const char *str, bdaddr_t *ba)
++{
++	int i;
++
++	if (bachk(str) < 0) {
++		memset(ba, 0, sizeof(*ba));
++		return -1;
++	}
++
++	for (i = 5; i >= 0; i--, str += 3)
++		ba->b[i] = simple_strtol(str, NULL, 16);
++
++	return 0;
++}
++
++typedef struct {
++	__u8 parameter_id;
++	__u8 bdaddr_len;
++	bdaddr_t bdaddr;
++} __packed btmrvl_write_bdaddr_t;
++
++static int btmrvl_set_bdaddr(struct btmrvl_private *priv)
++{
++	btmrvl_write_bdaddr_t param;
++	int ret;
++
++	if (!bdaddr_base)
++		return 0;
++
++	param.parameter_id = 0xfe;
++	param.bdaddr_len = sizeof(param.bdaddr);
++
++	if (str2ba(bdaddr_base, &param.bdaddr) < 0) {
++		BT_ERR("bdaddr_base is invalid");
++		return -EINVAL;
++	}
++
++	/* Set BD Address */
++	ret = btmrvl_send_sync_cmd(priv, 0xfc22, &param, sizeof(param));
++	if (ret)
++		BT_ERR("Set BD Address command failed");
++
++	/* Reset */
++	ret = btmrvl_send_sync_cmd(priv, HCI_OP_RESET, NULL, 0);
++	if (ret)
++		BT_ERR("HCI_OP_RESET command failed");
++
++	return ret;
++}
++
+ int btmrvl_prepare_command(struct btmrvl_private *priv)
+ {
+ 	int ret = 0;
+@@ -495,6 +574,8 @@
+ 	priv->btmrvl_dev.gpio_gap = 0xffff;
+ 	btmrvl_send_hscfg_cmd(priv);
+ 
++	btmrvl_set_bdaddr(priv);
++
+ 	return 0;
+ }
+ 
+@@ -687,6 +768,9 @@
+ }
+ EXPORT_SYMBOL_GPL(btmrvl_remove_card);
+ 
++module_param(bdaddr_base, charp, 0644);
++MODULE_PARM_DESC(bdaddr_base, "Bluetooth adapter base address");
++
+ MODULE_AUTHOR("Marvell International Ltd.");
+ MODULE_DESCRIPTION("Marvell Bluetooth driver ver " VERSION);
+ MODULE_VERSION(VERSION);
