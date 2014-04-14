@@ -13,7 +13,7 @@ config fastforward pptp
 
 config logging
 	option file	-
-	option command	1
+	option command	0
 	option error	1
-	option warning	1
+	option warning	0
 	option info	0
