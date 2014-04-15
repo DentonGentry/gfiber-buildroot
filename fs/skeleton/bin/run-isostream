@@ -1,0 +1,33 @@
+#!/bin/selfclean sh
+
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <remoteip | --use-storage-box> <isostream options...>" >&2
+  exit 99
+fi
+
+firstword() {
+  read x junk
+  echo "$x"
+}
+
+
+(
+  remote=$1
+  shift
+
+  if [ "$remote" = "--use-storage-box" ]; then
+    echo "$0: use-storage-box: trying to find a server." >&2
+    remote=
+    while [ -z "$remote" ]; do
+      remote=$(find-servers | firstword)
+      if [ -z "$remote" ]; then
+        echo "$0: find-servers returned no answers.  Waiting..." >&2
+        sleep 1
+      fi
+    done
+    echo "$0: use-storage-box: found a server: $remote" >&2
+  fi
+
+  echo "Starting: isostream $* '$remote'"
+  exec isostream "$@" "$remote"
+) 2>&1 | logos isostream
