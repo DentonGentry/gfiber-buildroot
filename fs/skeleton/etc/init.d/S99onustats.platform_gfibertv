@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Only run this on the RG.
+platform=$(cat /etc/platform)
+if ! is-network-box; then
+  exit 0
+fi
+
+case "$1" in
+  start)
+    mkdir -p /tmp/cwmp/monitoring/onu
+    babysit 60 statcatcher -i wan0 -f /tmp/cwmp/monitoring/onu/onustats.json 2>&1 | logos statcatcher &
+    ;;
+  stop)
+    pkillwait statcatcher
+    ;;
+  restart|reload)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
