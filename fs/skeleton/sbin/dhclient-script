@@ -59,6 +59,16 @@ nameserver 8.8.8.8
 nameserver 8.8.4.4
 "
 
+# Only populate ipv6 nameservers for the GFLT* platforms since they don't suffer
+# from the crash bug noted below.
+plat=$(cat /etc/platform)
+if startswith "$plat" "GFLT"; then
+  internal_resolv_conf=${internal_resolv_conf}"
+nameserver 2001:4860:4860::8888
+nameserver 2001:4860:4860::8844
+"
+fi
+
 merge_resolv_conf() {
     # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
     # and then also add /tmp/resolv.conf.dhclient6
