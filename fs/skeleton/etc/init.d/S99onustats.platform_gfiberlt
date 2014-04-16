@@ -8,7 +8,8 @@ fi
 
 case "$1" in
   start)
-    babysit 60 statpitcher -i pon0 -s "$(serial)" 2>&1 | logos statpitcher &
+    babysit 60 statpitcher -i pon0 -s "$(serial)" \
+      -a /tmp/cwmp/acscontact 2>&1 | logos statpitcher &
     ;;
   stop)
     pkillwait statpitcher
