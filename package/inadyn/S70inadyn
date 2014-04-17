@@ -3,31 +3,53 @@
 # Start & stop the inadyn client
 #
 
-CONFIG=/etc/inadyn.conf
-VR_INADYN=/var/run/inadyn
+mounts() {
+  mkdir -p /tmp/inadyn
+  cd /chroot/inadyn && \
+    mount -o bind /usr/lib usr/lib && \
+    mount -o bind /usr/sbin usr/sbin && \
+    mount -o bind /lib lib && \
+    mount -o bind /etc etc && \
+    mount -t tmpfs -o size=1048576 none tmp
+}
 
-# check if CONFIG exists, print message & exit if it doesn't
-[ ! -f $CONFIG ] && ( echo "The config file "$CONFIG" is missing...exiting now." && exit 2 )
+umounts() {
+    umount /chroot/inadyn/usr/lib
+    umount /chroot/inadyn/lib
+    umount /chroot/inadyn/tmp
+}
 
-# check if VR_INADYN exists, create it if not
-[ ! -d $VR_INADYN ] && mkdir -p $VR_INADYN
+start() {
+    cd /chroot/inadyn
+    for conf in tmp/configs/*.conf; do
+      if [ -e "$conf" ]; then
+        babysit 120 chroot /chroot/inadyn \
+          inadyn --input_file /"$conf" --cachefile /tmp --pidfile /tmp/inadyn.pid \
+          --change_persona nobody:nogroup 2>&1 | logos dyndns &
+      fi
+    done
+}
+
+stop() {
+    pkillwait -x inadyn
+}
 
 case "$1" in
         start)
-                echo "Starting inadyn."
-                start-stop-daemon -S -x /usr/sbin/inadyn
+                mounts
+                start
                 ;;
         stop)
-                echo  "Stopping inadyn."
-                start-stop-daemon -q -K -x /usr/sbin/inadyn
-                rm -f /var/run/inadyn/inadyn.pid
+                stop
+                umounts
                 ;;
         restart)
-                "$0" stop
-                "$0" start
+                # Don't unmount and remount
+                stop
+                start
                 ;;
         *)
-                echo $"Usage: $0 {start|stop|restart}"
+                echo "Usage: $0 {start|stop|restart}"
                 exit 1
 esac
 

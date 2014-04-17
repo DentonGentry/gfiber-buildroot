@@ -87,6 +87,12 @@ merge_resolv_conf() {
         log_file_contents /tmp/resolv.conf.external
         atomic /tmp/resolv.conf "$internal_resolv_conf"
         log_file_contents /tmp/resolv.conf
+        for conf in /chroot/*/tmp; do
+          if [ -d "$conf" ]; then
+            atomic "$conf/resolv.conf" "$internal_resolv_conf"
+            echo "Updated $conf/resolv.conf"
+          fi
+        done
     fi
 }
 
