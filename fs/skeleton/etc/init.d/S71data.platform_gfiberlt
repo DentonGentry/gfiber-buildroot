@@ -4,24 +4,32 @@ if ! runnable glaser; then
   # TODO(apenwarr): /etc should be readonly.
   echo "Switching to GPON mode."
   serial=$(serial)
+  mkdir -p /tmp/xml_params
   if [ ! -z "$serial" ]; then
-    # simple py script to replace the placeholder serial with the real serial.
-    subst_script="
-import sys
-import re
-sys.stdout.write(re.sub(r'SERIALXXYYZZ', '$serial', sys.stdin.read()))
-"
-    # Do the replace.
+    # Replace the placeholder serial number with the real serial number.
     cat /etc/xml_params/gpon_xml_cfg_file.xml | \
-      python -c "$subst_script" >/etc/xml_params/pon_xml_cfg_file.xml
+      sed -e "s/SERIALXXYYZZ/$serial/" >/tmp/xml_params/pon_xml_cfg_file.xml
   else
-  cp -sf /etc/xml_params/gpon_xml_cfg_file.xml \
-         /etc/xml_params/pon_xml_cfg_file.xml
+    cp -f /etc/xml_params/gpon_xml_cfg_file.xml \
+      /tmp/xml_params/pon_xml_cfg_file.xml
   fi
-  cp -sf /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
-    /etc/xml_params/pon_type_xml_cfg_file.xml
-  cp -sf /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
-         /etc/xml_params/tpm_xml_cfg_file.xml
+  cp -f /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
+    /tmp/xml_params/pon_type_xml_cfg_file.xml
+  cp -f /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
+    /tmp/xml_params/tpm_xml_cfg_file.xml
+
+  version=$(cat /etc/version)
+  # Strip off the leading gfltxxx- (leaves the part after the dash)
+  # and limit the length of version to 14 characters.
+  version=${version#*-}
+  version=$(echo "$version" | cut -c 1-14)
+  if [ -n "$version" ]; then
+    cat /etc/xml_params/omci_xml_cfg_file.tmpl.xml | sed -e "s/TR69CONTROL/$version/" \
+      >/tmp/xml_params/omci_xml_cfg_file.xml
+  else
+    cp -f /etc/xml_params/omci_xml_cfg_file.tmpl.xml \
+      /tmp/xml_params/omci_xml_cfg_file.xml
+  fi
 fi
 
 case "$1" in
