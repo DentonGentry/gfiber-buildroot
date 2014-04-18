@@ -128,7 +128,7 @@ if [ -f $file ]; then
       continue
     fi
 
-    ip6tables -A acsrules-filter-forward -p $proto -s $source -d $dest --sport $sport --dport $dport -j ACCEPT -m comment --comment "$comment"
+    ip6tables -A acsrules-filter-forward -p "$protocol" -s "$source" -d "$dest" --sport "$sport" --dport "$dport" -j ACCEPT -m comment --comment "$comment"
   done
 fi
 
