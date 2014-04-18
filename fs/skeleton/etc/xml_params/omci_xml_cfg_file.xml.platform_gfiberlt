@@ -112,7 +112,7 @@
         <me name="ONU-G" instance="0">
             <attrib enabled="false"  name="vendorId" value="IAMB" />
             <!-- "version" here shows in ALU as 'version-number and 'eqpt-ver-num' -->
-            <attrib enabled="true"  name="version" value="SWVERTODO" />
+            <attrib enabled="true"  name="version" value="GFLT110" />
             <attrib enabled="false"  name="trafficOption" value="1" />
             <attrib enabled="false" name="onuSurvivalTime"  value="210" />
         </me>

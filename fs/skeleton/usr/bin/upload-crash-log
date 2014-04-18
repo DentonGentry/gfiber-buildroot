@@ -70,6 +70,14 @@ def NvramData():
   return ['serial=' + TryReadPipe(['/bin/serial']).rstrip()]
 
 
+def ModelName():
+  try:
+    model = open('/etc/platform').read().rstrip()
+    return ['model=' + model]
+  except IOError:
+    return None
+
+
 def Marker(s):
   """Print the given marker string to the dmesg log."""
   open('/dev/kmsg', 'w').write('<7>%s\n' % s)
@@ -126,6 +134,9 @@ def main():
   keys = []
   for iface in interfaces:
     keys += IfconfigData(iface)
+  model = ModelName()
+  if model:
+    keys += model
   keys = set(keys + NvramData())
   os.environ['PATH'] += ':.'  # make sure PWD is searched for upload-logs
 
