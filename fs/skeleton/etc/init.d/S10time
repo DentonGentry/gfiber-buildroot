@@ -2,30 +2,62 @@
 ANTIROLLBACK=/config/ar_clock
 TIME_FILE=/tmp/time.synced
 
+is_number() {
+  [ "$1" -eq "$1" ] 2>/dev/null
+}
+
 case "$1" in
   start)
-    echo "UTC" > /tmp/TZ
+    echo "UTC" >/tmp/TZ
 
-    if [ -s $ANTIROLLBACK ]; then
-        toolbox date +%s -s "$(cat $ANTIROLLBACK)"
+    # 4/18/2014 00:00:00 UTC
+    timeset=1397779200
+
+    if [ -f /etc/version ]; then
+      # image creation date
+      ts="$(date +%s -r /etc/version)"
+      echo "Image creation time: $ts"
+      if [ "$ts" -gt "$timeset" ]; then
+        timeset="$ts"
+      fi
     fi
 
-    toolbox dmesg | grep ' T: ' | (
-      lasttime=0
-      while IFS='[] ' read level uptime service version \
-                           timestamp humandate humantime ntpsync junk; do
-        if [ "$service" = "T:" ] && [ "$ntpsync" = "ntp=1" ]; then
-          lasttime=$timestamp
-        fi
-      done
-      if [ "$lasttime" -gt 0 ]; then
-        echo "Approximate time carried from last boot: $lasttime"
-        toolbox date +%s -s $lasttime
+    if [ -s $ANTIROLLBACK ]; then
+      # last saved antirollback time
+      ts="$(cat $ANTIROLLBACK)"
+      # convert from floating point to integer
+      ts="${ts%.*}"
+      echo "Antirollback time: $ts"
+      if is_number "$ts" && [ "$ts" -gt "$timeset" ]; then
+        timeset="$ts"
       fi
+    fi
+
+    lasttime=$(toolbox dmesg | grep ' T: ' | (
+        lasttime=0
+        while IFS='[] ' read level uptime service version \
+                             timestamp humandate humantime ntpsync junk; do
+          if [ "$service" = "T:" ] && [ "$ntpsync" = "ntp=1" ]; then
+            lasttime="$timestamp"
+          fi
+        done
+        echo "$lasttime"
+      )
+    )
+
+    if is_number "$lasttime" && [ "$lasttime" -gt 0 ]; then
+      echo "Approximate time carried from last boot: $lasttime"
+      if [ "$lasttime" -gt "$timeset" ]; then
+        timeset="$lasttime"
+      fi
+
       #TODO(irinams): create the TIME_FILE only when we have a way to approximate
       # how much time was spent during reboot to add it to to lasttime
       #echo >"TIME_FILE"
-    )
+    fi
+
+    echo "Setting time to $timeset"
+    toolbox date +%s -s "$timeset"
 
     (
       wait-until-created /tmp/ntp.synced
