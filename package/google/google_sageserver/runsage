@@ -101,6 +101,9 @@ echo "System memory: $memtotal kb" >&2
 if [ "$memtotal" -le 524288 ]; then
   # Mostly for mindspeed eval board which has only 512M
   HEAPSIZE=-Xmx300m
+elif is-tv-box; then
+  # Restrict JVM heap size for TV Boxes since 2.0 only has 512M for Linux
+  HEAPSIZE=-Xmx384m
 else
   HEAPSIZE=-Xmx512m
 fi
