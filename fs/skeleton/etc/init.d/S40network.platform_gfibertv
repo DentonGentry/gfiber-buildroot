@@ -107,9 +107,12 @@ case "$1" in
     elif is-storage-box; then
       brctl setbridgeprio br0 0x7990
     fi
-    [ -e /sys/class/net/eth0/address ] && \
-      ip link set br0 address \
-      $(cat /sys/class/net/eth0/address)
+    for i in lan0 eth0; do
+      [ -e /sys/class/net/$i/address ] && \
+        ip link set br0 address \
+        $(cat /sys/class/net/$i/address) && \
+        break
+    done
     echo "done"
     ip link set br0 up
     ip link set br0 up  # kernel 3.2.26 bug: fails the first time
