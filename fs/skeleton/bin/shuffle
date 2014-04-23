@@ -1,0 +1,14 @@
+#!/usr/bin/python -S
+# Prints out the command line arguments, one per line, in random order.
+# Note that if any arguments contain newlines, it will be impossible to
+# re-quote the output values in the same way as the input.
+import random
+import sys
+
+if not sys.argv[1:]:
+  sys.exit(1)
+else:
+  l = sys.argv[1:]
+  random.shuffle(l)
+  for i in l:
+    print i
