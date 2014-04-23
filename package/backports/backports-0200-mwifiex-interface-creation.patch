@@ -1,16 +1,18 @@
-From f4c493a9374f9809edea8fe6ca24fc943f139567 Mon Sep 17 00:00:00 2001
+From d1ab7c70044e6ba7d58a601daf6cf0ce1b34f108 Mon Sep 17 00:00:00 2001
 From: Tim Shepard <shep@alum.mit.edu>
 Date: Fri, 24 Jan 2014 03:06:54 -0500
-Subject: [PATCH] mwifiex: create an AP interface instead of STA interface.
+Subject: [PATCH 4/7] mwifiex: create an AP interface instead of STA interface.
 
 hostapd doesn't know how to do this automatically.
+---
+ drivers/net/wireless/mwifiex/main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---
 diff --git a/drivers/net/wireless/mwifiex/main.c b/drivers/net/wireless/mwifiex/main.c
-index 8bb8988..9d3d059 100644
+index bde7266..f388167 100644
 --- a/drivers/net/wireless/mwifiex/main.c
 +++ b/drivers/net/wireless/mwifiex/main.c
-@@ -474,11 +474,11 @@ static void mwifiex_fw_dpc(const struct firmware *firmware, void *context)
+@@ -475,11 +475,11 @@ static void mwifiex_fw_dpc(const struct firmware *firmware, void *context)
  	}
  
  	rtnl_lock();
@@ -26,3 +28,6 @@ index 8bb8988..9d3d059 100644
  		rtnl_unlock();
  		goto err_add_intf;
  	}
+-- 
+1.9.1.423.g4596e3a
+

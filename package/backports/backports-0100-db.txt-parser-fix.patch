@@ -1,7 +1,7 @@
-From a973d9abc0275f61ee57c30ccda3cae628834810 Mon Sep 17 00:00:00 2001
+From 3912c0f1a3dad8a098adab44b52e52ee3830b4be Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Tue, 7 Jan 2014 00:29:55 -0500
-Subject: [PATCH] genregdb.awk: db.txt actually doesn't include an antenna
+Subject: [PATCH 2/7] genregdb.awk: db.txt actually doesn't include an antenna
  gain parameter.
 
 The db.txt from the wireless-regdb.git project only includes (xx) or (xx mW)
@@ -10,14 +10,14 @@ antenna gain.  The code was previously parsing that value into the antenna
 gain slot and leaving maximum power set to zero, causing vastly reduced
 power levels.
 ---
- net/wireless/genregdb.awk |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ net/wireless/genregdb.awk | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/net/wireless/genregdb.awk b/net/wireless/genregdb.awk
-index 42ed274..1293cc8 100644
+index b35da8d..b0c9ec7 100644
 --- a/net/wireless/genregdb.awk
 +++ b/net/wireless/genregdb.awk
-@@ -63,14 +63,13 @@ active && /^[ \t]*\(/ {
+@@ -56,14 +56,13 @@ function parse_reg_rule()
  	end = $3
  	bw = $5
  	sub(/\),/, "", bw)
@@ -35,16 +35,16 @@ index 42ed274..1293cc8 100644
 +	units = $7
  	sub(/\)/, "", units)
  	sub(/,/, "", units)
- 	if (units == "mW") {
-@@ -83,7 +82,7 @@ active && /^[ \t]*\(/ {
+ 	dfs_cac = $9
+@@ -77,7 +76,7 @@ function parse_reg_rule()
  		} else if (power == 1000) {
  			power = 30
  		} else {
 -			print "Unknown power value in database!"
 +			printf("Unknown power value '%s' in database!\n", power)
  		}
- 	}
- 	flagstr = ""
+ 	} else {
+ 		dfs_cac = $8
 -- 
-1.7.9.dirty
+1.9.1.423.g4596e3a
 
