@@ -36,7 +36,7 @@ choose_ntp_server()
 do_tlsdate()
 {
   echo "trying host '$1'"
-  tlsdate -V \
+  tlsdate -V -v \
       --timewarp --leap \
       -C /etc/ssl/certs/ca-certificates.crt \
       -H "$1"

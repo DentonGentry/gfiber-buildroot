@@ -1,0 +1,46 @@
+From 69664246b593d4f891c034f89c575d147a0c71cb Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 23 Apr 2014 00:42:39 -0400
+Subject: [PATCH 2/2] tlsdate-helper: abort if time delay is too large.
+
+Such a large timeout could indicate tampering, but at the very least,
+it means we didn't set the time accurately.  So exit with an error code and
+let the caller try again later.
+---
+ src/tlsdate-helper.c | 4 ++++
+ src/tlsdate-helper.h | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/tlsdate-helper.c b/src/tlsdate-helper.c
+index 1086625..6df466d 100644
+--- a/src/tlsdate-helper.c
++++ b/src/tlsdate-helper.c
+@@ -1524,6 +1524,10 @@ main(int argc, char **argv)
+   rt_time_ms);
+ 
+   /* warning if the handshake took too long */
++  if (rt_time_ms > TLS_RTT_UNREASONABLE) {
++    die ("the TLS handshake took more than %d msecs - consider using a different " \
++      "server or run it again\n", TLS_RTT_UNREASONABLE);
++  }
+   if (rt_time_ms > TLS_RTT_THRESHOLD) {
+     verb ("V: the TLS handshake took more than %d msecs - consider using a different " \
+       "server or run it again\n", TLS_RTT_THRESHOLD);
+diff --git a/src/tlsdate-helper.h b/src/tlsdate-helper.h
+index 7d0d25f..60c22bd 100644
+--- a/src/tlsdate-helper.h
++++ b/src/tlsdate-helper.h
+@@ -80,6 +80,10 @@ int verbose_debug;
+ // (in msec), a warning is printed.
+ #define TLS_RTT_THRESHOLD      2000
+ 
++// After the duration of the TLS handshake exceeds this threshold
++// (in msec), we consider the operation to have failed.
++#define TLS_RTT_UNREASONABLE      30000
++
+ // RFC 5280 says...
+ // ub-common-name-length INTEGER ::= 64
+ #define MAX_CN_NAME_LENGTH 64
+-- 
+1.9.1.423.g4596e3a
+
