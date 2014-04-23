@@ -1,0 +1,257 @@
+From b1a68520b74e193477a7d90f41afe40e03e1a28b Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 23 Apr 2014 05:02:14 -0400
+Subject: [PATCH] HACK: fix compilation with 2.6.37 kernel
+
+---
+ backport-include/linux/compat.h         |  1 +
+ compat/compat-3.0.c                     |  3 +++
+ compat/compat-3.5.c                     |  2 +-
+ compat/compat-3.6.c                     |  2 ++
+ drivers/bluetooth/btmrvl_debugfs.c      | 12 +++---------
+ drivers/net/wireless/mwifiex/cfg80211.c |  4 ++--
+ drivers/net/wireless/mwifiex/main.c     |  2 +-
+ drivers/net/wireless/mwifiex/sta_cmd.c  |  4 ++--
+ drivers/net/wireless/mwifiex/uap_txrx.c |  2 +-
+ net/bluetooth/hci_core.c                | 12 ++++--------
+ net/bluetooth/hci_sysfs.c               |  2 +-
+ 11 files changed, 21 insertions(+), 25 deletions(-)
+
+diff --git a/backport-include/linux/compat.h b/backport-include/linux/compat.h
+index 07accd2..9c54608 100644
+--- a/backport-include/linux/compat.h
++++ b/backport-include/linux/compat.h
+@@ -3,6 +3,7 @@
+ 
+ #include_next <linux/compat.h>
+ #include <linux/version.h>
++#include <linux/time.h>
+ 
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
+ #ifdef CONFIG_X86_X32_ABI
+diff --git a/compat/compat-3.0.c b/compat/compat-3.0.c
+index 1bed6a6..3824d96 100644
+--- a/compat/compat-3.0.c
++++ b/compat/compat-3.0.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/compat.h>
+ #include <linux/if_ether.h>
++#include <linux/kernel.h>
+ 
+ int mac_pton(const char *s, u8 *mac)
+ {
+@@ -50,6 +51,7 @@ int f(const char __user *s, size_t count, unsigned int base, type *res)	\
+ }									\
+ EXPORT_SYMBOL_GPL(f)
+ 
++#if 0
+ kstrto_from_user(kstrtoull_from_user,	kstrtoull,	unsigned long long);
+ kstrto_from_user(kstrtoll_from_user,	kstrtoll,	long long);
+ kstrto_from_user(kstrtoul_from_user,	kstrtoul,	unsigned long);
+@@ -60,6 +62,7 @@ kstrto_from_user(kstrtou16_from_user,	kstrtou16,	u16);
+ kstrto_from_user(kstrtos16_from_user,	kstrtos16,	s16);
+ kstrto_from_user(kstrtou8_from_user,	kstrtou8,	u8);
+ kstrto_from_user(kstrtos8_from_user,	kstrtos8,	s8);
++#endif
+ 
+ /**
+  * strtobool - convert common user inputs into boolean values
+diff --git a/compat/compat-3.5.c b/compat/compat-3.5.c
+index f9590d7..09c945f 100644
+--- a/compat/compat-3.5.c
++++ b/compat/compat-3.5.c
+@@ -12,7 +12,7 @@
+ #include <linux/highuid.h>
+ #include <linux/ktime.h>
+ #include <linux/hrtimer.h>
+-#include <linux/ptp_clock_kernel.h>
++//#include <linux/ptp_clock_kernel.h>
+ 
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+ #include <linux/device.h>
+diff --git a/compat/compat-3.6.c b/compat/compat-3.6.c
+index c82bfb8..3d5b50c 100644
+--- a/compat/compat-3.6.c
++++ b/compat/compat-3.6.c
+@@ -149,6 +149,7 @@ int sg_alloc_table_from_pages(struct sg_table *sgt,
+ EXPORT_SYMBOL_GPL(sg_alloc_table_from_pages);
+ 
+ /* whoopsie ! */
++#if 0
+ #ifndef CONFIG_COMMON_CLK
+ int clk_enable(struct clk *clk)
+ {
+@@ -161,3 +162,4 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL_GPL(clk_disable);
+ #endif
++#endif
+\ No newline at end of file
+diff --git a/drivers/bluetooth/btmrvl_debugfs.c b/drivers/bluetooth/btmrvl_debugfs.c
+index 023d35e..f692d36 100644
+--- a/drivers/bluetooth/btmrvl_debugfs.c
++++ b/drivers/bluetooth/btmrvl_debugfs.c
+@@ -43,9 +43,7 @@ static ssize_t btmrvl_hscfgcmd_write(struct file *file,
+ 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
+ 		return -EFAULT;
+ 
+-	ret = kstrtol(buf, 10, &result);
+-	if (ret)
+-		return ret;
++	result = simple_strtol(buf, NULL, 10);
+ 
+ 	priv->btmrvl_dev.hscfgcmd = result;
+ 
+@@ -89,9 +87,7 @@ static ssize_t btmrvl_pscmd_write(struct file *file, const char __user *ubuf,
+ 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
+ 		return -EFAULT;
+ 
+-	ret = kstrtol(buf, 10, &result);
+-	if (ret)
+-		return ret;
++	result = simple_strtol(buf, NULL, 10);
+ 
+ 	priv->btmrvl_dev.pscmd = result;
+ 
+@@ -135,9 +131,7 @@ static ssize_t btmrvl_hscmd_write(struct file *file, const char __user *ubuf,
+ 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
+ 		return -EFAULT;
+ 
+-	ret = kstrtol(buf, 10, &result);
+-	if (ret)
+-		return ret;
++	result = simple_strtol(buf, NULL, 10);
+ 
+ 	priv->btmrvl_dev.hscmd = result;
+ 	if (priv->btmrvl_dev.hscmd) {
+diff --git a/drivers/net/wireless/mwifiex/cfg80211.c b/drivers/net/wireless/mwifiex/cfg80211.c
+index 19d3ed1..8a37ec7 100644
+--- a/drivers/net/wireless/mwifiex/cfg80211.c
++++ b/drivers/net/wireless/mwifiex/cfg80211.c
+@@ -2262,8 +2262,8 @@ struct wireless_dev *mwifiex_add_virtual_intf(struct wiphy *wiphy,
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	dev = alloc_netdev_mqs(sizeof(struct mwifiex_private *), name,
+-			       ether_setup, IEEE80211_NUM_ACS, 1);
++	dev = alloc_netdev_mq(sizeof(struct mwifiex_private *), name,
++			       ether_setup, IEEE80211_NUM_ACS);
+ 	if (!dev) {
+ 		wiphy_err(wiphy, "no memory available for netdevice\n");
+ 		priv->bss_mode = NL80211_IFTYPE_UNSPECIFIED;
+diff --git a/drivers/net/wireless/mwifiex/main.c b/drivers/net/wireless/mwifiex/main.c
+index f388167..45f4b8c 100644
+--- a/drivers/net/wireless/mwifiex/main.c
++++ b/drivers/net/wireless/mwifiex/main.c
+@@ -476,7 +476,7 @@ static void mwifiex_fw_dpc(const struct firmware *firmware, void *context)
+ 
+ 	rtnl_lock();
+ 	/* Create AP interface by default for google fiber boxen */
+-	wdev = mwifiex_add_virtual_intf(adapter->wiphy, "wlan%d",
++	wdev = mwifiex_add_virtual_intf(adapter->wiphy, "wlan0",
+ 					NL80211_IFTYPE_AP, NULL, NULL);
+ 	if (IS_ERR(wdev)) {
+ 		dev_err(adapter->dev, "cannot create default AP interface\n");
+diff --git a/drivers/net/wireless/mwifiex/sta_cmd.c b/drivers/net/wireless/mwifiex/sta_cmd.c
+index e3cac14..67c53bd 100644
+--- a/drivers/net/wireless/mwifiex/sta_cmd.c
++++ b/drivers/net/wireless/mwifiex/sta_cmd.c
+@@ -16,7 +16,6 @@
+  * ARE EXPRESSLY DISCLAIMED.  The License provides additional details about
+  * this warranty disclaimer.
+  */
+-
+ #include "decl.h"
+ #include "ioctl.h"
+ #include "util.h"
+@@ -1440,6 +1439,7 @@ int mwifiex_dnld_dt_cfgdata(struct mwifiex_private *priv,
+ static int mwifiex_cmd_cfg_data(struct mwifiex_private *priv,
+ 				struct host_cmd_ds_command *cmd, void *data_buf)
+ {
++#ifdef CONFIG_OF
+ 	struct mwifiex_adapter *adapter = priv->adapter;
+ 	struct property *prop = data_buf;
+ 	u32 len;
+@@ -1464,7 +1464,7 @@ static int mwifiex_cmd_cfg_data(struct mwifiex_private *priv,
+ 
+ 	cmd->command = cpu_to_le16(HostCmd_CMD_CFG_DATA);
+ 	cmd->size = cpu_to_le16(S_DS_GEN + len);
+-
++#endif
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/wireless/mwifiex/uap_txrx.c b/drivers/net/wireless/mwifiex/uap_txrx.c
+index 9a56bc6..2086182 100644
+--- a/drivers/net/wireless/mwifiex/uap_txrx.c
++++ b/drivers/net/wireless/mwifiex/uap_txrx.c
+@@ -179,7 +179,7 @@ static void mwifiex_uap_queue_bridged_pkt(struct mwifiex_private *priv,
+ 	tx_info->bss_type = priv->bss_type;
+ 	tx_info->flags |= MWIFIEX_BUF_FLAG_BRIDGED_PKT;
+ 
+-	if (is_unicast_ether_addr(rx_pkt_hdr->eth803_hdr.h_dest)) {
++	if (!is_multicast_ether_addr(rx_pkt_hdr->eth803_hdr.h_dest)) {
+ 		/* Update bridge packet statistics as the
+ 		 * packet is not going to kernel/upper layer.
+ 		 */
+diff --git a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
+index d31f144..a897572 100644
+--- a/net/bluetooth/hci_core.c
++++ b/net/bluetooth/hci_core.c
+@@ -90,8 +90,7 @@ static ssize_t dut_mode_write(struct file *file, const char __user *user_buf,
+ 		return -EFAULT;
+ 
+ 	buf[buf_size] = '\0';
+-	if (strtobool(buf, &enable))
+-		return -EINVAL;
++	enable = simple_strtol(buf, NULL, 10);
+ 
+ 	if (enable == test_bit(HCI_DUT_MODE, &hdev->dev_flags))
+ 		return -EALREADY;
+@@ -428,8 +427,7 @@ static ssize_t force_sc_support_write(struct file *file,
+ 		return -EFAULT;
+ 
+ 	buf[buf_size] = '\0';
+-	if (strtobool(buf, &enable))
+-		return -EINVAL;
++	enable = simple_strtol(buf, NULL, 10);
+ 
+ 	if (enable == test_bit(HCI_FORCE_SC, &hdev->dev_flags))
+ 		return -EALREADY;
+@@ -684,8 +682,7 @@ static ssize_t force_static_address_write(struct file *file,
+ 		return -EFAULT;
+ 
+ 	buf[buf_size] = '\0';
+-	if (strtobool(buf, &enable))
+-		return -EINVAL;
++	enable = simple_strtol(buf, NULL, 10);
+ 
+ 	if (enable == test_bit(HCI_FORCE_STATIC_ADDR, &hdev->dev_flags))
+ 		return -EALREADY;
+@@ -896,8 +893,7 @@ static ssize_t lowpan_write(struct file *fp, const char __user *user_buffer,
+ 
+ 	buf[buf_size] = '\0';
+ 
+-	if (strtobool(buf, &enable) < 0)
+-		return -EINVAL;
++	enable = simple_strtol(buf, NULL, 10);
+ 
+ 	if (enable == test_bit(HCI_6LOWPAN_ENABLED, &hdev->dev_flags))
+ 		return -EALREADY;
+diff --git a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
+index 555982a..0e44414 100644
+--- a/net/bluetooth/hci_sysfs.c
++++ b/net/bluetooth/hci_sysfs.c
+@@ -205,7 +205,7 @@ int __init bt_sysfs_init(void)
+ {
+ 	bt_class = class_create(THIS_MODULE, "bluetooth");
+ 
+-	return PTR_ERR_OR_ZERO(bt_class);
++	return IS_ERR(bt_class) ? PTR_ERR(bt_class) : 0;
+ }
+ 
+ void bt_sysfs_cleanup(void)
+-- 
+1.9.1.423.g4596e3a
+

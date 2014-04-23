@@ -1,6 +1,18 @@
+From 1ab9dbcce1a8261cc68b0fc3d471b323817653ba Mon Sep 17 00:00:00 2001
+From: Petri Gynther <pgynther@google.com>
+Date: Mon, 10 Mar 2014 16:50:53 -0700
+Subject: [PATCH 7/7] Load bcm20702 bluetooth firmware automatically when
+ needed.
+
+---
+ drivers/bluetooth/btusb.c | 124 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 124 insertions(+)
+
+diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+index 0141e80..97fe67a 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
-@@ -1375,6 +1375,127 @@
+@@ -1380,6 +1380,127 @@ exit_mfg_deactivate:
  	return 0;
  }
  
@@ -128,7 +140,7 @@
  static int btusb_probe(struct usb_interface *intf,
  				const struct usb_device_id *id)
  {
-@@ -1485,6 +1606,9 @@
+@@ -1490,6 +1611,9 @@ static int btusb_probe(struct usb_interface *intf,
  		hdev->setup = btusb_setup_intel;
  	}
  
@@ -138,3 +150,6 @@
  	/* Interface numbers are hardcoded in the specification */
  	data->isoc = usb_ifnum_to_if(data->udev, 1);
  
+-- 
+1.9.1.423.g4596e3a
+
