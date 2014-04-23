@@ -16,6 +16,7 @@
 # delays between syncs.
 
 MAX_ADJUST_SECS=10800     # max seconds between clock adjusts, once synced
+MAX_RETRY_SECS=30         # max seconds between clock adjusts, after error
 ADJUST_BACKOFF_FACTOR=3   # multiply backoff timer by up to this much
 
 DEFAULT_NTP_SERVERS="
@@ -25,11 +26,54 @@ DEFAULT_NTP_SERVERS="
     time4.google.com
 "
 
+all_ntp_servers=
+shuffled_ntp_servers=
+ntp_server=
+
+
+update_ntp_config()
+{
+  local new_ntp_servers=
+  new_ntp_servers=$(echo $(
+    dns $(cat /tmp/ntp[46].servers 2>/dev/null) ||
+    dns $DEFAULT_NTP_SERVERS
+  ))
+  if [ "$all_ntp_servers" != "$new_ntp_servers" ]; then
+    # if list of configured NTP servers has changed, we have to restart
+    # the rotation.
+    all_ntp_servers=$new_ntp_servers
+    shuffled_ntp_servers=
+    ntp_server=
+  fi
+  echo "all servers: $all_ntp_servers" >&2
+}
+
+
 choose_ntp_server()
 {
-  choose $(dns $(cat /tmp/ntp[46].servers)) ||
-  choose $(dns $DEFAULT_NTP_SERVERS) ||
-  { echo "No NTP servers available.  Waiting..." >&2; sleep 5; }
+  while :; do
+    update_ntp_config
+    echo "choosing a new ntp server." >&2
+    # if we ran out of ntp servers, reshuffle and start over
+    if [ -z "$shuffled_ntp_servers" ]; then
+      shuffled_ntp_servers=$(echo $(shuffle $all_ntp_servers))
+    fi
+
+    echo "next servers: $shuffled_ntp_servers" >&2
+
+    # rotate through the shuffled ntp servers, one by one, until we run out
+    if [ -n "$shuffled_ntp_servers" ]; then
+      set $shuffled_ntp_servers
+      ntp_server=$1
+      shift
+      shuffled_ntp_servers=$*
+    fi
+
+    [ -n "$ntp_server" ] && break
+
+    echo "No NTP servers available.  Waiting..." >&2
+    sleep 5
+  done
 }
 
 
@@ -71,6 +115,7 @@ while read reason; do
   #  so the google front end always responds as "www.google.com" and
   #  fails the certificate check.
   if do_tlsdate google.com; then
+    echo "timewarp: tlsdate success. clock should be +/- 10 sec." >&2
     : >/tmp/ntp.synced
     break
   fi
@@ -81,10 +126,11 @@ done
 # This should get us within a few milliseconds.
 echo "mini-timewarp ntp sync:" >&2
 while :; do
-  ntpserver=$(choose_ntp_server) || continue
-  echo "using ntp server: $ntpserver" >&2
-  sntpclock "$ntpserver" | clockview
-  if sntpclock "$ntpserver" | clockadd; then
+  choose_ntp_server
+  echo "using ntp server: $ntp_server" >&2
+  sntpclock "$ntp_server" | clockview
+  if sntpclock "$ntp_server" | clockadd; then
+    echo "mini-timewarp: success. clock should be +/- 10 msec." >&2
     : >/tmp/ntp2.synced
     break
   fi
@@ -98,13 +144,16 @@ babysit 60 clockspeed &
 CUR_DELAY=30
 while :; do
   echo "clockspeed adjustment:" >&2
-  ntpserver=$(choose_ntp_server) || continue
-  echo "using ntp server: $ntpserver" >&2
-  sntpclock "$ntpserver" | tee /tmp/clockspeed/adjust | clockview
-  
-  MAX_DELAY=$(($CUR_DELAY * $ADJUST_BACKOFF_FACTOR))
-  [ "$MAX_DELAY" -gt "$MAX_ADJUST_SECS" ] && MAX_DELAY="$MAX_ADJUST_SECS"
-  CUR_DELAY=$(randint "$CUR_DELAY" "$MAX_DELAY")
+  echo "using ntp server: $ntp_server" >&2
+  if sntpclock "$ntp_server" | tee /tmp/clockspeed/adjust | clockview; then
+    MAX_DELAY=$(($CUR_DELAY * $ADJUST_BACKOFF_FACTOR))
+    [ "$MAX_DELAY" -gt "$MAX_ADJUST_SECS" ] && MAX_DELAY="$MAX_ADJUST_SECS"
+    CUR_DELAY=$(randint "$CUR_DELAY" "$MAX_DELAY")
+  else
+    # only switch servers if the one we're using doesn't seem to be working.
+    choose_ntp_server
+    CUR_DELAY=$(randint "$(($MAX_RETRY_SECS / 2))" "$MAX_RETRY_SECS")
+  fi
   echo "Waiting for $CUR_DELAY seconds..."
   sleep "$CUR_DELAY"
 done
