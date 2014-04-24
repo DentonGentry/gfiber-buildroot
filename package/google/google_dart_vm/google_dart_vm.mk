@@ -1,17 +1,16 @@
-GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/bleeding_edge/deps/standalone.deps
+GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/1.3/deps/standalone.deps
 GOOGLE_DART_VM_SITE_METHOD=gclient
-#Version 1.1.2 Stable
-GOOGLE_DART_VM_VERSION=32062
+GOOGLE_DART_VM_VERSION=35350
 GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
-GOOGLE_DART_VM_BTYPE=ReleaseARM
+GOOGLE_DART_VM_BTYPE=ReleaseXARM
 else ifeq ($(ARCH),armeb)
-GOOGLE_DART_VM_BTYPE=ReleaseARM
+GOOGLE_DART_VM_BTYPE=ReleaseXARM
 else ifeq ($(ARCH),mips)
-GOOGLE_DART_VM_BTYPE=ReleaseMIPS
+GOOGLE_DART_VM_BTYPE=ReleaseXMIPS
 else ifeq ($(ARCH),mipsel)
-GOOGLE_DART_VM_BTYPE=ReleaseMIPS
+GOOGLE_DART_VM_BTYPE=ReleaseXMIPS
 else ifeq ($(ARCH),i386)
 GOOGLE_DART_VM_BTYPE=ReleaseIA32
 else ifeq ($(ARCH),x86_64)
