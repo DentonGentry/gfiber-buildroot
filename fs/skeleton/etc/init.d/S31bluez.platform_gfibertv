@@ -14,19 +14,6 @@ BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
 case "$1" in
   start)
-    # Get Bluetooth adapter MAC address
-    BT_MAC=$(hnvram -rq MAC_ADDR_BT)
-    if [ -z "${BT_MAC}" ]; then
-      MAC=$(hnvram -rq MAC_ADDR)
-      if [ -z "${MAC}" ]; then
-        echo "$0: ERROR: TV Box has no MAC_ADDR nor MAC_ADDR_BT"
-        exit 1
-      fi
-      . /etc/utils.sh
-      BT_MAC=$(mac_addr_increment "${MAC}" 2)
-    fi
-    echo "${BT_MAC}" >/tmp/btmacaddress
-
     # Create BlueZ directories and config files
     mkdir -p "${BLUEZ_STOR_DIR}"
     mkdir -p "${BLUEZ_CONF_DIR}"
@@ -41,12 +28,8 @@ case "$1" in
     # Start BlueZ stack
     (
       echo "$0: Configuring Bluetooth adapter"
-      if hciconfig hci0 | grep -q INIT; then
-        sleep 1
-      fi
-      hciconfig hci0 reset
-      bdaddr -i hci0 "${BT_MAC}"
-      hciconfig hci0 reset
+      hciconfig hci0 up
+      hciconfig -a
 
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez &

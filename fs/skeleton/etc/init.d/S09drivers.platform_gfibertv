@@ -36,6 +36,20 @@ fi
 [ -e ${MODULE_PATH}/wl.ko ] && insmod ${MODULE_PATH}/wl.ko
 
 # Set up BT, if present
+if is-tv-box; then
+  BT_MAC=$(hnvram -rq MAC_ADDR_BT)
+  if [ -z "${BT_MAC}" ]; then
+    MAC=$(hnvram -rq MAC_ADDR)
+    if [ -z "${MAC}" ]; then
+      echo "$0: ERROR: TV Box has no MAC_ADDR nor MAC_ADDR_BT"
+      exit 1
+    fi
+    . /etc/utils.sh
+    BT_MAC=$(mac_addr_increment "${MAC}" 2)
+  fi
+  echo "${BT_MAC}" >/tmp/btmacaddress
+fi
+
 if ! is-bluez-platform; then
   [ -e ${MODULE_PATH}/btusb.ko ] && insmod ${MODULE_PATH}/btusb.ko
   [ -e ${MODULE_PATH}/bthid.ko ] && insmod ${MODULE_PATH}/bthid.ko
@@ -50,5 +64,8 @@ else  # Not trying to calibrate
   # linux-backports, not the one in the kernel.
   modprobe -a compat
   insmod /lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko
-  modprobe -a bluetooth hidp btmrvl btmrvl_sdio btusb uhid hid-gfrm
+  modprobe -a bluetooth hidp hid-gfrm uhid
+  modprobe btmrvl bdaddr_base=${BT_MAC}
+  modprobe btmrvl_sdio
+  modprobe btusb bdaddr_base=${BT_MAC}
 fi
