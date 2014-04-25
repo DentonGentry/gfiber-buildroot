@@ -123,7 +123,7 @@ mount_volume()
 
   # mount UBI volume
   [ ! -d /$1 ] && mkdir -p /$1
-  if ! mount -t ubifs ubi$2:$1 /$1; then
+  if ! mount -o chk_data_crc -t ubifs ubi$2:$1 /$1; then
     echo "Failed to mount '$1' volume"
     return 1
   fi
