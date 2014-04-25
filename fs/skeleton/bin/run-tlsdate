@@ -140,6 +140,16 @@ done
 # Now the clock is as close as it can get with one-off syncs.  We have
 # to start fine tuning the clock rate.
 mkdir -p /tmp/clockspeed/etc
+if [ ! -p /tmp/clockspeed/adjust ]; then
+  (
+    # avoid race conditions.  clockspeed creates this fifo automatically,
+    # but if we try to write to it too soon, we'll create a regular file
+    # instead and mknod() won't overwrite it.
+    umask 0077
+    rm -f /tmp/clockspeed/adjust
+    mknod /tmp/clockspeed/adjust p
+  )
+fi
 babysit 60 clockspeed &
 CUR_DELAY=30
 while :; do
