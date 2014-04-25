@@ -4,6 +4,15 @@
 HOTPLUG_FW_DIR=/lib/firmware
 exec >/dev/kmsg 2>&1
 
+# BlueZ: Configure hci0 interface link mode
+if [ "$SUBSYSTEM" = "bluetooth" -a "$ACTION" = "add" ]; then
+  hcidev=${DEVPATH##*/}
+  if [ "${hcidev}" = "hci0" ]; then
+    echo "hotplug: configuring ${hcidev}"
+    hciconfig "${hcidev}" lm ACCEPT,MASTER
+  fi
+fi
+
 if [ "$SUBSYSTEM" = "firmware" -a "$ACTION" = "add" ]; then
   echo "hotplug: sys=$SUBSYSTEM act=$ACTION fw=$FIRMWARE dev=$DEVPATH"
   if [ -f "$HOTPLUG_FW_DIR/$FIRMWARE" ]; then
