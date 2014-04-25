@@ -180,6 +180,32 @@ case "$1" in
 
       # parse acs state into acsrules chains
       update-acs-iptables
+
+      # Use iptables to mark packets to set the VLAN p-bits
+      # Bit(s)  Definitions
+      # 0:4     class/priority of orig [and reply] connection.
+      # 5:7     VLAN P bits for orig [and reply] connection (if bit 15 = 1)
+      #
+      # 8       DSCP control bit
+      # 0:      DSCP values will remain unchanged
+      # 1:      do DSCP marking for orig [and reply] connection
+      #
+      # 9:14    DSCP value: DSCP value for orig [and reply] connection (if bit 8 # = 1)
+      #
+      # 15      if 0, copy VLAN P bits from ingress packet;
+      #         if 1, set VLAN P bits for orig and reply connection
+      #
+      # 16:20   class/priority of reply connection
+      # 21:23   VLAN P bits for reply connection (if bit 15 = 1)
+      #
+      # 24      DSCP control bit
+      #         0:      DSCP values will remain unchanged
+      #         1:      do DSCP marking for reply connection;
+      #
+      # 25:30   DSCP value for reply connection (if bit 24 = 1)
+      # 31      0: use bits 0-15 for reply connection
+      #         1: use bits 16-30 for reply connection
+      iptables -A POSTROUTING -t mangle -o wan0.2 -j CONNMARK --set-mark 0x8040
     fi
     ;;
   stop)
