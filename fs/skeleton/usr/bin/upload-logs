@@ -14,8 +14,8 @@ import sys
 import time
 import urllib
 import zlib
-import pycurl
 import options
+import pycurl
 
 optspec = """
 upload-logs [options...] <filenames...>
@@ -33,6 +33,7 @@ RETRY_MAX_DELAY = 480
 
 
 class HttpError(Exception):
+
   def __init__(self, status):
     self.status = status
     Exception.__init__(self, str(self))
@@ -52,36 +53,52 @@ def HttpDo(method, url, post_data=None, content_type=None):
   headers = ['User-Agent: upload-logs', 'Expect:']
   if content_type:
     headers.append('Content-Type: %s' % content_type)
-  curl = pycurl.Curl()
-  curl.setopt(pycurl.WRITEFUNCTION, outdata.write)
-  curl.setopt(pycurl.FOLLOWLOCATION, 0)
-  curl.setopt(pycurl.SSL_VERIFYPEER, 1)
-  curl.setopt(pycurl.SSL_VERIFYHOST, 2)
-  if os.path.exists('/etc/ssl/private/device.key'):
-    curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
-  if os.path.exists('/etc/ssl/certs/device.pem'):
-    curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
-  curl.setopt(pycurl.URL, url)
-  curl.setopt(pycurl.HTTPHEADER, headers)
-  if method == 'GET':
-    curl.setopt(pycurl.HTTPGET, True)
-  else:
-    assert post_data is not None
-    request_buffer = StringIO.StringIO(post_data)
+  # You'd think that internally Curl would do this... but no it doesn't.
+  for resolver in [pycurl.IPRESOLVE_V6, pycurl.IPRESOLVE_V4]:
+    curl = pycurl.Curl()
+    curl.setopt(pycurl.IPRESOLVE, resolver)
+    curl.setopt(pycurl.WRITEFUNCTION, outdata.write)
+    curl.setopt(pycurl.FOLLOWLOCATION, 0)
+    curl.setopt(pycurl.SSL_VERIFYPEER, 1)
+    curl.setopt(pycurl.SSL_VERIFYHOST, 2)
+    if os.path.exists('/etc/ssl/private/device.key'):
+      curl.setopt(pycurl.SSLKEY, '/etc/ssl/private/device.key')
+    if os.path.exists('/etc/ssl/certs/device.pem'):
+      curl.setopt(pycurl.SSLCERT, '/etc/ssl/certs/device.pem')
+    curl.setopt(pycurl.URL, url)
+    curl.setopt(pycurl.HTTPHEADER, headers)
+    if method == 'GET':
+      curl.setopt(pycurl.HTTPGET, True)
+    else:
+      assert post_data is not None
+      request_buffer = StringIO.StringIO(post_data)
 
-    def Ioctl(cmd):
-      if cmd == pycurl.IOCMD_RESTARTREAD:
-        request_buffer.seek(0)
-    curl.setopt(pycurl.POST, True)
-    curl.setopt(pycurl.IOCTLFUNCTION, Ioctl)
-    curl.setopt(pycurl.READFUNCTION, request_buffer.read)
-    curl.setopt(pycurl.POSTFIELDSIZE, len(post_data))
-  curl.perform()
-  http_status = curl.getinfo(pycurl.HTTP_CODE)
-  if http_status != 200:
-    raise HttpError(http_status)
-  curl.close()
-  return outdata.getvalue()
+      def Ioctl(cmd):
+        if cmd == pycurl.IOCMD_RESTARTREAD:
+          request_buffer.seek(0)
+      curl.setopt(pycurl.POST, True)
+      curl.setopt(pycurl.IOCTLFUNCTION, Ioctl)
+      curl.setopt(pycurl.READFUNCTION, request_buffer.read)
+      curl.setopt(pycurl.POSTFIELDSIZE, len(post_data))
+    try:
+      curl.perform()
+      http_status = curl.getinfo(pycurl.HTTP_CODE)
+    except pycurl.error as exc:
+      print 'pycurl exception: %s' % (exc,)
+      http_status = 500
+    curl.close()
+    if http_status == 200:
+      return outdata.getvalue()
+    # 302 is success for posts.
+    if http_status == 302:
+      raise HttpError(http_status)
+    if resolver == pycurl.IPRESOLVE_V6:
+      print 'IPv6 failed with http error: %d' % http_status
+    else:
+      print 'IPv4 failed with http error: %d' % http_status
+
+  # If neither of V6 or V4 worked, raise an exception.
+  raise HttpError(http_status)
 
 
 def UploadFile(url, filename, fileobj, keys):
@@ -122,7 +139,7 @@ def UploadFile(url, filename, fileobj, keys):
         break
 
       # If the server is overloaded, retry after some random delay.
-      print "upload-logs failed: %s" % e.status
+      print 'upload-logs failed: %s' % e.status
 
       # Retry interval is maximum of 5 minutes, with a random delay
       # of +/- 50% of the retry interval.
