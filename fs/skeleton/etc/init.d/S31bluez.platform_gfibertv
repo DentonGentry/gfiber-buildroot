@@ -20,6 +20,7 @@ case "$1" in
 
     echo "[General]" >"${BLUEZ_MAIN_CONF}"
     echo "Name=$(cat /etc/platform)" >>"${BLUEZ_MAIN_CONF}"
+    echo "Class=0x100" >>"${BLUEZ_MAIN_CONF}"
 
     echo "[General]" >"${BLUEZ_INPUT_CONF}"
     echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
@@ -27,9 +28,7 @@ case "$1" in
 
     # Start BlueZ stack
     (
-      echo "$0: Configuring Bluetooth adapter"
       hciconfig hci0 up
-      hciconfig -a
 
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
@@ -37,6 +36,12 @@ case "$1" in
 
       echo "$0: Starting gfiber-agent"
       babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
+
+      echo "$0: Configuring Bluetooth adapter"
+      hciconfig hci0 lm ACCEPT,MASTER
+      hciconfig hci0 pageparms 36:180
+      hciconfig hci0 -a
+      hciconfig hci0 pageparms
       echo >/tmp/S31bluez_done
     ) &
     ;;
