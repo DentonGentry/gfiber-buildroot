@@ -1,0 +1,78 @@
+From 4e17deac29d497cde8e28e8f24f663b46c4cd27c Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Fri, 25 Apr 2014 08:03:01 -0400
+Subject: [PATCH] mwifiex: add /sys/kernel/debug/mwifiex/*/crash, to simulate
+ crashes.
+
+For our first test case, just simulate a device disconnect/reconnect to make
+it easier to check this code for race conditions, null pointers, etc.
+---
+ drivers/net/wireless/mwifiex/debugfs.c | 38 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/drivers/net/wireless/mwifiex/debugfs.c b/drivers/net/wireless/mwifiex/debugfs.c
+index b8a49aa..a3c0678 100644
+--- a/drivers/net/wireless/mwifiex/debugfs.c
++++ b/drivers/net/wireless/mwifiex/debugfs.c
+@@ -669,6 +669,42 @@ done:
+ 	return ret;
+ }
+ 
++/*
++ * Proc crash write handler.
++ *
++ * This function is called when the 'crash' file is opened for writing.
++ *
++ * Write a '1' to this file to simulate a device disconnect/reconnect.  In
++ * the future, other numbers may be used to simulate different kinds of
++ * crashes.
++ */
++static ssize_t
++mwifiex_crash_write(struct file *file,
++		       const char __user *ubuf, size_t count, loff_t *ppos)
++{
++	struct mwifiex_private *priv =
++		(struct mwifiex_private *) file->private_data;
++	char buf[16];
++	int mode;
++
++	memset(buf, 0, sizeof(buf));
++	if (simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, ubuf, count) < 0) {
++		return -EFAULT;
++	}
++
++	mode = simple_strtol(buf, NULL, 0);
++	*ppos += count;
++	switch (mode) {
++	case 1:
++		pr_warn("causing crash: disconnect/reconnect");
++		priv->adapter->if_ops.card_reset(priv->adapter);
++		break;
++	default:
++		return -EIO;
++	}
++
++	return count;
++}
+ 
+ #define MWIFIEX_DFS_ADD_FILE(name) do {                                 \
+ 	if (!debugfs_create_file(#name, 0644, priv->dfs_dev_dir,        \
+@@ -701,6 +737,7 @@ MWIFIEX_DFS_FILE_READ_OPS(debug);
+ MWIFIEX_DFS_FILE_READ_OPS(getlog);
+ MWIFIEX_DFS_FILE_OPS(regrdwr);
+ MWIFIEX_DFS_FILE_OPS(rdeeprom);
++MWIFIEX_DFS_FILE_WRITE_OPS(crash);
+ 
+ /*
+  * This function creates the debug FS directory structure and the files.
+@@ -722,6 +759,7 @@ mwifiex_dev_debugfs_init(struct mwifiex_private *priv)
+ 	MWIFIEX_DFS_ADD_FILE(getlog);
+ 	MWIFIEX_DFS_ADD_FILE(regrdwr);
+ 	MWIFIEX_DFS_ADD_FILE(rdeeprom);
++	MWIFIEX_DFS_ADD_FILE(crash);
+ }
+ 
+ /*
+-- 
+1.9.1.423.g4596e3a
+
