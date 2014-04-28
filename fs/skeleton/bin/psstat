@@ -30,6 +30,14 @@ freemem()
 }
 
 
+buddyinfo()
+{
+  while read junk1 junk2 junk3 label data; do
+    echo "$1 $label: $data"
+  done </proc/buddyinfo
+}
+
+
 dfspace()
 {
   df -k | {
@@ -196,6 +204,7 @@ while :; do
   printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
   echo "loadavg: $(cat /proc/loadavg)"
   freemem "mem:"
+  buddyinfo "buddyinfo:"
   dfspace "df:"
   carriers "carriers:"
 
