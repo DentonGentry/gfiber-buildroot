@@ -1,4 +1,6 @@
 #!/bin/sh
+. /etc/utils.sh
+
 MODULE_PATH=/usr/lib/modules
 
 # Do this early because hnvram needs it.
@@ -75,4 +77,12 @@ if [ "$PLATFORM" = GFHD200 ]; then
     # newer units, USB0_PWRON_N is active low
     brcmgpio -p 106 -l
   fi
+fi
+
+if startswith "$PLATFORM" GFRG2; then
+  # Mindspeed-based devices can't fall back to GFP_DMA because they
+  # use the GFP_DMA area for CONFIG_COMCERTO_ZONE_DMA_NCNB.  Thus, we
+  # should preserve more space in main memory to ensure memory is
+  # available on short notice for GFP_ATOMIC.
+  echo 32768 >/proc/sys/vm/min_free_kbytes
 fi
