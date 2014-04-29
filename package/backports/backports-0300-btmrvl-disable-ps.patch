@@ -1,0 +1,11 @@
+--- a/drivers/bluetooth/btmrvl_main.c
++++ b/drivers/bluetooth/btmrvl_main.c
+@@ -489,7 +489,7 @@
+ 
+ 	btmrvl_cal_data_dt(priv);
+ 
+-	priv->btmrvl_dev.psmode = 1;
++	priv->btmrvl_dev.psmode = 0;
+ 	btmrvl_enable_ps(priv);
+ 
+ 	priv->btmrvl_dev.gpio_gap = 0xffff;
