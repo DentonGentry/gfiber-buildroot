@@ -85,7 +85,11 @@ merge_resolv_conf() {
     if [ -n "$confs" ] ; then
         atomic /tmp/resolv.conf.external "$(cat $confs)"
         log_file_contents /tmp/resolv.conf.external
-        atomic /tmp/resolv.conf "$internal_resolv_conf"
+        if [ -e "/config/allowdns" ] ; then
+            ln -sf /tmp/resolv.conf.external /tmp/resolv.conf
+        else
+            atomic /tmp/resolv.conf "$internal_resolv_conf"
+        fi
         log_file_contents /tmp/resolv.conf
         for conf in /chroot/*/tmp; do
           if [ -d "$conf" ]; then
