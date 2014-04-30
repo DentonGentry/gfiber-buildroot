@@ -1,0 +1,29 @@
+From 8a8f039230deafef5624c0569382f65991137ad1 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 29 Apr 2014 22:18:09 -0400
+Subject: [PATCH] Fix duplicate symbol clk_enable
+
+---
+ compat/compat-3.6.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/compat/compat-3.6.c b/compat/compat-3.6.c
+index c82bfb8..e63fdf9 100644
+--- a/compat/compat-3.6.c
++++ b/compat/compat-3.6.c
+@@ -149,6 +149,7 @@ int sg_alloc_table_from_pages(struct sg_table *sgt,
+ EXPORT_SYMBOL_GPL(sg_alloc_table_from_pages);
+ 
+ /* whoopsie ! */
++#if 0
+ #ifndef CONFIG_COMMON_CLK
+ int clk_enable(struct clk *clk)
+ {
+@@ -161,3 +162,4 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL_GPL(clk_disable);
+ #endif
++#endif
+-- 
+1.9.1.423.g4596e3a
+

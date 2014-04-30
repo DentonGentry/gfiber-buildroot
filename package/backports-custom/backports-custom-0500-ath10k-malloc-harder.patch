@@ -1,8 +1,7 @@
-From a92edc1b243bf77bd7e944fdc4bf679d92472ad5 Mon Sep 17 00:00:00 2001
+From 5e0d06a0c9b13e4e385289d3ebbc572f18966001 Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Mon, 28 Apr 2014 03:38:31 -0400
-Subject: [PATCH 1/2] ath10k: add some flags to make memory allocations try
- harder.
+Subject: [PATCH] ath10k: add some flags to make memory allocations try harder.
 
 GFP_DMA should have a qualifier of either GFP_KERNEL or GFP_ATOMIC.  With
 neither, it neither waits nor has access to emergency memory, which means
@@ -17,47 +16,65 @@ the emergency pool) for all its allocations for now.  It's probably best to
 remove that eventually, but should be okay in the short term since we're
 also expanding the size of our emergency pool (in a separate patch).
 ---
- drivers/net/wireless/ath/ath10k/ce.c     | 6 +++---
- drivers/net/wireless/ath/ath10k/debug.c  | 6 +++---
- drivers/net/wireless/ath/ath10k/htt_rx.c | 6 +++---
- drivers/net/wireless/ath/ath10k/htt_tx.c | 4 ++--
- drivers/net/wireless/ath/ath10k/mac.c    | 6 +++---
- drivers/net/wireless/ath/ath10k/pci.c    | 6 +++---
- 6 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/net/wireless/ath/ath10k/ce.c     | 10 +++++-----
+ drivers/net/wireless/ath/ath10k/debug.c  |  6 +++---
+ drivers/net/wireless/ath/ath10k/htt_rx.c |  6 +++---
+ drivers/net/wireless/ath/ath10k/htt_tx.c |  4 ++--
+ drivers/net/wireless/ath/ath10k/mac.c    |  6 +++---
+ drivers/net/wireless/ath/ath10k/pci.c    |  6 +++---
+ 6 files changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/net/wireless/ath/ath10k/ce.c b/drivers/net/wireless/ath/ath10k/ce.c
-index a808d82..eb94e40 100644
+index 1ad5c10..09d8235 100644
 --- a/drivers/net/wireless/ath/ath10k/ce.c
 +++ b/drivers/net/wireless/ath/ath10k/ce.c
-@@ -860,7 +860,7 @@ static int ath10k_ce_init_src_ring(struct ath10k *ar,
- 	}
+@@ -923,7 +923,7 @@ ath10k_ce_alloc_src_ring(struct ath10k *ar, unsigned int ce_id,
+ 	src_ring = kzalloc(sizeof(*src_ring) +
+ 			   (nentries *
+ 			    sizeof(*src_ring->per_transfer_context)),
+-			   GFP_KERNEL);
++			   GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
+ 	if (src_ring == NULL)
+ 		return ERR_PTR(-ENOMEM);
  
- 	ce_nbytes = sizeof(struct ath10k_ce_ring) + (nentries * sizeof(void *));
--	ptr = kzalloc(ce_nbytes, GFP_KERNEL);
-+	ptr = kzalloc(ce_nbytes, GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
- 	if (ptr == NULL)
- 		return -ENOMEM;
- 
-@@ -911,7 +911,7 @@ static int ath10k_ce_init_src_ring(struct ath10k *ar,
+@@ -938,7 +938,7 @@ ath10k_ce_alloc_src_ring(struct ath10k *ar, unsigned int ce_id,
+ 		dma_alloc_coherent(ar->dev,
+ 				   (nentries * sizeof(struct ce_desc) +
+ 				    CE_DESC_RING_ALIGN),
+-				   &base_addr, GFP_KERNEL);
++				   &base_addr, GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
+ 	if (!src_ring->base_addr_owner_space_unaligned) {
+ 		kfree(src_ring);
+ 		return ERR_PTR(-ENOMEM);
+@@ -959,7 +959,7 @@ ath10k_ce_alloc_src_ring(struct ath10k *ar, unsigned int ce_id,
  	 */
  	src_ring->shadow_base_unaligned =
  		kmalloc((nentries * sizeof(struct ce_desc) +
 -			 CE_DESC_RING_ALIGN), GFP_KERNEL);
 +			 CE_DESC_RING_ALIGN), GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
  	if (!src_ring->shadow_base_unaligned) {
- 		pci_free_consistent(ar_pci->pdev,
- 				    (nentries * sizeof(struct ce_desc) +
-@@ -963,7 +963,7 @@ static int ath10k_ce_init_dest_ring(struct ath10k *ar,
- 	}
+ 		dma_free_coherent(ar->dev,
+ 				  (nentries * sizeof(struct ce_desc) +
+@@ -990,7 +990,7 @@ ath10k_ce_alloc_dest_ring(struct ath10k *ar, unsigned int ce_id,
+ 	dest_ring = kzalloc(sizeof(*dest_ring) +
+ 			    (nentries *
+ 			     sizeof(*dest_ring->per_transfer_context)),
+-			    GFP_KERNEL);
++			    GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
+ 	if (dest_ring == NULL)
+ 		return ERR_PTR(-ENOMEM);
  
- 	ce_nbytes = sizeof(struct ath10k_ce_ring) + (nentries * sizeof(void *));
--	ptr = kzalloc(ce_nbytes, GFP_KERNEL);
-+	ptr = kzalloc(ce_nbytes, GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
- 	if (ptr == NULL)
- 		return -ENOMEM;
- 
+@@ -1005,7 +1005,7 @@ ath10k_ce_alloc_dest_ring(struct ath10k *ar, unsigned int ce_id,
+ 		dma_alloc_coherent(ar->dev,
+ 				   (nentries * sizeof(struct ce_desc) +
+ 				    CE_DESC_RING_ALIGN),
+-				   &base_addr, GFP_KERNEL);
++				   &base_addr, GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
+ 	if (!dest_ring->base_addr_owner_space_unaligned) {
+ 		kfree(dest_ring);
+ 		return ERR_PTR(-ENOMEM);
 diff --git a/drivers/net/wireless/ath/ath10k/debug.c b/drivers/net/wireless/ath/ath10k/debug.c
-index a84691e..92b4b4f 100644
+index 0386550..a490ada 100644
 --- a/drivers/net/wireless/ath/ath10k/debug.c
 +++ b/drivers/net/wireless/ath/ath10k/debug.c
 @@ -120,7 +120,7 @@ static ssize_t ath10k_read_wmi_services(struct file *file,
@@ -69,7 +86,7 @@ index a84691e..92b4b4f 100644
  	if (!buf)
  		return -ENOMEM;
  
-@@ -285,7 +285,7 @@ static ssize_t ath10k_read_fw_stats(struct file *file, char __user *user_buf,
+@@ -303,7 +303,7 @@ static ssize_t ath10k_read_fw_stats(struct file *file, char __user *user_buf,
  	if (ar->state != ATH10K_STATE_ON)
  		goto exit;
  
@@ -78,7 +95,7 @@ index a84691e..92b4b4f 100644
  	if (!buf)
  		goto exit;
  
-@@ -736,7 +736,7 @@ static ssize_t ath10k_read_dfs_stats(struct file *file, char __user *user_buf,
+@@ -793,7 +793,7 @@ static ssize_t ath10k_read_dfs_stats(struct file *file, char __user *user_buf,
  	struct ath10k *ar = file->private_data;
  	char *buf;
  
@@ -88,10 +105,10 @@ index a84691e..92b4b4f 100644
  		return -ENOMEM;
  
 diff --git a/drivers/net/wireless/ath/ath10k/htt_rx.c b/drivers/net/wireless/ath/ath10k/htt_rx.c
-index 36a3871..985cddf 100644
+index f85a3cf..35f7e64 100644
 --- a/drivers/net/wireless/ath/ath10k/htt_rx.c
 +++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
-@@ -491,13 +491,13 @@ int ath10k_htt_rx_attach(struct ath10k_htt *htt)
+@@ -495,13 +495,13 @@ int ath10k_htt_rx_attach(struct ath10k_htt *htt)
  
  	htt->rx_ring.netbufs_ring =
  		kmalloc(htt->rx_ring.size * sizeof(struct sk_buff *),
@@ -107,7 +124,7 @@ index 36a3871..985cddf 100644
  	if (!vaddr)
  		goto err_dma_ring;
  
-@@ -506,7 +506,7 @@ int ath10k_htt_rx_attach(struct ath10k_htt *htt)
+@@ -510,7 +510,7 @@ int ath10k_htt_rx_attach(struct ath10k_htt *htt)
  
  	vaddr = dma_alloc_coherent(htt->ar->dev,
  				   sizeof(*htt->rx_ring.alloc_idx.vaddr),
@@ -137,10 +154,10 @@ index 7a3e2e4..c053400 100644
  		kfree(htt->pending_tx);
  		return -ENOMEM;
 diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
-index 9c676a3..cab5238 100644
+index 5307dee..ecd191b 100644
 --- a/drivers/net/wireless/ath/ath10k/mac.c
 +++ b/drivers/net/wireless/ath/ath10k/mac.c
-@@ -1600,7 +1600,7 @@ static int ath10k_update_channel_list(struct ath10k *ar)
+@@ -1689,7 +1689,7 @@ static int ath10k_update_channel_list(struct ath10k *ar)
  	}
  
  	len = sizeof(struct wmi_channel_arg) * arg.n_channels;
@@ -149,7 +166,7 @@ index 9c676a3..cab5238 100644
  	if (!arg.channels)
  		return -ENOMEM;
  
-@@ -4432,7 +4432,7 @@ int ath10k_mac_register(struct ath10k *ar)
+@@ -4559,7 +4559,7 @@ int ath10k_mac_register(struct ath10k *ar)
  	if (ar->phy_capability & WHAL_WLAN_11G_CAPABILITY) {
  		channels = kmemdup(ath10k_2ghz_channels,
  				   sizeof(ath10k_2ghz_channels),
@@ -158,7 +175,7 @@ index 9c676a3..cab5238 100644
  		if (!channels) {
  			ret = -ENOMEM;
  			goto err_free;
-@@ -4453,7 +4453,7 @@ int ath10k_mac_register(struct ath10k *ar)
+@@ -4580,7 +4580,7 @@ int ath10k_mac_register(struct ath10k *ar)
  	if (ar->phy_capability & WHAL_WLAN_11A_CAPABILITY) {
  		channels = kmemdup(ath10k_5ghz_channels,
  				   sizeof(ath10k_5ghz_channels),
@@ -168,10 +185,10 @@ index 9c676a3..cab5238 100644
  			ret = -ENOMEM;
  			goto err_free;
 diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
-index 3ba1903..64ff6e6 100644
+index 66b1f30..427d861 100644
 --- a/drivers/net/wireless/ath/ath10k/pci.c
 +++ b/drivers/net/wireless/ath/ath10k/pci.c
-@@ -1304,7 +1304,7 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
+@@ -1321,7 +1321,7 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
  	if (resp && resp_len && *resp_len == 0)
  		return -EINVAL;
  
@@ -180,7 +197,7 @@ index 3ba1903..64ff6e6 100644
  	if (!treq)
  		return -ENOMEM;
  
-@@ -1314,7 +1314,7 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
+@@ -1331,7 +1331,7 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
  		goto err_dma;
  
  	if (resp && resp_len) {
@@ -189,9 +206,9 @@ index 3ba1903..64ff6e6 100644
  		if (!tresp) {
  			ret = -ENOMEM;
  			goto err_req;
-@@ -2485,7 +2485,7 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+@@ -2568,7 +2568,7 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
  
- 	ath10k_dbg(ATH10K_DBG_PCI, "%s\n", __func__);
+ 	ath10k_dbg(ATH10K_DBG_PCI, "pci probe\n");
  
 -	ar_pci = kzalloc(sizeof(*ar_pci), GFP_KERNEL);
 +	ar_pci = kzalloc(sizeof(*ar_pci), GFP_KERNEL|__GFP_REPEAT|__GFP_HIGH);
