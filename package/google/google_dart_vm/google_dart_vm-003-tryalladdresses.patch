@@ -1,0 +1,116 @@
+Index: dart/runtime/bin/socket_patch.dart
+diff --git a/dart/runtime/bin/socket_patch.dart b/dart/runtime/bin/socket_patch.dart
+index 59faecf0918c3ea10c5095c9c5acee4f079f2490..3d096dfd8feba6981ef24026093aedfbd5f76a6d 100644
+--- a/dart/runtime/bin/socket_patch.dart
++++ b/dart/runtime/bin/socket_patch.dart
+@@ -481,40 +481,51 @@ class _NativeSocket extends NativeFieldWrapperClass1 {
+   static Future<_NativeSocket> connect(host, int port) {
+     return new Future.value(host)
+         .then((host) {
+-          if (host is _InternetAddress) return host;
++          if (host is _InternetAddress) return [host];
+           return lookup(host)
+               .then((list) {
+                 if (list.length == 0) {
+                   throw createError(response, "Failed host lookup: '$host'");
+                 }
+-                return list[0];
++                return list;
+               });
+         })
+-        .then((address) {
+-          var socket = new _NativeSocket.normal();
+-          socket.address = address;
+-          var result = socket.nativeCreateConnect(
+-              address._in_addr, port);
+-          if (result is OSError) {
+-            throw createError(result, "Connection failed", address, port);
+-          } else {
+-            socket.port;  // Query the local port, for error messages.
+-            var completer = new Completer();
+-            // Setup handlers for receiving the first write event which
+-            // indicate that the socket is fully connected.
+-            socket.setHandlers(
+-                write: () {
+-                  socket.setListening(read: false, write: false);
+-                  completer.complete(socket);
+-                },
+-                error: (e) {
+-                  socket.close();
+-                  completer.completeError(e);
+-                }
+-            );
+-            socket.setListening(read: false, write: true);
+-            return completer.future;
++        .then((addresses) {
++          assert(addresses is List);
++          var completer = new Completer();
++          var it = addresses.iterator;
++          void run(error) {
++            if (!it.moveNext()) {
++              assert(error != null);
++              completer.completeError(error);
++              return;
++            }
++            var address = it.current;
++            var socket = new _NativeSocket.normal();
++            socket.address = address;
++            var result = socket.nativeCreateConnect(address._in_addr, port);
++            if (result is OSError) {
++              run(error != null ? error :
++                  createError(result, "Connection failed", address, port));
++            } else {
++              socket.port;  // Query the local port, for error messages.
++              // Setup handlers for receiving the first write event which
++              // indicate that the socket is fully connected.
++              socket.setHandlers(
++                  write: () {
++                    socket.setListening(read: false, write: false);
++                    completer.complete(socket);
++                  },
++                  error: (e) {
++                    socket.close();
++                    run(error != null ? error : e);
++                  }
++              );
++              socket.setListening(read: false, write: true);
++            }
+           }
++          run(null);
++          return completer.future;
+         });
+   }
+ 
+Index: dart/sdk/lib/io/secure_socket.dart
+diff --git a/dart/sdk/lib/io/secure_socket.dart b/dart/sdk/lib/io/secure_socket.dart
+index b966c61bb676e30fba59043ffbe18e96e8449573..903ecf8b0f6132200f3559dd8d51ff473c30a45f 100644
+--- a/dart/sdk/lib/io/secure_socket.dart
++++ b/dart/sdk/lib/io/secure_socket.dart
+@@ -246,13 +246,23 @@ abstract class RawSecureSocket implements RawSocket {
+       {bool sendClientCertificate: false,
+        String certificateName,
+        bool onBadCertificate(X509Certificate certificate)}) {
+-    return  _RawSecureSocket.connect(
++    _RawSecureSocket._verifyFields(
+         host,
+         port,
+         certificateName,
+-        is_server: false,
+-        sendClientCertificate: sendClientCertificate,
+-        onBadCertificate: onBadCertificate);
++        false,
++        false,
++        false,
++        sendClientCertificate,
++        onBadCertificate);
++    return RawSocket.connect(host, port)
++        .then((socket) {
++          return secure(socket,
++                        host: host,
++                        sendClientCertificate: sendClientCertificate,
++                        certificateName: certificateName,
++                        onBadCertificate: onBadCertificate);
++        });
+   }
+ 
+   /**
