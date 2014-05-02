@@ -151,7 +151,7 @@ make_dnsmasq_acs() {
 }
 
 make_dnsmasq_ipv6() {
-  local prefix64=$1
+  local prefix64="$1"
   if [ -n "$prefix64" ]; then
     # Write out a config that will enable dhcpv6 stateless server
     # and send router advertisements every 10 seconds.
@@ -159,6 +159,8 @@ make_dnsmasq_ipv6() {
       echo "dhcp-range=${prefix64},ra-stateless"
       echo "ra-param=${bridge_ifc},10"
     )"
+  else
+    rm -f /tmp/dnsmasq/ipv6.conf
   fi
 }
 
@@ -200,12 +202,54 @@ write_ntp_conf_new()
   log_file_contents "$fname"
 }
 
-remove_ip6_prefix() {
-  if [ -n "$1" ]; then
-    local prefix64=$(echo "$1" | sed -e 's@/..$@@')
-    local old_br_addr=${old_prefix64}1/64
-    ip -6 addr del $old_br_addr dev $bridge_ifc
+ip6_prefix_to_addr() {
+  if [ -z "$1" ]; then
+    echo ""
+    return
   fi
+
+  local prefix=$(echo "$1" | sed -e 's@/..$@@')
+  prefix="${prefix}1/64"
+  echo "$prefix"
+}
+
+ip6_prefix_change() {
+  # If neither the old nor the new prefix is set, don't do anything.
+  if [ -z "$new_ip6_prefix" ] && [ -z "$old_ip6_prefix" ]; then
+    echo 0
+    return
+  fi
+
+  local new_addr64=$(ip6_prefix_to_addr "$new_ip6_prefix")
+  local old_addr64=$(ip6_prefix_to_addr "$old_ip6_prefix")
+
+  # Case 1:  Prefix is being removed.
+  if [ -z "$new_addr64" ]; then
+    ip -6 addr del "$old_addr64" dev $bridge_ifc
+    echo 1
+    return
+  fi
+
+  # Case 2: Old prefix != newprefix.
+  if [ "$old_addr64" != "$new_addr64" ]; then
+    if [ -n "$old_addr64" ]; then
+      ip -6 addr del "$old_addr64" dev $bridge_ifc
+    fi
+    ip -6 addr add "$new_addr64" dev $bridge_ifc
+    echo 1
+    return
+  fi
+
+  # Case 3: old prefix = new prefix.  Check if this prefix is already set.
+  local addrs
+  addrs=$(ip -6 addr show dev $bridge_ifc | grep -i "$new_addr64")
+  if [ -n "$addrs" ]; then
+    echo 0
+    return
+  fi
+
+  ip -6 addr add "$new_addr64" dev $bridge_ifc
+  echo 1
 }
 
 # Must be used on exit.   Invokes the local dhcp client exit hooks, if any.
@@ -220,30 +264,30 @@ exit_with_hooks() {
       ;;
 
     BOUND6|RENEW6|REBIND6|REBOOT6)
-      local restart_dnsmasq=0
-      if [ -n "${old_ip6_prefix}" ] || [ -n "${new_ip6_prefix}" ]; then
-        remove_ip6_prefix "$old_ip6_prefix"
-        local prefix64=$(echo "$new_ip6_prefix" | sed -e 's@/..$@@')
-        local br_addr=${prefix64}1/64
-        ip -6 addr add $br_addr dev $bridge_ifc
-        make_dnsmasq_ipv6 $prefix64
-        restart_dnsmasq=1
+      local restart_dnsmasq
+      restart_dnsmasq=$(ip6_prefix_change)
+      if [ "$restart_dnsmasq" = 1 ]; then
+        local prefix=$(echo "$new_ip6_prefix" | sed -e 's@/..$@@')
+        make_dnsmasq_ipv6 "$prefix"
       fi
-      if [ -n "$new_cwmp_acs_url" ] && [ "$new_cwmp_acs_url" != "$old_cwmp_acs_url" ]; then
+
+      if [ -n "$new_cwmp_acs_url" ] && \
+        [ "$new_cwmp_acs_url" != "$old_cwmp_acs_url" ]; then
         make_dnsmasq_acs
         restart_dnsmasq=1
       fi
-      if [ $restart_dnsmasq != 0 ]; then
+
+      if [ "$restart_dnsmasq" != 0 ]; then
         restart dnsmasq
       fi
 
-      if runnable rdisc6 && [ -n "${new_ip6_address}" ] && [ -n "${interface}" ]; then
-        if [ "${new_ip6_address}" != "${old_ip6_address}" ]; then
-          # If we received a new address, force a router solicitation to
-          # be sent, which will force a router advertisement.  We need the
-          # RA for setting our default route.
-          rdisc6 -1 "${interface}" &
-        fi
+      if runnable rdisc6 && \
+        [ -n "${new_ip6_address}" ] && [ -n "${interface}" ] && \
+        [ "${new_ip6_address}" != "${old_ip6_address}" ]; then
+        # If we received a new address, force a router solicitation to
+        # be sent, which will force a router advertisement.  We need the
+        # RA for setting our default route.
+        rdisc6 -1 "${interface}" &
       fi
       write_ntp_conf_new /tmp/ntpd6.servers
       ;;
@@ -260,6 +304,7 @@ exit_with_hooks() {
       remove_ip6_prefix "$cur_ip6_prefix"
       rm -f /tmp/dnsmasq/ipv6.conf
       rm -f /tmp/dnsmasq/acs.conf
+      ip -6 addr flush dev $bridge_ifc scope global
       restart dnsmasq
       ;;
   esac
