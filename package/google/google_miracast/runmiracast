@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/usr/bin/zsh
 
 export MIRACAST_PID_FILE=/var/run/MiracastTester.pid
 export MIRACAST_LISTENER=/usr/local/bin/MiracastTester
+export MIRACAST_LISTENER_SHORT=MiracastTester
 export MIRACAST_PLAYER=/app/client/miracast_player
 
 runpid()
@@ -27,10 +28,28 @@ runpid()
 
 cleanup()
 {
+    echo "Cleanup: stopping miracast service"
+
     if [ -f $MIRACAST_PID_FILE ] ; then
-        kill `cat $MIRACAST_PID_FILE`
+        echo "Cleanup: killing Miracast listener"
+        /bin/pkillwait -x $MIRACAST_LISTENER_SHORT
+        rm -f $MIRACAST_PID_FILE
+
+        # Miracast listener is running, this means we are the ones
+        # that turned on the radio. Turn it off here.
+        echo "Cleanup: turning off radio"
+        wl radio off
     fi
     rm -f /tmp/miracast-listener
+    exit 128
+}
+
+runlistener()
+{
+    runpid $MIRACAST_PID_FILE $MIRACAST_LISTENER $MIRACAST_PLAYER
+    rm -f /tmp/miracast-listener
+    echo "Listener exited: turning off radio"
+    wl radio off
 }
 
 trap "cleanup" HUP INT TERM
@@ -45,8 +64,15 @@ watch-dir /tmp | while read LINE ; do
             if [ -f $MIRACAST_PID_FILE ] ; then
                 echo "Listener already running"
             else
-                wl radio on
-                ((runpid $MIRACAST_PID_FILE $MIRACAST_LISTENER $MIRACAST_PLAYER | logos miracast) ; rm -f /tmp/miracast-listener) &
+                export ORIGINAL_RADIO=`wl radio`
+                if [ "0x0000" = "$ORIGINAL_RADIO" ] ; then
+                    echo "ERROR: WiFi radio is currently ON. Please turn it OFF to run Miracast"
+                else
+                    echo "Turning on radio"
+                    wl radio on
+                    echo "Launching listener"
+                    runlistener &
+                fi
             fi
         else
             echo "Request to stop miracast listener"
