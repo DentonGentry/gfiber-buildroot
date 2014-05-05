@@ -46,7 +46,11 @@ cleanup()
 
 runlistener()
 {
-    runpid $MIRACAST_PID_FILE $MIRACAST_LISTENER $MIRACAST_PLAYER
+    RECEIVER_NAME="GFiberTV"
+    if [ -e /config/nickname ]; then
+        RECEIVER_NAME=`cat /config/nickname`
+    fi
+    runpid $MIRACAST_PID_FILE $MIRACAST_LISTENER $MIRACAST_PLAYER "$RECEIVER_NAME"
     rm -f /tmp/miracast-listener
     echo "Listener exited: turning off radio"
     wl radio off
