@@ -10,6 +10,9 @@ config fastforward rtsp
 config fastforward pptp
 	option proto		tcp
 	option port		1723
+config fastforward h323
+	option proto		tcp
+	option port		1720
 
 config logging
 	option file	-
