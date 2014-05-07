@@ -2,18 +2,12 @@
 
 # manage miniupnpd and minissdpd, the IGD/NAT-DMP daemons
 
-# this script must be restarted ($0 restart) if the wan address changes
+# this script must be restarted ($0 restart) if the wan address or interface changes
 # this script should be run before catawampus (S85catawampus) since catawampus may restart it
 # if /tmp/upnpd-enabled is not present, it will be a no-op (catawampus manages that file)
+# dhclient-script runs restart upnpd
 
 enabler=/tmp/upnpd-enabled
-
-# wan is wan0 on optimus/gfrg200
-wan=wan0
-
-wanipv4=$(ip -4 -o addr show $wan)
-wanipv4=${wanipv4#* inet }
-wanipv4=${wanipv4%%/*}
 
 start()
 {
@@ -39,11 +33,18 @@ start()
   lanipv4=${lanipv4#* inet }
   lanipv4=${lanipv4%%/*}
 
+  wan=$(activewan)
+
+  if [ -z "$wan" ]; then
+    echo "no wan interface is active, refusing to start."
+    return
+  fi
+
   cmd="minissdpd -i br0 -6"
   echo "Running: $cmd"
   eval "$cmd 2>&1 | logos upnpd"
 
-  cmd="miniupnpd -i $wan -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N"
+  cmd="miniupnpd -i '$wan' -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N"
   echo "Running: $cmd"
   eval "$cmd 2>&1 | logos upnpd"
 }

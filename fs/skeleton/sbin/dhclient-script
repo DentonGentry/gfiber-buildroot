@@ -259,7 +259,7 @@ exit_with_hooks() {
     BOUND|RENEW|REBIND|REBOOT)
       write_ntp_conf_new /tmp/ntpd4.servers
       if [ "$addr_added" = 1 ]; then
-        restart igmpproxy
+        restart igmpproxy upnpd
       fi
       ;;
 
