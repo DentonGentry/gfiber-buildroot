@@ -37,6 +37,15 @@ try_install()
         if mount -t vfat /dev/$part /tmp/installsrc; then
           log "  mounted."
 
+          if [ -e /tmp/installsrc/factory_status ]; then
+            # Note for the future: never execute files from USB.
+            # Anybody can put anything they want on a USB stick.
+            #
+            # In this case they could make the factory_status server
+            # start, which wouldn't actually hurt anything.
+            echo :>/tmp/factory_status
+          fi
+
           # we deliberately use the last *.gi file alphabetically.  That
           # one has the highest version number so it's the best choice.
           lastimg=
