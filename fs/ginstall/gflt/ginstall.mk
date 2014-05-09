@@ -25,6 +25,11 @@ define ROOTFS_GINSTALL_CMD
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
 	cd $(BINARIES_DIR) && \
 	cp $(value GFLT_LOADER) loader.img && \
+	gzip -c <rootfs.cpio >rootfs.cpio.gz && \
+	$(HOST_DIR)/usr/bin/mkimage \
+        -A $(BR2_ARCH) -O linux -T kernel -C none \
+        -a 0x00008000 -e 0x00008000 -n $(value ROOTFS_GINSTALL_VERSION) \
+        -d zImage uImage && \
 	cp uImage kernel.img && \
 	(echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
 	 echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40;) >>manifest && \
