@@ -1,8 +1,10 @@
 #!/bin/sh
 
 #
-# Configure GFRG2X0 QCA8337N switch to not flood multicast
-# by enabling hardware IGMP snooping of join/leave requests
+# Configure GFRG2X0 QCA8337N switch:
+# - Enabling hardware IGMP snooping of join/leave requests to avoid multicast
+#   flooding
+# - Disable flow control on port 0 (Mindspeed C2K SoC)
 #
 
 disable_multicast_flood_cmds()
@@ -13,7 +15,6 @@ disable_multicast_flood_cmds()
     echo igmp portLeave set $n enable
     echo misc ptUnkMcFilter set $n enable
   done
-  echo q
 }
 
 restore_defaults_cmd()
@@ -24,18 +25,35 @@ restore_defaults_cmd()
     echo igmp portLeave set $n disable
     echo misc ptUnkMcFilter set $n disable
   done
-  echo q
+}
+
+disable_flowctrl_port0_cmds()
+{
+        echo port flowCtrl set 0 disable
+}
+
+enable_flowctrl_port0_cmds()
+{
+        echo port flowCtrl set 0 enable
 }
 
 case "$1" in
   start)
     if runnable ssdk_sh; then
-      disable_multicast_flood_cmds | ssdk_sh 2>&1 | logos switch
+      {
+        disable_multicast_flood_cmds
+        disable_flowctrl_port0_cmds
+        echo quit
+      } | ssdk_sh 2>&1 | logos switch
     fi
     ;;
   stop)
     if runnable ssdk_sh; then
-      restore_defaults_cmd | ssdk_sh 2>&1 | logos switch
+      {
+        restore_defaults_cmd
+        enable_flowctrl_port0_cmds
+        echo quit
+      } | ssdk_sh 2>&1 | logos switch
     fi
     ;;
   restart|reload)
