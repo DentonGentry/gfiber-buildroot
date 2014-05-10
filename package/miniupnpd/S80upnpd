@@ -40,10 +40,6 @@ start()
     return
   fi
 
-  cmd="minissdpd -i br0 -6"
-  echo "Running: $cmd"
-  eval "$cmd 2>&1 | logos upnpd"
-
   cmd="miniupnpd -i '$wan' -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N"
   echo "Running: $cmd"
   eval "$cmd 2>&1 | logos upnpd"
@@ -54,9 +50,6 @@ stop()
   if [ -f /var/run/miniupnpd.pid ]; then
     kill -TERM $(cat /var/run/miniupnpd.pid)
     sleep 1
-  fi
-  if [ -f /var/run/minissdpd.pid ]; then
-    kill -TERM $(cat /var/run/minissdpd.pid)
   fi
 }
 
@@ -73,7 +66,7 @@ case "$1" in
     start
     ;;
   isrunning)
-    if [ -f /var/run/miniupnpd.pid ] || [ -f /var/run/minissdpd.pid ]; then
+    if [ -f /var/run/miniupnpd.pid ]; then
       exit 0
     else
       exit 1

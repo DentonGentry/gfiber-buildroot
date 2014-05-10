@@ -24,6 +24,7 @@ exec >/dev/kmsg 2>&1
 #  'mkdir -p /var/lock/whatever' start working, implying it's caused by a bug
 #  in the kernel somewhere (perhaps in NFS).
 mkdir /tmp/run
+chmod 777 /tmp/run
 (cd /var/lock)
 (cd /var/cache)
 (cd /var/log)
