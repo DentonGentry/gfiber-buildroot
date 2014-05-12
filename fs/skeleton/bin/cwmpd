@@ -11,7 +11,6 @@ esac
 CWMP="
   /usr/catawampus/cwmpd
       --platform=$board
-      --ping_ip6dev=br0
       --ca-certs=/etc/ssl/certs/ca-certificates.crt
       --restrict-acs-hosts=gfiber-acs-staging.appspot.com,gfiber-acs-prod.appspot.com,gfiber-acs-canary.appspot.com,gfiber-acs-boss.appspot.com,.gfsvc.com,.google.com
 "
