@@ -189,6 +189,9 @@ class BuildRootBuilder(object):
     """Generate a config file for the given set of options."""
     opts = dict(BR2_PACKAGE_GOOGLE_PROD=self.opt.production,
                 BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox)
+    # Disable ccache for production builds.
+    if self.opt.production:
+      opts['BR2_CCACHE'] = 0
     opts.update(extra)
 
     # We append to the file because the user might have added (unrelated)
