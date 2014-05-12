@@ -62,6 +62,9 @@ case "$1" in
       # the production firmware at all, or it barfs.
       modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb \
         ath9k_htc 2>/dev/null
+
+      # Enable wifi beacon debug logging.
+      echo 0x10000000 > /sys/module/ath10k_core/parameters/debug_mask
     fi
 
     # if the file exists and it isn't empty
