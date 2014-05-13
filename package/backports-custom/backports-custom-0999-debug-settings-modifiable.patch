@@ -1,0 +1,75 @@
+From a4375b45c59675a2f90b8a3656b7e57e8f8aa30b Mon Sep 17 00:00:00 2001
+From: David Held <drheld@google.com>
+Date: Tue, 13 May 2014 00:40:25 -0400
+Subject: [PATCH] Make debug setting live modifiable for ath9k.
+
+---
+ drivers/net/wireless/ath/ath9k/init.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath9k/init.c b/drivers/net/wireless/ath/ath9k/init.c
+index 8894e96..5b99fe2 100644
+--- a/drivers/net/wireless/ath/ath9k/init.c
++++ b/drivers/net/wireless/ath/ath9k/init.c
+@@ -21,6 +21,7 @@
+ #include <linux/ath9k_platform.h>
+ #include <linux/module.h>
+ #include <linux/relay.h>
++#include <linux/spinlock.h>
+ #include <net/ieee80211_radiotap.h>
+ 
+ #include "ath9k.h"
+@@ -37,8 +38,23 @@ MODULE_DESCRIPTION("Support for Atheros 802.11n wireless LAN cards.");
+ MODULE_SUPPORTED_DEVICE("Atheros 802.11n WLAN cards");
+ MODULE_LICENSE("Dual BSD/GPL");
+ 
++static DEFINE_SPINLOCK(debug_lock);
+ static unsigned int ath9k_debug = ATH_DBG_DEFAULT;
+-module_param_named(debug, ath9k_debug, uint, 0);
++static int *ath_common_debug = NULL;
++static int ath9k_update_debug(const char *val, const struct kernel_param *kp) {
++	int ret = param_set_uint(val, kp);
++	if (ret < 0) return ret;
++
++	spin_lock(&debug_lock);
++	if (ath_common_debug) *ath_common_debug = ath9k_debug;
++	spin_unlock(&debug_lock);
++	return 0;
++}
++static const struct kernel_param_ops ath9k_debug_param_ops = {
++	.set = ath9k_update_debug,
++	.get = param_get_uint,
++};
++module_param_cb(debug, &ath9k_debug_param_ops, &ath9k_debug, 0644);
+ MODULE_PARM_DESC(debug, "Debugging mask");
+ 
+ int ath9k_modparam_nohwcrypt;
+@@ -525,10 +541,14 @@ static int ath9k_init_softc(u16 devid, struct ath_softc *sc,
+ 	common->ah = ah;
+ 	common->hw = sc->hw;
+ 	common->priv = sc;
+-	common->debug_mask = ath9k_debug;
+ 	common->btcoex_enabled = ath9k_btcoex_enable == 1;
+ 	common->disable_ani = false;
+ 
++	spin_lock(&debug_lock);
++	ath_common_debug = &common->debug_mask;
++	spin_unlock(&debug_lock);
++	common->debug_mask = ath9k_debug;
++
+ 	/*
+ 	 * Platform quirks.
+ 	 */
+@@ -875,6 +895,9 @@ static void ath9k_deinit_softc(struct ath_softc *sc)
+ void ath9k_deinit_device(struct ath_softc *sc)
+ {
+ 	struct ieee80211_hw *hw = sc->hw;
++	spin_lock(&debug_lock);
++	ath_common_debug = NULL;
++	spin_unlock(&debug_lock);
+ 
+ 	ath9k_ps_wakeup(sc);
+ 
+-- 
+1.9.1.423.g4596e3a
+
