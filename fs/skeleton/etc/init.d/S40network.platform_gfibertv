@@ -63,15 +63,13 @@ case "$1" in
       #
       # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
       # the wifi device ordering is constant.
-
-      # Install ath9k with fatal errors and stuck beacon logging enabled.
-      modprobe ath9k debug=0x00004400 2>/dev/null
-
-      modprobe -a ath10k_pci mwl8k mwifiex_sdio mwifiex_usb \
+      modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb \
         ath9k_htc 2>/dev/null
 
       # Enable wifi beacon debug logging.
-      echo 0x10000000 > /sys/module/ath10k_core/parameters/debug_mask
+      echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
+      # Enable wifi beacon and fatal debug logging.
+      echo 0x00004400 >/sys/module/ath9k/parameters/debug
     fi
 
     # if the file exists and it isn't empty
