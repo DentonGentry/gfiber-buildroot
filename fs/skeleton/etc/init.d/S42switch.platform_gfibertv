@@ -10,20 +10,22 @@
 disable_multicast_flood_cmds()
 {
   echo igmp rp set 0x1
+  echo igmp cmd set cpycpu
   for n in $(seq 1 4); do
+    echo igmp mode set $n enable
     echo igmp portJoin set $n enable
     echo igmp portLeave set $n enable
-    echo misc ptUnkMcFilter set $n enable
   done
 }
 
 restore_defaults_cmd()
 {
   echo igmp rp set 0x0
+  echo igmp cmd set rdtcpu
   for n in $(seq 1 4); do
+    echo igmp mode set $n disable
     echo igmp portJoin set $n disable
     echo igmp portLeave set $n disable
-    echo misc ptUnkMcFilter set $n disable
   done
 }
 
