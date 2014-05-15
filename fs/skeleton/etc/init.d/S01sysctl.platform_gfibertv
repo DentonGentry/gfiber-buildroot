@@ -3,8 +3,7 @@ case "$1" in
   start)
     # Avoid UDP packet loss by increasing socket buffer size.
     # rmem_max defines the maximum receive socket buffer size in bytes.
-    # The actual buffer size is set in sagesrv.
-    sysctl net.core.rmem_max=4194304
+    sysctl net.core.rmem_max=524288
     # Panic everytime there is a kernel oops
     sysctl -q kernel.panic_on_oops=1
     ;;
