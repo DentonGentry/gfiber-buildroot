@@ -66,7 +66,7 @@ case $appname in
     vudu $opts 2>&1 | logos vudu
     ;;
   youtube)
-    cd /usr/local/bin/webkitGl2
+    cd /usr/local/bin/webkitGl?
     [ -z "$opts" ] && opts='https://www.youtube.com/tv'
     ./start $opts 2>&1 | logos youtube
     ;;
