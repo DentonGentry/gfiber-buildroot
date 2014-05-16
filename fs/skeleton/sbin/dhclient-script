@@ -494,7 +494,25 @@ if [ x$reason = xBOUND6 ] ; then
   exit_with_hooks 0
 fi
 
+has_new_ip6_address() {
+  local output
+  output=$(ip -f inet6 addr show dev "${interface}" | grep "${new_ip6_address}")
+  [ -n "$output" ]
+}
+
 if [ x$reason = xRENEW6 ] || [ x$reason = xREBIND6 ] ; then
+  # Part of the DHCPv6 spec says that a RENEW6 can send a new and
+  # different address.
+  if [ -n "${new_ip6_address}" ] && [ "${new_max_life}" != 0 ] && \
+    ! has_new_ip6_address; then
+    if [ -z "${new_ip6_prefixlen}" ]; then
+      # Should never happen, we got a valid address, but no prefixlen.
+      exit_with_hooks 2;
+    fi
+    $ip -f inet6 addr add ${new_ip6_address}/${new_ip6_prefixlen} \
+      dev ${interface} scope global
+  fi
+
   # Make sure nothing has moved around on us.
 
   # Nameservers/domains/etc.
