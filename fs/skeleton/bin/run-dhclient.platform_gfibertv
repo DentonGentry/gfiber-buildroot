@@ -5,9 +5,9 @@ lock=/var/run/dhclient.$iface.lock
 lockfile-create --use-pid $lock
 
 run_dhclient() {
-  local suffix="$1" xargs="$2"
-  local pidfile="/var/run/dhclient$suffix.$iface"
-  local leasefile="/var/run/dhclient$suffix.$iface.lease"
+  local suffix="$1" xargs="$2" stateful=$3
+  local pidfile="/var/run/dhclient$suffix.$iface$stateful"
+  local leasefile="/var/run/dhclient$suffix.$iface.lease$stateful"
   local conffile="/etc/dhclient$suffix.conf"
 
   if [ -e "$pidfile" ]; then
@@ -19,21 +19,20 @@ run_dhclient() {
       -pf "$pidfile" \
       -lf "$leasefile" \
       -cf "$conffile" \
-      2>&1 | logos "dhclient$suffix.$iface" &
+      2>&1 | logos "dhclient$suffix.$iface$stateful" &
 }
 
 run_dhclient "" ""
 
-# TODO(jnewlin):  We have to figure out what sane thing to do on
-# wan0.  Currently the lab network needs a stateless DHCP query
-# and the production network needs a delegation request.  We want
-# to get rid of the vlan tagging, therefore this won't work long
-# term.
-if [ "$iface" = "wan0.2" ]; then
+if [ "$iface" = "wan0.2" ] || [ "$iface" = "wan0" ]; then
   # -N -P means to request a delegated prefix AND get a address.
-  run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900"
-else
-  run_dhclient "6" "-S -6 --never-gonna-give-you-up 900"
+  # -S means runs stateless config, requests only the extra information.
+  # For the wan we run both so that in a SLAAC environment we can still query
+  # the extra info (ACS address, nameservers etc) and the stateful
+  # version is what is needed when connected to the fiberjack.
+  # Running both at the same time should be harmless.
+  run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900" "stateful"
 fi
+run_dhclient "6" "-S -6 --never-gonna-give-you-up 900" "stateless"
 
 lockfile-remove $lock
