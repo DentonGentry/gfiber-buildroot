@@ -23,7 +23,8 @@ case "$1" in
     pkillwait -f '(babysit.*)(runoregano)'
     pkillwait -x 'runoregano'
     pkillwait -f '(babysit.*)(marjoram\.dart)'
-    pkillwait -x 'runmarjoram';
+    pkillwait -x 'runmarjoram'
+    pkillwait -f '(dart.*)(authTokens\.dart)'
     pkillwait -f '(dart.*)(marjoram\.dart)'
     stop_sagesrv
     stop_adloader
