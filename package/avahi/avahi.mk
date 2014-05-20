@@ -10,7 +10,7 @@
 # either version 2.1 of the License, or (at your option) any
 # later version.
 
-AVAHI_VERSION = 0.6.30
+AVAHI_VERSION = 0.6.31
 AVAHI_SOURCE = avahi-$(AVAHI_VERSION).tar.gz
 AVAHI_SITE = http://www.avahi.org/download/
 AVAHI_INSTALL_STAGING = YES
@@ -158,6 +158,7 @@ endif
 
 define AVAHI_INSTALL_DAEMON_INITSCRIPT
 	$(INSTALL) -m 0755 package/avahi/S50avahi-daemon $(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -m 0755 package/avahi/avahi-daemon.conf $(TARGET_DIR)/etc/avahi/avahi-daemon.conf
 endef
 
 ifeq ($(BR2_PACKAGE_AVAHI_DAEMON),y)
