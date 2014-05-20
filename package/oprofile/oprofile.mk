@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-OPROFILE_VERSION = 0.9.8
+OPROFILE_VERSION = 0.9.9
 OPROFILE_CONF_OPT = \
 	--localstatedir=/var \
 	--disable-account-check \
@@ -14,6 +14,7 @@ OPROFILE_AUTORECONF = YES
 OPROFILE_BINARIES = utils/ophelp pp/opannotate pp/oparchive pp/opgprof
 OPROFILE_BINARIES += pp/opreport opjitconv/opjitconv daemon/oprofiled
 OPROFILE_BINARIES += utils/op-check-perfevents libabi/opimport
+OPROFILE_BINARIES += pe_counting/ocount
 
 # No perf_events support in kernel for avr32
 ifneq ($(BR2_avr32),y)
