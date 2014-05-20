@@ -99,10 +99,6 @@ case "$1" in
     # configure loopback
     ifup lo
 
-    if is-qca83xx-present; then
-      qca83xx --stats
-    fi
-
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
     brctl setfd br0 1
