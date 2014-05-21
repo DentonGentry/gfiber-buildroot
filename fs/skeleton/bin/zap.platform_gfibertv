@@ -32,12 +32,47 @@ if [ $ireallymeanit -eq 0 ]; then
   ireallymeanit=1
 fi
 
+# copied from S08volcheck
+check_mmc()
+{
+  sgdisk -p /dev/mmcblk0 |
+  while read number start end size unit code name; do
+    if [ "$name" = "$1" ]; then
+      echo $number
+    fi
+  done
+}
+
 leds 0 15 0 15 0 15  # noisy leds as we wipe things
+
+# try to umount what we can
+pkill -9 -f miniclient
+pkill -9 -f siege
+pkill -9 -f dir-monitor
+pkill -9 -f app_gtv
+pkill -9 -f apptvg
+pkill -9 -f bsa
+sleep 5
+(
+lsof | grep /user
+lsof | grep /config
+) | sed -e 's/^/BUSY: /'
+umount -f /config
+umount -f /user
+
 for mtdname in "data+ubi"; do
   mtd=$(whichmtd "$mtdname")
   if [ -n "$mtd" ]; then
     echo "Wiping $mtdname ($mtd)..."
     ubiformat --force -y "$mtd"
+  fi
+done
+
+for mtdname in "data+ext4"; do
+  mtd=$(check_mmc "$mtdname")
+  if [ -n "$mtd" ]; then
+    echo "Wiping $mtdname ($mtd)..."
+    dd if=/dev/zero of=/dev/mmcblk0p$mtd bs=65536 count=200
   fi
 done
 
