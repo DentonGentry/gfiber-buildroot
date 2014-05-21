@@ -11,8 +11,9 @@ ip46tables()
   ip6tables $*
 }
 
-# wan is wan0 on optimus/gfrg200
-wan=wan0
+# wan is wan0/wan0.2 on optimus/gfrg200
+wan=$(activewan)
+wans=wan0+
 
 wanipv4=$(ip -4 -o addr show $wan)
 wanipv4=${wanipv4#* inet }
@@ -81,7 +82,7 @@ if [ -f $file ]; then
       continue
     fi
 
-    iptables -t nat -A acsrules-nat-prerouting -p $protocol -s $source -d $gateway --dport $sport -j DNAT --to $dest:$dport -m comment --comment "$comment"
+    iptables -t nat -A acsrules-nat-prerouting -i $wans -p $protocol -s $source -d $gateway --dport $sport -j DNAT --to $dest:$dport -m comment --comment "$comment"
     iptables -t nat -A acsrules-nat-postrouting -p $protocol -s $lanipv4mask -d $dest --dport $dport -j SNAT --to $lanipv4
     iptables -A acsrules-filter-forward -p $protocol -d $dest --dport $dport -j ACCEPT
     # this adds a lan rule so internal hosts can use the lan router ip to get the same mapping
@@ -94,7 +95,7 @@ fi
 # ipv6 port mapping rules
 file=/tmp/cwmp_ip6tables
 if [ -f $file ]; then
-  declare -A cwmp
+  declare -A cwmp6
   line=0
   while IFS="=" read -r key value; do
     line=$(($line + 1))
@@ -102,20 +103,20 @@ if [ -f $file ]; then
       echo "$0: $file:$line: ignoring empty key" 1>&2
       continue
     fi
-    cwmp[$key]="$value"
+    cwmp6[$key]="$value"
   done < $file
 
   rule=1
   while true; do
     tag="CWMP_${rule}_"
 
-    comment=${cwmp[${tag}COMMENT]}
-    protocol=${cwmp[${tag}PROTOCOL]}
-    source=${cwmp[${tag}SOURCE]}
-    dest=${cwmp[${tag}DEST]}
-    sport=${cwmp[${tag}SPORT]}
-    dport=${cwmp[${tag}DPORT]}
-    enabled=${cwmp[${tag}ENABLE]}
+    comment=${cwmp6[${tag}COMMENT]}
+    protocol=${cwmp6[${tag}PROTOCOL]}
+    source=${cwmp6[${tag}SOURCE]}
+    dest=${cwmp6[${tag}DEST]}
+    sport=${cwmp6[${tag}SPORT]}
+    dport=${cwmp6[${tag}DPORT]}
+    enabled=${cwmp6[${tag}ENABLE]}
 
     rule=$(($rule + 1))
     # 1 means proceed, 0 means skip, others mean abort
@@ -135,8 +136,8 @@ fi
 # upnp IGD (firewall pinholes)
 # MINIUPNPD is maintained by miniupnpd
 if [ -f $acs/upnpd_enabled ]; then
-  ip46tables -t filter -A acsrules-filter-forward -i $wan ! -o $wan -j MINIUPNPD
-  iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wan -j MINIUPNPD
+  ip46tables -t filter -A acsrules-filter-forward -i $wans ! -o $wans -j MINIUPNPD
+  iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wans -j MINIUPNPD
   ! /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd start
 else
   /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd stop
