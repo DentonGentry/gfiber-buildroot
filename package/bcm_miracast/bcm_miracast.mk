@@ -28,8 +28,10 @@ define BCM_MIRACAST_BUILD_CMDS
         NETAPP_WIFI_WPS=n \
         NETAPP_SSDP=n \
         NETAPP_ZEROCONF=n \
+        NETAPP_VOICE_RECOGNITION=n \
         NETAPP_DATABASE=n \
         AARDVARK_DRIVER_VERSION=wifi \
+        SW7425_5525=1 \
         WIFI_SRC_PKG=$(@D)/broadcom/netapp/netapp/wlan/broadcom/aardvark.tgz \
         APPLIBS_TOP=$(@D) \
 		-C $(@D)/common netapp
