@@ -1,4 +1,13 @@
 #!/bin/sh
+
+fssize()
+{
+  local size
+  size=$(df -k $1 | grep / | sed -e 's/  */ /' | cut -f 2 -d ' ')
+  size=$(($size + 0))
+  echo $size
+}
+
 case "$1" in
   start)
     mkdir -p /tmp/cwmp/monitoring/dejittering
@@ -8,9 +17,15 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/ts
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
     if is-storage-box; then
-      mkdir -p /var/media/swimage
-      rm -f /var/media/swimage/*.gi
+      swimage=/var/media/swimage
+    elif [ "$(fssize /user)" -ge 1000000 ]; then
+      swimage=/user/swimage
+    else
+      swimage=/tmp/swimage
     fi
+    mkdir -p $swimage
+    rm -f $swimage/*.gi
+    rm -rf $swimage/dnld
     babysit 60 cwmp_monitor | logos cwmp_monitor &
     if is-network-box; then
       DIAGUI="--diagui"
