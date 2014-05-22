@@ -76,6 +76,13 @@ stop_sagesrv() {
   pkillwait -f '(alivemonitor.*)(sagesrv)'
 }
 
+setup_ads() {
+  mkdir -p /rw/sagesrv
+  chmod 770 /rw/sagesrv
+  chown video.video /rw/sagesrv
+  chown video.video /rw/sagesrv/*
+}
+
 setup_adloader() {
   mkdir -p /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
   chmod 770 /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
