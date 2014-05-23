@@ -1,4 +1,0 @@
-config BR2_PACKAGE_GOOGLE_FALLOCATE
-        bool "google_fallocate"
-        help
-          Builds the fallocate library
