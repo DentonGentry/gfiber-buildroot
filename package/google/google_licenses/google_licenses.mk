@@ -12,9 +12,19 @@ endef
 ifeq ($(BR2_PACKAGE_GOOGLE_LICENSES),y)
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
-GOOGLE_LICENSES_LICTYPE=playready2_prod_license
+  ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfibertv")
+    GOOGLE_LICENSES_LICTYPE=playready2_prod_license
+  endif
+  ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gftv200")
+    GOOGLE_LICENSES_LICTYPE=playready2_gfhd200_prod_license
+  endif
 else
-GOOGLE_LICENSES_LICTYPE=playready2_dev_license
+  ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfibertv")
+    GOOGLE_LICENSES_LICTYPE=playready2_dev_license
+  endif
+  ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gftv200")
+    GOOGLE_LICENSES_LICTYPE=playready2_gfhd200_dev_license
+  endif
 endif
 GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += $(GOOGLE_LICENSES_LICTYPE)
 
