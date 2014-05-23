@@ -24,6 +24,8 @@
 # 4. TIMEOUT not tested. ping has a flag I don't know, and I'm suspicious
 # of the $1 in its args.
 
+printenv
+
 . /etc/utils.sh
 
 mkdir -p /tmp/dnsmasq
