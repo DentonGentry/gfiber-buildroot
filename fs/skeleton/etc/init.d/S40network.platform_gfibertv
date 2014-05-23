@@ -44,7 +44,6 @@ redistribute_irqs()
   fi
 }
 
-
 case "$1" in
   start)
     # TODO(apenwarr): remove this once all devices use 'moca0' as the name.
@@ -56,6 +55,19 @@ case "$1" in
       mocaifc=eth1
     fi
 
+    WIFI_MAC=$(hnvram -rq MAC_ADDR_WIFI)
+    if [ -z "$WIFI_MAC" ]; then
+      MAC=$(hnvram -rq MAC_ADDR)
+      if [ -z "${MAC}" ]; then
+        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
+      else
+        WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
+      fi
+    fi
+    if [ -n "$WIFI_MAC" ]; then
+      mwifi_param="wifi_addr=$WIFI_MAC"
+    fi
+
     modprobe bmoca 2>/dev/null
     if [ "$(kernopt wifical)" != "1" ]; then
       # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
@@ -63,8 +75,9 @@ case "$1" in
       #
       # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
       # the wifi device ordering is constant.
-      modprobe -a ath9k ath10k_pci mwl8k mwifiex_sdio mwifiex_usb \
-        ath9k_htc 2>/dev/null
+      modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
+      modprobe mwifiex $mwifi_param 2>/dev/null
+      modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
 
       # Enable wifi beacon debug logging.
       echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
