@@ -14,6 +14,7 @@
 # /sys/power/state=standby leaves the CPU cooler, but still warm.  mem seems
 # best.
 #
+stop watchdog
 echo mem >/sys/power/state
 
 # We should never get here.  But just in case we do, fall back to the normal

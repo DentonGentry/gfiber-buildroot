@@ -3,21 +3,31 @@
 # Program the hardware watchdog counter.
 #
 
+onusr1()
+{
+  done=1
+}
+
+trap onusr1 USR1
+
 if grep -q "BCM7425" /proc/cpuinfo; then
   # GFHD100
   init=bcm7425_init
   setup=bcm_setup
   pushback=bcm_pushback
+  stop=
 elif grep -q "BCM7429" /proc/cpuinfo; then
   # GFHD200
   init=bcm7429_init
   setup=bcm_setup
   pushback=bcm_pushback
+  stop=
 elif grep -q "Optimus" /proc/cpuinfo; then
   # GFRG200/210
   init=mindspeed_init
   setup=mindspeed_setup
   pushback=mindspeed_pushback
+  stop=mindspeed_stop
 else
   echo "Unknown CPU type, cannot initialize watchdog timer"
   cat /proc/cpuinfo
@@ -102,6 +112,11 @@ mindspeed_setup()
 
 mindspeed_pushback()
 {
+  echo -n X >&9
+}
+
+mindspeed_stop()
+{
   echo -n V >&9
 }
 
@@ -113,7 +128,9 @@ $init
 $setup
 
 # Start the watchdog timer and reload every 5 seconds
-while :; do
+while [ ! "$done" ]; do
   $pushback
   sleep 5
 done
+
+$stop
