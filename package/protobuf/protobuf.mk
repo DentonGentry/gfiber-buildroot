@@ -13,7 +13,7 @@ PROTOBUF_LICENSE_FILES = COPYING.txt
 PROTOBUF_DEPENDENCIES = host-protobuf
 PROTOBUF_CONF_OPT = --with-protoc=$(HOST_DIR)/usr/bin/protoc --enable-static --disable-shared
 
-PROTOBUF_INSTALL_STAGING = NO
+PROTOBUF_INSTALL_STAGING = YES
 
 ifeq ($(BR2_PACKAGE_ZLIB),y)
 PROTOBUF_DEPENDENCIES += zlib
