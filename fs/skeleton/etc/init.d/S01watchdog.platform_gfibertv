@@ -4,8 +4,11 @@ case "$1" in
     babysit 10 watchdog 2>&1 | logos watchdog &
     ;;
   stop)
+    pkill -USR1 -x watchdog
+    # watchdog sleeps 5
+    sleep 7
     pkillwait -x watchdog
-    echo "Warning: killing the watchdog will reboot the system." >&2
+    echo "Warning: killing the watchdog may reboot the system." >&2
     ;;
   restart|reload)
     $0 stop; $0 start
