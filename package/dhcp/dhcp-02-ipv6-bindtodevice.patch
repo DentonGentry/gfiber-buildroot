@@ -1,0 +1,15 @@
+socket.c: Use SO_BINDTODEVICE for ipv6
+
+Signed-off-by: John Newlin <jnewlin@google.com>
+
+--- a/common/socket.c	2014-01-31 11:41:07.000000000 -0800
++++ b/common/socket.c	2014-05-29 08:58:38.939488482 -0700
+@@ -236,7 +236,7 @@ if_register_socket(struct interface_info
+ 
+ #if defined(SO_BINDTODEVICE)
+ 	/* Bind this socket to this interface. */
+-	if ((local_family != AF_INET6) && (info->ifp != NULL) &&
++	if ((info->ifp != NULL) &&
+ 	    setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
+ 			(char *)(info -> ifp), sizeof(*(info -> ifp))) < 0) {
+ 		log_fatal("setsockopt: SO_BINDTODEVICE: %m");
