@@ -19,5 +19,11 @@ ifeq ($(BR2_PACKAGE_ZLIB),y)
 PROTOBUF_DEPENDENCIES += zlib
 endif
 
+define PROTOBUF_REMOVE_PROTOC
+	rm -f $(TARGET_DIR)/usr/bin/protoc
+endef
+
+PROTOBUF_POST_INSTALL_TARGET_HOOKS += PROTOBUF_REMOVE_PROTOC
+
 $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
