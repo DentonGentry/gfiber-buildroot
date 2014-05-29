@@ -24,6 +24,7 @@ define BCM_VUDU_INSTALL_TARGET_CMDS
 	ln -s -f libavutil.so.49.15.0 $(TARGET_DIR)/usr/local/bin/vudu/libavutil.so
 	ln -s -f libavutil.so.49.15.0 $(TARGET_DIR)/usr/local/bin/vudu/libavutil.so.49
 	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/liblzma.so.5 $(TARGET_DIR)/usr/local/bin/vudu/liblzma.so.5
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/libpng15.so.15 $(TARGET_DIR)/usr/local/bin/vudu/libpng15.so.15
 endef
 
 $(eval $(call GENTARGETS))
