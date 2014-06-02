@@ -222,6 +222,7 @@ case "$1" in
     [ ! -d /user/widevine ] && mkdir -p /user/widevine
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
     [ ! -d /tmp/vudu ] && mkdir -p /tmp/vudu
+    [ ! -d /tmp/oprofile ] && mkdir -p /tmp/oprofile
 
     rm -rf /user/diag/diagdb.bin /user/diag/*.tmp /user/diag/log
 
