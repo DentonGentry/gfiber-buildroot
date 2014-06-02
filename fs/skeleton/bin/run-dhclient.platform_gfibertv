@@ -11,10 +11,11 @@ run_dhclient() {
   local conffile="/etc/dhclient$suffix.conf"
 
   if [ -e "$pidfile" ]; then
+    # kill sends TERM which should make the babysitter exit gracefully.
     kill $(cat "$pidfile") >/dev/null 2>&1
     rm -f "$pidfile"
   fi
-  dhclient "$iface" $xargs \
+  babysit 60 dhclient "$iface" $xargs \
       -d \
       -pf "$pidfile" \
       -lf "$leasefile" \
