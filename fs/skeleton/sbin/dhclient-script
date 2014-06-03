@@ -254,6 +254,19 @@ ip6_prefix_change() {
   echo 1
 }
 
+remove_ip6_prefix() {
+  # Remove the prefix address that was assigned to the bridge.
+  local prefix="$1"
+  if [ -n "$prefix" ]; then
+    ip -6 addr del $(ip_prefix_to_addr "$prefix") dev $bridge_ifc
+    rm -f /tmp/dnsmasq/ipv6.conf
+    ip -6 addr flush dev $bridge_ifc scope global
+    rm -f /tmp/dnsmasq/acs.conf
+    restart dnsmasq
+  fi
+}
+
+
 # Must be used on exit.   Invokes the local dhcp client exit hooks, if any.
 exit_with_hooks() {
   exit_status=$1
@@ -302,12 +315,6 @@ exit_with_hooks() {
     EXPIRE6|FAIL6|RELEASE6|STOP6)
       echo "Removing DHCP6 ntp servers on $reason"
       rm -f /tmp/ntpd6.servers
-      # Remove the prefix address that was assigned to the bridge.
-      remove_ip6_prefix "$cur_ip6_prefix"
-      rm -f /tmp/dnsmasq/ipv6.conf
-      rm -f /tmp/dnsmasq/acs.conf
-      ip -6 addr flush dev $bridge_ifc scope global
-      restart dnsmasq
       ;;
   esac
   exit $exit_status
@@ -538,8 +545,14 @@ if [ x$reason = xDEPREF6 ] ; then
     exit_with_hooks 2;
   fi
 
-  $ip -f inet6 addr change ${cur_ip6_address}/${cur_ip6_prefixlen} \
-       dev ${interface} scope global preferred_lft 0
+  if [ -n "$cur_ip6_prefx" ]; then
+    remove_ip6_prefix $cur_ip6_prefix
+  fi
+
+  if [ -n "$cur_ip6_address" ]; then
+    $ip -f inet6 addr change ${cur_ip6_address}/${cur_ip6_prefixlen} \
+      dev ${interface} scope global preferred_lft 0
+  fi
 
   exit_with_hooks 0
 fi
@@ -549,8 +562,14 @@ if [ x$reason = xRELEASE6 -o x$reason = xSTOP6 -o x$reason = xEXPIRE6 ] ; then
     exit_with_hooks 2;
   fi
 
-  $ip -f inet6 addr del ${old_ip6_address}/${old_ip6_prefixlen} \
-        dev ${interface}
+  if [ -n "$old_ip6_prefix" ]; then
+    remove_ip6_prefix $old_ip6_prefix
+  fi
+
+  if [ -n "$old_ip6_address" ]; then
+    $ip -f inet6 addr del ${old_ip6_address}/${old_ip6_prefixlen} \
+      dev ${interface}
+  fi
 
   exit_with_hooks 0
 fi
