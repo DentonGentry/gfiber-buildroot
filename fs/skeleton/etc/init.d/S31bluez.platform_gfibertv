@@ -24,7 +24,7 @@ case "$1" in
 
     echo "[General]" >"${BLUEZ_INPUT_CONF}"
     echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
-    echo "uHIDP=true" >>"${BLUEZ_INPUT_CONF}"
+    echo "UserspaceHID=true" >>"${BLUEZ_INPUT_CONF}"
 
     # Start BlueZ stack
     (
