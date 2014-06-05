@@ -17,7 +17,7 @@ redistribute_irqs()
   fi
 
   wifi_irq=
-  if grep BCM7425 /proc/cpuinfo >/dev/null; then
+  if grep -q BCM7425 /proc/cpuinfo; then
     echo 1 >/proc/irq/62/smp_affinity
     echo $eth0cpu >/proc/irq/18/smp_affinity
     echo $eth0cpu >/proc/irq/19/smp_affinity
@@ -25,7 +25,7 @@ redistribute_irqs()
     echo $mocacpu >/proc/irq/21/smp_affinity
     echo $mocacpu >/proc/irq/31/smp_affinity
     wifi_irq=34
-  elif grep BCM7429 /proc/cpuinfo >/dev/null; then
+  elif grep -q BCM7429 /proc/cpuinfo; then
     echo 1 >/proc/irq/52/smp_affinity
     echo $eth0cpu >/proc/irq/16/smp_affinity
     echo $eth0cpu >/proc/irq/17/smp_affinity
@@ -33,6 +33,15 @@ redistribute_irqs()
     echo $mocacpu >/proc/irq/19/smp_affinity
     echo $mocacpu >/proc/irq/28/smp_affinity
     wifi_irq=57
+  elif grep -q comcerto /proc/iomem; then
+    # C2K default is 0x3, allowing IRQ to go to either CPU 0 or 1,
+    # but the result is all IRQs go to CPU0. Steer a few to CPU1.
+    ahci_irq=48
+    i2c_irq=62
+    moca_irq=77
+    echo 2 >/proc/irq/$ahci_irq/smp_affinity
+    echo 2 >/proc/irq/$i2c_irq/smp_affinity
+    echo 2 >/proc/irq/$moca_irq/smp_affinity
   fi
 
   if has_wifi && is-tv-box && [ ! -z  ${wifi_irq} ]; then
