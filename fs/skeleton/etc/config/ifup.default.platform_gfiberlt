@@ -21,7 +21,7 @@ start_dhcp() {
     kill $(cat $pidfile) 2>&1 > /dev/null
     rm -f $pidfile
   fi
-  /usr/sbin/dhclient $iface -6 \
+  babysit 60 /usr/sbin/dhclient $iface -6 \
     -d \
     -pf $pidfile \
     -lf /var/run/dhclient-v6.${iface}.lease \
