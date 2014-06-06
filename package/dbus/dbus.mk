@@ -1,12 +1,17 @@
-#############################################################
+################################################################################
 #
 # dbus
 #
-#############################################################
-DBUS_VERSION = 1.4.16
+################################################################################
+
+DBUS_VERSION = 1.6.18
 DBUS_SOURCE = dbus-$(DBUS_VERSION).tar.gz
 DBUS_SITE = http://dbus.freedesktop.org/releases/dbus/
 DBUS_INSTALL_STAGING = YES
+
+define DBUS_PERMISSIONS
+/usr/libexec/dbus-daemon-launch-helper f 4755 0 0 - - - - -
+endef
 
 DBUS_DEPENDENCIES = host-pkg-config
 
@@ -19,10 +24,14 @@ DBUS_CONF_OPT = --with-dbus-user=dbus \
 		--disable-xml-docs \
 		--disable-doxygen-docs \
 		--disable-static \
-		--enable-dnotify \
+		--disable-dnotify \
 		--localstatedir=/var \
 		--with-system-socket=/var/run/dbus/system_bus_socket \
 		--with-system-pid-file=/var/run/messagebus.pid
+
+ifeq ($(BR2_PREFER_STATIC_LIB),y)
+DBUS_CONF_OPT += LIBS='-lpthread'
+endif
 
 ifeq ($(BR2_DBUS_EXPAT),y)
 DBUS_CONF_OPT += --with-xml=expat
@@ -50,11 +59,10 @@ define DBUS_REMOVE_DEVFILES
 	rm -rf $(TARGET_DIR)/usr/lib/dbus-1.0
 endef
 
-ifneq ($(BR2_HAVE_DEVFILES),y)
 DBUS_POST_INSTALL_TARGET_HOOKS += DBUS_REMOVE_DEVFILES
-endif
 
 define DBUS_INSTALL_TARGET_FIXUP
+	mkdir -p $(TARGET_DIR)/var/lib
 	rm -rf $(TARGET_DIR)/var/lib/dbus
 	ln -sf /tmp/dbus $(TARGET_DIR)/var/lib/dbus
 	$(INSTALL) -m 0755 -D package/dbus/S30dbus $(TARGET_DIR)/etc/init.d/S30dbus
