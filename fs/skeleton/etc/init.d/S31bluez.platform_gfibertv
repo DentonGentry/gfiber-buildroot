@@ -40,11 +40,10 @@ case "$1" in
       echo "$0: Configuring Bluetooth adapter"
       hciconfig hci0 lm ACCEPT,MASTER
       # Page scan configuration:
-      # - window of 36 slots (22.50 ms)
-      # - interval of 180 slots (112.50 ms)
+      # - window of 18 slots (11.25 ms)
+      # - interval of 256 slots (160.00 ms)
       # - interlaced page scan
-      hciconfig hci0 pageparms 36:180
-      hciconfig hci0 pagetype 1
+      btmgmt fast-conn on
       hciconfig hci0 -a
       hciconfig hci0 pageparms
       hciconfig hci0 pagetype
