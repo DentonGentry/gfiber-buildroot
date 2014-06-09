@@ -75,6 +75,11 @@ case "$1" in
       ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
       ip46tables -A FORWARD -m pkttype --pkt-type multicast -j ACCEPT
 
+      # Stop users from connecting to cmm CLI
+      if [ ! -e /tmp/DEBUG ]; then
+        ip46tables -A INPUT -p tcp --dport 2103 -j REJECT --reject-with tcp-reset # cmm CLI
+      fi
+
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
