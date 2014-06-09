@@ -93,6 +93,11 @@ fi
   cat SageClient.properties.defaults.analytics
 ) >/tmp/Sage.properties.defaults
 
+BOXTYPE=`cat /etc/platform`
+if [ "GFHD100" = "$BOXTYPE" ] ; then
+  echo "fiber/miracast/enable=true" >> /tmp/Sage.properties.defaults
+fi
+
 read junk1 memtotal junk2 </proc/meminfo
 echo "System memory: $memtotal kb" >&2
 if [ "$memtotal" -le 524288 ]; then
