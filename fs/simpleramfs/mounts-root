@@ -166,7 +166,10 @@ elif [ -n "$ROOTDEV" ]; then
       veritynote=
       # TODO(apenwarr): fix uboot, then remove special case for armplatform.
       read x y armplatform platform junk </proc/cpuinfo
+      # TODO(jnewlin): Renable verity for 725B2 when we get the user space
+      # updated to match the new kernel implementation.
       if [ "$platform" = "BCM7425B0" \
+          -o "$platform" = "BCM7425B2" \
           -o "$platform" = "BCM7429B0" \
           -o "$armplatform" = "ARMv7" ]; then
         log 'dmsetup failed: platform is unsigned device, continuing anyway.'
