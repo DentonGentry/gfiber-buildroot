@@ -20,12 +20,14 @@ case "$1" in
     ;;
   stop)
     pkillwait -x startupvideo # if it's running, prevents miniclient from starting up
-    pkillwait -f '(babysit.*)(runoregano)'
+    pkillwait -f '(babysit.*)(\\./[s]tart)'
+    pkillwait -x '\\./start'
+    pkillwait -f '(babysit.*)([r]unoregano)'
     pkillwait -x 'runoregano'
-    pkillwait -f '(babysit.*)(marjoram\.dart)'
+    pkillwait -f '(babysit.*)([m]arjoram\.dart)'
     pkillwait -x 'runmarjoram'
-    pkillwait -f '(dart.*)(authTokens\.dart)'
-    pkillwait -f '(dart.*)(marjoram\.dart)'
+    pkillwait -f '(dart.*)([a]uthTokens\.dart)'
+    pkillwait -f '(dart.*)([m]arjoram\.dart)'
     stop_sagesrv
     stop_adloader
     pkillwait -x waitpower

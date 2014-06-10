@@ -15,8 +15,8 @@ case "$1" in
     ) &
     ;;
   stop)
-    pkillwait -f '(babysit.*)(basil\.dart)'
-    pkillwait -f '(dart.*)(basil\.dart)'
+    pkillwait -f '(babysit.*)([b]asil\.dart)'
+    pkillwait -f '(dart.*)([b]asil\.dart)'
     ;;
   restart)
     $0 stop; $0 start
