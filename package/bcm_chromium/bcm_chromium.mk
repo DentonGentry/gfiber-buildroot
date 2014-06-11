@@ -24,31 +24,31 @@ else
 endif
 
 define BCM_CHROMIUM_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/common dlna \
 		BUILDING_DLNA=1 BUILDING_PLAYBACK_IP=1 \
 		BUILDING_REFSW=1 BUILDING_DTCP_IP=0
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j23 \
+	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/thirdparty/youtube/mediasource/build \
 		BME_PROCESS_MODEL=single \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j23 \
+	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/thirdparty/youtube/mediasource/build \
 		install
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j23 \
+	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/broadcom/trellis/BME \
 		BME_PROCESS_MODEL=single \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j23 \
+	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/broadcom/trellis/BME \
 		BME_PROCESS_MODEL=single \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y \
 		install
-	$(BCM_MAKE_ENV) $(MAKE1) MAKE_OPTIONS=-j23 \
+	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/opensource/content \
 		BME_PROCESS_MODEL=single \
