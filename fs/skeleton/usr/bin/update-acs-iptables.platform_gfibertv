@@ -72,6 +72,7 @@ if [ -f $file ]; then
     enabled=${cwmp[${tag}ENABLE]}
 
     rule=$(($rule + 1))
+
     # 1 means proceed, 0 means skip, others mean abort
     if [ "$enabled" != 1 ]; then
       if [ "$enabled" != 0 ]; then
@@ -82,12 +83,26 @@ if [ -f $file ]; then
       continue
     fi
 
-    iptables -t nat -A acsrules-nat-prerouting -i $wans -p $protocol -s $source -d $gateway --dport $sport -j DNAT --to $dest:$dport -m comment --comment "$comment"
-    iptables -t nat -A acsrules-nat-postrouting -p $protocol -s $lanipv4mask -d $dest --dport $dport -j SNAT --to $lanipv4
-    iptables -A acsrules-filter-forward -p $protocol -d $dest --dport $dport -j ACCEPT
+    isrange=$((echo "$sport" | grep -q ":") && echo 1)
+    if [ ! "$isrange" ]; then
+      dportnat=":$dport"
+    else
+      if [ "$sport" != "$dport" ]; then
+        echo "$0: $tag: source port range ($sport) does not match dest port range ($dport)" 1>&2
+        continue
+      fi
+      dportnat=
+    fi
+
+    iptables -t nat -A acsrules-nat-prerouting -i "$wans" -p "$protocol" -s "$source" -d "$gateway" --dport "$sport" \
+      -j DNAT --to "$dest$dportnat" -m comment --comment "$comment"
+    iptables -t nat -A acsrules-nat-postrouting -p "$protocol" -s "$lanipv4mask" -d "$dest" --dport "$dport" \
+      -j SNAT --to "$lanipv4"
+    iptables -A acsrules-filter-forward -p "$protocol" -d "$dest" --dport "$dport" -j ACCEPT
     # this adds a lan rule so internal hosts can use the lan router ip to get the same mapping
-    if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ $source = 0/0 ]; then
-      iptables -t nat -A acsrules-nat-prerouting -p $protocol -d "$lanipv4" --dport $sport -j DNAT --to $dest:$dport
+    if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ "$source" = 0/0 ]; then
+      iptables -t nat -A acsrules-nat-prerouting -p "$protocol" -d "$lanipv4" --dport "$sport" \
+        -j DNAT --to "$dest$dportnat"
     fi
   done
 fi
