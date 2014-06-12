@@ -38,6 +38,7 @@ v,verbose          Increase verbosity
 f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
+j,jobs=            Number of parallel jobs for make to use (make -j) [12]
 openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 """
@@ -177,7 +178,7 @@ class BuildRootBuilder(object):
     if self.opt.verbose:
       cmd += ['V=1']
     if parallel:
-      cmd += ['-j12', '-l12']
+      cmd += ['-j%d' % self.opt.jobs, '-l%d' % self.opt.jobs]
     self.PopenAt(self.top_dir, cmd)
 
   def CleanOutputDir(self):
