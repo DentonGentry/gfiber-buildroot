@@ -15,7 +15,7 @@ case "$1" in
     ) &
     ;;
   stop)
-    pkillwait -f '(babysit.*)([b]asil\.dart)'
+    # End the Basil dart server (which will also end its babysitter).
     pkillwait -f '(dart.*)([b]asil\.dart)'
     ;;
   restart)
