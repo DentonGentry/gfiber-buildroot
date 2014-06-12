@@ -20,24 +20,25 @@ case "$1" in
     ;;
   stop)
     # If startupvideo is running, it prevents miniclient from starting up.
-    pkillwait -x startupvideo
-    # End the Oregano ./start binary (which will also end its babysitter).
-    pkillwait -x '\\./start'
+    pkillwait -x startupvideo &
     # Stop the scripts invoked above due to 'start oregano' (which will also
     # stop any babysitters they may have).
-    pkillwait -x 'runoregano'
-    pkillwait -x 'runmarjoram'
+    ( pkillwait -x 'runmarjoram' ;
+      # End the Marjoram server (which will also end its babysitter).
+      pkillwait -f '(dart.*)([m]arjoram\.dart)' ) &
+    ( pkillwait -x 'runoregano' ;
+      # End the Oregano ./start binary (which will also end its babysitter).
+      pkillwait -x '\\./start' ;
+      pkillwait -f '(content|browser)_shell' ) &
     # End any dangling HTTP request Futures from authTokens.dart attempts.
-    pkillwait -f '(dart.*)([a]uthTokens\.dart)'
-    pkillwait -f '(dart.*)([m]arjoram\.dart)'
+    pkillwait -f '(dart.*)([a]uthTokens\.dart)' &
+    pkillwait -x waitpower &
+    pkillwait -x netflix &
+    pkillwait -x vudu &
     stop_sagesrv
     stop_adloader
-    pkillwait -x waitpower
-    pkillwait -x netflix
-    pkillwait -x content_shell
-    pkillwait -x browser_shell
-    pkillwait -x vudu
     rc_pipe_deinit
+    wait
     ;;
   restart)
     $0 stop; $0 start
