@@ -174,6 +174,9 @@ define SAMBA_INSTALL_INITSCRIPTS_CONFIG
 	@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
 		$(INSTALL) -m 0755 -D package/samba/simple.conf $(TARGET_DIR)/etc/samba/smb.conf; \
 	fi
+	@if [ ! -f $(TARGET_DIR)/usr/bin/netbios_hosts ]; then \
+		$(INSTALL) -m 0755 -D package/samba/netbios_hosts $(TARGET_DIR)/usr/bin/netbios_hosts; \
+	fi
 endef
 
 SAMBA_POST_INSTALL_TARGET_HOOKS += SAMBA_INSTALL_INITSCRIPTS_CONFIG

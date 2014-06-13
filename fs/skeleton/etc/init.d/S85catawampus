@@ -39,12 +39,17 @@ case "$1" in
     babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
       cwmpd $DIAGUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
+
+    if is-network-box || is-storage-box; then
+      poll_hostnames | logos hostnames &
+    fi
     ;;
   stop)
     pkillwait -x cwmpd
     pkillwait -f 'alivemonitor.*cwmpd'
     pkillwait -x cwmp_monitor
     pkillwait -x isostream
+    pkillwait -x poll_hostnames
     ;;
   restart)
     $0 stop; $0 start
