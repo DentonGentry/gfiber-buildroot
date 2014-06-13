@@ -9,7 +9,7 @@ BCM_CHROMIUM_DEPENDENCIES=\
 	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient \
 	libpng jpeg zlib freetype openssl expat \
-	libcurl libxml2 libxslt fontconfig
+	libcurl libxml2 libxslt fontconfig boost
 BCM_CHROMIUM_INSTALL_STAGING=NO
 BCM_CHROMIUM_INSTALL_TARGET=YES
 
@@ -39,23 +39,47 @@ define BCM_CHROMIUM_BUILD_CMDS
 		install
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
-		-C $(@D)/broadcom/trellis/BME \
-		BME_PROCESS_MODEL=single \
+		-C $(@D)/broadcom/services/media \
+		RPM_BUILD_CMD=echo \
+		APPLIBS_PROCESS_MODEL=single \
+		media_mediaplayer_impl_install \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
-		-C $(@D)/broadcom/trellis/BME \
-		BME_PROCESS_MODEL=single \
-		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y \
-		install
+		-C $(@D)/broadcom/services/media \
+		RPM_BUILD_CMD=echo \
+		APPLIBS_PROCESS_MODEL=single \
+		media_mediaplayer_impl_static_archive \
+		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
+	$(BCM_MAKE_ENV) $(MAKE) \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/broadcom/services/media \
+		RPM_BUILD_CMD=echo \
+		APPLIBS_PROCESS_MODEL=single \
+		media_filesource_impl_static_archive \
+		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
+	$(BCM_MAKE_ENV) $(MAKE) \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/broadcom/services/media \
+		RPM_BUILD_CMD=echo \
+		APPLIBS_PROCESS_MODEL=single \
+		media_networksource_impl_static_archive \
+		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
+	$(BCM_MAKE_ENV) $(MAKE) \
+		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		-C $(@D)/broadcom/services/media \
+		RPM_BUILD_CMD=echo \
+		APPLIBS_PROCESS_MODEL=single \
+		media_pushsource_impl_static_archive \
+		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
 		-C $(@D)/opensource/content \
-		BME_PROCESS_MODEL=single \
+		APPLIBS_PROCESS_MODEL=single \
 		$(BCM_CHROMIUM_CCACHE) \
-		WEBKITGL_MPLAYER_BACKEND=bme \
 		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
-		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR)
+		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR) \
+		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 endef
 
 define BCM_CHROMIUM_INSTALL_TARGET_CMDS
