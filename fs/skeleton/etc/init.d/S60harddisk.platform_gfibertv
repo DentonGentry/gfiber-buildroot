@@ -32,7 +32,7 @@ check_pairing() {
   fi
 }
 
-FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev
+FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200
 case "$1" in
   start)
     if ! is-storage-box; then
