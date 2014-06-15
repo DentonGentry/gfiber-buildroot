@@ -242,8 +242,8 @@ showwifi() {
     echo "RegDomain: $country"
 
     myinterface=0
-    iw dev "$ifc" info | while read a b junk; do
-      [ "$a" = "channel" ] && echo "Channel: $b"
+    iw dev "$ifc" info | while read a b; do
+      [ "$a" = "channel" ] && echo "Channel: ${b%% *}"
       [ "$a" = "ssid" ] && echo "SSID: $b"
       [ "$a" = "addr" ] && echo "BSSID: $b"
     done
