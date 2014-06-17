@@ -1,3 +1,6 @@
+config wifi_fastforward
+    option ifname wlan1
+    option direct_path_rx 1
 config fastforward ftp
 	option proto		tcp
 	option port		21
