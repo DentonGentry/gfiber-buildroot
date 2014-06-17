@@ -28,8 +28,6 @@ case "$1" in
 
     # Start BlueZ stack
     (
-      hciconfig hci0 up
-
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
       sleep 3
@@ -37,16 +35,6 @@ case "$1" in
       echo "$0: Starting gfiber-agent"
       babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
 
-      echo "$0: Configuring Bluetooth adapter"
-      hciconfig hci0 lm ACCEPT,MASTER
-      # Page scan configuration:
-      # - window of 18 slots (11.25 ms)
-      # - interval of 256 slots (160.00 ms)
-      # - interlaced page scan
-      btmgmt fast-conn on
-      hciconfig hci0 -a
-      hciconfig hci0 pageparms
-      hciconfig hci0 pagetype
       echo >/tmp/S31bluez_done
     ) &
     ;;
