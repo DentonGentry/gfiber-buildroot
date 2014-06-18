@@ -80,6 +80,12 @@ choice
 		depends on BR2_TOOLCHAIN_HAS_THREADS_DEBUG_IF_NEEDED
 		select BR2_PTHREAD_DEBUG if (BR2_TOOLCHAIN_BUILDROOT && !BR2_PTHREADS_NONE)
 
+	config BR2_GDB_VERSION_7_7
+		bool "gdb 7.7.x"
+		depends on !BR2_bfin
+		depends on BR2_TOOLCHAIN_HAS_THREADS_DEBUG_IF_NEEDED
+		select BR2_PTHREAD_DEBUG if (BR2_TOOLCHAIN_BUILDROOT && !BR2_PTHREADS_NONE)
+
 endchoice
 
 comment "gdb 7.x support needs pthread debug support in toolchain"
@@ -96,3 +102,4 @@ config BR2_GDB_VERSION
 	default "7.2a"     if BR2_GDB_VERSION_7_2
 	default "7.3.1"    if BR2_GDB_VERSION_7_3
 	default "7.4"      if BR2_GDB_VERSION_7_4
+	default "7.7"      if BR2_GDB_VERSION_7_7
