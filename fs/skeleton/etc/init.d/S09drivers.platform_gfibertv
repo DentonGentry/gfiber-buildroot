@@ -47,6 +47,7 @@ if is-tv-box; then
     . /etc/utils.sh
     BT_MAC=$(mac_addr_increment "${MAC}" 2)
   fi
+  BT_MAC=$(echo "${BT_MAC}" | sed 's/./\U&/g')
   echo "${BT_MAC}" >/tmp/btmacaddress
 fi
 

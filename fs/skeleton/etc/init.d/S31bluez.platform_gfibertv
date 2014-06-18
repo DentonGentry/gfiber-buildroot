@@ -5,6 +5,8 @@ BLUEZ_STOR_DIR="/user/bluez/lib/bluetooth"
 BLUEZ_CONF_DIR="/tmp/bluez/etc/bluetooth"
 BLUEZ_MAIN_CONF="${BLUEZ_CONF_DIR}/main.conf"
 BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
+BT_MAC_FILE="/tmp/btmacaddress"
+BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
@@ -14,8 +16,19 @@ BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
 case "$1" in
   start)
-    # Create BlueZ directories and config files
-    mkdir -p "${BLUEZ_STOR_DIR}"
+    BT_MAC=$(cat "${BT_MAC_FILE}")
+    BLUEZ_ADAP_DIR="${BLUEZ_STOR_DIR}/${BT_MAC}"
+    BLUEZ_DEVC_DIR="${BLUEZ_ADAP_DIR}/cache"
+
+    # On the first BlueZ start, create BlueZ storage directories
+    # and import paired remote control devices from BSA to BlueZ
+    if [ ! -e "${BLUEZ_ADAP_DIR}" ]; then
+      mkdir -p "${BLUEZ_ADAP_DIR}"
+      mkdir -p "${BLUEZ_DEVC_DIR}"
+      [ -e "${BSA_DEVICES_FILE}" ] && bsa2bluez
+    fi
+
+    # Create BlueZ config files
     mkdir -p "${BLUEZ_CONF_DIR}"
 
     echo "[General]" >"${BLUEZ_MAIN_CONF}"

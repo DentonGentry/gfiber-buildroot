@@ -18,21 +18,8 @@ case "$1" in
   start)
     . /etc/utils.sh
 
-    BT_MAC=$(hnvram -rq MAC_ADDR_BT)
+    BT_MAC=$(cat /tmp/btmacaddress)
     BT_NAME=$(cat /etc/platform)
-
-    # A few platforms are populated with MAC_ADDR, but not MAC_ADDR_BT.
-    if [ -z "$BT_MAC" ]; then
-      MAC=$(hnvram -rq MAC_ADDR)
-      if [ ! -z "$MAC" ]; then
-        BT_MAC=$(echo "$MAC" | (
-          IFS=: read m1 m2 m3 m4 m5 m6; \
-          decimal=$(printf "%d" "0x$m6"); \
-          m6=$(printf "%02x" $(($decimal + 2))); \
-          echo "$m1:$m2:$m3:$m4:$m5:$m6"
-        ))
-      fi
-    fi
 
     # Run the following in a sub-shell in the background to avoid
     # impacting boot time.
@@ -51,9 +38,6 @@ case "$1" in
       fi
 
       if [ ! -z $BSATTY ]; then
-        # Provide a mechanism for other processes to determine the Bluetooth MAC address
-        echo "$BT_MAC" >/tmp/btmacaddress
-
         cd /user/bsa
         (
           LD_PRELOAD=/lib/stdoutline.so babysit 30 \
