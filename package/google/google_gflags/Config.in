@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GOOGLE_GFLAGS
+	bool "google_gflags"
+	help
+	  gflags is a library that implements commandline flags processing
+
+	  https://code.google.com/p/gflags/
