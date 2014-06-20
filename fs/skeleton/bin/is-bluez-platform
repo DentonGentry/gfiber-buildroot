@@ -3,24 +3,9 @@
 # Returns 0 (true) if this platform should use BlueZ Bluetooth stack.
 # Returns 1 (false) otherwise.
 
-SDIO_DEV_DIR="/sys/bus/mmc/devices"
-
 [ -e "/config/BLUEZ" ] && exit 0
 [ -e "/config/NOBLUEZ" ] && exit 1
 
-if [ -e "${SDIO_DEV_DIR}" ]; then
-  cd "${SDIO_DEV_DIR}"
-  for sdio_dev in *; do
-    [ ! -e "${sdio_dev}" ] && continue
-    btmrvl_dev="${sdio_dev}/${sdio_dev}:2"
-    btmrvl_vid="${btmrvl_dev}/vendor"
-    btmrvl_did="${btmrvl_dev}/device"
-    if [ -e "${btmrvl_vid}" ] && [ -e "${btmrvl_did}" ]; then
-      vid=$(cat "${btmrvl_vid}")
-      did=$(cat "${btmrvl_did}")
-      [ "${vid}" = 0x02df ] && [ "${did}" = 0x912e ] && exit 0
-    fi
-  done
-fi
+is-tv-box && exit 0
 
 exit 1
