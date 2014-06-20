@@ -4,7 +4,7 @@
 #
 #############################################################
 
-TAR_VERSION = 1.26
+TAR_VERSION = 1.27
 TAR_SITE = $(BR2_GNU_MIRROR)/tar
 
 # Prefer full-blown tar over buybox's version
