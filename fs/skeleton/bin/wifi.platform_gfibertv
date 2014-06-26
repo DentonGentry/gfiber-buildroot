@@ -340,26 +340,46 @@ C_5HIGH_80="5745"
 C_5DFS_20="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
 C_5DFS_40=""  # TODO(apenwarr): figure out which 40/80 MHz DFS are allowed
 C_5DFS_80=""
-case "$autotype-$width" in
-  LOW-20) permit_freq="$C_24MAIN_20 $C_5LOW_20" ;;
-  LOW-40) permit_freq="$C_24MAIN_40 $C_5LOW_40" ;;
-  LOW-80) permit_freq="$C_24MAIN_80 $C_5LOW_80" ;;
-  HIGH-20) permit_freq="$C_24MAIN_20 $C_5HIGH_20" ;;
-  HIGH-40) permit_freq="$C_24MAIN_40 $C_5HIGH_40" ;;
-  HIGH-80) permit_freq="$C_24MAIN_80 $C_5HIGH_80" ;;
-  DFS-20) permit_freq="$C_5DFS_20" ;;
-  DFS-40) permit_freq="$C_5DFS_40" ;;
-  DFS-80) permit_freq="$C_5DFS_80" ;;
-  NONDFS-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20" ;;
-  NONDFS-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40" ;;
-  NONDFS-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80" ;;
-  ANY-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20 $C_5DFS_20" ;;
-  ANY-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40 $C_5DFS_40" ;;
-  ANY-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80 $C_5DFS_80" ;;
-  OVERLAP-20) permit_freq="$C_24OVERLAP_20 $ANY_20" ;;
-  OVERLAP-40) permit_freq="$C_24OVERLAP_40 $ANY_40" ;;
-  OVERLAP-80) permit_freq="$C_24OVERLAP_80 $ANY_80" ;;
-  *) die "unknown autochannel type '$autotype'" ;;
+
+case "$band-$autotype-$width" in
+  # There are no 80Mhz channels in 2.4Ghz band.
+  2*-*-80) die "80Mhz not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
+
+  # DFS is not valid in 2.4Ghz
+  2*-DFS-*)die "dfs not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
+
+  # There are no overlapping channels in 5Ghz, so requesting that isn't valid.
+  5*-OVERLAP-*) die "overlap not allowed in 5ghz: type='$autotype band='$band' width='$width'" ;;
+
+  # 2.4 Ghz channels
+  2*-LOW-20) permit_freq="$C_24MAIN_20" ;;
+  2*-LOW-40) permit_freq="$C_24MAIN_40" ;;
+  2*-HIGH-20) permit_freq="$C_24MAIN_20" ;;
+  2*-HIGH-40) permit_freq="$C_24MAIN_40" ;;
+  2*-NONDFS-20) permit_freq="$C_24MAIN_20" ;;
+  2*-NONDFS-40) permit_freq="$C_24MAIN_40" ;;
+  2*-ANY-20) permit_freq="$C_24MAIN_20" ;;
+  2*-ANY-40) permit_freq="$C_24MAIN_40" ;;
+  2*-OVERLAP-20) permit_freq="$C_24OVERLAP_20" ;;
+  2*-OVERLAP-40) permit_freq="$C_24OVERLAP_40" ;;
+
+  # 5 Ghz channels
+  5*-LOW-20) permit_freq="$C_5LOW_20" ;;
+  5*-LOW-40) permit_freq="$C_5LOW_40" ;;
+  5*-LOW-80) permit_freq="$C_5LOW_80" ;;
+  5*-HIGH-20) permit_freq="$C_5HIGH_20" ;;
+  5*-HIGH-40) permit_freq="$C_5HIGH_40" ;;
+  5*-HIGH-80) permit_freq="$C_5HIGH_80" ;;
+  5*-DFS-20) permit_freq="$C_5DFS_20" ;;
+  5*-DFS-40) permit_freq="$C_5DFS_40" ;;
+  5*-DFS-80) permit_freq="$C_5DFS_80" ;;
+  5*-NONDFS-20) permit_freq="$C_5LOW_20 $C_5HIGH_20" ;;
+  5*-NONDFS-40) permit_freq="$C_5LOW_40 $C_5HIGH_40" ;;
+  5*-NONDFS-80) permit_freq="$C_5LOW_80 $C_5HIGH_80" ;;
+  5*-ANY-20) permit_freq="$C_5LOW_20 $C_5HIGH_20 $C_5DFS_20" ;;
+  5*-ANY-40) permit_freq="$C_5LOW_40 $C_5HIGH_40 $C_5DFS_40" ;;
+  5*-ANY-80) permit_freq="$C_5LOW_80 $C_5HIGH_80 $C_5DFS_80" ;;
+  *) die "unknown autochannel type='$autotype' band='$band' width='$width'" ;;
 esac
 
 for d in $(split "$protos"); do
@@ -536,7 +556,12 @@ elif runnable iw; then
         echo "$bestfreq"
       }
     )
-    [ -n "$bestfreq" ] || die "no valid channels for band='$band' autotype='$autotype'"
+    if [ -z "$bestfreq" ]; then
+      log "autoscan did not find any channel, picking random channel"
+      log "permit_freq='$permit_freq'"
+      [ -n "$permit_freq" ] || die "no default channel: type='$autotype'  band='$band' width='$width'"
+      bestfreq=$(choose $permit_freq)
+    fi
     log "autofreq='$bestfreq'"
 
     channel=$(
