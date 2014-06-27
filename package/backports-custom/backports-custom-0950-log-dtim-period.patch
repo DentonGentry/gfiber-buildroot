@@ -1,0 +1,27 @@
+From 9570bebbcdf8da58729c0d6a3f05b9d0ec57bc3d Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Thu, 26 Jun 2014 13:25:20 -0700
+Subject: [PATCH] Log changes in dtim_period
+
+Trying to diagnose b/15167455, to determine whether
+dtim_period is involved.
+---
+ drivers/net/wireless/ath/ath10k/wmi.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
+index 0a2d04c..49f10f0 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -3058,6 +3058,8 @@ static int ath10k_wmi_vdev_start_restart(struct ath10k *ar,
+ 	cmd->disable_hw_ack  = __cpu_to_le32(arg->disable_hw_ack);
+ 	cmd->beacon_interval = __cpu_to_le32(arg->bcn_intval);
+ 	cmd->dtim_period     = __cpu_to_le32(arg->dtim_period);
++	printk(KERN_WARNING "ath10k_wmi_vdev_start_restart: dtim_period=%d",
++	       arg->dtim_period);
+ 	cmd->flags           = __cpu_to_le32(flags);
+ 	cmd->bcn_tx_rate     = __cpu_to_le32(arg->bcn_tx_rate);
+ 	cmd->bcn_tx_power    = __cpu_to_le32(arg->bcn_tx_power);
+-- 
+2.0.0.526.g5318336
+
