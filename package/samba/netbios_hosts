@@ -1,0 +1,14 @@
+#!/bin/sh
+
+
+nmbhosts() {
+  nmblookup "*" | grep "<..>" | while read ip junk; do
+    nmblookup -S -A "$ip" | grep -v GROUP | while read name type junk; do
+      if [ "$type" = "<00>" ] || [ "$type" = "<03>" ] || [ "$type" = "<20>" ]; then
+        echo "$ip|$name"
+      fi
+    done
+  done
+}
+
+nmbhosts | sort | uniq
