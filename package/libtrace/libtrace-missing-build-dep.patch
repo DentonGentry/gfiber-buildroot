@@ -1,0 +1,23 @@
+From ef0ff45c13b7fe769aea91f312b47181a212222b Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Tue, 8 Jul 2014 00:29:29 -0400
+Subject: [PATCH] Fix missing build dependency.
+
+---
+ libwandio/Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libwandio/Makefile.am b/libwandio/Makefile.am
+index aa275b9..4d99628 100644
+--- a/libwandio/Makefile.am
++++ b/libwandio/Makefile.am
+@@ -42,4 +42,5 @@ bin_PROGRAMS = wandiocat
+ wandiocat_SOURCES = wcat.c
+ wandiocat_CFLAGS = -I"$(top_srcdir)/libwandio"
+ wandiocat_CXXFLAGS = -I"$(top_srcdir)/libwandio"
+-wandiocat_LDFLAGS = -L"$(top_srcdir)/libwandio" -lwandio
++wandiocat_LDFLAGS = -L"$(top_srcdir)/libwandio"
++wandiocat_LDADD = libwandio.la
+-- 
+2.0.0.526.g5318336
+
