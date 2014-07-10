@@ -10,7 +10,6 @@ case "$1" in
   start)
     (
       wait-until-created /tmp/startupvideo.done
-      rc_pipe_init
       if is-tv-box; then
         /app/oregano/runoregano 2>&1 | logos oregano 0 20000000 &
       else
@@ -37,7 +36,6 @@ case "$1" in
     pkillwait -x vudu &
     stop_sagesrv
     stop_adloader
-    rc_pipe_deinit
     wait
     ;;
   restart)
