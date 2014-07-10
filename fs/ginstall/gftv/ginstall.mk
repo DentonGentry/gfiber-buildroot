@@ -131,7 +131,10 @@ define ROOTFS_GINSTALL_CMD_V3
 			-A $(BR2_ARCH) -O linux -T multi -C none \
 			-a 0x03008000 -e 0x03008000 -n Linux \
 			-d zImage:simpleramfs.cpio.gz \
-			uImage; \
+			uImage && \
+		( \
+			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
 	(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
