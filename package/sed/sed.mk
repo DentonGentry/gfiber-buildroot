@@ -6,6 +6,7 @@
 SED_VERSION = 4.2.1
 SED_SOURCE = sed-$(SED_VERSION).tar.gz
 SED_SITE = $(BR2_GNU_MIRROR)/sed
+SED_DEPENDENCIES = acl
 
 SED_CONF_OPT = --bindir=/usr/bin \
 		--libdir=/lib \
