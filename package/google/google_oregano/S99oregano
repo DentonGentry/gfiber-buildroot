@@ -34,6 +34,7 @@ case "$1" in
     pkillwait -x waitpower &
     pkillwait -x netflix &
     pkillwait -x vudu &
+    pkillwait -x chsrv &
     stop_sagesrv
     stop_adloader
     wait
