@@ -6,8 +6,10 @@ case "$1" in
   start)
     mkdir -p /tmp/ui
     uitype=$(hnvram -rq UITYPE 2>/dev/null)
-    if [ $? -eq 0 ] && [ -n "$uitype" ]; then
+    if [ $? -eq 0 ] && [ ! -z "$uitype" ]; then
       atomic /tmp/ui/uitype "$uitype"
+    elif [ -e /config/uitype ]; then
+      cp /config/uitype /tmp/ui/uitype
     fi
     ;;
   stop)

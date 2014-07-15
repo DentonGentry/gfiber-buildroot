@@ -3,6 +3,6 @@
 # Returns 0 (true) if this device's configuration string indicates it
 # is an HTML TV UI, and 1 (false) otherwise.
 
-UITYPE=$(hnvram -rq UITYPE 2>/dev/null)
-[ "oregano" = "$UITYPE" ] && exit 0
-exit 1
+. /etc/utils.sh
+
+[ -f /tmp/ui/uitype ] && filecontains "oregano" /tmp/ui/uitype
