@@ -15,7 +15,8 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/hdmi
     mkdir -p /tmp/cwmp/monitoring/tcp
     mkdir -p /tmp/cwmp/monitoring/ts
-    chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/*
+    mkdir -p /tmp/acs
+    chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/* /tmp/acs
     if is-storage-box; then
       swimage=/var/media/swimage
     elif [ "$(fssize /user)" -ge 1000000 ]; then
