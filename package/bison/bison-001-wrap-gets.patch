@@ -1,0 +1,16 @@
+--- host-bison-2.5/lib/stdio.in.h	2011-05-14 15:23:46.000000000 -0700
++++ j	2014-07-16 13:32:37.599924290 -0700
+@@ -178,10 +178,11 @@
+ #endif
+ 
+ /* It is very rare that the developer ever has full control of stdin,
+-   so any use of gets warrants an unconditional warning.  Assume it is
+-   always declared, since it is required by C89.  */
++   so any use of gets warrants an unconditional warning. */
+ #undef gets
++#if HAVE_RAW_DECL_GETS
+ _GL_WARN_ON_USE (gets, "gets is a security hole - use fgets instead");
++#endif
+ 
+ #if @GNULIB_FOPEN@
+ # if @REPLACE_FOPEN@
