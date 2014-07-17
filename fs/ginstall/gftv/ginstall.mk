@@ -82,10 +82,6 @@ else
 ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 endif
 
-# TODO(apenwarr): update uboot to handle kernels with dmverity in them.
-#  Right now our uboot doesn't understand the google verity header added
-#  by GOOGLE_SIGNING (repack.py).
-
 # v3 image format contains a manifest file, which describes the image and
 # supported platforms.
 #
