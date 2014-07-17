@@ -55,7 +55,7 @@ else
 _BAREBOX = barebox_signed_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
 endif
-_ULOADER = uloader
+_ULOADER = uloader_signed_release
 
 # These will be blank if the given files don't exist (eg. if you don't have
 # access to the right repositories) and then we'll just leave them out of
