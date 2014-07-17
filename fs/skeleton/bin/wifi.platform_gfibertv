@@ -52,8 +52,8 @@ Usage: $bin set [options...]
  -a <autotype>    Autochannel method to use (LOW, HIGH, DFS, NONDFS, ANY,
                     OVERLAP) (default=$autotype)
  -s <ssid>        SSID to use (default=$ssid)
- -e <encryption>  Encryption type to use (WPA_PSK_AES,
-                    WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
+ -e <encryption>  Encryption type to use (WPA_PSK_AES, WPA2_PSK_AES,
+                    WPA_PSK_TKIP, WPA2_PSK_TKIP, WPA12_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
  -H               Enable hidden mode (disable SSID advertisements)
  -M               Enable wmm extensions (needed for block acks)
@@ -599,6 +599,7 @@ elif runnable iw; then
   case $crypto in
     WPA_PSK_*) auth_algs=1; wpa=1 ;;
     WPA2_PSK_*) auth_algs=1; wpa=2 ;;
+    WPA12_PSK_*) auth_algs=1; wpa=3 ;;
     WEP) auth_algs=3; wpa=0 ;;
     NONE) auth_algs=1; wpa=0 ;;
     *) die "invalid crypto protocol in '$crypto'" ;;
