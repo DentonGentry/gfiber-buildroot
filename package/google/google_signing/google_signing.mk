@@ -51,6 +51,33 @@ define HOST_GOOGLE_SIGNING_SIGN
 		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
+define GOOGLE_CODE_SIGN_TOOL_EXECUTE
+	(cd /google/src/files/head/depot/google3 && \
+		blaze --batch run \
+		--noshow_progress -- \
+		//isp/fiber/drm:code_sign_tool \
+		$(1) \
+		$(2) \
+		--image_type=$(3) \
+		--outfile=$(2);)
+endef
+
+# For optimus, developer and production images are always fake-signed, then a
+# real signature is substituted for production builds.
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+define HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN
+	($(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+			-o $(HOST_DIR) -b $(BINARIES_DIR) -k $(1) && \
+		$(call GOOGLE_CODE_SIGN_TOOL_EXECUTE,sign-image,$(BINARIES_DIR)/$(1),kernel))
+endef
+else
+define HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN
+	($(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+			-o $(HOST_DIR) -b $(BINARIES_DIR) -k $(1) && \
+		echo "Development build, fake sign kernel...")
+endef
+endif
+
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
 	$(MAKE) HOSTDIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
 		INSTALL=$(INSTALL) -C $(@D)/signing install
