@@ -53,7 +53,7 @@ Usage: $bin set [options...]
                     OVERLAP) (default=$autotype)
  -s <ssid>        SSID to use (default=$ssid)
  -e <encryption>  Encryption type to use (WPA_PSK_AES, WPA2_PSK_AES,
-                    WPA_PSK_TKIP, WPA2_PSK_TKIP, WPA12_PSK_TKIP,
+                    WPA12_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP, WPA12_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
  -H               Enable hidden mode (disable SSID advertisements)
  -M               Enable wmm extensions (needed for block acks)
@@ -593,6 +593,8 @@ elif runnable iw; then
   ht40=
   vht_settings=
   vht_capab=
+  uapsd_supported=$(IW phy "$phy" info | grep "AP-side u-APSD")
+  [ -n "$uapsd_supported" ] && uapsd="uapsd_advertisement_enabled=1"
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
   if [ -n "$allow_ac" ]; then
     [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
@@ -649,6 +651,7 @@ elif runnable iw; then
 	$enable_80211n
 	$enable_80211ac
 	$enable_wmm
+	$uapsd
 	$require_ht
 	$require_vht
 	$hidden
