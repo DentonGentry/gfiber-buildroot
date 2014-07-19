@@ -1,8 +1,9 @@
 BCM_BLUETOOTH_SITE=repo://vendor/broadcom/drivers
 BCM_BLUETOOTH_INSTALL_TARGET=YES
-BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils bcm_nexus linux
 
 ifeq ($(BR2_PACKAGE_BCM_BLUETOOTH_BSA),y)
+BCM_BLUETOOTH_DEPENDENCIES = alsa-lib alsa-utils bcm_nexus linux
+
 define BCM_BLUETOOTH_BSA_CLEAN
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CPU=mips \
