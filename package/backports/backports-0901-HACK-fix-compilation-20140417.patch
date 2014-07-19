@@ -1,0 +1,11 @@
+--- a/backport-include/linux/dma-mapping.h
++++ b/backport-include/linux/dma-mapping.h
+@@ -15,7 +15,7 @@
+ }
+ #endif
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0)
++#if 0
+ /*
+  * Set both the DMA mask and the coherent DMA mask to the same thing.
+  * Note that we don't check the return value from dma_set_coherent_mask()
