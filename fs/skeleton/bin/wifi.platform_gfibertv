@@ -592,8 +592,12 @@ elif runnable iw; then
   ht20=
   ht40=
   vht_settings=
+  vht_capab=
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
-  [ -n "$allow_ac" -a "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
+  if [ -n "$allow_ac" ]; then
+    [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
+    vht_capab="vht_capab=[MAX-A-MPDU-LEN-EXP4]"
+  fi
   [ -n "$allow_ab$allow_g" ] || require_ht="require_ht=1"
   [ -n "$allow_ab$allow_g$allow_n" ] || require_vht="require_vht=1"
   case $crypto in
@@ -649,6 +653,7 @@ elif runnable iw; then
 	$require_vht
 	$hidden
 	ht_capab=$ht20$ht40$guard_interval
+	$vht_capab
 	$vht_settings
 	EOF
   )
