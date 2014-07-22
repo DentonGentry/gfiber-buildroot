@@ -593,9 +593,6 @@ elif runnable iw; then
   ht20=
   ht40=
   ht_rxstbc=
-  ht_txstbc=
-  vht_rxstbc=
-  vht_txstbc=
   uapsd=
   vht_settings=
 
@@ -603,10 +600,9 @@ elif runnable iw; then
   # non-ieee80211 drivers like mwifiex don't support iw phy phy# info
   [ -z "$phyinfo" ] && phyinfo=$(IW list)
   contains "$phyinfo" "AP-side u-APSD" && uapsd="uapsd_advertisement_enabled=1"
-  contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC3]"
-  contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC2]"
+  contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC123]"
+  contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC12]"
   contains "$phyinfo" "RX STBC 1-stream" && ht_rxstbc="[RX-STBC1]"
-  contains "$phyinfo" "TX STBC" && vht_txstbc="[TX-STBC]"
 
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
   if [ -n "$allow_ac" ]; then
@@ -668,8 +664,8 @@ elif runnable iw; then
 	$require_ht
 	$require_vht
 	$hidden
-	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc$ht_txstbc
-	vht_capab=$ampdu$vht_rxstbc$vht_txstbc
+	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc
+	vht_capab=$ampdu
 	$vht_settings
 	EOF
   )
