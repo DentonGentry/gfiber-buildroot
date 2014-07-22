@@ -1,8 +1,19 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
 GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin
 
+ifeq ($(BR2_mipsel),y)
+	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
+	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/mipsel-5k-linux-uclibc/Development/Standard.jar
+else ifeq ($(BR2_arm),y)
+	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
+	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/arm-v7l-linux-gnueabi/development/lib/Standard.jar
+else
+	STANDARD_JAR_PATH=jars/Standard.jar
+endif
+
 define GOOGLE_SAGESERVER_BUILD_CMDS
 	cd $(@D)/build/bruno/sage && \
+	STANDARD_JAR_PATH=$(STANDARD_JAR_PATH) \
 	PATH=$(HOST_DIR)/usr/bin:$$PATH ./buildsage.sh
 endef
 
