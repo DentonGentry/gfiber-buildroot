@@ -41,6 +41,10 @@ case "$1" in
 
     # Start BlueZ stack
     (
+      echo "$0: Starting btmon"
+      babysit 30 btmon -t 2>&1 | logos btmon &
+      sleep 1
+
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
       sleep 3
@@ -56,6 +60,7 @@ case "$1" in
     hciconfig hci0 down
     pkillwait -x gfiber-agent
     pkillwait -x bluetoothd
+    pkillwait -x btmon
     rm -f /tmp/S31bluez_done
     ;;
   restart)
