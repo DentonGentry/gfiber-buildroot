@@ -585,20 +585,33 @@ elif runnable iw; then
     5) hostapd_band=a ;;
     *) die "invalid band in '$band'" ;;
   esac
+  ampdu=
   enable_80211n=
   enable_80211ac=
   require_ht=
   require_vht=
   ht20=
   ht40=
+  ht_rxstbc=
+  ht_txstbc=
+  vht_rxstbc=
+  vht_txstbc=
+  uapsd=
   vht_settings=
-  vht_capab=
-  uapsd_supported=$(IW phy "$phy" info | grep "AP-side u-APSD")
-  [ -n "$uapsd_supported" ] && uapsd="uapsd_advertisement_enabled=1"
+
+  phyinfo=$(IW phy "$phy" info 2>/dev/null)
+  # non-ieee80211 drivers like mwifiex don't support iw phy phy# info
+  [ -z "$phyinfo" ] && phyinfo=$(IW list)
+  contains "$phyinfo" "AP-side u-APSD" && uapsd="uapsd_advertisement_enabled=1"
+  contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC3]"
+  contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC2]"
+  contains "$phyinfo" "RX STBC 1-stream" && ht_rxstbc="[RX-STBC1]"
+  contains "$phyinfo" "TX STBC" && vht_txstbc="[TX-STBC]"
+
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
   if [ -n "$allow_ac" ]; then
     [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
-    vht_capab="vht_capab=[MAX-A-MPDU-LEN-EXP4]"
+    startswith "$band" 5 && ampdu="[MAX-A-MPDU-LEN-EXP4]"
   fi
   [ -n "$allow_ab$allow_g" ] || require_ht="require_ht=1"
   [ -n "$allow_ab$allow_g$allow_n" ] || require_vht="require_vht=1"
@@ -655,8 +668,8 @@ elif runnable iw; then
 	$require_ht
 	$require_vht
 	$hidden
-	ht_capab=$ht20$ht40$guard_interval
-	$vht_capab
+	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc$ht_txstbc
+	vht_capab=$ampdu$vht_rxstbc$vht_txstbc
 	$vht_settings
 	EOF
   )
