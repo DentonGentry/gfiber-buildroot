@@ -22,6 +22,8 @@ status() {
     else
       echo false
     fi
+  else
+    echo error
   fi
 }
 
@@ -29,7 +31,7 @@ status() {
 if [ $# -eq 0 ]; then
   cmd=show
 else
-  cmd=$1
+  cmd="$1"
 fi
 
 
@@ -38,7 +40,7 @@ case "$cmd" in
     status
     ;;
   on|true)
-    if [ $(status) = false ]; then
+    if [ "$(status)" != "true" ]; then
       if runnable mocap; then
         mocap set --trace 1 --restart
       elif runnable mocactl; then
@@ -48,7 +50,7 @@ case "$cmd" in
     fi
     ;;
   off|false)
-    if [ $(status) = true ]; then
+    if [ "$(status)" != "false" ]; then
       if runnable mocap; then
         mocap set --trace 0 --restart
       elif runnable mocactl; then
@@ -61,3 +63,7 @@ case "$cmd" in
     usage
     ;;
 esac
+
+if [ "$(status)" = "error" ]; then
+  exit 1
+fi
