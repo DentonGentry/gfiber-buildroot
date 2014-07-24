@@ -40,7 +40,7 @@ else
   # abort after 100 seconds.  bruno kernel will panic with hung_task at 120 seconds
   (sleep 100; alarm) &
   # --suffix is a trick to be able to pkill exactly this gzip
-  gzip -c --suffix "$uniqid" | dd bs=1024 count=163840 2>/dev/null >"$out"
+  gzip --fast -c --suffix "$uniqid" | dd bs=1024 count=163840 2>/dev/null >"$out"
   upload-logs-now
   log "finished dumping core for pid $pid ($exe)"
 fi
