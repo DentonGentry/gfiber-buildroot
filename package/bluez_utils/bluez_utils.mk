@@ -17,7 +17,6 @@ BLUEZ_UTILS_CONF_OPT = \
 	--disable-udev \
 	--disable-cups \
 	--disable-obex \
-	--disable-client \
 	--disable-systemd
 BLUEZ_UTILS_AUTORECONF = YES
 
