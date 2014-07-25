@@ -1,0 +1,129 @@
+diff -rc --exclude-from SKIP backports-20140417.orig/include/net/bluetooth/hci_core.h backports-20140417/include/net/bluetooth/hci_core.h
+*** backports-20140417.orig/include/net/bluetooth/hci_core.h	2014-04-17 16:48:22.000000000 -0700
+--- backports-20140417/include/net/bluetooth/hci_core.h	2014-07-24 15:10:13.115698013 -0700
+***************
+*** 199,204 ****
+--- 199,206 ----
+  	__u16		le_scan_window;
+  	__u16		le_conn_min_interval;
+  	__u16		le_conn_max_interval;
++ 	__u16		le_slave_latency;
++ 	__u16		le_supervision_timeout;
+  	__u16		discov_interleaved_timeout;
+  	__u8		ssp_debug_mode;
+  
+diff -rc --exclude-from SKIP backports-20140417.orig/net/bluetooth/hci_conn.c backports-20140417/net/bluetooth/hci_conn.c
+*** backports-20140417.orig/net/bluetooth/hci_conn.c	2014-04-17 16:48:22.000000000 -0700
+--- backports-20140417/net/bluetooth/hci_conn.c	2014-07-24 15:10:13.119698013 -0700
+***************
+*** 619,625 ****
+  	cp.own_address_type = own_addr_type;
+  	cp.conn_interval_min = cpu_to_le16(conn->le_conn_min_interval);
+  	cp.conn_interval_max = cpu_to_le16(conn->le_conn_max_interval);
+! 	cp.supervision_timeout = cpu_to_le16(0x002a);
+  	cp.min_ce_len = cpu_to_le16(0x0000);
+  	cp.max_ce_len = cpu_to_le16(0x0000);
+  
+--- 619,626 ----
+  	cp.own_address_type = own_addr_type;
+  	cp.conn_interval_min = cpu_to_le16(conn->le_conn_min_interval);
+  	cp.conn_interval_max = cpu_to_le16(conn->le_conn_max_interval);
+! 	cp.conn_latency = cpu_to_le16(hdev->le_slave_latency);
+! 	cp.supervision_timeout = cpu_to_le16(hdev->le_supervision_timeout);
+  	cp.min_ce_len = cpu_to_le16(0x0000);
+  	cp.max_ce_len = cpu_to_le16(0x0000);
+  
+diff -rc --exclude-from SKIP backports-20140417.orig/net/bluetooth/hci_core.c backports-20140417/net/bluetooth/hci_core.c
+*** backports-20140417.orig/net/bluetooth/hci_core.c	2014-07-25 00:24:16.952238631 -0700
+--- backports-20140417/net/bluetooth/hci_core.c	2014-07-25 09:37:01.871981108 -0700
+***************
+*** 840,845 ****
+--- 840,903 ----
+  DEFINE_SIMPLE_ATTRIBUTE(conn_max_interval_fops, conn_max_interval_get,
+  			conn_max_interval_set, "%llu\n");
+  
++ static int slave_latency_set(void *data, u64 val)
++ {
++ 	struct hci_dev *hdev = data;
++ 
++ 	if (val >= 500)
++ 		return -EINVAL;
++ 
++ 	hci_dev_lock(hdev);
++ 	hdev->le_slave_latency = val;
++ 	hci_dev_unlock(hdev);
++ 
++ 	return 0;
++ }
++ 
++ static int slave_latency_get(void *data, u64 *val)
++ {
++ 	struct hci_dev *hdev = data;
++ 
++ 	hci_dev_lock(hdev);
++ 	*val = hdev->le_slave_latency;
++ 	hci_dev_unlock(hdev);
++ 
++ 	return 0;
++ }
++ 
++ DEFINE_SIMPLE_ATTRIBUTE(slave_latency_fops, slave_latency_get,
++ 			slave_latency_set, "%llu\n");
++ 
++ static int supervision_timeout_set(void *data, u64 val)
++ {
++ 	struct hci_dev *hdev = data;
++ 	int max_latency = (val * 10 / hdev->le_conn_max_interval) - 1;
++ 
++ 	/* val is in 10 ms units */
++ 	if (val < 10 || val > 3200 || hdev->le_slave_latency > max_latency)
++ 		return -EINVAL;
++ 
++ 	hci_dev_lock(hdev);
++ 	hdev->le_supervision_timeout = val;
++ 	hci_dev_unlock(hdev);
++ 
++ 	return 0;
++ }
++ 
++ static int supervision_timeout_get(void *data, u64 *val)
++ {
++ 	struct hci_dev *hdev = data;
++ 
++ 	hci_dev_lock(hdev);
++ 	*val = hdev->le_supervision_timeout;
++ 	hci_dev_unlock(hdev);
++ 
++ 	return 0;
++ }
++ 
++ DEFINE_SIMPLE_ATTRIBUTE(supervision_timeout_fops, supervision_timeout_get,
++ 			supervision_timeout_set, "%llu\n");
++ 
+  static int adv_channel_map_set(void *data, u64 val)
+  {
+  	struct hci_dev *hdev = data;
+***************
+*** 1813,1818 ****
+--- 1871,1880 ----
+  				    hdev, &conn_min_interval_fops);
+  		debugfs_create_file("conn_max_interval", 0644, hdev->debugfs,
+  				    hdev, &conn_max_interval_fops);
++ 		debugfs_create_file("slave_latency", 0644, hdev->debugfs,
++ 				    hdev, &slave_latency_fops);
++ 		debugfs_create_file("supervision_timeout", 0644, hdev->debugfs,
++ 				    hdev, &supervision_timeout_fops);
+  		debugfs_create_file("adv_channel_map", 0644, hdev->debugfs,
+  				    hdev, &adv_channel_map_fops);
+  		debugfs_create_file("6lowpan", 0644, hdev->debugfs, hdev,
+***************
+*** 3782,3787 ****
+--- 3844,3851 ----
+  	hdev->le_scan_window = 0x0030;
+  	hdev->le_conn_min_interval = 0x0028;
+  	hdev->le_conn_max_interval = 0x0038;
++ 	hdev->le_slave_latency = 0;
++ 	hdev->le_supervision_timeout = 0x002a;
+  
+  	hdev->rpa_timeout = HCI_DEFAULT_RPA_TIMEOUT;
+  	hdev->discov_interleaved_timeout = DISCOV_INTERLEAVED_TIMEOUT;
