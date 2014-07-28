@@ -262,7 +262,7 @@ remove_ip6_prefix() {
     rm -f /tmp/dnsmasq/ipv6.conf
     ip -6 addr flush dev $bridge_ifc scope global
     rm -f /tmp/dnsmasq/acs.conf
-    restart dnsmasq
+    QUIET=1 restart dnsmasq
   fi
 }
 
@@ -274,7 +274,8 @@ exit_with_hooks() {
     BOUND|RENEW|REBIND|REBOOT)
       write_ntp_conf_new /tmp/ntpd4.servers
       if [ "$addr_added" = 1 ]; then
-        restart igmpproxy upnpd
+        QUIET=1 restart igmpproxy upnpd
+        runnable update-acs-iptables && update-acs-iptables
       fi
       ;;
 
@@ -293,7 +294,7 @@ exit_with_hooks() {
       fi
 
       if [ "$restart_dnsmasq" != 0 ]; then
-        restart dnsmasq
+        QUIET=1 restart dnsmasq
       fi
 
       if runnable rdisc6 && \

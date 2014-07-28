@@ -159,7 +159,7 @@ if [ -f /tmp/upnpd_enabled ]; then
   iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wans -j MINIUPNPD
   ! /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd start
 else
-  /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd stop
+  QUIET=1 stop upnpd
 fi
 
 # ftp server
