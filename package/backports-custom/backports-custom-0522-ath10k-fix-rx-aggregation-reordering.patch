@@ -7,8 +7,8 @@ re-inventing the wheel.
 This fixes TCP throughput issues in some
 environments.
 
-Reported-by: Denton Gentry <denton.gentry at gmail.com>
-Signed-off-by: Michal Kazior <michal.kazior at tieto.com>
+Reported-by: Denton Gentry <denton.gentry@xxxxxxxxx>
+Signed-off-by: Michal Kazior <michal.kazior@xxxxxxxxx>
 ---
 This depends on:
 
@@ -25,6 +25,11 @@ stalls at all.
 
 
 Notes:
+    v4:
+     * return immediatelly instead break [Varka]
+     * fix endianess conversion (__le32 -> __le16)
+     * use rx_delba in delba callback
+    
     v3:
      * make ath10k_ampdu_action() static
     
@@ -32,14 +37,14 @@ Notes:
      * split addba/delba handling into separate functions [Kalle]
      * extend ampdu_action debug print (+vdev_id, +sta addr, +tid)
 
- drivers/net/wireless/ath/ath10k/htt_rx.c | 94 +++++++++++++++++++++++++++++++-
- drivers/net/wireless/ath/ath10k/mac.c    | 33 +++++++++++
+ drivers/net/wireless/ath/ath10k/htt_rx.c | 92 +++++++++++++++++++++++++++++++-
+ drivers/net/wireless/ath/ath10k/mac.c    | 33 ++++++++++++
  drivers/net/wireless/ath/ath10k/txrx.c   |  3 +-
  drivers/net/wireless/ath/ath10k/txrx.h   |  1 +
- 4 files changed, 127 insertions(+), 4 deletions(-)
+ 4 files changed, 126 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/wireless/ath/ath10k/htt_rx.c b/drivers/net/wireless/ath/ath10k/htt_rx.c
-index eebc860..966bd4a 100644
+index 318efc3..77cdc21 100644
 --- a/drivers/net/wireless/ath/ath10k/htt_rx.c
 +++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
 @@ -21,6 +21,7 @@
@@ -61,7 +66,7 @@ index eebc860..966bd4a 100644
 +	struct ath10k_vif *arvif;
 +	u16 info0, tid, peer_id;
 +
-+	info0 = __le32_to_cpu(ev->info0);
++	info0 = __le16_to_cpu(ev->info0);
 +	tid = MS(info0, HTT_RX_BA_INFO0_TID);
 +	peer_id = MS(info0, HTT_RX_BA_INFO0_PEER_ID);
 +
@@ -96,12 +101,12 @@ index eebc860..966bd4a 100644
 +
 +static void ath10k_htt_rx_delba(struct ath10k *ar, struct htt_resp *resp)
 +{
-+	struct htt_rx_addba *ev = &resp->rx_addba;
++	struct htt_rx_delba *ev = &resp->rx_delba;
 +	struct ath10k_peer *peer;
 +	struct ath10k_vif *arvif;
 +	u16 info0, tid, peer_id;
 +
-+	info0 = __le32_to_cpu(ev->info0);
++	info0 = __le16_to_cpu(ev->info0);
 +	tid = MS(info0, HTT_RX_BA_INFO0_TID);
 +	peer_id = MS(info0, HTT_RX_BA_INFO0_PEER_ID);
 +
@@ -137,11 +142,9 @@ index eebc860..966bd4a 100644
  void ath10k_htt_t2h_msg_handler(struct ath10k *ar, struct sk_buff *skb)
  {
  	struct ath10k_htt *htt = &ar->htt;
-@@ -1515,10 +1596,19 @@ void ath10k_htt_t2h_msg_handler(struct ath10k *ar, struct sk_buff *skb)
- 	case HTT_T2H_MSG_TYPE_STATS_CONF:
- 		trace_ath10k_htt_stats(skb->data, skb->len);
+@@ -1524,8 +1605,17 @@ void ath10k_htt_t2h_msg_handler(struct ath10k *ar, struct sk_buff *skb)
+ 		ath10k_warn("received an unexpected htt tx inspect event\n");
  		break;
--	case HTT_T2H_MSG_TYPE_TX_INSPECT_IND:
  	case HTT_T2H_MSG_TYPE_RX_ADDBA:
 +		ath10k_htt_rx_addba(ar, resp);
 +		break;
@@ -155,15 +158,14 @@ index eebc860..966bd4a 100644
 +		 */
 +		break;
 +	}
-+	case HTT_T2H_MSG_TYPE_TX_INSPECT_IND:
  	default:
  		ath10k_dbg(ATH10K_DBG_HTT, "htt event (%d) not handled\n",
  			   resp->hdr.msg_type);
 diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
-index b8314a5..67bf8ed 100644
+index 3f9afaa..3baa229 100644
 --- a/drivers/net/wireless/ath/ath10k/mac.c
 +++ b/drivers/net/wireless/ath/ath10k/mac.c
-@@ -4331,6 +4331,38 @@ static u64 ath10k_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
+@@ -4333,6 +4333,38 @@ static u64 ath10k_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
  	return 0;
  }
  
@@ -193,16 +195,16 @@ index b8314a5..67bf8ed 100644
 +		/* Firmware offloads Tx aggregation entirely so deny mac80211
 +		 * Tx aggregation requests.
 +		 */
-+		break;
++		return -EOPNOTSUPP;
 +	}
 +
-+	return -EOPNOTSUPP;
++	return -EINVAL;
 +}
 +
  static const struct ieee80211_ops ath10k_ops = {
  	.tx				= ath10k_tx,
  	.start				= ath10k_start,
-@@ -4358,6 +4390,7 @@ static const struct ieee80211_ops ath10k_ops = {
+@@ -4360,6 +4392,7 @@ static const struct ieee80211_ops ath10k_ops = {
  	.set_bitrate_mask		= ath10k_set_bitrate_mask,
  	.sta_rc_update			= ath10k_sta_rc_update,
  	.get_tsf			= ath10k_get_tsf,
