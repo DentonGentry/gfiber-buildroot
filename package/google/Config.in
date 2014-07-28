@@ -34,4 +34,5 @@ source "package/google/google_prism/Config.in"
 source "package/google/google_dart_vm/Config.in"
 source "package/google/google_oregano/Config.in"
 source "package/google/google_gflags/Config.in"
+source "package/google/google_gfrm200/Config.in"
 endmenu
