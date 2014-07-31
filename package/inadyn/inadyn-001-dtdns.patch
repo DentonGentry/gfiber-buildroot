@@ -1,0 +1,134 @@
+From 1f3ee2122ca94d1d79bd24037033de9ee80e0efb Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Fri, 25 Jul 2014 19:52:17 -0700
+Subject: [PATCH] Add dtdns.com.
+
+---
+ include/dyndns.h | 11 +++++++++++
+ src/dyndns.c     | 40 ++++++++++++++++++++++++++++++++++++++++
+ src/inadyn_cmd.c |  1 +
+ 3 files changed, 52 insertions(+)
+
+diff --git a/include/dyndns.h b/include/dyndns.h
+index fc03fb4..f2dee53 100644
+--- a/include/dyndns.h
++++ b/include/dyndns.h
+@@ -48,6 +48,7 @@ enum {
+ 	HE_DYNDNS,
+ 	CHANGEIP_DEFAULT,
+ 	DYNSIP_DEFAULT,
++	DTDNS_DEFAULT,
+ 	LAST_DNS_SYSTEM = -1
+ };
+ 
+@@ -194,6 +195,16 @@ enum {
+ 	"Authorization: Basic %s\r\n"					\
+ 	"User-Agent: " DYNDNS_AGENT_NAME " " DYNDNS_EMAIL_ADDR "\r\n\r\n"
+ 
++#define DTDNS_UPDATE_IP_HTTP_REQUEST					\
++	"GET %s?"							\
++	"id=%s&"							\
++	"pw=%s&"							\
++	"ip=%s "							\
++	"HTTP/1.0\r\n"							\
++	"Host: %s\r\n"							\
++	"User-Agent: " DYNDNS_AGENT_NAME " " DYNDNS_EMAIL_ADDR "\r\n\r\n"
++
++
+ /* Some default configurations */
+ #define DYNDNS_DEFAULT_STARTUP_SLEEP      0       /* sec */
+ #define DYNDNS_DEFAULT_SLEEP              120     /* sec */
+diff --git a/src/dyndns.c b/src/dyndns.c
+index bf8b56c..d272f30 100644
+--- a/src/dyndns.c
++++ b/src/dyndns.c
+@@ -58,6 +58,7 @@ static int get_req_for_sitelutions_server (ddns_t *ctx, int infcnt, int alcnt);
+ static int get_req_for_dnsexit_server     (ddns_t *ctx, int infcnt, int alcnt);
+ static int get_req_for_he_ipv6tb_server   (ddns_t *ctx, int infcnt, int alcnt);
+ static int get_req_for_changeip_server    (ddns_t *ctx, int infcnt, int alcnt);
++static int get_req_for_dtdns_server       (ddns_t *ctx, int infcnt, int alcnt);
+ 
+ static int is_dyndns_server_rsp_ok        (ddns_t *ctx, http_trans_t *trans, int infcnt);
+ static int is_freedns_server_rsp_ok       (ddns_t *ctx, http_trans_t *trans, int infcnt);
+@@ -68,6 +69,7 @@ static int is_tzo_server_rsp_ok           (ddns_t *ctx, http_trans_t *trans, int
+ static int is_sitelutions_server_rsp_ok   (ddns_t *ctx, http_trans_t *trans, int infcnt);
+ static int is_dnsexit_server_rsp_ok       (ddns_t *ctx, http_trans_t *trans, int infcnt);
+ static int is_he_ipv6_server_rsp_ok       (ddns_t *ctx, http_trans_t *trans, int infcnt);
++static int is_dtdns_server_rsp_ok         (ddns_t *ctx, http_trans_t *trans, int infcnt);
+ 
+ ddns_sysinfo_t dns_system_table[] = {
+ 	{DYNDNS_DEFAULT,
+@@ -169,6 +171,13 @@ ddns_sysinfo_t dns_system_table[] = {
+ 	  DYNDNS_MY_IP_SERVER, DYNDNS_MY_IP_SERVER_URL,
+ 	  "dynsip.org", "/nic/update"}},
+ 
++	{DTDNS_DEFAULT,
++	 {"default@dtdns.com",
++	  (ddns_response_ok_func_t) is_dtdns_server_rsp_ok,
++	  (ddns_request_func_t) get_req_for_dtdns_server,
++	  "myip.dtdns.com", "/",
++	  "www.dtdns.com", "/api/autodns.cfm"}},
++
+ 	{CUSTOM_HTTP_BASIC_AUTH,
+ 	 {"custom@http_srv_basic_auth",
+ 	  (ddns_response_ok_func_t) is_generic_server_rsp_ok,
+@@ -436,6 +445,20 @@ static int get_req_for_changeip_server(ddns_t *ctx, int infcnt, int alcnt)
+ 		       ctx->info[infcnt].creds.encoded_password);
+ }
+ 
++static int get_req_for_dtdns_server(ddns_t *ctx, int infcnt, int alcnt)
++{
++	if (!ctx)
++		return 0;	/* 0 == "No characters written" */
++
++	return sprintf(ctx->request_buf, DTDNS_UPDATE_IP_HTTP_REQUEST,
++		       ctx->info[infcnt].dyndns_server_url,
++		       ctx->info[infcnt].alias[alcnt].names.name,
++		       ctx->info[infcnt].creds.password,
++		       ctx->info[infcnt].my_ip_address.name,
++		       ctx->info[infcnt].dyndns_server_name.name);
++}
++
++
+ /*
+ 	Get the IP address from interface
+ */
+@@ -681,6 +704,23 @@ static int is_freedns_server_rsp_ok(ddns_t *ctx, http_trans_t *trans, int infnr)
+ 	return RC_DYNDNS_RSP_NOTOK;
+ }
+ 
++/* dtdns.com specific response validator.
++   ok blabla and n.n.n.n
++    fail blabla and n.n.n.n
++    are the good answers. We search our own IP address in response and that's enough.
++*/
++static int is_dtdns_server_rsp_ok(ddns_t *ctx, http_trans_t *trans, int infnr)
++{
++	char *resp = trans->p_rsp_body;
++
++	DO(is_http_status_code_ok(trans->status));
++
++	if (strstr(resp, ctx->info[infnr].my_ip_address.name))
++		return 0;
++
++	return RC_DYNDNS_RSP_NOTOK;
++}
++
+ /** generic http dns server ok parser
+     parses a given string. If found is ok,
+     Example : 'SUCCESS CODE='
+diff --git a/src/inadyn_cmd.c b/src/inadyn_cmd.c
+index 29229d7..956be7f 100644
+--- a/src/inadyn_cmd.c
++++ b/src/inadyn_cmd.c
+@@ -167,6 +167,7 @@ static cmd_desc_t cmd_options_table[] = {
+ 	 "\t\t\to For dynsip.org:         default@dynsip.org\n"
+ 	 "\t\t\to For sitelutions.com:    default@sitelutions.com\n"
+ 	 "\t\t\to For dnsexit.com:        default@dnsexit.com\n"
++	 "\t\t\to For dtdns.com:          default@dtdns.com\n"
+ 	 "\t\t\to For generic:            custom@http_srv_basic_auth\n\n"
+ 	 "\t\t\tDefault value:            default@dyndns.org"},
+ 	{"--dyndns_system", 1, {get_dyndns_system_handler, NULL}, NULL},
+-- 
+2.0.0.526.g5318336
+
