@@ -2,6 +2,9 @@
 
 echo "$(serial)"
 echo "$(cat /tmp/platform)"
+echo "$(hnvram -r GPN 2>&1)"
+
+echo
 
 if [ -e /tmp/gpio/ledcontrol/secure_boot ]; then
   echo "CPU is locked"
@@ -34,3 +37,28 @@ if [ "$(kernopt wifical)" = 1 ]; then
 else
   echo "Wifi calibration disabled"
 fi
+
+echo
+
+ssl="$(hnvram -rq GOOGLE_SSL_CRT 2>&1)"
+if [ "$?" -eq 0 ]; then
+  echo GOOGLE_SSL_CRT is populated
+else
+  echo GOOGLE_SSL_CRT is not populated
+fi
+
+ssl="$(hnvram -rq GOOGLE_SSL_PEM 2>&1)"
+if [ "$?" -eq 0 ]; then
+  echo GOOGLE_SSL_PEM is populated
+else
+  echo GOOGLE_SSL_PEM is not populated
+fi
+
+echo
+
+echo "$(hnvram -r MAC_ADDR 2>&1)"
+echo "$(hnvram -r MAC_ADDR_MOCA 2>&1)"
+echo "$(hnvram -r MAC_ADDR_BT 2>&1)"
+echo "$(hnvram -r MAC_ADDR_WIFI 2>&1)"
+echo "$(hnvram -r MAC_ADDR_WIFI2 2>&1)"
+echo "$(hnvram -r MAC_ADDR_WAN 2>&1)"
