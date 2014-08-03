@@ -205,6 +205,12 @@ case "$1" in
       babysit 30 runmoca 2>&1 | logos mocad &
     fi
 
+    if ! is-network-box; then
+      # Avoid b/14248601 when talking to GFRG1x0 (or any other
+      # upstream IGMP snooping router, really).
+      sysctl -w net.ipv4.conf.all.force_igmp_version=2
+    fi
+
     if [ -e /sys/class/net/wan0 ]; then
       echo "Bringing up the WAN port..."
       ip link add link wan0 name wan0.2 type vlan id 2
