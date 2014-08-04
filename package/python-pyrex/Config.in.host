@@ -1,0 +1,7 @@
+config BR2_PACKAGE_HOST_PYTHON_PYREX 
+	bool "python-pyrex (host tool)" 
+	depends on BR2_PACKAGE_PYTHON 
+	help 
+	 Pyrex is a language for writing Python extension modules 
+ 
+	 http://www.cosc.canterbury.ac.nz/greg.ewing/python/Pyrex/
