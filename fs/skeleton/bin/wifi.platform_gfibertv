@@ -593,13 +593,11 @@ elif runnable iw; then
   ht20=
   ht40=
   ht_rxstbc=
-  uapsd=
   vht_settings=
 
   phyinfo=$(IW phy "$phy" info 2>/dev/null)
   # non-ieee80211 drivers like mwifiex don't support iw phy phy# info
   [ -z "$phyinfo" ] && phyinfo=$(IW list)
-  contains "$phyinfo" "AP-side u-APSD" && uapsd="uapsd_advertisement_enabled=1"
   contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC123]"
   contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC12]"
   contains "$phyinfo" "RX STBC 1-stream" && ht_rxstbc="[RX-STBC1]"
@@ -660,7 +658,6 @@ elif runnable iw; then
 	$enable_80211n
 	$enable_80211ac
 	$enable_wmm
-	$uapsd
 	$require_ht
 	$require_vht
 	$hidden
