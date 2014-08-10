@@ -40,9 +40,11 @@ fi
 
 echo
 
+do_print_certificate=0
 ssl="$(hnvram -rq GOOGLE_SSL_CRT 2>&1)"
 if [ "$?" -eq 0 ]; then
   echo GOOGLE_SSL_CRT is populated
+  do_print_certificate=1
 else
   echo GOOGLE_SSL_CRT is not populated
 fi
@@ -52,6 +54,11 @@ if [ "$?" -eq 0 ]; then
   echo GOOGLE_SSL_PEM is populated
 else
   echo GOOGLE_SSL_PEM is not populated
+fi
+
+if [ -n "$do_print_certificate" ]; then
+  echo "GOOGLE_SSL_CRT:"
+  echo "$(hnvram -rq GOOGLE_SSL_CRT 2>&1)"
 fi
 
 echo
