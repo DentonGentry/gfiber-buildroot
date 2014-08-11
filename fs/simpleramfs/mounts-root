@@ -167,7 +167,6 @@ elif [ -n "$ROOTDEV" ]; then
       # TODO(apenwarr): fix uboot, then remove special case for armplatform.
       read x y armplatform platform junk </proc/cpuinfo
       if [ "$platform" = "BCM7425B0" \
-          -o "$platform" = "BCM7429B0" \
           -o "$armplatform" = "ARMv7" ]; then
         log 'dmsetup failed: platform is unsigned device, continuing anyway.'
         SQUASHFS=$ROOTDEV
