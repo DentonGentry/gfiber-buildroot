@@ -1,12 +1,13 @@
 GOOGLE_SKELMIR_SITE = repo://vendor/skelmir/vm
 
-SKELMIR_BIN=bin/siege
-SKELMIR_LIBDIR=lib
-
 ifeq ($(BR2_mipsel),y)
 SKELMIR_ARCH=mipsel-5k-linux-uclibc
+SKELMIR_BIN=Binaries/siege
+SKELMIR_LIBDIR=Binaries/Libraries
 else ifeq ($(BR2_arm),y)
 SKELMIR_ARCH=arm-v7l-linux-gnueabi
+SKELMIR_BIN=bin/siege
+SKELMIR_LIBDIR=lib
 else
 SKELMIR_ARCH=unknown-skelmir-arch
 endif
@@ -20,6 +21,7 @@ define GOOGLE_SKELMIR_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/sage/skelmir/lib/zi
 	cp -f $(@D)/$(SKELMIR_ARCH)/$(SKELMIR_BIN) \
 		$(TARGET_DIR)/app/sage/skelmir/siege
+	ln -sf lib $(TARGET_DIR)/app/sage/skelmir/Libraries
 endef
 
 $(eval $(call GENTARGETS))
