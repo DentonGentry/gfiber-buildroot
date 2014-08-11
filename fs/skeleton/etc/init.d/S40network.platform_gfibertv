@@ -36,11 +36,9 @@ redistribute_irqs()
   elif grep -q comcerto /proc/iomem; then
     # C2K default is 0x3, allowing IRQ to go to either CPU 0 or 1,
     # but the result is all IRQs go to CPU0. Steer a few to CPU1.
-    pfe_irq=36
     ahci_irq=48
     i2c_irq=62
     moca_irq=77
-    echo 2 >/proc/irq/$pfe_irq/smp_affinity
     echo 2 >/proc/irq/$ahci_irq/smp_affinity
     echo 2 >/proc/irq/$i2c_irq/smp_affinity
     echo 2 >/proc/irq/$moca_irq/smp_affinity
