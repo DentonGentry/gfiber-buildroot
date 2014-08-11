@@ -68,17 +68,6 @@ echo "Getting hdcp key"
 hnvram -br HDCP_KEY >/tmp/hdcp_key.tmp
 [ -s /tmp/hdcp_key.tmp ] && mv /tmp/hdcp_key.tmp /tmp/hdcp_key
 
-if [ "$PLATFORM" = GFHD200 ]; then
-  wait-until-created /tmp/gpio/ready
-  if [ "$GPN" = "72001970-01" ]; then
-    # Older units, USB0_PWRON_N is active high
-    brcmgpio -p 106 -h
-  else
-    # newer units, USB0_PWRON_N is active low
-    brcmgpio -p 106 -l
-  fi
-fi
-
 if startswith "$PLATFORM" GFRG2; then
   # Mindspeed-based devices can't fall back to GFP_DMA because they
   # use the GFP_DMA area for CONFIG_COMCERTO_ZONE_DMA_NCNB.  Thus, we
