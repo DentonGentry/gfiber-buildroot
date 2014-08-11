@@ -42,7 +42,7 @@ start()
 
   cmd="miniupnpd -i '$wan' -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N -d"
   echo "Running: $cmd"
-  eval "$cmd 2>&1 | logos upnpd"
+  eval "$cmd 2>&1 | logos upnpd &"
 }
 
 stop()
