@@ -164,10 +164,8 @@ elif [ -n "$ROOTDEV" ]; then
     args=$(replacefirst "$args" HASH_DEV "$KERNELDEV")
     if ! dmsetup create -r vroot --table "$args"; then
       veritynote=
-      # TODO(apenwarr): fix uboot, then remove special case for armplatform.
       read x y armplatform platform junk </proc/cpuinfo
-      if [ "$platform" = "BCM7425B0" \
-          -o "$armplatform" = "ARMv7" ]; then
+      if [ "$platform" = "BCM7425B0" ]; then
         log 'dmsetup failed: platform is unsigned device, continuing anyway.'
         SQUASHFS=$ROOTDEV
       else
