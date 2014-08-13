@@ -122,11 +122,13 @@ case "$1" in
     ifup lo
 
     # Set the wifi mac address from values in hnvram.
-    if is-network-box; then
+    if [ -e /sys/class/net/wlan0 ]; then
       a=$(hnvram -qr MAC_ADDR_WIFI)
       if [ -n "$a" ]; then
         ip link set wlan0 address "$a"
       fi
+    fi
+    if [ -e /sys/class/net/wlan1 ]; then
       a=$(hnvram -qr MAC_ADDR_WIFI2)
       if [ -n "$a" ]; then
         ip link set wlan1 address "$a"
