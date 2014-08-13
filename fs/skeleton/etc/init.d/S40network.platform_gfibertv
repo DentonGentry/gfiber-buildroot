@@ -121,6 +121,18 @@ case "$1" in
     # configure loopback
     ifup lo
 
+    # Set the wifi mac address from values in hnvram.
+    if is-network-box; then
+      a=$(hnvram -qr MAC_ADDR_WIFI)
+      if [ -n "$a" ]; then
+        ip link set wlan0 address "$a"
+      fi
+      a=$(hnvram -qr MAC_ADDR_WIFI2)
+      if [ -n "$a" ]; then
+        ip link set wlan1 address "$a"
+      fi
+    fi
+
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
     brctl setfd br0 1
