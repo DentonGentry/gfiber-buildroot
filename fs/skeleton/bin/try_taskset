@@ -1,0 +1,9 @@
+#!/bin/sh
+affinity=$1
+shift
+if taskset "$affinity" true 2>/dev/null; then
+  exec taskset "$affinity" "$@"
+else
+  echo "try_taskset: note: affinity '$affinity' unavailable, used default." >&2
+  exec "$@"
+fi
