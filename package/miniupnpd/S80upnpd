@@ -33,6 +33,8 @@ start()
   lanipv4=${lanipv4#* inet }
   lanipv4=${lanipv4%%/*}
 
+  version="Google Fiber $(cat /etc/version) UPnP/1.1 MiniUPnPd"
+
   wan=$(activewan)
 
   if [ -z "$wan" ]; then
@@ -42,7 +44,7 @@ start()
 
   set -- \
       miniupnpd -i "$wan" -a "$lanipv4" -u "$uuid" \
-          -s "$sn" -m "$model" -z "$friendly" -N -d
+          -s "$sn" -m "$model" -z "$friendly" -N -d -V "$version"
   echo "Running:" "$@"
   babysit 10 "$@" 2>&1 | logos upnpd &
 }
