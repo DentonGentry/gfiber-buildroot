@@ -97,12 +97,13 @@ if [ -f $file ]; then
     iptables -t nat -A acsrules-nat-prerouting -i "$wans" -p "$protocol" -s "$source" -d "$gateway" --dport "$sport" \
       -j DNAT --to "$dest$dportnat" -m comment --comment "$comment"
     iptables -t nat -A acsrules-nat-postrouting -p "$protocol" -s "$lanipv4mask" -d "$dest" --dport "$dport" \
-      -j SNAT --to "$lanipv4"
-    iptables -A acsrules-filter-forward -p "$protocol" -d "$dest" --dport "$dport" -j ACCEPT
+      -j SNAT --to "$lanipv4" -m comment --comment "$comment"
+    iptables -A acsrules-filter-forward -p "$protocol" -d "$dest" --dport "$dport" -j ACCEPT \
+      -m comment --comment "$comment"
     # this adds a lan rule so internal hosts can use the wan router ip to get the same mapping
     if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ "$source" = 0/0 ]; then
       iptables -t nat -A acsrules-nat-prerouting -i br0 -p "$protocol" -d "$wanipv4" --dport "$sport" \
-        -j DNAT --to "$dest$dportnat"
+        -j DNAT --to "$dest$dportnat" -m comment --comment "$comment"
     fi
   done
 fi
@@ -150,7 +151,7 @@ fi
 
 # upnp IGD (firewall pinholes)
 # MINIUPNPD is maintained by miniupnpd
-if [ -f $acs/upnpd_enabled ]; then
+if [ -f /tmp/upnpd_enabled ]; then
   ip46tables -t filter -A acsrules-filter-forward -i $wans ! -o $wans -j MINIUPNPD
   iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wans -j MINIUPNPD
   ! /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd start
@@ -161,28 +162,45 @@ fi
 # ftp server
 if [ -f $acs/ftpserverv4 ]; then
   ftpserverv4=$(cat $acs/ftpserverv4)
-  iptables -t nat -A acsrules-nat-prerouting -p tcp ---dport 20 -j DNAT --to "$ftpserverv4":20
-  iptables -t nat -A acsrules-nat-prerouting -p tcp --dport 21 -j DNAT --to "$ftpserverv4":21
-  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 21 -m conntrack --ctstate NEW,ESTABLISHED ftp -j ACCEPT
-  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 20 -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
-  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 1024: -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+  iptables -t nat -A acsrules-nat-prerouting -p tcp ---dport 20 -j DNAT \
+      --to "$ftpserverv4":20 -m comment --comment "ASF:FTP"
+  iptables -t nat -A acsrules-nat-prerouting -p tcp --dport 21 -j DNAT \
+      --to "$ftpserverv4":21 -m comment --comment "ASF:FTP"
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 21 \
+      -m conntrack --ctstate NEW,ESTABLISHED ftp \
+      -j ACCEPT -m comment --comment "ASF:FTP"
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 20 \
+      -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT \
+      -m comment --comment "ASF:FTP"
+  iptables -A acsrules-filter-forward -p tcp -d "$ftpserverv4" --dport 1024: \
+      -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT \
+      -m comment --comment "ASF:FTP"
 fi
 if [ -f $acs/ftpserverv6 ]; then
   ftpserverv6=$(cat $acs/ftpserverv6)
-  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 21 -m conntrack --ctstate NEW,ESTABLISHED ftp -j ACCEPT
-  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 20 -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
-  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 1024: -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 21 \
+      -m conntrack --ctstate NEW,ESTABLISHED ftp -j ACCEPT \
+      -m comment --comment "ASF:FTP6"
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 20 \
+      -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT \
+      -m comment --comment "ASF:FTP6"
+  ip6tables -A acsrules-filter-forward -p tcp -d "$ftpserverv6" --dport 1024: \
+      -m conntrack --ctstate RELATED -m helper --helper ftp -j ACCEPT \
+      -m comment --comment "ASF:FTP6"
 fi
 
 # DMZ, goes last
 if [ -f $acs/dmzhostv4 ]; then
   dmzhostv4=$(cat $acs/dmzhostv4)
-  iptables -t nat -A acsrules-nat-prerouting -i $wan -s 0/0 -d "$wanipv4" -j DNAT --to "$dmzhostv4"
-  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv4" -j ACCEPT
+  iptables -t nat -A acsrules-nat-prerouting -i $wan -s 0/0 -d "$wanipv4" \
+      -j DNAT --to "$dmzhostv4" -m comment --comment "DMZ4"
+  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv4" -j ACCEPT \
+      -m comment --comment "DMZ4"
 fi
 if [ -f $acs/dmzhostv6 ]; then
-  dmzhostv4=$(cat $acs/dmzhostv6)
-  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv6" -j ACCEPT
+  dmzhostv6=$(cat $acs/dmzhostv6)
+  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv6" -j ACCEPT \
+      -m comment --comment "DMZ6"
 fi
 
 exit 0
