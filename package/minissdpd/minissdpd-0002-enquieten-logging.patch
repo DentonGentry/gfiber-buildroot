@@ -1,0 +1,48 @@
+From e56859da2097a42fe39553667c09a8fb95a0b323 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Fri, 15 Aug 2014 23:21:17 -0700
+Subject: [PATCH] Adjust logging.
+
+Don't log to the console.
+Remove log messages which are not terribly useful.
+---
+ minissdpd.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/minissdpd.c b/minissdpd.c
+index 15dd51c..66a002e 100644
+--- a/minissdpd.c
++++ b/minissdpd.c
+@@ -871,11 +871,9 @@ int main(int argc, char * * argv)
+ 	}
+ 
+ 	/* open log */
+-	openlog("minissdpd",
+-	        LOG_CONS|LOG_PID|(debug_flag?LOG_PERROR:0),
++	openlog("minissdpd", LOG_PID|(debug_flag?LOG_PERROR:0),
+ 			LOG_MINISSDPD);
+-	if(!debug_flag) /* speed things up and ignore LOG_INFO and LOG_DEBUG */
+-		setlogmask(LOG_UPTO(LOG_NOTICE));
++	setlogmask(LOG_UPTO(LOG_INFO));
+ 
+ 	if(checkforrunning(pidfilename) < 0)
+ 	{
+@@ -1023,7 +1021,6 @@ int main(int argc, char * * argv)
+ 				/*printf("%.*s", n, buf);*/
+ 				i = ParseSSDPPacket(s_ssdp6, buf, n,
+ 				                    (struct sockaddr *)&sendername6);
+-				syslog(LOG_DEBUG, "** i=%d deltadev=%d **", i, deltadev);
+ 				if(i==0 || (i*deltadev < 0))
+ 				{
+ 					if(deltadev > 0)
+@@ -1054,7 +1051,6 @@ int main(int argc, char * * argv)
+ 				/*printf("%.*s", n, buf);*/
+ 				i = ParseSSDPPacket(s_ssdp, buf, n,
+ 				                    (struct sockaddr *)&sendername);
+-				syslog(LOG_DEBUG, "** i=%d deltadev=%d **", i, deltadev);
+ 				if(i==0 || (i*deltadev < 0))
+ 				{
+ 					if(deltadev > 0)
+-- 
+2.1.0.rc2.206.gedb03e5
+
