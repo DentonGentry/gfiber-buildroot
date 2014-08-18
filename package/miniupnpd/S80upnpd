@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # manage miniupnpd and minissdpd, the IGD/NAT-DMP daemons
 
@@ -11,7 +11,7 @@ enabler=/tmp/upnpd-enabled
 
 start()
 {
-  if [ ! -f $enabler ]; then
+  if [ ! -f "$enabler" ]; then
     echo "$enabler does not exist, refusing to start."
     return
   fi
@@ -40,17 +40,16 @@ start()
     return
   fi
 
-  cmd="miniupnpd -i '$wan' -a '$lanipv4' -u '$uuid' -s '$sn' -m '$model' -z '$friendly' -N -d"
-  echo "Running: $cmd"
-  eval "$cmd 2>&1 | logos upnpd &"
+  set -- \
+      miniupnpd -i "$wan" -a "$lanipv4" -u "$uuid" \
+          -s "$sn" -m "$model" -z "$friendly" -N -d
+  echo "Running:" "$@"
+  babysit 10 "$@" 2>&1 | logos upnpd &
 }
 
 stop()
 {
-  if [ -f /var/run/miniupnpd.pid ]; then
-    kill -TERM $(cat /var/run/miniupnpd.pid)
-    sleep 1
-  fi
+  killpid /var/run/miniupnpd.pid
 }
 
 
