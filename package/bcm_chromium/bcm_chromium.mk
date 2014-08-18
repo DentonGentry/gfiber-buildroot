@@ -84,6 +84,10 @@ endef
 
 define BCM_CHROMIUM_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
+	if [ -e "$(TARGET_DIR)/usr/local/bin/webkitGl3/chrome-sandbox" ] ; \
+		then \
+			chmod 4755 "$(TARGET_DIR)/usr/local/bin/webkitGl3/chrome-sandbox"; \
+		fi
 endef
 
 # Since chromium needs dlna, etc. to be rebuilt and reinstalled to its
