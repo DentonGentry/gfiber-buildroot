@@ -2,54 +2,90 @@
 . /etc/utils.sh
 
 
+irq_affinity() {
+  local irq="$1" cpu="$2"
+  if [ -e "/proc/irq/$irq/smp_affinity" ]; then
+    echo "$cpu" >"/proc/irq/$irq/smp_affinity"
+  else
+    echo "  ...irq #$irq not present, skipping" >&2
+  fi
+}
+
+
 redistribute_irqs()
 {
-  if is-storage-box; then
-    # Storage Box serves MoCA and Ethernet simultaneously,
-    # so we move them to different CPUs.
-    # TV Box mostly uses MoCA *or* Ethernet, and keeps
-    # CPU1 free to handle the video interrupts.
+  # if a second CPU isn't available, do nothing.
+  echo "distribute IRQ handling between cores"
+  if ! taskset 2 true 2>/dev/null; then
+    echo "  ...only one CPU available, skipped."
+  fi
+
+  # Rule of thumb:
+  #  - interrupts are generally by default on first CPU (bitfield=1)
+  #  - let's move realtime sensitive stuff to second CPU (bitfield=2)
+  #  - non-realtime userspace processes can default to both (bitfield=3)
+  if is-storage-box || is-network-box; then
+    # Storage box serves MoCA and ethernet simultaneously.
+    # - put them both on separate CPUs to maximize throughput.
+    # - consider ethernet (not MoCA) to be realtime sensitive, since it
+    #   carries the multicast feed.
+    # - consider disk to be non-realtime, since it can prefetch/writeback.
+    serialcpu=1
+    eth0cpu=2
     mocacpu=1
-    eth0cpu=2
+    wificpu=1  # may not actually have wifi
+    diskcpu=1
   else
-    mocacpu=2
-    eth0cpu=2
+    # TV box handles video interrupts (via miniclient) and
+    # (ethernet *or* MoCA) traffic (which carries the video stream), and wifi.
+    # Network traffic includes the video stream, but it's TCP, so it should
+    # be able to retransmit if packets are lost (unlike multicast on the
+    # storage box) so it should be okay to put it on the non-realtime CPU.
+    serialcpu=1
+    eth0cpu=1
+    mocacpu=1
+    wificpu=1
+    diskcpu=1  # doesn't actually have a disk
   fi
 
-  wifi_irq=
   if grep -q BCM7425 /proc/cpuinfo; then
-    echo 1 >/proc/irq/62/smp_affinity
-    echo $eth0cpu >/proc/irq/18/smp_affinity
-    echo $eth0cpu >/proc/irq/19/smp_affinity
-    echo $mocacpu >/proc/irq/20/smp_affinity
-    echo $mocacpu >/proc/irq/21/smp_affinity
-    echo $mocacpu >/proc/irq/31/smp_affinity
-    wifi_irq=34
+    irq_affinity 62 $serialcpu
+    irq_affinity 18 $eth0cpu
+    irq_affinity 19 $eth0cpu
+    irq_affinity 20 $mocacpu
+    irq_affinity 21 $mocacpu
+    irq_affinity 31 $mocacpu
+    irq_affinity 34 $wificpu  # bcm wifi, if present
+    irq_affinity 42 $diskcpu
   elif grep -q BCM7429 /proc/cpuinfo; then
-    echo 1 >/proc/irq/52/smp_affinity
-    echo $eth0cpu >/proc/irq/16/smp_affinity
-    echo $eth0cpu >/proc/irq/17/smp_affinity
-    echo $mocacpu >/proc/irq/18/smp_affinity
-    echo $mocacpu >/proc/irq/19/smp_affinity
-    echo $mocacpu >/proc/irq/28/smp_affinity
-    wifi_irq=57
+    irq_affinity 52 $serialcpu
+    irq_affinity 16 $eth0cpu
+    irq_affinity 17 $eth0cpu
+    irq_affinity 18 $mocacpu
+    irq_affinity 19 $mocacpu
+    irq_affinity 28 $mocacpu
+    # Wifi is on one of mmc0 or mmc1, but it has varied between early
+    # device models.  Since mmc is pretty fast and seldom used (and we happen
+    # to want it on the non-realtime cpu anyway, like wifi), let's just
+    # blindly put them both on the wifi cpu.
+    irq_affinity 35 $wificpu  # mmc1
+    irq_affinity 36 $wificpu  # mmc0
+    # Note: no disk present, ignore $diskcpu
   elif grep -q comcerto /proc/iomem; then
-    # C2K default is 0x3, allowing IRQ to go to either CPU 0 or 1,
-    # but the result is all IRQs go to CPU0. Steer a few to CPU1.
-    ahci_irq=48
-    i2c_irq=62
-    moca_irq=77
-    echo 2 >/proc/irq/$ahci_irq/smp_affinity
-    echo 2 >/proc/irq/$i2c_irq/smp_affinity
-    echo 2 >/proc/irq/$moca_irq/smp_affinity
-  fi
-
-  if has_wifi && is-tv-box && [ ! -z  ${wifi_irq} ]; then
-    # Partial fix for "micro-stuttering" seen in video playback.
-    # Wifi driver needs to be on cpu1 and video on cpu0 so that wifi
-    # can't lock out scheduling of the video player.
-    echo "forcing wifi onto cpu1"
-    echo 2 >/proc/irq/${wifi_irq}/smp_affinity
+    # TODO(apenwarr): we steer *all* PFE network traffic to $eth0cpu.
+    #  Ideally we want only multicast to go there, and other traffic to
+    #  go to the non-realtime CPU.  There may be some way to do this by
+    #  changing PFE somehow.  As is, incoming WAN traffic destined for wifi
+    #  could end up sucking all available CPU and interfere with multicast.
+    irq_affinity  59 $serialcpu  # serial
+    irq_affinity  62 $serialcpu  # i2c (NOR flash)
+    irq_affinity  36 $eth0cpu    # *all* PFE
+    irq_affinity  77 $mocacpu
+    irq_affinity 128 $wificpu    # new boards, ath10k
+    irq_affinity 160 $wificpu    # new boards, ath9k
+    irq_affinity  96 $wificpu  2>/dev/null  # old boards, ath10k
+    irq_affinity 164 $wificpu  2>/dev/null  # old boards, ath9k
+    irq_affinity  48 $diskcpu
   fi
 }
 
@@ -209,7 +245,6 @@ case "$1" in
     echo "Bringing up the bridge..."
     ifup br0
 
-    echo "distribute IRQ handling between cores"
     redistribute_irqs
 
     if [ -e /dev/bmoca0 ]; then

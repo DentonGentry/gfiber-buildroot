@@ -66,8 +66,10 @@ start_sagesrv() {
   # Start up native streaming server
   VIDEO_UID=$(id -u video)
   VIDEO_GID=$(id -g video)
-  babysit 10 alivemonitor /tmp/sagesrvalive 80 10 120 /app/sage/sagesrv -l6 -m5 \
-    -U $VIDEO_UID -G $VIDEO_GID -f 2>&1 | logos z 0 20000000 &
+  babysit 10 \
+  alivemonitor /tmp/sagesrvalive 80 10 120 \
+  /app/sage/sagesrv -l6 -m5 \
+      -U $VIDEO_UID -G $VIDEO_GID -f 2>&1 | logos z 0 20000000 &
 }
 
 stop_sagesrv() {
