@@ -99,9 +99,9 @@ if [ -f $file ]; then
     iptables -t nat -A acsrules-nat-postrouting -p "$protocol" -s "$lanipv4mask" -d "$dest" --dport "$dport" \
       -j SNAT --to "$lanipv4"
     iptables -A acsrules-filter-forward -p "$protocol" -d "$dest" --dport "$dport" -j ACCEPT
-    # this adds a lan rule so internal hosts can use the lan router ip to get the same mapping
+    # this adds a lan rule so internal hosts can use the wan router ip to get the same mapping
     if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ "$source" = 0/0 ]; then
-      iptables -t nat -A acsrules-nat-prerouting -p "$protocol" -d "$lanipv4" --dport "$sport" \
+      iptables -t nat -A acsrules-nat-prerouting -i br0 -p "$protocol" -d "$wanipv4" --dport "$sport" \
         -j DNAT --to "$dest$dportnat"
     fi
   done
