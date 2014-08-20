@@ -203,4 +203,6 @@ if [ -f $acs/dmzhostv6 ]; then
       -m comment --comment "DMZ6"
 fi
 
+iptables-save | logos iptables-save
+
 exit 0
