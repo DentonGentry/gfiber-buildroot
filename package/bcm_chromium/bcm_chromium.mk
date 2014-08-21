@@ -9,7 +9,9 @@ BCM_CHROMIUM_DEPENDENCIES=\
 	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient \
 	libpng jpeg zlib freetype openssl expat \
-	libcurl libxml2 libxslt fontconfig boost
+	libcurl libxml2 libxslt fontconfig boost \
+	cairo
+
 BCM_CHROMIUM_INSTALL_STAGING=NO
 BCM_CHROMIUM_INSTALL_TARGET=YES
 
