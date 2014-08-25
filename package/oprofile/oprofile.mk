@@ -25,7 +25,7 @@ ifeq ($(OPROFILE_ARCH),)
 OPROFILE_ARCH = $(BR2_ARCH)
 endif
 
-OPROFILE_DEPENDENCIES = popt binutils
+OPROFILE_DEPENDENCIES = popt binutils gawk coreutils
 
 define OPROFILE_INSTALL_TARGET_CMDS
 	$(INSTALL) -d -m 755 $(TARGET_DIR)/usr/bin
@@ -34,6 +34,8 @@ define OPROFILE_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 $(@D)/libregex/stl.pat $(TARGET_DIR)/usr/share/oprofile
 	$(INSTALL) -m 755 $(@D)/utils/opcontrol $(TARGET_DIR)/usr/bin
 	$(INSTALL) -m 755 $(addprefix $(@D)/, $(OPROFILE_BINARIES)) $(TARGET_DIR)/usr/bin
+	ln -sf /tmp/oprofile $(TARGET_DIR)/var/lib/oprofile
+	ln -sf /tmp/oprofile $(TARGET_DIR)/root/.oprofile
 endef
 
 define OPROFILE_UNINSTALL_TARGET_CMDS

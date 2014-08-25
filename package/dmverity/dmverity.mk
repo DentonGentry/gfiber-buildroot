@@ -16,7 +16,7 @@ endef
 define HOST_DMVERITY_BUILD_CMDS
 	cd $(@D) && CC="$(HOSTCC)" CXX="$(HOSTCXX)" AR="$(HOSTAR)" \
 		LD="$(HOSTLD)" CFLAGS="$(HOST_CFLAGS) -Wno-sign-compare" \
-		CXXFLAGS="$(HOST_CXXFLAGS) -Wno-sign-compare" \
+		CXXFLAGS="$(HOST_CXXFLAGS) -Wno-sign-compare -Wno-unused-local-typedefs" \
 		LDFLAGS="$(HOST_LDFLAGS)" \
 		$(MAKE) WITH_CHROME=0 all
 endef

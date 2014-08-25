@@ -1,0 +1,77 @@
+#!/usr/bin/python
+
+# Print the network type for a MAC address:
+# $ network_type 00:11:22:33:44:55
+# Ethernet
+# $
+#
+
+import options
+import os
+import struct
+import sys
+
+
+SYS_CLASS_NET_PATH = '/sys/class/net'
+
+class Bridge(object):
+  WELL_KNOWN_INTERFACES = {
+      'eth0': 'Ethernet',
+      'lan0': 'Ethernet',
+      'eth1': 'MoCA',
+      'eth1.0': 'MoCA',
+      'moca0': 'MoCA',
+      'moca0.0': 'MoCA',
+      'eth2': 'Wifi',
+      'wlan0': 'Wifi',
+      'wlan1': 'Wifi',
+      'ath0': 'Wifi',
+      'ath1': 'Wifi',
+  }
+
+  def __init__(self, brname):
+    self.brname = brname
+    self.hosts = self._GetHostsInBridge()
+
+  def GetNetworkType(self, mac):
+    return self.hosts.get(mac.lower(), 'Unknown')
+
+  def _GetInterfacesInBridge(self):
+    """Return list of all interfaces in brname."""
+    if_path = os.path.join(SYS_CLASS_NET_PATH, self.brname, 'brif')
+    return sorted(os.listdir(if_path))
+
+  def _GetHostsInBridge(self):
+    """Iterate over all client addresses in the FDB of brname.
+
+    Returns:
+      iterable of (mac, iface) where:
+        mac: MAC address of the station
+        iface: name of the interface where the MAC was seen, like 'eth0'
+    """
+    interfaces = dict()
+    for (idx, ifc) in enumerate(self._GetInterfacesInBridge(), start=1):
+      interfaces[idx] = ifc
+    fdb_path = os.path.join(SYS_CLASS_NET_PATH, self.brname, 'brforward')
+    hosts = dict()
+    with open(fdb_path) as f:
+      fdb = f.read()  # proc file only works if read all at once
+      offset = 0
+      while offset < len(fdb):
+        (m1, m2, m3, m4, m5, m6, port_lo, unused_local, unused_age_timer,
+         port_hi, unused_pad1, unused_pad2) = struct.unpack(
+             'BBBBBBBBIBBH', fdb[offset:offset+16])
+        mac = '%02x:%02x:%02x:%02x:%02x:%02x' % (m1, m2, m3, m4, m5, m6)
+        port = (port_hi << 8) | port_lo
+        netdev = interfaces.get(port, None)
+        hosts[mac.lower()] = self.WELL_KNOWN_INTERFACES.get(netdev, 'Unknown')
+        offset += 16
+    return hosts
+
+
+if __name__ == '__main__':
+  br = Bridge('br0')
+  if len(sys.argv) != 2:
+    print 'Usage: network_type 00:11:22:33:44:55'
+    sys.exit(1)
+  print br.GetNetworkType(str(sys.argv[1]).lower())

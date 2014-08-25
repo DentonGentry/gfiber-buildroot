@@ -1,0 +1,77 @@
+#!/bin/sh
+
+# Periodically send queries for hostnames, and store the results in
+# files in /tmp. Most of these utilities are blocking and wait for a
+# few seconds, and would slow down catawampus to call them directly.
+
+. /etc/utils.sh
+
+ASUS_FILE="/tmp/asus_hostnames"
+DNSSD_FILE="/tmp/dnssd_hostnames"
+NETBIOS_FILE="/tmp/netbios_hostnames"
+
+SLEEP=400
+RECENT=512
+
+remove_new_from_old() {
+  new="$1"
+  oldfilename="$2"
+  if [ -e "$oldfilename" ]; then
+    while IFS="|" read addr host; do
+      if ! contains "$new" "$addr"; then
+        echo "$addr|$host"
+      fi
+    done < "$oldfilename"
+  fi
+}
+
+update_dnssd() {
+  if runnable dnssd_hosts; then
+    new=$(dnssd_hosts | sort | uniq)
+    if [ ! -z "$new" ]; then
+      old=$(remove_new_from_old "$new" "$DNSSD_FILE")
+      hosts=$(echo "$new" "$old" | head -n $RECENT)
+      atomic "$DNSSD_FILE" "$hosts"
+    fi
+  fi
+}
+
+update_netbios() {
+  if runnable netbios_hosts; then
+    new=$(netbios_hosts | sort | uniq)
+    if [ ! -z "$new" ]; then
+      old=$(remove_new_from_old "$new" "$NETBIOS_FILE")
+      hosts=$(echo "$new" "$old" | head -n $RECENT)
+      atomic "$NETBIOS_FILE" "$hosts"
+    fi
+  fi
+}
+
+update_asus() {
+  if runnable asus_hosts; then
+    new=$(asus_hosts | sort | uniq)
+    if [ ! -z "$new" ]; then
+      old=$(remove_new_from_old "$new" "$ASUS_FILE")
+      hosts=$(echo "$new" "$old" | head -n $RECENT)
+      atomic "$ASUS_FILE" "$hosts"
+    fi
+  fi
+}
+
+
+update_dnssd
+sleep 1
+update_netbios
+sleep 1
+update_asus
+
+while [ true ]; do
+  sleep $SLEEP
+  update_dnssd
+  sleep $SLEEP
+  update_netbios
+  sleep $SLEEP
+  update_asus
+done
+
+exit 0

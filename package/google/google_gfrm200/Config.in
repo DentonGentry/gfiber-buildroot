@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_GFRM200
+	bool "google_gfrm200"
+	help
+	  Firmware for GFRM200

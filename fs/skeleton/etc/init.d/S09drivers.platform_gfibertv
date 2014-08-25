@@ -2,37 +2,6 @@
 
 MODULE_PATH=/usr/lib/modules
 
-has_usb_wifi() {
-  for x in /sys/bus/usb/devices/*; do
-    # fields from the USB descriptor to identify the device
-    [ -f $x/idProduct ] && product=$(cat $x/idProduct)
-    [ -f $x/idVendor ] && vendor=$(cat $x/idVendor)
-    if [ "$product" = bd17 ] && [ "$vendor" = 0a5c ]; then
-      echo 'bcm43236-nofirmware'
-      return
-    fi
-    if [ "$product" = 0bdc ] && [ "$vendor" = 0a5c ]; then
-      echo 'bcm43236'
-      return
-    fi
-  done
-}
-
-# Set up WLAN, if present
-if [ "$(has_usb_wifi)" = 'bcm43236-nofirmware' ]; then
-  # reset the chip, AON_GPIO_015
-  brcmgpio -a 15 -l
-  usleep 10000
-  brcmgpio -a 15 -h
-  usleep 10000
-
-  # push its firmware to it
-  bcmdl /lib/firmware/bcm43236-nohotplug.bin
-fi
-if [ ! -z "$(has_usb_wifi)" ]; then
-  [ -e ${MODULE_PATH}/bcm_dbus.ko ] && insmod ${MODULE_PATH}/bcm_dbus.ko
-fi
-# Broadcom PCIe Wifi modules do not require bcmdl nor bcm_dbus.ko.
 [ -e ${MODULE_PATH}/wl.ko ] && insmod ${MODULE_PATH}/wl.ko
 
 # Set up BT, if present
@@ -47,6 +16,7 @@ if is-tv-box; then
     . /etc/utils.sh
     BT_MAC=$(mac_addr_increment "${MAC}" 2)
   fi
+  BT_MAC=$(echo "${BT_MAC}" | sed 's/./\U&/g')
   echo "${BT_MAC}" >/tmp/btmacaddress
 fi
 

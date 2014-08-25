@@ -15,6 +15,17 @@ verify_drm_state()
   fi
 }
 
+verify_vudu_platform()
+{
+  [ -e /tmp/platform ] && read platform </tmp/platform
+  if [ -e /user/vudu/vudu-json-settings.txt ] && \
+   grep -q GOOGG100 /user/vudu/vudu-json-settings.txt && \
+   [ "$platform" = "GFHD200" ]; then
+     echo "Clearing out VUDU state due to wrong platform"
+     rm -rf /user/vudu/*
+  fi
+}
+
 read appname opts </tmp/runappold
 
 hdsd_mode=1
@@ -60,10 +71,11 @@ case $appname in
     netflix --dpi-friendlyname "$FRIENDLYNAME" $opts 2>&1 | logos netflix
     ;;
   vudu)
-    cd /usr/local/bin
-    export PATH=$PWD:$PATH
+    cd /usr/local/bin/vudu
+    verify_vudu_platform
+    export LD_LIBRARY_PATH=.
     export VUDU_LINK_INTERFACE=br0
-    vudu $opts 2>&1 | logos vudu
+    ./vudu $opts 2>&1 | logos vudu
     ;;
   youtube)
     cd /usr/local/bin/webkitGl?

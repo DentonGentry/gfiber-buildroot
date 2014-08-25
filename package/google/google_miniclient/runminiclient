@@ -22,7 +22,7 @@ update_server()
     read uimode uiserver uires uiremote < /config/uitype
     if [ "$uimode" = "extender" ] ; then
       if [ "$uiserver" = "auto" ] ; then
-        SERVER=`/app/client/miniclient`
+        SERVER=/app/client/miniclient
       else
         SERVER=$uiserver
       fi
@@ -73,7 +73,8 @@ while :; do
     miniclient)
       rm -f /tmp/gpio/ledcontrol/waitpower
       [ -n "$SERVER_MAC" ] && [ ! -e /tmp/goalone ] && ether-wake $SERVER_MAC
-      ./miniclient $opts "$SERVER"
+      # miniclient is realtime sensitive, so run it on second CPU
+      try_taskset 2 ./miniclient $opts "$SERVER"
       mcstate=$?
       update_server
       if [ "$mcstate" != "0" ]; then

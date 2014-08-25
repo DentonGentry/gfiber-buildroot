@@ -10,30 +10,26 @@ case "$1" in
   start)
     (
       wait-until-created /tmp/startupvideo.done
-      rc_pipe_init
       if is-tv-box; then
         /app/oregano/runoregano 2>&1 | logos oregano 0 20000000 &
-      else
-        /app/oregano/runmarjoram 2>&1 | logos marjoram 0 20000000 &
       fi
     ) &
     ;;
   stop)
-    pkillwait -x startupvideo # if it's running, prevents miniclient from starting up
-    pkillwait -f '(babysit.*)(runoregano)'
-    pkillwait -x 'runoregano'
-    pkillwait -f '(babysit.*)(marjoram\.dart)'
-    pkillwait -x 'runmarjoram'
-    pkillwait -f '(dart.*)(authTokens\.dart)'
-    pkillwait -f '(dart.*)(marjoram\.dart)'
-    stop_sagesrv
-    stop_adloader
-    pkillwait -x waitpower
-    pkillwait -x netflix
-    pkillwait -x content_shell
-    pkillwait -x browser_shell
-    pkillwait -x vudu
-    rc_pipe_deinit
+    # If startupvideo is running, it prevents miniclient from starting up.
+    pkillwait -x startupvideo &
+    # Stop the scripts invoked above due to 'start oregano' (which will also
+    # stop any babysitters they may have).
+    ( pkillwait -x 'runoregano' ;
+      # End the Oregano ./start binary (which will also end its babysitter).
+      pkillwait -x '\\./start' ;
+      pkillwait -f '(content|browser)_shell' ) &
+    # End any dangling HTTP request Futures from authTokens.dart attempts.
+    pkillwait -f '(dart.*)([a]uthTokens\.dart)' &
+    pkillwait -x waitpower &
+    pkillwait -x netflix &
+    pkillwait -x vudu &
+    wait
     ;;
   restart)
     $0 stop; $0 start

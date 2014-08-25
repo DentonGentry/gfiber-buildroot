@@ -399,3 +399,5 @@ seeker/enable_continual_record=false
 fiber/allow_channel_restrictions=true
 enable_netflix_leanback=true
 wifi_sampling_rate=86400000
+fully_reimport_playlists_every_scan=true
+fiber/vod/TrailerPark/Enable=false

@@ -52,8 +52,8 @@ Usage: $bin set [options...]
  -a <autotype>    Autochannel method to use (LOW, HIGH, DFS, NONDFS, ANY,
                     OVERLAP) (default=$autotype)
  -s <ssid>        SSID to use (default=$ssid)
- -e <encryption>  Encryption type to use (WPA_PSK_AES,
-                    WPA2_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP,
+ -e <encryption>  Encryption type to use (WPA_PSK_AES, WPA2_PSK_AES,
+                    WPA12_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP, WPA12_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
  -H               Enable hidden mode (disable SSID advertisements)
  -M               Enable wmm extensions (needed for block acks)
@@ -242,8 +242,8 @@ showwifi() {
     echo "RegDomain: $country"
 
     myinterface=0
-    iw dev "$ifc" info | while read a b junk; do
-      [ "$a" = "channel" ] && echo "Channel: $b"
+    iw dev "$ifc" info | while read a b; do
+      [ "$a" = "channel" ] && echo "Channel: ${b%% *}"
       [ "$a" = "ssid" ] && echo "SSID: $b"
       [ "$a" = "addr" ] && echo "BSSID: $b"
     done
@@ -340,26 +340,46 @@ C_5HIGH_80="5745"
 C_5DFS_20="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
 C_5DFS_40=""  # TODO(apenwarr): figure out which 40/80 MHz DFS are allowed
 C_5DFS_80=""
-case "$autotype-$width" in
-  LOW-20) permit_freq="$C_24MAIN_20 $C_5LOW_20" ;;
-  LOW-40) permit_freq="$C_24MAIN_40 $C_5LOW_40" ;;
-  LOW-80) permit_freq="$C_24MAIN_80 $C_5LOW_80" ;;
-  HIGH-20) permit_freq="$C_24MAIN_20 $C_5HIGH_20" ;;
-  HIGH-40) permit_freq="$C_24MAIN_40 $C_5HIGH_40" ;;
-  HIGH-80) permit_freq="$C_24MAIN_80 $C_5HIGH_80" ;;
-  DFS-20) permit_freq="$C_5DFS_20" ;;
-  DFS-40) permit_freq="$C_5DFS_40" ;;
-  DFS-80) permit_freq="$C_5DFS_80" ;;
-  NONDFS-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20" ;;
-  NONDFS-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40" ;;
-  NONDFS-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80" ;;
-  ANY-20) permit_freq="$C_24MAIN_20 $C_5LOW_20 $C_5HIGH_20 $C_5DFS_20" ;;
-  ANY-40) permit_freq="$C_24MAIN_40 $C_5LOW_40 $C_5HIGH_40 $C_5DFS_40" ;;
-  ANY-80) permit_freq="$C_24MAIN_80 $C_5LOW_80 $C_5HIGH_80 $C_5DFS_80" ;;
-  OVERLAP-20) permit_freq="$C_24OVERLAP_20 $ANY_20" ;;
-  OVERLAP-40) permit_freq="$C_24OVERLAP_40 $ANY_40" ;;
-  OVERLAP-80) permit_freq="$C_24OVERLAP_80 $ANY_80" ;;
-  *) die "unknown autochannel type '$autotype'" ;;
+
+case "$band-$autotype-$width" in
+  # There are no 80Mhz channels in 2.4Ghz band.
+  2*-*-80) die "80Mhz not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
+
+  # DFS is not valid in 2.4Ghz
+  2*-DFS-*)die "dfs not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
+
+  # There are no overlapping channels in 5Ghz, so requesting that isn't valid.
+  5*-OVERLAP-*) die "overlap not allowed in 5ghz: type='$autotype band='$band' width='$width'" ;;
+
+  # 2.4 Ghz channels
+  2*-LOW-20) permit_freq="$C_24MAIN_20" ;;
+  2*-LOW-40) permit_freq="$C_24MAIN_40" ;;
+  2*-HIGH-20) permit_freq="$C_24MAIN_20" ;;
+  2*-HIGH-40) permit_freq="$C_24MAIN_40" ;;
+  2*-NONDFS-20) permit_freq="$C_24MAIN_20" ;;
+  2*-NONDFS-40) permit_freq="$C_24MAIN_40" ;;
+  2*-ANY-20) permit_freq="$C_24MAIN_20" ;;
+  2*-ANY-40) permit_freq="$C_24MAIN_40" ;;
+  2*-OVERLAP-20) permit_freq="$C_24OVERLAP_20" ;;
+  2*-OVERLAP-40) permit_freq="$C_24OVERLAP_40" ;;
+
+  # 5 Ghz channels
+  5*-LOW-20) permit_freq="$C_5LOW_20" ;;
+  5*-LOW-40) permit_freq="$C_5LOW_40" ;;
+  5*-LOW-80) permit_freq="$C_5LOW_80" ;;
+  5*-HIGH-20) permit_freq="$C_5HIGH_20" ;;
+  5*-HIGH-40) permit_freq="$C_5HIGH_40" ;;
+  5*-HIGH-80) permit_freq="$C_5HIGH_80" ;;
+  5*-DFS-20) permit_freq="$C_5DFS_20" ;;
+  5*-DFS-40) permit_freq="$C_5DFS_40" ;;
+  5*-DFS-80) permit_freq="$C_5DFS_80" ;;
+  5*-NONDFS-20) permit_freq="$C_5LOW_20 $C_5HIGH_20" ;;
+  5*-NONDFS-40) permit_freq="$C_5LOW_40 $C_5HIGH_40" ;;
+  5*-NONDFS-80) permit_freq="$C_5LOW_80 $C_5HIGH_80" ;;
+  5*-ANY-20) permit_freq="$C_5LOW_20 $C_5HIGH_20 $C_5DFS_20" ;;
+  5*-ANY-40) permit_freq="$C_5LOW_40 $C_5HIGH_40 $C_5DFS_40" ;;
+  5*-ANY-80) permit_freq="$C_5LOW_80 $C_5HIGH_80 $C_5DFS_80" ;;
+  *) die "unknown autochannel type='$autotype' band='$band' width='$width'" ;;
 esac
 
 for d in $(split "$protos"); do
@@ -536,7 +556,12 @@ elif runnable iw; then
         echo "$bestfreq"
       }
     )
-    [ -n "$bestfreq" ] || die "no valid channels for band='$band' autotype='$autotype'"
+    if [ -z "$bestfreq" ]; then
+      log "autoscan did not find any channel, picking random channel"
+      log "permit_freq='$permit_freq'"
+      [ -n "$permit_freq" ] || die "no default channel: type='$autotype'  band='$band' width='$width'"
+      bestfreq=$(choose $permit_freq)
+    fi
     log "autofreq='$bestfreq'"
 
     channel=$(
@@ -560,20 +585,34 @@ elif runnable iw; then
     5) hostapd_band=a ;;
     *) die "invalid band in '$band'" ;;
   esac
+  ampdu=
   enable_80211n=
   enable_80211ac=
   require_ht=
   require_vht=
   ht20=
   ht40=
+  ht_rxstbc=
   vht_settings=
+
+  phyinfo=$(IW phy "$phy" info 2>/dev/null)
+  # non-ieee80211 drivers like mwifiex don't support iw phy phy# info
+  [ -z "$phyinfo" ] && phyinfo=$(IW list)
+  contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC123]"
+  contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC12]"
+  contains "$phyinfo" "RX STBC 1-stream" && ht_rxstbc="[RX-STBC1]"
+
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
-  [ -n "$allow_ac" -a "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
+  if [ -n "$allow_ac" ]; then
+    [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
+    startswith "$band" 5 && ampdu="[MAX-A-MPDU-LEN-EXP4]"
+  fi
   [ -n "$allow_ab$allow_g" ] || require_ht="require_ht=1"
   [ -n "$allow_ab$allow_g$allow_n" ] || require_vht="require_vht=1"
   case $crypto in
     WPA_PSK_*) auth_algs=1; wpa=1 ;;
     WPA2_PSK_*) auth_algs=1; wpa=2 ;;
+    WPA12_PSK_*) auth_algs=1; wpa=3 ;;
     WEP) auth_algs=3; wpa=0 ;;
     NONE) auth_algs=1; wpa=0 ;;
     *) die "invalid crypto protocol in '$crypto'" ;;
@@ -622,7 +661,8 @@ elif runnable iw; then
 	$require_ht
 	$require_vht
 	$hidden
-	ht_capab=$ht20$ht40$guard_interval
+	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc
+	vht_capab=$ampdu
 	$vht_settings
 	EOF
   )

@@ -1,0 +1,48 @@
+--- a/drivers/net/wireless/mwifiex/main.c	2014-05-23 00:32:03.054567849 -0700
++++ b/drivers/net/wireless/mwifiex/main.c	2014-05-23 13:31:07.238190053 -0700
+@@ -28,6 +28,11 @@
+ static char *cal_data_cfg;
+ module_param(cal_data_cfg, charp, 0);
+ 
++static char *wifi_addr;
++
++extern int mac_pton(const char *s, u8 *mac);
++static int mwifiex_set_mac_address(struct net_device *dev, void *addr);
++
+ static void scan_delay_timer_fn(unsigned long data)
+ {
+ 	struct mwifiex_private *priv = (struct mwifiex_private *)data;
+@@ -485,6 +490,23 @@
+ 	}
+ 	rtnl_unlock();
+ 
++	/* set mac address if provided */
++	if (!wifi_addr) {
++		pr_info("%s: optionally set macaddr with wifi_addr=XX:XX:XX:XX:XX:XX\n", __func__);
++	} else {
++		struct sockaddr hwaddr = { 0 };
++		if (!mac_pton(wifi_addr, hwaddr.sa_data)) {
++			pr_err("%s: failed to parse macaddr: %s\n", __func__, wifi_addr);
++		} else {
++			struct mwifiex_private *priv = adapter->priv[MWIFIEX_BSS_ROLE_UAP];
++			if (priv && priv->netdev && mwifiex_set_mac_address(priv->netdev, &hwaddr)) {
++				pr_err("%s: failed to set wlan0 macaddr: %s\n", __func__, wifi_addr);
++			} else {
++				pr_info("%s: set wlan0 macaddr to %s\n", __func__, wifi_addr);
++			}
++		}
++	}
++
+ 	mwifiex_drv_get_driver_version(adapter, fmt, sizeof(fmt) - 1);
+ 	dev_notice(adapter->dev, "driver_version = %s\n", fmt);
+ 	goto done;
+@@ -1052,6 +1074,9 @@
+ module_init(mwifiex_init_module);
+ module_exit(mwifiex_cleanup_module);
+ 
++module_param(wifi_addr, charp, 0644);
++MODULE_PARM_DESC(wifi_addr, "Wifi adapter base mac address");
++
+ MODULE_AUTHOR("Marvell International Ltd.");
+ MODULE_DESCRIPTION("Marvell WiFi-Ex Driver version " VERSION);
+ MODULE_VERSION(VERSION);

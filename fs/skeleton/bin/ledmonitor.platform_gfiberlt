@@ -8,119 +8,60 @@ MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
 NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
+NETWORK_STATUS_DISCONNECTED="DISCONNECTED"
 LED_STATE_FILE="$BASE_PATH/ledstate"
-LED_PATH="/sys/class/leds/sys-"
-BLUE_LED="blue"
-RED_LED="red"
+#color is used by gpio-mailbox, 1 is red LED, 2 is blue LED.
+BLUE_LED="2"
+RED_LED="1"
 SOLID_MODE="solid"
-DIM_MODE="dim"
 BLINK_MODE="blink"
 FAST_MODE="fast"
 PON_IFACE="pon0"
 MAN_IFACE="man"
+LEDS_PATTERN_FILE="$BASE_PATH/leds"
+LEDS_BRIGHTNESS_10P="1"
+LEDS_BRIGHTNESS_100P="100"
 GPON_INFO_FILE="/sys/devices/platform/gpon/info/infoGpon"
 GPON_AES_FILE="/sys/devices/platform/gpon/data/showAes0xxx"
 
 led_state=""
 
-# pon types: epon=0, gpon=1, p2p=2, none=3
-PON_TYPE_GPON=1
-PON_TYPE_P2P=2
-PON_TYPE=$(sysvar_cmd -g PON_TYPE)
-if [ -z "$PON_TYPE" ]; then
-  # default to p2p
-  PON_TYPE="2"
-fi
-
-set_led_dim() {
-  local color="$1"
-  local path="$LED_PATH""$color"
-  local trigger="$(cat "$path/trigger")"
-
-  # only set the trigger if it's not already set, otherwise the kernel will
-  # first disable the blink, then re-enable it, possibly glitching the led.
-  # 'none' is always the first listed trigger.
-  if startswith "$trigger" "[none]"; then
-    echo timer > "$path/trigger"
-  fi
-
-  # the driver waits until both the on and off durations are non-zero before
-  # enabling blinking.
-  echo 1 > "$path/delay_on"
-  echo 5 > "$path/delay_off"
-}
-
-set_led_brightness() {
-  local color="$1"
-  local brightness="$2"
-  local path="$LED_PATH""$color"
-
-  # when the trigger is disabled the led will assume the brightness value, so
-  # set the brightness first to avoid glitching.
-  echo "$brightness" > "$path/brightness"
-  echo "none" > "$path/trigger"
-}
-
 blink_led() {
-  local color="$1"
-  local delay_on="$2"
-  local delay_off="$3"
-  local path="$LED_PATH""$color"
-  local trigger="$(cat "$path/trigger")"
+  echo "$1" > "$LEDS_PATTERN_FILE"
+}
 
-  # only set the trigger if it's not already set, otherwise the kernel will
-  # first disable the blink, then re-enable it, possibly glitching the led.
-  # 'none' is always the first listed trigger.
-  if startswith "$trigger" "[none]"; then
-    echo timer > "$path/trigger"
+log_state_change() {
+  local state="$1"
+
+  if [ "$state" != "$led_state" ] ; then
+    echo "state changed to: $state"
+    atomic $LED_STATE_FILE "$state"
+    led_state="$state"
   fi
-
-  # the driver waits until both the on and off durations are non-zero before
-  # enabling blinking.
-  echo "$delay_on" > "$path/delay_on"
-  echo "$delay_off" > "$path/delay_off"
 }
 
 set_led_state() {
   local mode="$1"
   local color="$2"
-  local state="$mode $color"
-
-  case "$color" in
-    "$BLUE_LED")
-      set_led_brightness "$RED_LED" 0
-      ;;
-    "$RED_LED")
-      set_led_brightness "$BLUE_LED" 0
-      ;;
-    *)
-      echo "unknown color '$color'"
-      ;;
-  esac
+  local state="$3"
+  local brightness="$4"
 
   case "$mode" in
     "$SOLID_MODE")
-      set_led_brightness "$color" 1
+      blink_led "x1 $color@$brightness"
       ;;
     "$BLINK_MODE")
-      blink_led "$color" 1000 500
+      blink_led "x3 $color@${brightness}x2 0 $color@${brightness}x2 0"
       ;;
     "$FAST_MODE")
-      blink_led "$color" 500 500
-      ;;
-    "$DIM_MODE")
-      set_led_dim "$color"
+      blink_led "x1 $color@$brightness 0"
       ;;
     *)
       echo "unknown mode '$mode'"
       ;;
   esac
 
-  if [ "$state" != "$led_state" ] ; then
-    echo "state changed to '$state'"
-    atomic $LED_STATE_FILE "$state"
-    led_state="$state"
-  fi
+  log_state_change "$state"
 }
 
 is_interface_up() {
@@ -177,16 +118,17 @@ while [ -z "$led_state" ] || read event; do
 
   if [ ! -e "$MFG_MODE_FILE" ] ; then
     if ! is_interface_up "$PON_IFACE" ; then
-      set_led_state "$BLINK_MODE" "$RED_LED"
+      set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_100P"
     elif ! is_provisioned ; then
-      set_led_state "$FAST_MODE" "$RED_LED"
+      set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_100P"
     elif ! has_ip_address "$MAN_IFACE" ; then
-      set_led_state "$BLINK_MODE" "$BLUE_LED"
+      set_led_state "$BLINK_MODE" "$BLUE_LED" "NETCONNECTED" "$LEDS_BRIGHTNESS_10P"
     elif [ ! -e $ACS_FILE ] ; then
-      set_led_state "$FAST_MODE" "$BLUE_LED"
+      set_led_state "$FAST_MODE" "$BLUE_LED" "IPV6ACQUIRED" "$LEDS_BRIGHTNESS_10P"
+    elif is_upgrading ; then
+      set_led_state "$BLINK_MODE" "$BLUE_LED" "UPGRADING" "$LEDS_BRIGHTNESS_10P"
     else
-      set_led_state "$DIM_MODE" "$BLUE_LED"
-      # TODO(showarth): upgrading
+      set_led_state "$SOLID_MODE" "$BLUE_LED" "ACSCONTACT" "$LEDS_BRIGHTNESS_10P"
     fi
   else
     # This is manufacture mode.  We have two states.
@@ -196,14 +138,12 @@ while [ -z "$led_state" ] || read event; do
       # Override the led to to blink super fast if we're in manufacture mode.
       # This should never happen for an installer, if it does then they'll know
       # something is wrong.
-      blink_led "$RED_LED" 250 250
-      blink_led "$BLUE_LED" 250 250
+      blink_led "x1 3@$LEDS_BRIGHTNESS_100P 0"
     else
       # Override the led to to blink super fast if we're in manufacture mode.
       # This should never happen for an installer, if it does then they'll know
       # something is wrong.
-      blink_led "$RED_LED" 2000 250
-      blink_led "$BLUE_LED" 2000 250
+      blink_led "x2 3@${LEDS_BRIGHTNESS_100P}x7 0"
     fi
   fi
 done

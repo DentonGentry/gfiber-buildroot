@@ -1,0 +1,197 @@
+From 3e8b73de8768ac32c76eef866ba47e14e4fb9e84 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 16 Aug 2014 12:03:13 -0700
+Subject: [PATCH] Better support for cross-compilation.
+
+Allow MINIUPNPD_SERVER_STRING to be set from the command line.
+Previously it was compiling in values from the build system.
+
+Allow OS_NAME and OS_VERSION to be overridden by the Makefile,
+rather than always reflect that of the build system.
+---
+ genconfig.sh | 13 +++++++++++--
+ minissdp.c   | 12 ++++++++----
+ minissdp.h   |  3 +++
+ miniupnpd.c  |  9 +++++++++
+ upnphttp.c   | 11 +++++------
+ 5 files changed, 36 insertions(+), 12 deletions(-)
+
+diff --git a/genconfig.sh b/genconfig.sh
+index 3e72848..8bc7369 100755
+--- a/genconfig.sh
++++ b/genconfig.sh
+@@ -39,8 +39,12 @@ UPNP_VERSION=`date +"%Y%m%d"`
+ LOG_MINIUPNPD="LOG_DAEMON"
+ 
+ # detecting the OS name and version
+-OS_NAME=`uname -s`
+-OS_VERSION=`uname -r`
++if [ -z "$OS_NAME" ]; then
++	OS_NAME=`uname -s`
++fi
++if [ -z "$OS_VERSION" ]; then
++	OS_VERSION=`uname -r`
++fi
+ 
+ # pfSense special case
+ if [ -f /etc/platform ]; then
+@@ -264,6 +268,11 @@ case $OS_NAME in
+ 		FW=ipfw
+ 		OS_URL=http://developer.apple.com/macosx
+ 		;;
++	"Google Fiber")
++		OS_URL=http://www.google.com/fiber
++		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
++		FW=netfilter
++		;;
+ 	*)
+ 		echo "Unknown OS : $OS_NAME"
+ 		echo "Please contact the author at http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/."
+diff --git a/minissdp.c b/minissdp.c
+index f937109..4f7399b 100644
+--- a/minissdp.c
++++ b/minissdp.c
+@@ -32,6 +32,8 @@
+ #define LL_SSDP_MCAST_ADDR "FF02::C"
+ #define SL_SSDP_MCAST_ADDR "FF05::C"
+ 
++char miniupnpd_server_string[MINIUPNPD_SERVER_STRING_LEN];
++
+ /* AddMulticastMembership()
+  * param s		socket
+  * param ifaddr	ip v4 address
+@@ -338,7 +340,7 @@ SendSSDPAnnounce2(int s, const struct sockaddr * addr,
+ 		"ST: %.*s%s\r\n"
+ 		"USN: %s::%.*s%s\r\n"
+ 		"EXT:\r\n"
+-		"SERVER: " MINIUPNPD_SERVER_STRING "\r\n"
++		"SERVER: %s \r\n"
+ 		"LOCATION: http://%s:%u" ROOTDESC_PATH "\r\n"
+ 		"OPT: \"http://schemas.upnp.org/upnp/1/0/\"; ns=01\r\n" /* UDA v1.1 */
+ 		"01-NLS: %u\r\n" /* same as BOOTID. UDA v1.1 */
+@@ -347,6 +349,7 @@ SendSSDPAnnounce2(int s, const struct sockaddr * addr,
+ 		"\r\n",
+ 		st_len, st, suffix,
+ 		uuidvalue, st_len, st, suffix,
++		miniupnpd_server_string,
+ 		host, (unsigned int)port,
+ 		upnp_bootid, upnp_bootid, upnp_configid);
+ 	addrlen = (addr->sa_family == AF_INET6)
+@@ -435,7 +438,7 @@ SendSSDPNotifies(int s, const char * host, unsigned short port,
+ 			"HOST: %s:%d\r\n"
+ 			"CACHE-CONTROL: max-age=%u\r\n"
+ 			"lOCATION: http://%s:%d" ROOTDESC_PATH"\r\n"
+-			"SERVER: " MINIUPNPD_SERVER_STRING "\r\n"
++			"SERVER: %s\r\n"
+ 			"NT: %s%s\r\n"
+ 			"USN: %s::%s%s\r\n"
+ 			"NTS: ssdp:alive\r\n"
+@@ -448,6 +451,7 @@ SendSSDPNotifies(int s, const char * host, unsigned short port,
+ 			SSDP_PORT,
+ 			lifetime,
+ 			host, port,
++			miniupnpd_server_string,
+ 			known_service_types[i].s, ver_str,
+ 			uuidvalue, known_service_types[i].s, ver_str,
+ 			upnp_bootid, upnp_bootid, upnp_configid );
+@@ -827,9 +831,9 @@ SubmitServicesToMiniSSDPD(const char * host, unsigned short port) {
+ 		CODELENGTH(l, p);
+ 		memcpy(p, strbuf, l);
+ 		p += l;
+-		l = (int)strlen(MINIUPNPD_SERVER_STRING);
++		l = (int)strlen(miniupnpd_server_string);
+ 		CODELENGTH(l, p);
+-		memcpy(p, MINIUPNPD_SERVER_STRING, l);
++		memcpy(p, miniupnpd_server_string, l);
+ 		p += l;
+ 		l = snprintf(strbuf, sizeof(strbuf), "http://%s:%u" ROOTDESC_PATH,
+ 		             host, (unsigned int)port);
+diff --git a/minissdp.h b/minissdp.h
+index 6a41e42..4855bbe 100644
+--- a/minissdp.h
++++ b/minissdp.h
+@@ -9,6 +9,9 @@
+ 
+ #include "miniupnpdtypes.h"
+ 
++extern char miniupnpd_server_string[];
++#define MINIUPNPD_SERVER_STRING_LEN 256
++
+ int
+ OpenAndConfSSDPReceiveSocket(int ipv6);
+ 
+diff --git a/miniupnpd.c b/miniupnpd.c
+index 050d8db..04cb436 100644
+--- a/miniupnpd.c
++++ b/miniupnpd.c
+@@ -1070,6 +1070,13 @@ init(int argc, char * * argv, struct runtime_vars * v)
+ 		case 'f':
+ 			i++;	/* discarding, the config file is already read */
+ 			break;
++		case 'V':
++			if(i+1 < argc) {
++				snprintf(miniupnpd_server_string, MINIUPNPD_SERVER_STRING_LEN,
++				         "%s", argv[++i]);
++			} else
++				fprintf(stderr, "Option -%c takes one argument.\n", argv[i][1]);
++			break;
+ 		default:
+ 			fprintf(stderr, "Unknown option: %s\n", argv[i]);
+ 		}
+@@ -1288,6 +1295,8 @@ main(int argc, char * * argv)
+ 	unsigned int next_pinhole_ts;
+ #endif
+ 
++	snprintf(miniupnpd_server_string, MINIUPNPD_SERVER_STRING_LEN,
++	         "%s", MINIUPNPD_SERVER_STRING);
+ 	if(init(argc, argv, &v) != 0)
+ 		return 1;
+ 	/* count lan addrs */
+diff --git a/upnphttp.c b/upnphttp.c
+index 6620bfd..321ac06 100644
+--- a/upnphttp.c
++++ b/upnphttp.c
+@@ -25,6 +25,7 @@
+ #include "upnphttp.h"
+ #include "upnpdescgen.h"
+ #include "miniupnpdpath.h"
++#include "minissdp.h"
+ #include "upnpsoap.h"
+ #include "upnpevents.h"
+ #include "upnputils.h"
+@@ -772,7 +773,7 @@ static const char httpresphead[] =
+ 	"Content-Type: %s\r\n"
+ 	"Connection: close\r\n"
+ 	"Content-Length: %d\r\n"
+-	"Server: " MINIUPNPD_SERVER_STRING "\r\n"
++	"Server: %s\r\n"
+ 	;	/*"\r\n";*/
+ /*
+ 		"<?xml version=\"1.0\"?>\n"
+@@ -791,12 +792,10 @@ BuildHeader_upnphttp(struct upnphttp * h, int respcode,
+                      const char * respmsg,
+                      int bodylen)
+ {
+-	int templen;
+-	if(!h->res_buf ||
+-	   h->res_buf_alloclen < ((int)sizeof(httpresphead) + 256 + bodylen)) {
++	int templen = sizeof(httpresphead) + 256 + bodylen + MINIUPNPD_SERVER_STRING_LEN;
++	if(!h->res_buf || h->res_buf_alloclen < templen) {
+ 		if(h->res_buf)
+ 			free(h->res_buf);
+-		templen = sizeof(httpresphead) + 256 + bodylen;
+ 		h->res_buf = (char *)malloc(templen);
+ 		if(!h->res_buf) {
+ 			syslog(LOG_ERR, "malloc error in BuildHeader_upnphttp()");
+@@ -809,7 +808,7 @@ BuildHeader_upnphttp(struct upnphttp * h, int respcode,
+ 	                         httpresphead, h->HttpVer,
+ 	                         respcode, respmsg,
+ 	                         (h->respflags&FLAG_HTML)?"text/html":"text/xml; charset=\"utf-8\"",
+-							 bodylen);
++							 bodylen, miniupnpd_server_string);
+ 	/* Content-Type MUST be 'text/xml; charset="utf-8"' according to UDA v1.1 */
+ 	/* Content-Type MUST be 'text/xml' according to UDA v1.0 */
+ 	/* Additional headers */
+-- 
+2.1.0.rc2.206.gedb03e5
+

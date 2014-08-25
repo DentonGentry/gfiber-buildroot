@@ -1,0 +1,15 @@
+diff --git a/client/dhc6.c b/client/dhc6.c
+index de77054..5431091 100644
+--- a/client/dhc6.c
++++ b/client/dhc6.c
+@@ -4328,6 +4328,10 @@ start_bound(struct client_state *client)
+ 			oldia = NULL;
+ 
+ 		for (addr = ia->addrs ; addr != NULL ; addr = addr->next) {
++          // Don't bind addresses that are expired or depreferred.
++          if (addr->flags & (DHC6_ADDR_EXPIRED | DHC6_ADDR_DEPREFFED))
++            continue;
++
+ 			if (oldia != NULL) {
+ 				if (ia->ia_type != D6O_IA_PD)
+ 					oldaddr = find_addr(oldia->addrs,

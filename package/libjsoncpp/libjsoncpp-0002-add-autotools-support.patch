@@ -1,0 +1,61 @@
+diff -urN a/configure.ac b/configure.ac
+--- a/configure.ac	1969-12-31 16:00:00.000000000 -0800
++++ b/configure.ac	2014-06-27 09:28:46.967743009 -0700
+@@ -0,0 +1,13 @@
++AC_INIT([libjsoncpp], [0.6.0-rc2], [jsoncpp-devel@lists.sourceforge.net])
++AM_INIT_AUTOMAKE([-Wall -Werror foreign])
++AC_PROG_CXX
++LT_INIT
++AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_FILES([
++ Makefile
++ libjsoncpp.pc
++ include/Makefile
++ src/Makefile
++ src/lib_json/Makefile
++])
++AC_OUTPUT
+diff -urN a/include/Makefile.am b/include/Makefile.am
+--- a/include/Makefile.am	1969-12-31 16:00:00.000000000 -0800
++++ b/include/Makefile.am	2014-06-27 09:28:46.967743009 -0700
+@@ -0,0 +1,3 @@
++nobase_include_HEADERS = jsoncpp/json/autolink.h jsoncpp/json/config.h \
++  jsoncpp/json/features.h jsoncpp/json/forwards.h jsoncpp/json/json.h \
++  jsoncpp/json/reader.h jsoncpp/json/value.h jsoncpp/json/writer.h
+diff -urN a/libjsoncpp.pc.in b/libjsoncpp.pc.in
+--- a/libjsoncpp.pc.in	1969-12-31 16:00:00.000000000 -0800
++++ b/libjsoncpp.pc.in	2014-06-27 09:28:46.967743009 -0700
+@@ -0,0 +1,12 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: libjsoncpp
++Description: Library for reading and writing JSON for C++
++Version: @VERSION@
++
++Requires:
++Libs: -L${libdir} -ljsoncpp
++Cflags: -I${includedir}
+diff -urN a/Makefile.am b/Makefile.am
+--- a/Makefile.am	1969-12-31 16:00:00.000000000 -0800
++++ b/Makefile.am	2014-06-27 09:28:57.647737242 -0700
+@@ -0,0 +1,4 @@
++SUBDIRS = include src
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = libjsoncpp.pc
+diff -urN a/src/lib_json/Makefile.am b/src/lib_json/Makefile.am
+--- a/src/lib_json/Makefile.am	1969-12-31 16:00:00.000000000 -0800
++++ b/src/lib_json/Makefile.am	2014-06-27 09:28:46.967743009 -0700
+@@ -0,0 +1,4 @@
++lib_LTLIBRARIES = libjsoncpp.la
++libjsoncpp_la_SOURCES = json_batchallocator.h json_internalarray.inl \
++  json_internalmap.inl json_reader.cpp json_value.cpp json_valueiterator.inl \
++  json_writer.cpp
+diff -urN a/src/Makefile.am b/src/Makefile.am
+--- a/src/Makefile.am	1969-12-31 16:00:00.000000000 -0800
++++ b/src/Makefile.am	2014-06-27 09:28:46.967743009 -0700
+@@ -0,0 +1 @@
++SUBDIRS = lib_json

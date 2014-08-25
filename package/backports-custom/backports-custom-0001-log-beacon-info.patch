@@ -89,7 +89,7 @@ index 0a2d04c..1856d54 100644
 +			ath10k_warn("beacon callback led to no beacon\n");
 +		} else if ((ath10k_debug_mask & ATH10K_DBG_BEACON) && beacon_count >= 50) {
 +			beacon_count = 0;
-+			ath10k_dbg(ATH10K_DBG_BEACON, "50 beacons sent");
++			ath10k_dbg(ATH10K_DBG_BEACON, "50 beacons sent\n");
 +		}
  	}
  }

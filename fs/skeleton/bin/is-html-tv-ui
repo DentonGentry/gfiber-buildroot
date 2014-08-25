@@ -2,6 +2,7 @@
 #
 # Returns 0 (true) if this device's configuration string indicates it
 # is an HTML TV UI, and 1 (false) otherwise.
+
 . /etc/utils.sh
 
-[ -f /config/uitype ] && filecontains "oregano" /config/uitype
+[ -f /tmp/ui/uitype ] && filecontains "oregano" /tmp/ui/uitype

@@ -21,6 +21,7 @@ case "$1" in
     pkillwait -x waitpower
     pkillwait -x netflix
     pkillwait -x content_shell
+    pkillwait -x browser_shell
     pkillwait -x vudu
     pkillwait -x StandaloneWFDPlayer
     rc_pipe_deinit

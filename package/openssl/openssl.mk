@@ -4,7 +4,7 @@
 #
 #############################################################
 
-OPENSSL_VERSION = 1.0.1g
+OPENSSL_VERSION = 1.0.1h
 OPENSSL_SITE = http://www.openssl.org/source
 OPENSSL_INSTALL_STAGING = YES
 OPENSSL_DEPENDENCIES = zlib
@@ -52,7 +52,7 @@ define OPENSSL_CONFIGURE_CMDS
 			linux-$(OPENSSL_TARGET_ARCH) \
 			--prefix=/usr \
 			--openssldir=/etc/ssl \
-			--libdir=/lib \
+			--libdir=lib \
 			threads \
 			shared \
 			no-idea \

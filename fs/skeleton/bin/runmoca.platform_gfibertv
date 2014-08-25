@@ -21,7 +21,7 @@ try_start() {
         --rf_band 3 \
         --beacon_channel 575 \
         --lof 575 \
-        --tpc_en 1
+        --tpc_en 0
     mocap set --start
   else
     # moca 1.0

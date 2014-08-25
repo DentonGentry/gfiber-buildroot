@@ -4,29 +4,27 @@ BCM_VUDU_DEPENDENCIES=bcm_bseav bcm_magnum bcm_nexus bcm_common \
   libcurl libxml2 libxslt fontconfig google_miniclient \
 
 BCM_VUDU_CONFIGURE_CMDS=ln -sf $(@D) $(BUILD_DIR)/vudu
-BCM_VUDU_INSTALL_STAGING=YES
 BCM_VUDU_INSTALL_TARGET=YES
 
-VUDU_DIR=$(@D)/vudu-sdk
-VUDU_SRC=$(@D)/vudu-sdk/src/examples/bcm7231
+BCM_VUDU_SDK_VERSION=vudu_3.1.0_rev_121183
 
 define BCM_VUDU_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) VUDU_SDK=$(VUDU_DIR) -C $(VUDU_SRC)
-endef
-
-define BCM_VUDU_INSTALL_STAGING_CMDS
-	mkdir -p $(STAGING_DIR)/usr/include/vudu && \
-	cp -pr $(VUDU_DIR)/include/* $(STAGING_DIR)/usr/include/vudu
-	mkdir -p $(STAGING_DIR)/usr/lib/vudu && \
-	cp -pr $(VUDU_DIR)/lib/* $(STAGING_DIR)/usr/lib/vudu
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/build
 endef
 
 define BCM_VUDU_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0700 $(VUDU_SRC)/vudu-bcm7231-example $(TARGET_DIR)/usr/local/bin/vudu
-	$(INSTALL) -m 0700 $(VUDU_SRC)/vudu-bcm7231-multimedia-driver-test $(TARGET_DIR)/usr/local/bin/
-	cp -pr $(VUDU_DIR)/lib/* $(TARGET_DIR)/usr/lib
-	mkdir -p $(TARGET_DIR)/etc/cert && \
-	cp -pr $(VUDU_DIR)/etc/cert/* $(TARGET_DIR)/etc/cert
+	$(INSTALL) -m 755 -D $(@D)/bin/vudu $(TARGET_DIR)/usr/local/bin/vudu/vudu
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/libavcodec.so.52.20.0 $(TARGET_DIR)/usr/local/bin/vudu/libavcodec.so.52.20.0
+	ln -s -f libavcodec.so.52.20.0 $(TARGET_DIR)/usr/local/bin/vudu/libavcodec.so
+	ln -s -f libavcodec.so.52.20.0 $(TARGET_DIR)/usr/local/bin/vudu/libavcodec.so.52
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/libavformat.so.52.31.0 $(TARGET_DIR)/usr/local/bin/vudu/libavformat.so.52.31.0
+	ln -s -f libavformat.so.52.31.0 $(TARGET_DIR)/usr/local/bin/vudu/libavformat.so
+	ln -s -f libavformat.so.52.31.0 $(TARGET_DIR)/usr/local/bin/vudu/libavformat.so.52
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/libavutil.so.49.15.0 $(TARGET_DIR)/usr/local/bin/vudu/libavutil.so.49.15.0
+	ln -s -f libavutil.so.49.15.0 $(TARGET_DIR)/usr/local/bin/vudu/libavutil.so
+	ln -s -f libavutil.so.49.15.0 $(TARGET_DIR)/usr/local/bin/vudu/libavutil.so.49
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/liblzma.so.5 $(TARGET_DIR)/usr/local/bin/vudu/liblzma.so.5
+	$(INSTALL) -m 755 -D $(@D)/$(BCM_VUDU_SDK_VERSION)/lib/libpng15.so.15 $(TARGET_DIR)/usr/local/bin/vudu/libpng15.so.15
 endef
 
 $(eval $(call GENTARGETS))

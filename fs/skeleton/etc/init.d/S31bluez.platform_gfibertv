@@ -5,6 +5,8 @@ BLUEZ_STOR_DIR="/user/bluez/lib/bluetooth"
 BLUEZ_CONF_DIR="/tmp/bluez/etc/bluetooth"
 BLUEZ_MAIN_CONF="${BLUEZ_CONF_DIR}/main.conf"
 BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
+BT_MAC_FILE="/tmp/btmacaddress"
+BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
@@ -14,8 +16,19 @@ BLUEZ_INPUT_CONF="${BLUEZ_CONF_DIR}/input.conf"
 
 case "$1" in
   start)
-    # Create BlueZ directories and config files
-    mkdir -p "${BLUEZ_STOR_DIR}"
+    BT_MAC=$(cat "${BT_MAC_FILE}")
+    BLUEZ_ADAP_DIR="${BLUEZ_STOR_DIR}/${BT_MAC}"
+    BLUEZ_DEVC_DIR="${BLUEZ_ADAP_DIR}/cache"
+
+    # On the first BlueZ start, create BlueZ storage directories
+    # and import paired remote control devices from BSA to BlueZ
+    if [ ! -e "${BLUEZ_ADAP_DIR}" ]; then
+      mkdir -p "${BLUEZ_ADAP_DIR}"
+      mkdir -p "${BLUEZ_DEVC_DIR}"
+      [ -e "${BSA_DEVICES_FILE}" ] && bsa2bluez
+    fi
+
+    # Create BlueZ config files
     mkdir -p "${BLUEZ_CONF_DIR}"
 
     echo "[General]" >"${BLUEZ_MAIN_CONF}"
@@ -24,11 +37,17 @@ case "$1" in
 
     echo "[General]" >"${BLUEZ_INPUT_CONF}"
     echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
-    echo "uHIDP=true" >>"${BLUEZ_INPUT_CONF}"
+    echo "UserspaceHID=true" >>"${BLUEZ_INPUT_CONF}"
+
+    # configure driver: 8 x 1.25ms = 10ms response time.  Required by OAD
+    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval
+    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval
 
     # Start BlueZ stack
     (
-      hciconfig hci0 up
+      echo "$0: Starting btmon"
+      babysit 30 btmon -t 2>&1 | logos btmon &
+      sleep 1
 
       echo "$0: Starting bluetoothd"
       babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
@@ -37,17 +56,6 @@ case "$1" in
       echo "$0: Starting gfiber-agent"
       babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
 
-      echo "$0: Configuring Bluetooth adapter"
-      hciconfig hci0 lm ACCEPT,MASTER
-      # Page scan configuration:
-      # - window of 36 slots (22.50 ms)
-      # - interval of 180 slots (112.50 ms)
-      # - interlaced page scan
-      hciconfig hci0 pageparms 36:180
-      hciconfig hci0 pagetype 1
-      hciconfig hci0 -a
-      hciconfig hci0 pageparms
-      hciconfig hci0 pagetype
       echo >/tmp/S31bluez_done
     ) &
     ;;
@@ -56,6 +64,7 @@ case "$1" in
     hciconfig hci0 down
     pkillwait -x gfiber-agent
     pkillwait -x bluetoothd
+    pkillwait -x btmon
     rm -f /tmp/S31bluez_done
     ;;
   restart)

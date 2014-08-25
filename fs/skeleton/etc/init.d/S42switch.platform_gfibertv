@@ -41,6 +41,10 @@ enable_flowctrl_port0_cmds()
 
 case "$1" in
   start)
+    if is-qca83xx-present; then
+      qca83xx --stats
+    fi
+
     if runnable ssdk_sh; then
       {
         disable_multicast_flood_cmds

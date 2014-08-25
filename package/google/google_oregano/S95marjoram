@@ -1,0 +1,36 @@
+#!/bin/sh
+. /etc/utils.sh
+
+if ! is-html-tv-ui; then
+  echo "configured for sage"
+  exit 0
+fi
+
+case "$1" in
+  start)
+    (
+      if ! is-tv-box; then
+        /app/oregano/runmarjoram 2>&1 | logos marjoram 0 20000000 &
+      fi
+    ) &
+    ;;
+  stop)
+    # Stop the scripts invoked above due to 'start marjoram' (which will also
+    # stop any babysitters they may have).
+    ( pkillwait -x 'runmarjoram' ;
+      # End the Marjoram server (which will also end its babysitter).
+      pkillwait -f '(dart.*)([m]arjoram\.dart)' ) &
+    # End any dangling HTTP request Futures from authTokens.dart attempts.
+    pkillwait -f '(dart.*)([a]uthTokens\.dart)' &
+    pkillwait -x chsrv &
+    stop_sagesrv
+    stop_adloader
+    wait
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

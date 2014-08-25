@@ -4,7 +4,7 @@
 #
 #############################################################
 
-SAMBA_VERSION = 3.6.5
+SAMBA_VERSION = 3.6.24
 SAMBA_SITE = http://ftp.samba.org/pub/samba/stable
 SAMBA_SUBDIR = source3
 SAMBA_INSTALL_STAGING = YES
@@ -173,6 +173,9 @@ define SAMBA_INSTALL_INITSCRIPTS_CONFIG
 	# install config
 	@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
 		$(INSTALL) -m 0755 -D package/samba/simple.conf $(TARGET_DIR)/etc/samba/smb.conf; \
+	fi
+	@if [ ! -f $(TARGET_DIR)/usr/bin/netbios_hosts ]; then \
+		$(INSTALL) -m 0755 -D package/samba/netbios_hosts $(TARGET_DIR)/usr/bin/netbios_hosts; \
 	fi
 endef
 

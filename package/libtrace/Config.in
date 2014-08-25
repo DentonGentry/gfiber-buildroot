@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBTRACE
+	bool "libtrace"
+	help
+	  A library and tools for processing network packet traces.
+
+	  http://wand.net.nz/trac/libtrace

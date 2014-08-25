@@ -164,7 +164,6 @@ elif [ -n "$ROOTDEV" ]; then
     args=$(replacefirst "$args" HASH_DEV "$KERNELDEV")
     if ! dmsetup create -r vroot --table "$args"; then
       veritynote=
-      # TODO(apenwarr): fix uboot, then remove special case for armplatform.
       read x y armplatform platform junk </proc/cpuinfo
       # TODO(jnewlin): Renable verity for 725B2 when we get the user space
       # updated to match the new kernel implementation.

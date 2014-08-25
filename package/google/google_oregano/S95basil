@@ -9,14 +9,16 @@ fi
 case "$1" in
   start)
     (
+      rc_pipe_init
       if is-tv-box; then
         /app/oregano/runbasil 2>&1 | logos basil 0 20000000 &
       fi
     ) &
     ;;
   stop)
-    pkillwait -f '(babysit.*)(basil\.dart)'
-    pkillwait -f '(dart.*)(basil\.dart)'
+    # End the Basil dart server (which will also end its babysitter).
+    pkillwait -f '(dart.*)([b]asil\.dart)'
+    rc_pipe_deinit
     ;;
   restart)
     $0 stop; $0 start

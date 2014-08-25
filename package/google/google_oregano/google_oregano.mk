@@ -9,6 +9,8 @@ define GOOGLE_OREGANO_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/app/oregano/
 	$(INSTALL) -m 0755 -D package/google/google_oregano/S99oregano $(TARGET_DIR)/etc/init.d/S99oregano
 	$(INSTALL) -m 0755 -D package/google/google_oregano/S95basil $(TARGET_DIR)/etc/init.d/S95basil
+	$(INSTALL) -m 0755 -D package/google/google_oregano/S95marjoram $(TARGET_DIR)/etc/init.d/S95marjoram
+	$(INSTALL) -m 0755 -D $(@D)/upgradecheck $(TARGET_DIR)/usr/bin/upgradecheck
 	cp -af $(@D)/* $(TARGET_DIR)/app/oregano/
 endef
 

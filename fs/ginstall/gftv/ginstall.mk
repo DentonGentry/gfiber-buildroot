@@ -38,7 +38,7 @@ ifneq ($(BRUNO_LOADER),)
 # We intentionally changed the filenames from v2 to v3 to prevent really
 # harmful installs due to accidental half-compatibility.
 BRUNO_LOADERS_V2 := loader.bin loader.sig
-BRUNO_LOADERS_V3 := loader.img loader.sig
+BRUNO_LOADERS_V3_V4 := loader.img loader.sig
 endif
 
 endif  # mipsel
@@ -55,7 +55,7 @@ else
 _BAREBOX = barebox_signed_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
 endif
-_ULOADER = uloader
+_ULOADER = uloader_signed_release
 
 # These will be blank if the given files don't exist (eg. if you don't have
 # access to the right repositories) and then we'll just leave them out of
@@ -68,10 +68,10 @@ ULOADER     := $(wildcard $(LOADER_DIR)/$(_ULOADER).bin)
 ULOADER_SIG := $(wildcard $(LOADER_DIR)/$(_ULOADER).sig)
 
 ifneq ($(BAREBOX),)
-BRUNO_LOADERS_V3 := $(BRUNO_LOADERS_V3) loader.img loader.sig
+BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) loader.img loader.sig
 endif
 ifneq ($(ULOADER),)
-BRUNO_LOADERS_V3 := $(BRUNO_LOADERS_V3) uloader.img uloader.sig
+BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) uloader.img uloader.sig
 endif
 
 endif #arm
@@ -82,24 +82,31 @@ else
 ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 endif
 
-# TODO(apenwarr): update uboot to handle kernels with dmverity in them.
-#  Right now our uboot doesn't understand the google verity header added
-#  by GOOGLE_SIGNING (repack.py).
-
-# v3 image format contains a manifest file, which describes the image and
-# supported platforms.
+# v3 and v4 image formats contain a manifest file, which describes the image
+# and supported platforms.
 #
 # Note: need to use $(value XYZ) for XYZ variables that change during
 # the build process (eg. because they read a file), since variable
 # substitutions in this macro happen at macro define time, not
 # runtime, unlike other make variables.
-define ROOTFS_GINSTALL_CMD_V3
+ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V4),y)
+ROOTFS_GINSTALL_MANIFEST=MANIFEST
+ROOTFS_GINSTALL_INSTALLER_VERSION=4
+ROOTFS_GINSTALL_MINIMUM_VERSION=gfiber-39.1
+else
+ROOTFS_GINSTALL_MANIFEST=manifest
+ROOTFS_GINSTALL_INSTALLER_VERSION=3
+endif
+define ROOTFS_GINSTALL_CMD_V3_V4
 	set -e; \
-	rm -f $(BINARIES_DIR)/manifest && \
-	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
-	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/manifest && \
-	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
-	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/manifest && \
+	rm -f $(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	echo 'installer_version: $(ROOTFS_GINSTALL_INSTALLER_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	if [ '$(BR2_TARGET_ROOTFS_GINSTALL_V4)' = 'y' ]; then \
+		echo 'minimum_version: $(ROOTFS_GINSTALL_MINIMUM_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST); \
+	fi && \
+	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
@@ -131,7 +138,10 @@ define ROOTFS_GINSTALL_CMD_V3
 			-A $(BR2_ARCH) -O linux -T multi -C none \
 			-a 0x03008000 -e 0x03008000 -n Linux \
 			-d zImage:simpleramfs.cpio.gz \
-			uImage; \
+			uImage && \
+		( \
+			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
 	(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
@@ -139,10 +149,10 @@ define ROOTFS_GINSTALL_CMD_V3
 	 if [ -e '$(BRUNO_LOADER)' ]; then \
 	   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
 	   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
-	 fi ) >>manifest && \
+	 fi ) >>$(ROOTFS_GINSTALL_MANIFEST) && \
 	tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
-		manifest \
-		$(BRUNO_LOADERS_V3) \
+		$(ROOTFS_GINSTALL_MANIFEST) \
+		$(BRUNO_LOADERS_V3_V4) \
 		kernel.img \
 		rootfs.img
 endef
@@ -174,8 +184,8 @@ define ROOTFS_GINSTALL_CMD_V2
 		rootfs.squashfs
 endef
 
-ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3),y)
-ROOTFS_GINSTALL_CMD=$(ROOTFS_GINSTALL_CMD_V3)
+ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3)$(BR2_TARGET_ROOTFS_GINSTALL_V4),y)
+ROOTFS_GINSTALL_CMD=$(ROOTFS_GINSTALL_CMD_V3_V4)
 else
 ROOTFS_GINSTALL_CMD=$(ROOTFS_GINSTALL_CMD_V2)
 endif

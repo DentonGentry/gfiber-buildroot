@@ -1,0 +1,289 @@
+Some drivers may be performing most of Tx/Rx
+aggregation on their own (e.g. in firmware)
+including AddBa/DelBa negotiations but may
+otherwise require Rx reordering assistance.
+
+The patch exports 2 new functions for establishing
+Rx aggregation sessions in assumption device
+driver has taken care of the necessary
+negotiations.
+
+Signed-off-by: Michal Kazior <michal.kazior@xxxxxxxxx>
+---
+This was originally part of an RFC patchset for
+mac80211 and ath10k. I've split it up now and am
+posting patches separately.
+
+This loosely bases on `mac80211: fix Rx reordering
+with RX_FLAG_AMSDU_MORE` (some trivial conflicts
+may be involved).
+
+Notes:
+    v2:
+     * remove timeout, dialog_token, buf_size, start_seq_num arguments [Johannes]
+     * setup start_seq_num using last_seq_ctrl
+
+ include/net/mac80211.h     |  34 +++++++++++++++
+ net/mac80211/agg-rx.c      | 101 ++++++++++++++++++++++++++++++++++-----------
+ net/mac80211/ieee80211_i.h |  11 +++++
+ net/mac80211/iface.c       |  26 ++++++++++++
+ 4 files changed, 149 insertions(+), 23 deletions(-)
+
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 9ce5cb1..dae2e24 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -4552,6 +4552,40 @@ void ieee80211_stop_rx_ba_session(struct ieee80211_vif *vif, u16 ba_rx_bitmap,
+  */
+ void ieee80211_send_bar(struct ieee80211_vif *vif, u8 *ra, u16 tid, u16 ssn);
+ 
++/**
++ * ieee80211_start_rx_ba_session_offl - start a Rx BA session
++ *
++ * Some device drivers may offload part of the Rx aggregation flow including
++ * AddBa/DelBa negotiation but may otherwise be incapable of full Rx
++ * reordering.
++ *
++ * Create structures responsible for reordering so device drivers may call here
++ * when they complete AddBa negotiation.
++ *
++ * @vif: &struct ieee80211_vif pointer from the add_interface callback
++ * @addr: station mac address
++ * @tid: the rx tid
++ */
++void ieee80211_start_rx_ba_session_offl(struct ieee80211_vif *vif,
++					const u8 *addr, u16 tid);
++
++/**
++ * ieee80211_stop_rx_ba_session_offl - stop a Rx BA session
++ *
++ * Some device drivers may offload part of the Rx aggregation flow including
++ * AddBa/DelBa negotiation but may otherwise be incapable of full Rx
++ * reordering.
++ *
++ * Destroy structures responsible for reordering so device drivers may call here
++ * when they complete DelBa negotiation.
++ *
++ * @vif: &struct ieee80211_vif pointer from the add_interface callback
++ * @addr: station mac address
++ * @tid: the rx tid
++ */
++void ieee80211_stop_rx_ba_session_offl(struct ieee80211_vif *vif,
++				       const u8 *addr, u16 tid);
++
+ /* Rate control API */
+ 
+ /**
+diff --git a/net/mac80211/agg-rx.c b/net/mac80211/agg-rx.c
+index d38c49b..f0e84bc 100644
+--- a/net/mac80211/agg-rx.c
++++ b/net/mac80211/agg-rx.c
+@@ -224,28 +224,15 @@ static void ieee80211_send_addba_resp(struct ieee80211_sub_if_data *sdata, u8 *d
+ 	ieee80211_tx_skb(sdata, skb);
+ }
+ 
+-void ieee80211_process_addba_request(struct ieee80211_local *local,
+-				     struct sta_info *sta,
+-				     struct ieee80211_mgmt *mgmt,
+-				     size_t len)
++void __ieee80211_start_rx_ba_session(struct sta_info *sta,
++				     u8 dialog_token, u16 timeout,
++				     u16 start_seq_num, u16 ba_policy, u16 tid,
++				     u16 buf_size, bool tx)
+ {
++	struct ieee80211_local *local = sta->sdata->local;
+ 	struct tid_ampdu_rx *tid_agg_rx;
+-	u16 capab, tid, timeout, ba_policy, buf_size, start_seq_num, status;
+-	u8 dialog_token;
+ 	int i, ret = -EOPNOTSUPP;
+-
+-	/* extract session parameters from addba request frame */
+-	dialog_token = mgmt->u.action.u.addba_req.dialog_token;
+-	timeout = le16_to_cpu(mgmt->u.action.u.addba_req.timeout);
+-	start_seq_num =
+-		le16_to_cpu(mgmt->u.action.u.addba_req.start_seq_num) >> 4;
+-
+-	capab = le16_to_cpu(mgmt->u.action.u.addba_req.capab);
+-	ba_policy = (capab & IEEE80211_ADDBA_PARAM_POLICY_MASK) >> 1;
+-	tid = (capab & IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
+-	buf_size = (capab & IEEE80211_ADDBA_PARAM_BUF_SIZE_MASK) >> 6;
+-
+-	status = WLAN_STATUS_REQUEST_DECLINED;
++	u16 status = WLAN_STATUS_REQUEST_DECLINED;
+ 
+ 	if (test_sta_flag(sta, WLAN_STA_BLOCK_BA)) {
+ 		ht_dbg(sta->sdata,
+@@ -264,7 +251,7 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
+ 		status = WLAN_STATUS_INVALID_QOS_PARAM;
+ 		ht_dbg_ratelimited(sta->sdata,
+ 				   "AddBA Req with bad params from %pM on tid %u. policy %d, buffer size %d\n",
+-				   mgmt->sa, tid, ba_policy, buf_size);
++				   sta->sta.addr, tid, ba_policy, buf_size);
+ 		goto end_no_lock;
+ 	}
+ 	/* determine default buffer size */
+@@ -281,7 +268,7 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
+ 	if (sta->ampdu_mlme.tid_rx[tid]) {
+ 		ht_dbg_ratelimited(sta->sdata,
+ 				   "unexpected AddBA Req from %pM on tid %u\n",
+-				   mgmt->sa, tid);
++				   sta->sta.addr, tid);
+ 
+ 		/* delete existing Rx BA session on the same tid */
+ 		___ieee80211_stop_rx_ba_session(sta, tid, WLAN_BACK_RECIPIENT,
+@@ -353,6 +340,74 @@ end:
+ 	mutex_unlock(&sta->ampdu_mlme.mtx);
+ 
+ end_no_lock:
+-	ieee80211_send_addba_resp(sta->sdata, sta->sta.addr, tid,
+-				  dialog_token, status, 1, buf_size, timeout);
++	if (tx)
++		ieee80211_send_addba_resp(sta->sdata, sta->sta.addr, tid,
++					  dialog_token, status, 1, buf_size,
++					  timeout);
++}
++
++void ieee80211_process_addba_request(struct ieee80211_local *local,
++				     struct sta_info *sta,
++				     struct ieee80211_mgmt *mgmt,
++				     size_t len)
++{
++	u16 capab, tid, timeout, ba_policy, buf_size, start_seq_num;
++	u8 dialog_token;
++
++	/* extract session parameters from addba request frame */
++	dialog_token = mgmt->u.action.u.addba_req.dialog_token;
++	timeout = le16_to_cpu(mgmt->u.action.u.addba_req.timeout);
++	start_seq_num =
++		le16_to_cpu(mgmt->u.action.u.addba_req.start_seq_num) >> 4;
++
++	capab = le16_to_cpu(mgmt->u.action.u.addba_req.capab);
++	ba_policy = (capab & IEEE80211_ADDBA_PARAM_POLICY_MASK) >> 1;
++	tid = (capab & IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
++	buf_size = (capab & IEEE80211_ADDBA_PARAM_BUF_SIZE_MASK) >> 6;
++
++	__ieee80211_start_rx_ba_session(sta, dialog_token, timeout,
++					start_seq_num, ba_policy, tid,
++					buf_size, true);
++}
++
++void ieee80211_start_rx_ba_session_offl(struct ieee80211_vif *vif,
++					const u8 *addr, u16 tid)
++{
++	struct ieee80211_sub_if_data *sdata = vif_to_sdata(vif);
++	struct ieee80211_local *local = sdata->local;
++	struct ieee80211_rx_agg *rx_agg;
++	struct sk_buff *skb = dev_alloc_skb(0);
++
++	if (unlikely(!skb))
++		return;
++
++	rx_agg = (struct ieee80211_rx_agg *) &skb->cb;
++	memcpy(&rx_agg->addr, addr, ETH_ALEN);
++	rx_agg->tid = tid;
++
++	skb->pkt_type = IEEE80211_SDATA_QUEUE_RX_AGG_START;
++	skb_queue_tail(&sdata->skb_queue, skb);
++	ieee80211_queue_work(&local->hw, &sdata->work);
++}
++EXPORT_SYMBOL(ieee80211_start_rx_ba_session_offl);
++
++void ieee80211_stop_rx_ba_session_offl(struct ieee80211_vif *vif,
++				       const u8 *addr, u16 tid)
++{
++	struct ieee80211_sub_if_data *sdata = vif_to_sdata(vif);
++	struct ieee80211_local *local = sdata->local;
++	struct ieee80211_rx_agg *rx_agg;
++	struct sk_buff *skb = dev_alloc_skb(0);
++
++	if (unlikely(!skb))
++		return;
++
++	rx_agg = (struct ieee80211_rx_agg *) &skb->cb;
++	memcpy(&rx_agg->addr, addr, ETH_ALEN);
++	rx_agg->tid = tid;
++
++	skb->pkt_type = IEEE80211_SDATA_QUEUE_RX_AGG_STOP;
++	skb_queue_tail(&sdata->skb_queue, skb);
++	ieee80211_queue_work(&local->hw, &sdata->work);
+ }
++EXPORT_SYMBOL(ieee80211_stop_rx_ba_session_offl);
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index ad5d8e4..34bffb0b 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -926,10 +926,17 @@ ieee80211_vif_get_shift(struct ieee80211_vif *vif)
+ 	return shift;
+ }
+ 
++struct ieee80211_rx_agg {
++	u8 addr[ETH_ALEN];
++	u16 tid;
++};
++
+ enum sdata_queue_type {
+ 	IEEE80211_SDATA_QUEUE_TYPE_FRAME	= 0,
+ 	IEEE80211_SDATA_QUEUE_AGG_START		= 1,
+ 	IEEE80211_SDATA_QUEUE_AGG_STOP		= 2,
++	IEEE80211_SDATA_QUEUE_RX_AGG_START	= 3,
++	IEEE80211_SDATA_QUEUE_RX_AGG_STOP	= 4,
+ };
+ 
+ enum {
+@@ -1578,6 +1585,10 @@ void ___ieee80211_stop_rx_ba_session(struct sta_info *sta, u16 tid,
+ 				     u16 initiator, u16 reason, bool stop);
+ void __ieee80211_stop_rx_ba_session(struct sta_info *sta, u16 tid,
+ 				    u16 initiator, u16 reason, bool stop);
++void __ieee80211_start_rx_ba_session(struct sta_info *sta,
++				     u8 dialog_token, u16 timeout,
++				     u16 start_seq_num, u16 ba_policy, u16 tid,
++				     u16 buf_size, bool tx);
+ void ieee80211_sta_tear_down_BA_sessions(struct sta_info *sta,
+ 					 enum ieee80211_agg_stop_reason reason);
+ void ieee80211_process_delba(struct ieee80211_sub_if_data *sdata,
+diff --git a/net/mac80211/iface.c b/net/mac80211/iface.c
+index bbf51b2..6a7967c 100644
+--- a/net/mac80211/iface.c
++++ b/net/mac80211/iface.c
+@@ -1140,6 +1140,7 @@ static void ieee80211_iface_work(struct work_struct *work)
+ 	struct sk_buff *skb;
+ 	struct sta_info *sta;
+ 	struct ieee80211_ra_tid *ra_tid;
++	struct ieee80211_rx_agg *rx_agg;
+ 
+ 	if (!ieee80211_sdata_running(sdata))
+ 		return;
+@@ -1167,6 +1168,31 @@ static void ieee80211_iface_work(struct work_struct *work)
+ 			ra_tid = (void *)&skb->cb;
+ 			ieee80211_stop_tx_ba_cb(&sdata->vif, ra_tid->ra,
+ 						ra_tid->tid);
++		} else if (skb->pkt_type == IEEE80211_SDATA_QUEUE_RX_AGG_START) {
++			rx_agg = (void *)&skb->cb;
++			mutex_lock(&local->sta_mtx);
++			sta = sta_info_get_bss(sdata, rx_agg->addr);
++			if (sta) {
++				u16 last_seq = sta->last_seq_ctrl[rx_agg->tid];
++
++				__ieee80211_start_rx_ba_session(sta,
++						0, 0,
++						ieee80211_sn_inc(last_seq),
++						1, rx_agg->tid,
++						IEEE80211_MAX_AMPDU_BUF,
++						false);
++			}
++			mutex_unlock(&local->sta_mtx);
++		} else if (skb->pkt_type == IEEE80211_SDATA_QUEUE_RX_AGG_STOP) {
++			rx_agg = (void *)&skb->cb;
++			mutex_lock(&local->sta_mtx);
++			sta = sta_info_get_bss(sdata, rx_agg->addr);
++			if (sta)
++				__ieee80211_stop_rx_ba_session(sta,
++							rx_agg->tid,
++							WLAN_BACK_RECIPIENT, 0,
++							false);
++			mutex_unlock(&local->sta_mtx);
+ 		} else if (ieee80211_is_action(mgmt->frame_control) &&
+ 			   mgmt->u.action.category == WLAN_CATEGORY_BACK) {
+ 			int len = skb->len;
+-- 
+1.8.5.3

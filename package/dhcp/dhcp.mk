@@ -3,7 +3,7 @@
 # dhcp
 #
 #############################################################
-DHCP_VERSION  = 4.1-ESV-R5
+DHCP_VERSION  = 4.1-ESV-R8
 DHCP_SOURCE   = dhcp-$(DHCP_VERSION).tar.gz
 DHCP_SITE     = http://ftp.isc.org/isc/dhcp/${DHCP_VERSION}/
 DHCP_CONF_ENV = ac_cv_file__dev_random=yes

@@ -75,6 +75,11 @@ case "$1" in
       ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
       ip46tables -A FORWARD -m pkttype --pkt-type multicast -j ACCEPT
 
+      # Stop users from connecting to cmm CLI
+      if [ ! -e /tmp/DEBUG ]; then
+        ip46tables -A INPUT -p tcp --dport 2103 -j REJECT --reject-with tcp-reset # cmm CLI
+      fi
+
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -115,9 +120,9 @@ case "$1" in
 
       # active FTP out
       ip46tables -A FORWARD -m conntrack --ctstate RELATED \
-          -m helper --helper ftp -o wan0 -p tcp --dport 1024: -j ACCEPT
+          -m helper --helper ftp -o wan0+ -p tcp --dport 1024: -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate RELATED \
-          -m helper --helper ftp -i wan0 -p tcp --dport 1024: -j ACCEPT
+          -m helper --helper ftp -i wan0+ -p tcp --dport 1024: -j ACCEPT
 
       # add ACS-configured things
       ip46tables -t filter -N acsrules-filter-forward
@@ -131,16 +136,13 @@ case "$1" in
 
       # these are managed by miniupnpd, if running
       ip46tables -t filter -N MINIUPNPD
-      ip46tables -t filter -A FORWARD -i wan0 ! -o wan0 -j MINIUPNPD
-      ip46tables -t filter -A FORWARD -i wan0.2 ! -o wan0.2 -j MINIUPNPD
+      ip46tables -t filter -A FORWARD -i wan0+ ! -o wan0+ -j MINIUPNPD
 
       iptables -t nat -N MINIUPNPD
-      iptables -t nat -A PREROUTING -i wan0 -j MINIUPNPD
-      iptables -t nat -A PREROUTING -i wan0.2 -j MINIUPNPD
+      iptables -t nat -A PREROUTING -i wan0+ -j MINIUPNPD
 
       # nat
-      iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE
-      iptables -t nat -A POSTROUTING -o wan0.2 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -o wan0+ -j MASQUERADE
 
       # ipv6 addressing
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
@@ -156,10 +158,8 @@ case "$1" in
           --pkt-type unicast \
           --limit 1/second \
           -j LOG --log-prefix "FW: "
-      ip46tables -A INPUT -i wan0 -j log
-      ip46tables -A FORWARD -i wan0 -j log
-      ip46tables -A INPUT -i wan0.2 -j log
-      ip46tables -A FORWARD -i wan0.2 -j log
+      ip46tables -A INPUT -i wan0+ -j log
+      ip46tables -A FORWARD -i wan0+ -j log
 
       # Set the WAN 802.1q pbits
       iptables -t mangle -A OUTPUT -p all -j CLASSIFY --set-class 0:2
