@@ -401,3 +401,5 @@ enable_netflix_leanback=true
 wifi_sampling_rate=86400000
 fully_reimport_playlists_every_scan=true
 fiber/vod/TrailerPark/Enable=false
+linux/enable_progressive_deletes=true
+linux/progressive_delete_increment=134217728
