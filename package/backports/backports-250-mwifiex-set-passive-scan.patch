@@ -1,0 +1,33 @@
+From ec6a3bfbbbed790f0c937149002f00ddbc1e72f4 Mon Sep 17 00:00:00 2001
+From: Avinash Patil <patila@marvell.com>
+Date: Wed, 27 Aug 2014 19:45:48 +0530
+Subject: [PATCH] mwifiex: set passive scan type for scan requests with no ssid
+
+It was observed that station would sent probe request even when
+scan type has been set as passive during iw scan.
+This was happening because driver sets passive scan type only
+when channel has IEEE80211_CHAN_NO_IR flag set.
+Along with this, add condition to check if no ssids are specified in
+scan request so as to mark such scan request passive.
+
+Signed-off-by: Avinash Patil <patila@marvell.com>
+---
+ drivers/net/wireless/mwifiex/cfg80211.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/mwifiex/cfg80211.c b/drivers/net/wireless/mwifiex/cfg80211.c
+index 68d5e84..22badc7 100644
+--- a/drivers/net/wireless/mwifiex/cfg80211.c
++++ b/drivers/net/wireless/mwifiex/cfg80211.c
+@@ -1973,7 +1973,7 @@ mwifiex_cfg80211_scan(struct wiphy *wiphy,
+ 		user_scan_cfg->chan_list[i].chan_number = chan->hw_value;
+ 		user_scan_cfg->chan_list[i].radio_type = chan->band;
+ 
+-		if (chan->flags & IEEE80211_CHAN_NO_IR)
++		if ((chan->flags & IEEE80211_CHAN_NO_IR) || !request->n_ssids)
+ 			user_scan_cfg->chan_list[i].scan_type =
+ 						MWIFIEX_SCAN_TYPE_PASSIVE;
+ 		else
+-- 
+1.8.1.4
+
