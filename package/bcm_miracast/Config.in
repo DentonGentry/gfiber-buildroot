@@ -1,4 +1,6 @@
 config BR2_PACKAGE_BCM_MIRACAST
 	bool "Build Broadcom Miracast package"
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	default n
 	select BR2_PACKAGE_BCM_COMMON
 	select BR2_PACKAGE_BCM_ROCKFORD
