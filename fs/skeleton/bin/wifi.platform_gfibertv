@@ -605,7 +605,13 @@ elif runnable iw; then
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
   if [ -n "$allow_ac" ]; then
     [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
-    startswith "$band" 5 && ampdu="[MAX-A-MPDU-LEN-EXP4]"
+    contains "$phyinfo" "Maximum RX AMPDU length 16383 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP1]"
+    contains "$phyinfo" "Maximum RX AMPDU length 32767 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP2]"
+    contains "$phyinfo" "Maximum RX AMPDU length 65535 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP3]"
+    contains "$phyinfo" "Maximum RX AMPDU length 131071 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP4]"
+    contains "$phyinfo" "Maximum RX AMPDU length 262143 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP5]"
+    contains "$phyinfo" "Maximum RX AMPDU length 524287 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP6]"
+    contains "$phyinfo" "Maximum RX AMPDU length 1048575 bytes" && ampdu="[MAX-A-MPDU-LEN-EXP7]"
   fi
   [ -n "$allow_ab$allow_g" ] || require_ht="require_ht=1"
   [ -n "$allow_ab$allow_g$allow_n" ] || require_vht="require_vht=1"
