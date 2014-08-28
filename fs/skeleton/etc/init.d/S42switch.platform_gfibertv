@@ -47,7 +47,7 @@ case "$1" in
 
     if runnable ssdk_sh; then
       {
-        disable_multicast_flood_cmds
+        #disable_multicast_flood_cmds           # commented out for for b/16856861"
         disable_flowctrl_port0_cmds
         echo quit
       } | ssdk_sh 2>&1 | logos switch
@@ -56,7 +56,7 @@ case "$1" in
   stop)
     if runnable ssdk_sh; then
       {
-        restore_defaults_cmd
+        #restore_defaults_cmds                  # commented out for for b/16856861"
         enable_flowctrl_port0_cmds
         echo quit
       } | ssdk_sh 2>&1 | logos switch
