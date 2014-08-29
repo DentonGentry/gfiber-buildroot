@@ -1,0 +1,103 @@
+#!/usr/bin/python
+
+# Copyright 2014 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""almost a hundred lines to call 1 ioctl.  tool to tune remote repeat speed."""
+
+__author__ = "edjames@google.com (Ed James)"
+
+import fcntl
+import os
+import struct
+import sys
+import options
+
+optspec = """
+input-repeat -f /dev/input/eventX [-d delay] [-p period] [-m max (if supported)]
+--
+f,file=    Path to a /dev/input/event* device
+d,delay=   delay before repeat starts in milliseconds
+p,period=  time between repeats in milliseconds
+m,max=     maximum times to repeat (may not be available)
+"""
+
+
+def get_or_set_rep(efile, delay, period, maxrep):
+  """optionally apply changes and display settings."""
+  eviocgrep = 0x40084503
+  eviocsrep = 0x80084503
+
+  change = (delay is not None or period is not None or maxrep is not None)
+  efd = os.open(efile, os.O_RDWR)
+
+  vin = [0, 0, 0]
+  buf = struct.pack("@iii", *vin)
+  buf = fcntl.ioctl(efd, eviocgrep, buf)
+  vout = list(struct.unpack("@iii", buf))
+  if change:
+    vin = vout[:]
+    if delay is not None:
+      vin[0] = delay
+    if period:
+      vin[1] = period
+    if maxrep:
+      vin[2] = maxrep
+    buf = struct.pack("@iii", *vin)
+    fcntl.ioctl(efd, eviocsrep, buf)
+    vin = [0, 0, 0]
+    buf = struct.pack("@iii", *vin)
+    buf = fcntl.ioctl(efd, eviocgrep, buf)
+    vout = list(struct.unpack("@iii", buf))
+  print("{}: delay {} period {} max {} (0 means unsupported)".
+        format(efile, *vout))
+
+
+def main(argv):
+  """parse args and get or set hid repeat values."""
+  err = 0
+  delay = None
+  period = None
+  maxrep = None
+
+  opts = options.Options(optspec)
+  (opt, unused_flags, unused_extra) = opts.parse(argv[1:])
+  if unused_extra:
+    print "{}: extra arguments found".format(argv[0])
+    err += 1
+  if opt.file is None:
+    print "{}: -f/--file is required".format(argv[0])
+    err += 1
+
+  if opt.delay is not None:
+    delay = int(opt.delay)
+  if opt.period is not None:
+    period = int(opt.period)
+  if opt.max is not None:
+    maxrep = int(opt.max)
+
+  if ((delay is not None and delay < 1) or
+      (period is not None and period < 1) or
+      (maxrep is not None and maxrep < 1)):
+    print "{}: delay, period and/or max must be >= 1".format(argv[0])
+    err += 1
+
+  if err:
+    sys.exit(err)
+
+  get_or_set_rep(opt.file, delay, period, maxrep)
+
+
+if __name__ == "__main__":
+  main(sys.argv)
