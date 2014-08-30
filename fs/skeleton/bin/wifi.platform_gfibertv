@@ -773,11 +773,11 @@ elif runnable iw; then
 
 	# Obnoxiously short rekey intervals to maximize the chance of discovering
 	# bugs caused by rekeying at inopportune times.
-	wep_rekey_period=30
-	wpa_group_rekey=30
+	wep_rekey_period=10
+	wpa_group_rekey=10
 	wpa_strict_rekey=1
-	wpa_gmk_rekey=59
-	wpa_ptk_rekey=30
+	wpa_gmk_rekey=9
+	wpa_ptk_rekey=10
 	EOF
     )
   fi
