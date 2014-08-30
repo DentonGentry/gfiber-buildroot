@@ -169,7 +169,7 @@ iw_find_ifc_from_band() {
 iw_start_hostapd() {
   ifc=$1
   pidfile=/tmp/hostapd.pid.$ifc
-  opts="-d"
+  opts=""
   pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
   killpid "$pidfile"
   rm -f "$pidfile"

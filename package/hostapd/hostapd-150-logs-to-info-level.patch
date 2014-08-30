@@ -1,0 +1,318 @@
+From e08545475088709c086e4656d60924cdbcdd87ba Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 30 Aug 2014 03:06:37 -0400
+Subject: [PATCH 1/3] Change some debug-level messages to info.
+
+hostapd -d (debug mode) is too verbose.  But without it, it's too terse.
+Set some info-level messages to debug level to try to find a better balance.
+
+Also, remove init error message about rfkill (our system has no rfkill
+switch).  And print out the flags that indicate whether a monitor interface
+is needed, in the hope of someday eliminating it.
+---
+ hostapd/main.c               |  3 ++-
+ src/ap/ap_list.c             |  2 +-
+ src/ap/drv_callbacks.c       |  4 ++--
+ src/ap/iapp.c                |  2 +-
+ src/ap/ieee802_11.c          | 10 +++++-----
+ src/ap/ieee802_1x.c          |  4 ++--
+ src/ap/sta_info.c            | 12 ++++++------
+ src/ap/wpa_auth.c            | 12 ++++++++----
+ src/ap/wpa_auth_glue.c       |  2 +-
+ src/drivers/driver_nl80211.c |  5 ++++-
+ src/drivers/rfkill.c         |  2 +-
+ 11 files changed, 33 insertions(+), 25 deletions(-)
+
+diff --git a/hostapd/main.c b/hostapd/main.c
+index a9d7da5..ab7a8e7 100644
+--- a/hostapd/main.c
++++ b/hostapd/main.c
+@@ -625,7 +625,8 @@ int main(int argc, char *argv[])
+ 	    num_bss_configs == 0)
+ 		usage();
+ 
+-	wpa_msg_register_ifname_cb(hostapd_msg_ifname_cb);
++	// Not needed on our system since we add a log prefix elsewhere
++	//wpa_msg_register_ifname_cb(hostapd_msg_ifname_cb);
+ 
+ 	if (log_file)
+ 		wpa_debug_open_file(log_file);
+diff --git a/src/ap/ap_list.c b/src/ap/ap_list.c
+index 287d520..d4fec5b 100644
+--- a/src/ap/ap_list.c
++++ b/src/ap/ap_list.c
+@@ -221,7 +221,7 @@ void ap_list_process_beacon(struct hostapd_iface *iface,
+ 	if (!iface->olbc &&
+ 	    ap_list_beacon_olbc(iface, ap)) {
+ 		iface->olbc = 1;
+-		wpa_printf(MSG_DEBUG, "OLBC AP detected: " MACSTR
++		wpa_printf(MSG_INFO, "OLBC AP detected: " MACSTR
+ 			   " (channel %d) - enable protection",
+ 			   MAC2STR(ap->addr), ap->channel);
+ 		set_beacon++;
+diff --git a/src/ap/drv_callbacks.c b/src/ap/drv_callbacks.c
+index cba37c2..f0ea89c 100644
+--- a/src/ap/drv_callbacks.c
++++ b/src/ap/drv_callbacks.c
+@@ -555,7 +555,7 @@ static void hostapd_notify_auth_ft_finish(void *ctx, const u8 *dst,
+ 		return;
+ 
+ 	hostapd_logger(hapd, dst, HOSTAPD_MODULE_IEEE80211,
+-		       HOSTAPD_LEVEL_DEBUG, "authentication OK (FT)");
++		       HOSTAPD_LEVEL_INFO, "authentication OK (FT)");
+ 	sta->flags |= WLAN_STA_AUTH;
+ 
+ 	hostapd_sta_auth(hapd, dst, auth_transaction, status, ies, ies_len);
+@@ -931,7 +931,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
+ {
+ 	struct hostapd_data *hapd = ctx;
+ #ifndef CONFIG_NO_STDOUT_DEBUG
+-	int level = MSG_DEBUG;
++	int level = MSG_INFO;
+ 
+ 	if (event == EVENT_RX_MGMT && data->rx_mgmt.frame &&
+ 	    data->rx_mgmt.frame_len >= 24) {
+diff --git a/src/ap/iapp.c b/src/ap/iapp.c
+index 9b2900f..0387891 100644
+--- a/src/ap/iapp.c
++++ b/src/ap/iapp.c
+@@ -292,7 +292,7 @@ static void iapp_process_add_notify(struct iapp_data *iapp,
+ 	 * this is not really a reliable verification. */
+ 
+ 	hostapd_logger(iapp->hapd, add->mac_addr, HOSTAPD_MODULE_IAPP,
+-		       HOSTAPD_LEVEL_DEBUG,
++		       HOSTAPD_LEVEL_INFO,
+ 		       "Removing STA due to IAPP ADD-notify");
+ 	ap_sta_disconnect(iapp->hapd, sta, NULL, 0);
+ }
+diff --git a/src/ap/ieee802_11.c b/src/ap/ieee802_11.c
+index ca8db8f..db7f6e6 100644
+--- a/src/ap/ieee802_11.c
++++ b/src/ap/ieee802_11.c
+@@ -245,7 +245,7 @@ static u16 auth_shared_key(struct hostapd_data *hapd, struct sta_info *sta,
+ 	}
+ 
+ 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
+-		       HOSTAPD_LEVEL_DEBUG,
++		       HOSTAPD_LEVEL_INFO,
+ 		       "authentication OK (shared key)");
+ 	sta->flags |= WLAN_STA_AUTH;
+ 	wpa_auth_sm_event(sta->wpa_sm, WPA_AUTH);
+@@ -314,7 +314,7 @@ static void handle_auth_ft_finish(void *ctx, const u8 *dst, const u8 *bssid,
+ 		return;
+ 
+ 	hostapd_logger(hapd, dst, HOSTAPD_MODULE_IEEE80211,
+-		       HOSTAPD_LEVEL_DEBUG, "authentication OK (FT)");
++		       HOSTAPD_LEVEL_INFO, "authentication OK (FT)");
+ 	sta->flags |= WLAN_STA_AUTH;
+ 	mlme_authenticate_indication(hapd, sta);
+ }
+@@ -694,7 +694,7 @@ static void handle_auth(struct hostapd_data *hapd,
+ 	switch (auth_alg) {
+ 	case WLAN_AUTH_OPEN:
+ 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
+-			       HOSTAPD_LEVEL_DEBUG,
++			       HOSTAPD_LEVEL_INFO,
+ 			       "authentication OK (open system)");
+ 		sta->flags |= WLAN_STA_AUTH;
+ 		wpa_auth_sm_event(sta->wpa_sm, WPA_AUTH);
+@@ -1463,7 +1463,7 @@ static void handle_disassoc(struct hostapd_data *hapd,
+ 		return;
+ 	}
+ 
+-	wpa_printf(MSG_DEBUG, "disassocation: STA=" MACSTR " reason_code=%d",
++	wpa_printf(MSG_INFO, "disassocation: STA=" MACSTR " reason_code=%d",
+ 		   MAC2STR(mgmt->sa),
+ 		   le_to_host16(mgmt->u.disassoc.reason_code));
+ 
+@@ -1511,7 +1511,7 @@ static void handle_deauth(struct hostapd_data *hapd,
+ 		return;
+ 	}
+ 
+-	wpa_msg(hapd->msg_ctx, MSG_DEBUG, "deauthentication: STA=" MACSTR
++	wpa_msg(hapd->msg_ctx, MSG_INFO, "deauthentication: STA=" MACSTR
+ 		" reason_code=%d",
+ 		MAC2STR(mgmt->sa), le_to_host16(mgmt->u.deauth.reason_code));
+ 
+diff --git a/src/ap/ieee802_1x.c b/src/ap/ieee802_1x.c
+index 035415f..02f0df1 100644
+--- a/src/ap/ieee802_1x.c
++++ b/src/ap/ieee802_1x.c
+@@ -1609,7 +1609,7 @@ void ieee802_1x_abort_auth(struct hostapd_data *hapd, struct sta_info *sta)
+ 		 * request and we cannot continue EAP processing (EAP-Failure
+ 		 * could only be sent if the EAP peer actually replied).
+ 		 */
+-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "EAP Timeout, STA " MACSTR,
++		wpa_dbg(hapd->msg_ctx, MSG_INFO, "EAP Timeout, STA " MACSTR,
+ 			MAC2STR(sta->addr));
+ 
+ 		sm->eap_if->portEnabled = FALSE;
+@@ -2354,7 +2354,7 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
+ 		 * EAP-FAST with anonymous provisioning, may require another
+ 		 * EAPOL authentication to be started to complete connection.
+ 		 */
+-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "IEEE 802.1X: Force "
++		wpa_dbg(hapd->msg_ctx, MSG_INFO, "IEEE 802.1X: Force "
+ 			"disconnection after EAP-Failure");
+ 		/* Add a small sleep to increase likelihood of previously
+ 		 * requested EAP-Failure TX getting out before this should the
+diff --git a/src/ap/sta_info.c b/src/ap/sta_info.c
+index 60f0768..6f42088 100644
+--- a/src/ap/sta_info.c
++++ b/src/ap/sta_info.c
+@@ -356,14 +356,14 @@ void ap_handle_timer(void *eloop_ctx, void *timeout_ctx)
+ 		} else if (inactive_sec < hapd->conf->ap_max_inactivity &&
+ 			   sta->flags & WLAN_STA_ASSOC) {
+ 			/* station activity detected; reset timeout state */
+-			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
++			wpa_msg(hapd->msg_ctx, MSG_INFO,
+ 				"Station " MACSTR " has been active %is ago",
+ 				MAC2STR(sta->addr), inactive_sec);
+ 			sta->timeout_next = STA_NULLFUNC;
+ 			next_time = hapd->conf->ap_max_inactivity + fuzz -
+ 				inactive_sec;
+ 		} else {
+-			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
++			wpa_msg(hapd->msg_ctx, MSG_INFO,
+ 				"Station " MACSTR " has been "
+ 				"inactive too long: %d sec, max allowed: %d",
+ 				MAC2STR(sta->addr), inactive_sec,
+@@ -655,8 +655,8 @@ static void ap_sta_disassoc_cb_timeout(void *eloop_ctx, void *timeout_ctx)
+ void ap_sta_disassociate(struct hostapd_data *hapd, struct sta_info *sta,
+ 			 u16 reason)
+ {
+-	wpa_printf(MSG_DEBUG, "%s: disassociate STA " MACSTR,
+-		   hapd->conf->iface, MAC2STR(sta->addr));
++	wpa_printf(MSG_INFO, "%s: disassociate STA " MACSTR " (reason=0x%04x)",
++		   hapd->conf->iface, MAC2STR(sta->addr), reason);
+ 	sta->flags &= ~(WLAN_STA_ASSOC | WLAN_STA_ASSOC_REQ_OK);
+ 	ap_sta_set_authorized(hapd, sta, 0);
+ 	sta->timeout_next = STA_DEAUTH;
+@@ -693,8 +693,8 @@ static void ap_sta_deauth_cb_timeout(void *eloop_ctx, void *timeout_ctx)
+ void ap_sta_deauthenticate(struct hostapd_data *hapd, struct sta_info *sta,
+ 			   u16 reason)
+ {
+-	wpa_printf(MSG_DEBUG, "%s: deauthenticate STA " MACSTR,
+-		   hapd->conf->iface, MAC2STR(sta->addr));
++	wpa_printf(MSG_INFO, "%s: deauthenticate STA " MACSTR " (reason=0x%04x)",
++		   hapd->conf->iface, MAC2STR(sta->addr), reason);
+ 	sta->flags &= ~(WLAN_STA_AUTH | WLAN_STA_ASSOC);
+ 	ap_sta_set_authorized(hapd, sta, 0);
+ 	sta->timeout_next = STA_REMOVE;
+diff --git a/src/ap/wpa_auth.c b/src/ap/wpa_auth.c
+index a9cd6f6..544cb44 100644
+--- a/src/ap/wpa_auth.c
++++ b/src/ap/wpa_auth.c
+@@ -242,7 +242,7 @@ static void wpa_rekey_gtk(void *eloop_ctx, void *timeout_ctx)
+ 	struct wpa_authenticator *wpa_auth = eloop_ctx;
+ 	struct wpa_group *group;
+ 
+-	wpa_auth_logger(wpa_auth, NULL, LOGGER_DEBUG, "rekeying GTK");
++	wpa_auth_logger(wpa_auth, NULL, LOGGER_INFO, "rekeying GTK");
+ 	for (group = wpa_auth->group; group; group = group->next) {
+ 		group->GTKReKey = TRUE;
+ 		do {
+@@ -263,7 +263,7 @@ static void wpa_rekey_ptk(void *eloop_ctx, void *timeout_ctx)
+ 	struct wpa_authenticator *wpa_auth = eloop_ctx;
+ 	struct wpa_state_machine *sm = timeout_ctx;
+ 
+-	wpa_auth_logger(wpa_auth, sm->addr, LOGGER_DEBUG, "rekeying PTK");
++	wpa_auth_logger(wpa_auth, sm->addr, LOGGER_INFO, "rekeying PTK");
+ 	wpa_request_new_ptk(sm);
+ 	wpa_sm_step(sm);
+ }
+@@ -637,7 +637,7 @@ void wpa_auth_sta_deinit(struct wpa_state_machine *sm)
+ 		return;
+ 
+ 	if (sm->wpa_auth->conf.wpa_strict_rekey && sm->has_GTK) {
+-		wpa_auth_logger(sm->wpa_auth, sm->addr, LOGGER_DEBUG,
++		wpa_auth_logger(sm->wpa_auth, sm->addr, LOGGER_INFO,
+ 				"strict rekeying - force GTK rekey since STA "
+ 				"is leaving");
+ 		eloop_cancel_timeout(wpa_rekey_gtk, sm->wpa_auth, NULL);
+@@ -990,7 +990,7 @@ continue_processing:
+ 			 * Counter update and the station will be allowed to
+ 			 * continue.
+ 			 */
+-			wpa_printf(MSG_DEBUG, "WPA: Reject 4-way handshake to "
++			wpa_printf(MSG_ERROR, "WPA: Reject 4-way handshake to "
+ 				   "collect more entropy for random number "
+ 				   "generation");
+ 			random_mark_pool_ready();
+@@ -1035,6 +1035,8 @@ continue_processing:
+ 		}
+ #ifdef CONFIG_IEEE80211R
+ 		if (ft && ft_check_msg_2_of_4(wpa_auth, sm, &kde) < 0) {
++			wpa_auth_logger(wpa_auth, sm->addr, LOGGER_INFO,
++				"WPA ft_check_msg_2_of_4 failure");
+ 			wpa_sta_disconnect(wpa_auth, sm->addr);
+ 			return;
+ 		}
+@@ -1625,6 +1627,7 @@ SM_STATE(WPA_PTK, DISCONNECT)
+ {
+ 	SM_ENTRY_MA(WPA_PTK, DISCONNECT, wpa_ptk);
+ 	sm->Disconnect = FALSE;
++	wpa_printf(MSG_INFO, "WPA_PTK: disconnect state");
+ 	wpa_sta_disconnect(sm->wpa_auth, sm->addr);
+ }
+ 
+@@ -2157,6 +2160,7 @@ SM_STATE(WPA_PTK, PTKINITDONE)
+ 		int klen = wpa_cipher_key_len(sm->pairwise);
+ 		if (wpa_auth_set_key(sm->wpa_auth, 0, alg, sm->addr, 0,
+ 				     sm->PTK.tk1, klen)) {
++			wpa_printf(MSG_ERROR, "wpa_auth_set_key error");
+ 			wpa_sta_disconnect(sm->wpa_auth, sm->addr);
+ 			return;
+ 		}
+diff --git a/src/ap/wpa_auth_glue.c b/src/ap/wpa_auth_glue.c
+index 6ee9a4f..a6a2b11 100644
+--- a/src/ap/wpa_auth_glue.c
++++ b/src/ap/wpa_auth_glue.c
+@@ -130,7 +130,7 @@ static void hostapd_wpa_auth_disconnect(void *ctx, const u8 *addr,
+ 					u16 reason)
+ {
+ 	struct hostapd_data *hapd = ctx;
+-	wpa_printf(MSG_DEBUG, "%s: WPA authenticator requests disconnect: "
++	wpa_printf(MSG_INFO, "%s: WPA authenticator requests disconnect: "
+ 		   "STA " MACSTR " reason %d",
+ 		   __func__, MAC2STR(addr), reason);
+ 	ap_sta_disconnect(hapd, NULL, addr, reason);
+diff --git a/src/drivers/driver_nl80211.c b/src/drivers/driver_nl80211.c
+index 3ccbf59..c114e3b 100644
+--- a/src/drivers/driver_nl80211.c
++++ b/src/drivers/driver_nl80211.c
+@@ -3987,6 +3987,9 @@ static int wpa_driver_nl80211_capa(struct wpa_driver_nl80211_data *drv)
+ 	 * to have everything we need to not need monitor interfaces.
+ 	 */
+ 	drv->use_monitor = !info.poll_command_supported || !info.data_tx_status;
++	wpa_printf(MSG_INFO, "monitor mode needed: %d (poll_cmd=%d data_tx_status=%d)",
++		drv->use_monitor, info.poll_command_supported,
++		info.data_tx_status);
+ 
+ 	if (drv->device_ap_sme && drv->use_monitor) {
+ 		/*
+@@ -7246,7 +7249,7 @@ static int wpa_driver_nl80211_set_ap(void *priv,
+ 	if (!msg)
+ 		return -ENOMEM;
+ 
+-	wpa_printf(MSG_DEBUG, "nl80211: Set beacon (beacon_set=%d)",
++	wpa_printf(MSG_INFO, "nl80211: Set beacon (beacon_set=%d)",
+ 		   beacon_set);
+ 	if (beacon_set)
+ 		cmd = NL80211_CMD_SET_BEACON;
+diff --git a/src/drivers/rfkill.c b/src/drivers/rfkill.c
+index 45b26c4..f2cd47c 100644
+--- a/src/drivers/rfkill.c
++++ b/src/drivers/rfkill.c
+@@ -110,7 +110,7 @@ struct rfkill_data * rfkill_init(struct rfkill_config *cfg)
+ 	rfkill->cfg = cfg;
+ 	rfkill->fd = open("/dev/rfkill", O_RDONLY);
+ 	if (rfkill->fd < 0) {
+-		wpa_printf(MSG_INFO, "rfkill: Cannot open RFKILL control "
++		wpa_printf(MSG_DEBUG, "rfkill: Cannot open RFKILL control "
+ 			   "device");
+ 		goto fail;
+ 	}
+-- 
+2.1.0.rc2.206.gedb03e5
+
