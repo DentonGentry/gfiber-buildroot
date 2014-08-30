@@ -634,6 +634,7 @@ elif runnable iw; then
     40) ht40="[HT40+]" ;;
     80) ht40="[HT40+]"
         vht_settings=$(cat <<-EOF
+		vht_capab=$ampdu
 		vht_oper_chwidth=1
 
 		# Wifi channel numbers define the center of a 20 MHz
@@ -668,7 +669,6 @@ elif runnable iw; then
 	$require_vht
 	$hidden
 	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc
-	vht_capab=$ampdu
 	$vht_settings
 	EOF
   )
