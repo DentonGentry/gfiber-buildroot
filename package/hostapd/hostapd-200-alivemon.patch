@@ -1,0 +1,159 @@
+From cd80d02da128013fb4f40457ba45eeb4651d57d5 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 30 Aug 2014 04:30:03 -0400
+Subject: [PATCH] Add a -A (alivemon_path) option.
+
+When set, touches the given filename every few seconds, but only if events
+have been received from the kernel.  You can monitor this to see if the
+hostapd process is alive or not.
+
+Plus, we add a log message that, every few seconds, prints out a total of
+nl80211 events that have been received, and also breaks down some common
+types (notably beacons and probes).
+---
+ hostapd/main.c         |  7 ++++++-
+ src/ap/drv_callbacks.c | 46 +++++++++++++++++++++++++++++++++++++++-------
+ src/ap/hostapd.h       |  2 ++
+ 3 files changed, 47 insertions(+), 8 deletions(-)
+
+diff --git a/hostapd/main.c b/hostapd/main.c
+index ab7a8e7..4f17688 100644
+--- a/hostapd/main.c
++++ b/hostapd/main.c
+@@ -35,6 +35,7 @@ struct hapd_global {
+ };
+ 
+ static struct hapd_global global;
++char *alivemon_path = NULL;
+ 
+ 
+ #ifndef CONFIG_NO_HOSTAPD_LOGGER
+@@ -433,6 +434,7 @@ static void usage(void)
+ 		"options:\n"
+ 		"   -h   show this usage\n"
+ 		"   -d   show more debug messages (-dd for even more)\n"
++		"   -A   alivemonitor file\n"
+ 		"   -B   run daemon in the background\n"
+ 		"   -e   entropy file\n"
+ 		"   -g   global control interface path\n"
+@@ -554,7 +556,7 @@ int main(int argc, char *argv[])
+ 	interfaces.global_ctrl_sock = -1;
+ 
+ 	for (;;) {
+-		c = getopt(argc, argv, "b:Bde:f:hKP:Ttu:vg:G:");
++		c = getopt(argc, argv, "b:A:Bde:f:hKP:Ttu:vg:G:");
+ 		if (c < 0)
+ 			break;
+ 		switch (c) {
+@@ -566,6 +568,9 @@ int main(int argc, char *argv[])
+ 			if (wpa_debug_level > 0)
+ 				wpa_debug_level--;
+ 			break;
++		case 'A':
++			alivemon_path = optarg;
++			break;
+ 		case 'B':
+ 			daemonize++;
+ 			break;
+diff --git a/src/ap/drv_callbacks.c b/src/ap/drv_callbacks.c
+index f0ea89c..f86574f 100644
+--- a/src/ap/drv_callbacks.c
++++ b/src/ap/drv_callbacks.c
+@@ -5,7 +5,7 @@
+  * This software may be distributed under the terms of the BSD license.
+  * See README for more details.
+  */
+-
++#define _GNU_SOURCE
+ #include "utils/includes.h"
+ 
+ #include "utils/common.h"
+@@ -32,7 +32,9 @@
+ #include "hw_features.h"
+ #include "dfs.h"
+ #include "beacon.h"
+-
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
+ 
+ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
+ 			const u8 *req_ies, size_t req_ies_len, int reassoc)
+@@ -929,10 +931,16 @@ static void hostapd_event_dfs_nop_finished(struct hostapd_data *hapd,
+ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
+ 			  union wpa_event_data *data)
+ {
++	static struct {
++		int all, beacon, probe_req, tx_status, tx_status_mgmt;
++	} counts;
++	static struct os_reltime last_count_print_time;
++	struct os_reltime now;
+ 	struct hostapd_data *hapd = ctx;
+ #ifndef CONFIG_NO_STDOUT_DEBUG
+ 	int level = MSG_INFO;
+ 
++	counts.all++;
+ 	if (event == EVENT_RX_MGMT && data->rx_mgmt.frame &&
+ 	    data->rx_mgmt.frame_len >= 24) {
+ 		const struct ieee80211_hdr *hdr;
+@@ -940,15 +948,39 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
+ 		hdr = (const struct ieee80211_hdr *) data->rx_mgmt.frame;
+ 		fc = le_to_host16(hdr->frame_control);
+ 		if (WLAN_FC_GET_TYPE(fc) == WLAN_FC_TYPE_MGMT &&
+-		    WLAN_FC_GET_STYPE(fc) == WLAN_FC_STYPE_BEACON)
++		    WLAN_FC_GET_STYPE(fc) == WLAN_FC_STYPE_BEACON) {
+ 			level = MSG_EXCESSIVE;
++			counts.beacon++;
++		}
+ 		if (WLAN_FC_GET_TYPE(fc) == WLAN_FC_TYPE_MGMT &&
+-		    WLAN_FC_GET_STYPE(fc) == WLAN_FC_STYPE_PROBE_REQ)
++		    WLAN_FC_GET_STYPE(fc) == WLAN_FC_STYPE_PROBE_REQ) {
++			level = MSG_EXCESSIVE;
++			counts.probe_req++;
++		}
++	}
++	if (event == EVENT_TX_STATUS) {
++		if (data->tx_status.type == WLAN_FC_TYPE_MGMT) {
+ 			level = MSG_EXCESSIVE;
++			counts.tx_status_mgmt++;
++		} else {
++			counts.tx_status++;
++		}
+ 	}
+-	if (event == EVENT_TX_STATUS &&
+-	    data->tx_status.type == WLAN_FC_TYPE_MGMT) {
+-		level = MSG_EXCESSIVE;
++
++	os_get_reltime(&now);
++	if (os_reltime_expired(&now, &last_count_print_time, 5)) {
++		wpa_dbg(hapd->msg_ctx, MSG_INFO,
++			"Events: %d beacon=%d probe=%d tx=%d txm=%d",
++			counts.all, counts.beacon, counts.probe_req,
++			counts.tx_status, counts.tx_status_mgmt);
++		if (counts.all && alivemon_path) {
++			int fd = open(alivemon_path,
++				O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW,
++				0666);
++			if (fd >= 0) close(fd);
++		}
++		last_count_print_time = now;
++		memset(&counts, 0, sizeof(counts));
+ 	}
+ 
+ 	wpa_dbg(hapd->msg_ctx, level, "Event %s (%d) received",
+diff --git a/src/ap/hostapd.h b/src/ap/hostapd.h
+index bd85c54..6560da2 100644
+--- a/src/ap/hostapd.h
++++ b/src/ap/hostapd.h
+@@ -13,6 +13,8 @@
+ #include "ap_config.h"
+ #include "drivers/driver.h"
+ 
++extern char *alivemon_path;
++
+ struct wpa_ctrl_dst;
+ struct radius_server_data;
+ struct upnp_wps_device_sm;
+-- 
+2.1.0.rc2.206.gedb03e5
+

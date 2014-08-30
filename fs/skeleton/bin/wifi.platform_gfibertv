@@ -173,8 +173,12 @@ iw_start_hostapd() {
   pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
   killpid "$pidfile"
   rm -f "$pidfile"
-  babysit 60 startpid "$pidfile" \
-      hostapd $opts "/tmp/hostapd.conf.$ifc" \
+  babysit 10 \
+      startpid "$pidfile" \
+      alivemonitor "/tmp/hostapd.$ifc.alive" 30 2 65 \
+      hostapd $opts \
+      -A "/tmp/hostapd.$ifc.alive" \
+      "/tmp/hostapd.conf.$ifc" \
       2>&1 | logos "hostapd-$ifc" &
 
   # Wait for hostapd to start, and return an error if it doesn't
