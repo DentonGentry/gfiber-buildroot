@@ -18,8 +18,14 @@ atomic() {
 
 # Returns true if the system has wifi.
 has_wifi() {
-  WIFI_IF="eth2"
-  [ -f "/sys/class/net/$WIFI_IF/address" ] && runnable wl
+  for d in /sys/class/net/wlan*/address; do
+    [ -f "$d" ] && return 0
+  done
+  if runnable wl; then
+    # on boxes with wl, wifi is eth2
+    [ -f "/sys/class/net/eth2/address" ] && return 0
+  fi
+  return 1
 }
 
 
