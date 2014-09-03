@@ -1,0 +1,23 @@
+From 17f9eb5a2ad5d7d06e6a004b893224253a86804e Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Sat, 30 Aug 2014 00:31:42 -0400
+Subject: [PATCH 1/4] .gitignore
+
+---
+ .gitignore | 4 ++++
+ 1 file changed, 4 insertions(+)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..d2ef15f
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,4 @@
++*~
++*.o
++hostapd/hostapd
++hostapd/hostapd_cli
+-- 
+2.1.0.rc2.206.gedb03e5
+
