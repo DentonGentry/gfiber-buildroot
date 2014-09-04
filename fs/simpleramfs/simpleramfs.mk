@@ -75,6 +75,7 @@ define SIMPLERAMFS_BUILD_CMDS
 	ln -f $(TARGET_DIR)/bin/dash $(@D)/fs/bin/sh
 	ln -f 	$(TARGET_DIR)/bin/toolbox \
 		$(TARGET_DIR)/bin/toybox \
+		$(TARGET_DIR)/usr/sbin/nanddump \
 		$(TARGET_DIR)/usr/sbin/ubiattach \
 		$(TARGET_DIR)/usr/sbin/ubidetach \
 		$(TARGET_DIR)/usr/sbin/dmsetup \
