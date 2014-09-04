@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_GLOG
+	bool "google_glog"
+	select BR2_PACKAGE_GOOGLE_GFLAGS
+	help
+	  Enables Glog library
