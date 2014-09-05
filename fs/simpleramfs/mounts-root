@@ -79,6 +79,17 @@ startswith() {
   [ "${1#"$2"}" != "$1" ]
 }
 
+# From the verity command line, gets the hash start in Bytes!
+get_hashstart() {
+  local hashstart=${6#hashstart=}
+  hashstart=$((hashstart * 512))
+  echo "$hashstart"
+}
+
+# Echo back the verity args, but with hashstart=0 for the loopback device.
+clear_hashstart() {
+  echo "$1 $2 $3 $4 $5 hashstart=0 $7 $8 $9"
+}
 
 # host:path format in root= means we should do an NFS root
 if [ "${ROOTDEV#*:/}" != "$ROOTDEV" ]; then
@@ -143,25 +154,41 @@ elif [ -n "$ROOTDEV" ]; then
       ubi_mtd=$(find_mtd "rootfs")
       [ -n "$ubi_mtd" ] || (cat /proc/mtd; die "no mtd named 'rootfs'")
       ROOTDEV=/dev/mtdblock$ubi_mtd
-      KERNELDEV=/dev/mtdblock$(find_mtd "$KERNELNAME")
+      VERITY_CHAR_DEV=/dev/mtd$(find_mtd "$KERNELNAME")
     elif [ -e "$mmcraw" ]; then
       log "Found root='$ROOTDEV': $mmcraw"
       ROOTDEV=$mmcraw
-      KERNELDEV=/dev/mmcblk0p$(find_mmc "$KERNELNAME")
+      VERITYDEV=/dev/mmcblk0p$(find_mmc "$KERNELNAME")
     elif [ -e "$mmcvfat" ]; then
+      # TODO(jnewlin): Remove this after verifying vfat is not used.
       log "Found root='$ROOTDEV': $mmcvfat"
       mount -t vfat -o ro,nodev,noexec,nosuid "$mmcvfat" /vfat
-      KERNELDEV=/dev/loop0
+      VERITYDEV=/dev/loop0
       ROOTDEV=/dev/loop1
-      losetup $KERNELDEV /vfat/vmlinuz.img
+      losetup $VERITYDEV /vfat/vmlinuz.img
       losetup $ROOTDEV /vfat/rootfs.img
     else
       cat /proc/mtd
       log "root='$ROOTDEV' is not an mtd device."
     fi
-    args=$(readverity $KERNELDEV)
+    if [ -n "$VERITY_CHAR_DEV" ]; then
+      # dump the verity header, and read the verity settings, they are stored
+      # in the first 4096 bytes of the image.
+      mount -t tmpfs none /veritytmp
+      nanddump -f /veritytmp/verity.args -l 4096 -s 0 "$VERITY_CHAR_DEV"
+      args=$(readverity /veritytmp/verity.args)
+      hash_size=$(readverity -s /veritytmp/verity.args)
+      rm /veritytmp/verity.args
+      hash_offset=$(get_hashstart $args)
+      args=$(clear_hashstart $args)
+      nanddump -f /veritytmp/hash.dat -l "$hash_size" -s "$hash_offset" "$VERITY_CHAR_DEV"
+      VERITYDEV=/dev/loop3
+      losetup $VERITYDEV /veritytmp/hash.dat
+    else
+      args=$(readverity $VERITYDEV)
+    fi
     args=$(replacefirst "$args" ROOT_DEV "$ROOTDEV")
-    args=$(replacefirst "$args" HASH_DEV "$KERNELDEV")
+    args=$(replacefirst "$args" HASH_DEV "$VERITYDEV")
     if ! dmsetup create -r vroot --table "$args"; then
       veritynote=
       read x y armplatform platform junk </proc/cpuinfo

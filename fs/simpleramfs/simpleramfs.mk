@@ -42,7 +42,7 @@ endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
-	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat; do \
+	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat veritytmp; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
 
