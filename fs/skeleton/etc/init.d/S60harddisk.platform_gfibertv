@@ -60,6 +60,7 @@ case "$1" in
       echo "Mounting ext4 /var/media from '$mediafs'"
       mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
     elif [ -e /dev/sda ]; then
+      hdparm -q -B255 /dev/sda  # disable power saving
       check_pairing
       echo "Mounting SATA device."
       if [ -e /dev/sda1 ]; then
