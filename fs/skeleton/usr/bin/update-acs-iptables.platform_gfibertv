@@ -154,7 +154,7 @@ fi
 
 # upnp IGD (firewall pinholes)
 # MINIUPNPD is maintained by miniupnpd
-if [ -f /tmp/upnpd_enabled ]; then
+if [ -f /tmp/upnpd-enabled ]; then
   ip46tables -t filter -A acsrules-filter-forward -i $wans ! -o $wans -j MINIUPNPD
   iptables -t nat -A acsrules-nat-prerouting -d "$wanipv4" -i $wans -j MINIUPNPD
   ! /etc/init.d/S80upnpd isrunning && /etc/init.d/S80upnpd start
