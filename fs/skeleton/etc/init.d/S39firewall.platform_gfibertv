@@ -162,13 +162,13 @@ case "$1" in
       ip46tables -A FORWARD -i wan0+ -j log
 
       # Set the WAN 802.1q pbits
-      iptables -t mangle -A OUTPUT -p all -j CLASSIFY --set-class 0:2
-      iptables -t mangle -A OUTPUT -p igmp -j CLASSIFY --set-class 0:6
-      iptables -t mangle -A OUTPUT -p icmp -j CLASSIFY --set-class 0:6
-      ip6tables -t mangle -A OUTPUT -p icmpv6 -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p all -j CLASSIFY --set-class 0:2
+      iptables -t mangle -A OUTPUT -o wan0.2 -p igmp -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p icmp -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p icmpv6 -j CLASSIFY --set-class 0:6
       # DHCP and DHCPv6
-      iptables -t mangle -A OUTPUT -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
-      ip6tables -t mangle -A OUTPUT -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
 
       # Default DROP policy above is safe, but REJECT is friendlier.
       # But you can't use REJECT as a policy, so add a catchall rule at the
