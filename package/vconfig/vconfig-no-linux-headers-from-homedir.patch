@@ -1,0 +1,12 @@
+--- a/MakeInclude	2003-08-25 10:08:18.000000000 -0700
++++ b/MakeInclude	2014-09-10 10:49:46.752291029 -0700
+@@ -15,8 +15,7 @@
+    PLATFORM=x86
+ endif
+ 
+-## You may need to change this linux/include part.
+-CCFLAGS = -g -D_GNU_SOURCE -Wall -I${HOME}/linux/include
++CCFLAGS = -g -D_GNU_SOURCE -Wall
+ LDLIBS = # -lm #-lnsl # -lsocket
+ 
+ ARM_TC_BIN = ${HOME}/Intrinsyc/bin
