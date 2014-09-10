@@ -175,13 +175,13 @@ elif [ -n "$ROOTDEV" ]; then
       # dump the verity header, and read the verity settings, they are stored
       # in the first 4096 bytes of the image.
       mount -t tmpfs none /veritytmp
-      nanddump -f /veritytmp/verity.args -l 4096 -s 0 "$VERITY_CHAR_DEV"
+      nanddump -x -f /veritytmp/verity.args -l 4096 -s 0 "$VERITY_CHAR_DEV"
       args=$(readverity /veritytmp/verity.args)
       hash_size=$(readverity -s /veritytmp/verity.args)
       rm /veritytmp/verity.args
       hash_offset=$(get_hashstart $args)
       args=$(clear_hashstart $args)
-      nanddump -f /veritytmp/hash.dat -l "$hash_size" -s "$hash_offset" "$VERITY_CHAR_DEV"
+      nanddump -x -f /veritytmp/hash.dat -l "$hash_size" -s "$hash_offset" "$VERITY_CHAR_DEV"
       VERITYDEV=/dev/loop3
       losetup $VERITYDEV /veritytmp/hash.dat
     else
