@@ -1,10 +1,31 @@
 #!/bin/sh
 
-# Before starting miracast, have to killl miniclient
-MINIPID=`cat /var/run/miniclient.pid`
+cleanup()
+{
+    echo "Cleanup: killing Miracast player PID $PLAYER_PID"
+    kill -9 $PLAYER_PID
+    echo "miracast_player KILLED"
+    exit 128
+}
+
+. /etc/utils.sh
 
 echo "runmiracast invoked: $*"
 
 echo "miracast $*" > /tmp/runapp
 
+rm -f /var/run/StandaloneWFDPlayer.pid
 /etc/init.d/S99miniclient restart
+wait-until-created /var/run/StandaloneWFDPlayer.pid
+
+PLAYER_PID=$(cat /var/run/StandaloneWFDPlayer.pid)
+
+trap "cleanup" HUP INT TERM
+
+echo "Waiting for player to exit, PID is $PLAYER_PID"
+
+while kill -0 "$PLAYER_PID"; do
+  sleep 0.5
+done
+
+echo "miracast_player DONE"
