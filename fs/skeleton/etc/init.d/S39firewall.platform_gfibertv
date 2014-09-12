@@ -118,6 +118,10 @@ case "$1" in
         ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
       fi
 
+      if [ -e /tmp/factory_status ]; then
+        ip46tables -A INPUT -p tcp --dport 8883 -j ACCEPT  # factory web server
+      fi
+
       # active FTP out
       ip46tables -A FORWARD -m conntrack --ctstate RELATED \
           -m helper --helper ftp -o wan0+ -p tcp --dport 1024: -j ACCEPT
