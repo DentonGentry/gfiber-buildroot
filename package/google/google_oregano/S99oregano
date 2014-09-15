@@ -23,7 +23,7 @@ case "$1" in
     ( pkillwait -x 'runoregano' ;
       # End the Oregano ./start binary (which will also end its babysitter).
       pkillwait -x '\\./start' ;
-      pkillwait -f '(content|browser)_shell' ) &
+      pkillwait -f '(browser|fiber)_shell' ) &
     # End any dangling HTTP request Futures from authTokens.dart attempts.
     pkillwait -f '(dart.*)([a]uthTokens\.dart)' &
     pkillwait -x waitpower &
