@@ -1,0 +1,98 @@
+#!/bin/sh
+# Test script for /bin/wifi
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+hostapd_running() {
+  pgrep -f '^hostapd .* /tmp/hostapd.conf.wlan.*'
+}
+
+
+WVSTART "wifi basics"
+
+WVPASS runnable wifi
+WVPASS wifi stop -P
+WVFAIL hostapd_running
+
+WVPASS wifi restore
+WVFAIL hostapd_running
+
+rm -f /tmp/*.wlan[0-9] /tmp/*.wlan[0-9]
+
+export WIFI_PSK=whatever
+WVPASS wifi set -b2.4 -P
+WVPASS hostapd_running
+
+
+WVSTART "Save the autochannel settings and pick a good channel"
+WVPASSEQ NONDFS-2.4-20 \
+    "$(cat /tmp/autotype.wlan*)-$(cat /tmp/band.wlan*)-$(cat /tmp/width.wlan*)"
+chan1=$(cat /tmp/autochan.wlan*)
+WVPASS [ "$chan1" -gt 0 ]
+WVPASS [ "$chan1" -lt 12 ]
+
+
+WVSTART "hostapd doesn't restart if settings are unchanged"
+pid1=$(WVPASS hostapd_running)
+WVPASS wifi set -b2.4
+WVPASSEQ "$pid1" "$(hostapd_running)"
+
+
+WVSTART "autochannel cache"
+WVPASS wifi stop -b2.4
+WVPASS wifi set -b2.4
+chan2=$(cat /tmp/autochan.wlan*)
+WVPASSEQ "$chan1" "$chan2"
+
+pid2=$(WVPASS hostapd_running)
+WVPASSNE "$pid1" "$pid2"
+
+
+WVSTART "manual channel selection"
+chanfile=$(ls /tmp/autochan.wlan*)
+WVPASS [ -e "$chanfile" ]
+WVPASS wifi set -b2.4 -c11
+WVFAIL [ -e "$chanfile" ]
+
+
+WVSTART "autochannel only has one choice with -w40"
+WVPASS wifi set -b2.4 -w40
+WVPASSEQ 1 "$(cat /tmp/autochan.wlan*)"
+
+
+WVSTART "multi-radio settings"
+WVPASS wifi set -b5 -P
+WVPASS hostapd_running
+WVPASS ls -l /config/wifi
+if is-network-box; then
+  # A network box has 2 radios to run at the same time
+  WVPASSEQ 2 $(hostapd_running | wc -l)
+
+  # On network box, check we can stop only one radio.
+  # On other devices, this result is undefined, so don't test it.
+  WVPASS wifi stop -b2.4
+  WVPASS hostapd_running
+else
+  # Anything else has only a single radio
+  WVPASSEQ 1 $(hostapd_running | wc -l)
+fi
+WVPASS wifi stop
+WVFAIL hostapd_running
+WVPASS ls -l /config/wifi
+
+
+WVSTART "wifi restore"
+WVPASS wifi restore
+WVPASS hostapd_running
+if is-network-box; then
+  # A network box has 2 radios to run at the same time
+  WVPASSEQ 2 $(hostapd_running | wc -l)
+else
+  # Anything else has only a single radio
+  WVPASSEQ 1 $(hostapd_running | wc -l)
+fi
+
+
+WVPASS wifi stop -P
