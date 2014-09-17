@@ -1,6 +1,6 @@
 #!/bin/sh
 CONFIG_DIR=/config/wifi
-band=5
+band=
 show_bands="2.4 5"
 bridge=br0
 ssid=$(serial)_TestWifi
@@ -328,6 +328,12 @@ esac
 
 
 # set
+
+case "$band" in
+  2.4|5) ;;
+  *) die "you must specify a band with -b2.4 or -b5" ;;
+esac
+
 
 C_24MAIN_20="2412 2432 2462"
 C_24MAIN_40="2412"
