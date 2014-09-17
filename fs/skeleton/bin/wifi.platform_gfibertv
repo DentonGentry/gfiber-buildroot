@@ -19,6 +19,7 @@ hidden=
 guard_interval=
 persist=
 extra_short_timeouts=
+force_restart=
 
 chop_multiline()
 {
@@ -55,6 +56,7 @@ Usage: $bin set [options...]
  -e <encryption>  Encryption type to use (WPA_PSK_AES, WPA2_PSK_AES,
                     WPA12_PSK_AES, WPA_PSK_TKIP, WPA2_PSK_TKIP, WPA12_PSK_TKIP,
                     WEP, or NONE) (default=$crypto)
+ -f               Force restart even if already running with these settings
  -H               Enable hidden mode (disable SSID advertisements)
  -M               Enable wmm extensions (needed for block acks)
  -G               Enable short guard interval
@@ -166,13 +168,40 @@ iw_find_ifc_from_band() {
 }
 
 
-iw_start_hostapd() {
-  ifc=$1
-  pidfile=/tmp/hostapd.pid.$ifc
-  opts=""
-  pkillwait -f "hostapd $opts /tmp/hostapd.conf.$ifc"
+iw_check1_hostapd() {
+  local ifc="$1"
+  local pidfile="/tmp/hostapd.pid.$ifc"
+  [ -e "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null
+}
+
+
+iw_check2_hostapd() {
+  local ifc="$1"
+  hostapd_cli -i "$ifc" get_config >/dev/null 2>&1
+}
+
+
+iw_stop_hostapd() {
+  local ifc=$1
+  local pidfile=/tmp/hostapd.pid.$ifc
+  pkillwait -f "hostapd .* /tmp/hostapd.conf.$ifc\$"
   killpid "$pidfile"
   rm -f "$pidfile"
+  # TODO(apenwarr): hostapd doesn't always delete interface mon.$ifc.
+  #  Then it gets confused by the fact that it already exists.
+  #  Let's help out.  We should really fix this by eliminating the need for
+  #  hostapd to have a monitor interface at all (which is deprecated anyway)
+  # Remove this line when our hostapd no longer needs a monitor interface.
+  iw dev "mon.$ifc" del 2>/dev/null
+  ip link set "$ifc" down
+}
+
+
+iw_start_hostapd() {
+  local ifc="$1"
+  local pidfile="/tmp/hostapd.pid.$ifc"
+  opts=""
+  log "Starting hostapd."
   babysit 10 \
       startpid "$pidfile" \
       alivemonitor "/tmp/hostapd.$ifc.alive" 30 2 65 \
@@ -183,7 +212,7 @@ iw_start_hostapd() {
 
   # Wait for hostapd to start, and return an error if it doesn't
   for d in $(seq 10); do
-    [ -e "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null && break
+    iw_check1_hostapd "$ifc" && break
     echo -n . >&2
     sleep 0.1
   done
@@ -193,15 +222,42 @@ iw_start_hostapd() {
   # a chance to die from its error before we try to connect to it.
   sleep 0.5
   for d in $(seq 50); do
-    kill -0 "$(cat "$pidfile")" 2>/dev/null || break
-    hostapd_cli -i "$ifc" get_config >/dev/null 2>&1 &&
-      echo ok >&2 &&
+    iw_check1_hostapd "$ifc" || break
+    if iw_check2_hostapd "$ifc"; then
+      [ -n "$persist" ] && atomic "$CONFIG_DIR/hostapd.conf.$ifc" "$hostconf"
+      log ok
       exit 0
+    fi
     echo -n . >&2
     sleep 0.1
   done
-  echo >&2
+  log
   die "hostapd failed to start. Look at hostapd logs for details."
+}
+
+
+iw_maybe_restart_hostapd() {
+  local ifc="$1"
+  local cfgdata="$2"
+  local cfgfile="/tmp/hostapd.conf.$ifc"
+  local oldcfgdata="$(cat "$cfgfile")"
+  if ! iw_check2_hostapd "$ifc"; then
+    log "hostapd not running yet, starting."
+  elif [ "$oldcfgdata" != "$cfgdata" ]; then
+    log "hostapd config changed, restarting."
+  elif [ -n "$force_restart" ]; then
+    log "Forced restart requested."
+  else
+    log "hostapd-$ifc already configured and running."
+    return
+  fi
+
+  # make sure it's stopped *before* replacing config, so that if we
+  # get interrupted, we won't accidentally think the new config is the
+  # one that's running
+  iw_stop_hostapd "$ifc"
+  atomic "$cfgfile" "$cfgdata"
+  iw_start_hostapd "$ifc"
 }
 
 
@@ -211,6 +267,7 @@ stopwifi() {
     ifc=$(iw_find_ifc_from_band "$band") || die
     pkillwait -f "hostapd.*/tmp/hostapd.conf.$ifc"
     [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
+    return 0
   fi
 }
 
@@ -220,8 +277,8 @@ restorewifi() {
   if runnable iw; then
     ifc=$(iw_find_ifc_from_band "$band") || die
     if [ -r "$CONFIG_DIR/hostapd.conf.$ifc" ]; then
-      atomic "/tmp/hostapd.conf.$ifc" "$(cat "$CONFIG_DIR/hostapd.conf.$ifc")"
-      ( iw_start_hostapd "$ifc" )
+      cfgdata=$(cat "$CONFIG_DIR/hostapd.conf.$ifc")
+      ( iw_maybe_restart_hostapd "$ifc" "$cfgdata" )
     else
       stopwifi "$band"
     fi
@@ -275,7 +332,7 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:p:w:HMGB:PX" opt
+while getopts "b:c:a:s:e:fp:w:HMGB:PX" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
@@ -283,6 +340,7 @@ do
     a) autotype=$OPTARG ;;
     s) ssid=$(chop_multiline "$OPTARG") ;;
     e) crypto=$OPTARG ;;
+    f) force_restart=1 ;;
     p) protos=$OPTARG ;;
     w) width=$OPTARG ;;
     H) hidden="ignore_broadcast_ssid=1" ;;
@@ -411,7 +469,8 @@ esac
 
 case "$crypto" in
   *_PSK_*|WEP)
-    [ -n "$psk" ] || die "encryption enabled but WIFI_PSK not set"
+    [ -n "$psk" ] ||
+        die "encryption enabled; use WIFI_PSK=whatever wifi set ..."
     ;;
   NONE)
     psk="NOT_ACTUALLY_USED"
@@ -487,29 +546,50 @@ elif runnable iw; then
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
   log "ifc='$ifc'"
 
-  # TODO(apenwarr): ath10k crashes if we don't do this (20140117 kernel).
-  #  Obviously not the right long-term fix. Symptom is that killing hostapd
-  #  causes a kernel dump crash if we don't down the interface first.
-  ip link set "$ifc" down
-
   IWC() {
     IW dev "$ifc" "$@"
   }
 
   pidfile=/tmp/hostapd.pid.$ifc
   log "pidfile='$pidfile'"
-  killpid "$pidfile"
-  ip link set "$ifc" up
+
+  old_autotype=$(cat "/tmp/autotype.$ifc" 2>/dev/null)
+  old_band=$(cat "/tmp/band.$ifc" 2>/dev/null)
+  old_width=$(cat "/tmp/width.$ifc" 2>/dev/null)
+
+  # Special case: if autochannel enabled and we've done it before,
+  # just use the old autochannel.  The main reason for this is we may not
+  # be able to run the autochannel algorithm without stopping hostapd first,
+  # which defeats the code that tries not to restart hostapd unnecessarily.
+  if [ "$channel" = "auto" ] &&
+     [ "$autotype-$band-$width" = "$old_autotype-$old_band-$old_width" ]; then
+    # ...but only if not forced mode.  If it's forced, don't use the old
+    # value, but don't wipe it either.
+    if [ -z "$force_restart" ]; then
+      autochan=$(cat "/tmp/autochan.$ifc" 2>/dev/null)
+      if [ -n "$autochan" ] && [ "$autochan" -gt 0 ]; then
+        log "Reusing old autochannel='$autochan'"
+        channel="$autochan"
+      fi
+    fi
+  else
+    # forget old autochannel setting
+    rm -f "/tmp/autochan.$ifc"
+  fi
 
   # TODO(apenwarr): Play more with hostapd's auto channel selection.
   #  I read comments elsewhere that it's rather incomplete, and glancing
   #  through the code it looks like it doesn't handle all the interesting
   #  cases.  But neither does this code yet...
-  [ "$channel" = "auto" ] && atomic "/tmp/autochan.$ifc" ""
-  [ ! "$channel" = "auto" ] && rm -f "/tmp/autochan.$ifc"
-  atomic "/tmp/autotype.$ifc" "$autotype"
-
   if [ "$channel" = "auto" ]; then
+    log "Doing autochannel scan."
+
+    atomic "/tmp/autochan.$ifc" ""
+
+    iw_stop_hostapd "$ifc"
+    log "ip link set $ifc up..."
+    ip link set "$ifc" up
+
     # TODO(apenwarr): we really want to clear any old survey results first.
     #  But there seems to be no iw command for that yet...
     # TODO(apenwarr): This only scans each channel for 100ms.
@@ -588,7 +668,12 @@ elif runnable iw; then
     )
     [ -n "$channel" ] || die "no channel number matched freq='$bestfreq'"
     log "autochannel='$channel'"
+    atomic "/tmp/autochan.$ifc" "$channel"
+    atomic "/tmp/autotype.$ifc" "$autotype"
+    atomic "/tmp/band.$ifc" "$band"
+    atomic "/tmp/width.$ifc" "$width"
   fi
+  log "using channel='$channel'"
 
   case $band in
     2.4) [ -n "$allow_g$allow_n" ] && hostapd_band=g || hostapd_band=b ;;
@@ -605,13 +690,13 @@ elif runnable iw; then
   ht_rxstbc=
   vht_settings=
 
-  phyinfo=$(IW phy "$phy" info 2>/dev/null)
-  # non-ieee80211 drivers like mwifiex don't support iw phy phy# info
-  [ -z "$phyinfo" ] && phyinfo=$(IW list)
+  log "getting phy info..."
+  phyinfo=$(IW phy "$phy" info 2>/dev/null) || die "failed to get phy info"
   contains "$phyinfo" "RX STBC 3-stream" && ht_rxstbc="[RX-STBC123]"
   contains "$phyinfo" "RX STBC 2-stream" && ht_rxstbc="[RX-STBC12]"
   contains "$phyinfo" "RX STBC 1-stream" && ht_rxstbc="[RX-STBC1]"
 
+  log "generating configuration..."
   [ -n "$allow_n" ] && enable_80211n="ieee80211n=1" && ht20="[HT20]"
   if [ -n "$allow_ac" ]; then
     [ "$width" = 80 ] && enable_80211ac="ieee80211ac=1"
@@ -696,9 +781,8 @@ elif runnable iw; then
 	EOF
     )
   fi
-  atomic "/tmp/hostapd.conf.$ifc" "$hostconf"
-  [ -n "$persist" ] && atomic "$CONFIG_DIR/hostapd.conf.$ifc" "$hostconf"
-  iw_start_hostapd "$ifc"
+  log "configuration ready."
+  iw_maybe_restart_hostapd "$ifc" "$hostconf"
 else
   die "No wifi runtime found."
 fi
