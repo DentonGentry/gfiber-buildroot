@@ -130,6 +130,7 @@ babysit 10 alivemonitor $PREKILL_OPTIONS \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
     -Dsage.embedded=1 \
+    -Dsage.platform=$BOXTYPE \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -Djava.lang.runtime.exec.vfork \
     -Djava.lang.system.gc.force \
