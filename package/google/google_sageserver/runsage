@@ -82,14 +82,17 @@ fi
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 MOBILEAPIJARS=gftv_mobile_api_deploy.jar
 ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
-GFIBERJARS=$MOBILEAPIJARS:$ANALYTICSJARS
+MIGRATIONJARS=gftv_spicerack_migration_deploy.jar
+GFIBERJARS=$MOBILEAPIJARS:$ANALYTICSJARS:$MIGRATIONJARS
 if [ "$MODE" = "client" ]; then
   GFIBERJARS=$ANALYTICSJARS
 fi
 
 (
   cat Sage.properties.defaults.base
-  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver && cat Sage.properties.defaults.mobileapi
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.mobileapi
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.migration
   cat SageClient.properties.defaults.analytics
 ) >/tmp/Sage.properties.defaults
 

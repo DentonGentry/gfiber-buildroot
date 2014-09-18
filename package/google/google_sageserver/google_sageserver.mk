@@ -1,5 +1,5 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
-GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin
+GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin google_spicerack_migration
 
 ifeq ($(BR2_mipsel),y)
 	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
