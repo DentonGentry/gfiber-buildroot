@@ -1,0 +1,27 @@
+From 57790c5a02f2b9a5504e8c9df69d3f8fdcecd29c Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 18 Sep 2014 00:31:19 -0400
+Subject: [PATCH] Un-disable NL80211_FEATURE_SK_TX_STATUS in old kernels.
+
+We've patched our kernels to make it available.
+---
+ backport-include/linux/nl80211.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/backport-include/linux/nl80211.h b/backport-include/linux/nl80211.h
+index fcb0b8b..2521809 100644
+--- a/backport-include/linux/nl80211.h
++++ b/backport-include/linux/nl80211.h
+@@ -3,8 +3,6 @@
+ #include_next <linux/nl80211.h>
+ #include <linux/version.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
+-#define NL80211_FEATURE_SK_TX_STATUS 0
+-#endif
++#define NL80211_FEATURE_SK_TX_STATUS 1
+ 
+ #endif /* __BACKPORT_LINUX_NL80211_H */
+-- 
+2.1.0.rc2.206.gedb03e5
+
