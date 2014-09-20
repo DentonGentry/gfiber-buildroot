@@ -10,7 +10,7 @@ case "$1" in
     if is-network-box; then
       babysit 60 waveguide --high-power --scan-interval=300 \
           2>&1 | logos waveguide &
-    elif has_wifi; then
+    elif has_wifi && runnable iw; then
       babysit 60 waveguide --no-high-power --scan-interval=300 \
           2>&1 | logos waveguide &
     fi
