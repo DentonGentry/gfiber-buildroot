@@ -1,0 +1,26 @@
+From b32e0f1068ffaf72f40eaec206ad85c6879e326a Mon Sep 17 00:00:00 2001
+From: John Newlin <jnewlin@google.com>
+Date: Tue, 16 Sep 2014 10:36:21 -0700
+Subject: [PATCH] Add an alarm to kill tlsdate-helper.
+
+---
+ src/tlsdate-helper.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/tlsdate-helper.c b/src/tlsdate-helper.c
+index dbce8f8..e89ffe5 100644
+--- a/src/tlsdate-helper.c
++++ b/src/tlsdate-helper.c
+@@ -1256,6 +1256,9 @@ main(int argc, char **argv)
+   int leap;
+   int http;
+ 
++  /* Sometimes tlsdate gets "stuck" and never exits, so force it here. */
++  alarm(60);
++
+   if (argc != 13)
+     return 1;
+   host = argv[1];
+-- 
+2.1.0.rc2.206.gedb03e5
+
