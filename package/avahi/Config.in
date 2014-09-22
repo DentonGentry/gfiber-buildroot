@@ -31,3 +31,13 @@ config BR2_PACKAGE_AVAHI_DAEMON
 	  architecture (also known as "Rendezvous" or "Bonjour").
 	  The daemon registers local IP addresses and services using
 	  mDNS/DNS-SD.
+
+config BR2_PACKAGE_AVAHI_COMPAT_LIBDNS_SD
+        bool "Enable libdns_sd compatibility mode"
+        default n
+        depends on BR2_PACKAGE_AVAHI
+        help
+          Enables the Avahi compatibility implementation of the
+          libdns_sd library.  The  libdns_sd library functions provide
+          facilities for applications to advertise and discover services
+          that use the DNS protocol.

@@ -86,6 +86,10 @@ AVAHI_CONF_OPT = --localstatedir=/var \
 
 AVAHI_DEPENDENCIES = $(if $(BR2_NEEDS_GETTEXT_IF_LOCALE),gettext libintl) host-intltool host-pkg-config
 
+ifeq ($(BR2_PACKAGE_AVAHI_COMPAT_LIBDNS_SD),y)
+AVAHI_CONF_OPT += --enable-compat-libdns_sd
+endif
+
 ifneq ($(BR2_PACKAGE_AVAHI_DAEMON)$(BR2_PACKAGE_AVAHI_AUTOIPD),)
 AVAHI_DEPENDENCIES += libdaemon
 else
