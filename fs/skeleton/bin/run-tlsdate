@@ -77,39 +77,13 @@ choose_ntp_server()
 }
 
 
-alarm()
-{
-  echo setting alarm
-  alarmfired=0
-  local mypid=$$
-  (sleep $1 && kill -USR1 $mypid) >/dev/null 2>&1 &
-  alarm_pid=$!
-}
-
-disable_alarm() {
-  pkill -9 $alarm_pid
-}
-
-onusr1()
-{
-  echo alarm fired, killing tlsdate.
-  alarmfired=1
-  pkill -9 tlsdate
-}
-
 do_tlsdate()
 {
   echo "trying host '$1'"
-  trap onusr1 USR1
-  alarm 60
   tlsdate -V -v \
       --timewarp --leap \
       -C /etc/ssl/certs/ca-certificates.crt \
       -H "$1"
-  local status=$?
-  disable_alarm
-  if [ $alarmfired = 1 ]; then return 1; fi
-  return $status
 }
 
 
