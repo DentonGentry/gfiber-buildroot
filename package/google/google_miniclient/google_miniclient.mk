@@ -15,10 +15,8 @@ endef
 define GOOGLE_MINICLIENT_INSTALL_STAGING_CMDS
         $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_djitter_monitoring.h $(STAGING_DIR)/usr/include/tr135_djitter_monitoring.h
         $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_tcp_monitoring.h $(STAGING_DIR)/usr/include/tr135_tcp_monitoring.h
-        $(INSTALL) -D -m 0644 $(@D)/libtr135.so $(STAGING_DIR)/usr/lib/libtr135.so
-        $(INSTALL) -D -m 0644 $(@D)/libmcmedia.so $(STAGING_DIR)/usr/lib/libmcmedia.so
-        $(INSTALL) -D -m 0644 $(@D)/libmcutil.so $(STAGING_DIR)/usr/lib/libmcutil.so
-        $(INSTALL) -D -m 0644 $(@D)/libmcoutput.so $(STAGING_DIR)/usr/lib/libmcoutput.so
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425 \
+		DESTDIR=$(STAGING_DIR) install
 endef
 
 define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
