@@ -2,5 +2,6 @@ config BR2_PACKAGE_GOOGLE_MCASTCAPTURE
         bool "google_mcastcapture"
         select BR2_PACKAGE_GOOGLE_FALLOCATE
         select BR2_INET_IPV6
+        select BR2_PACKAGE_PROTOBUF
         help
           Builds the mcastcapture sagesrv and media server library libtxsrv.so libstreamer.so libptsindex.so libads.so
