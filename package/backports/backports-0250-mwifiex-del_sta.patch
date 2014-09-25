@@ -1,0 +1,110 @@
+From fbe1a7b8e20af7035a611242f14f15b805b552eb Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 25 Sep 2014 01:31:56 -0400
+Subject: [PATCH] mwifiex: eliminate a crash on hostapd shutdown.
+
+The way sta_list_spinlock is used is highly suspect and there are definitely
+race conditions.  mwifiex_cfg80211_del_station is called from a netlink
+callback at the same time as mwifiex_del_sta_entry is called from the SDIO
+thread, and they both try to delete all stations, but in different ways.
+
+The net result is they could end up both modifying sta_list at the same time
+and causing a crash.  This patch fixes the one particular crash case we see,
+by referring to a station by its MAC address instead of a pointer to its
+station structure.  That way, when a station is deleted by surprise in
+another thread, we just have a use-after-free bug on the MAC address array,
+which quietly fails a subsequent lookup of the node structure but at least
+doesn't crash.
+
+The remaining symptom of the race condition is that stations are not
+actually deauthorized at hostapd shutdown (because one of the code paths
+does not send the firmware a deauth request), which is surprising.  They
+are, however, deauthorized when hostapd restarts, so the problem isn't too
+serious.
+
+A better fix would probably involve totally rethinking the locking in
+mwifiex.  There is little need for it to use such fine-grained locking,
+especially around administrative structures like the station list.
+---
+ drivers/net/wireless/mwifiex/cfg80211.c  | 16 +++++++++++-----
+ drivers/net/wireless/mwifiex/main.h      |  3 +--
+ drivers/net/wireless/mwifiex/uap_event.c | 10 +++++-----
+ 3 files changed, 17 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/wireless/mwifiex/cfg80211.c b/drivers/net/wireless/mwifiex/cfg80211.c
+index 5013a69..7e45ada 100644
+--- a/drivers/net/wireless/mwifiex/cfg80211.c
++++ b/drivers/net/wireless/mwifiex/cfg80211.c
+@@ -1289,13 +1289,19 @@ mwifiex_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev,
+ 
+ 	if (!mac || is_broadcast_ether_addr(mac)) {
+ 		wiphy_dbg(wiphy, "%s: NULL/broadcast mac address\n", __func__);
+-		list_for_each_entry(sta_node, &priv->sta_list, list) {
++		do {
++			spin_lock_irqsave(&priv->sta_list_spinlock, flags);
++			sta_node = list_first_entry_or_null(&priv->sta_list, struct mwifiex_sta_node, list);
++			mac = sta_node ? sta_node->mac_addr : NULL;
++			spin_unlock_irqrestore(&priv->sta_list_spinlock, flags);
++			if (!mac) break;
+ 			if (mwifiex_send_cmd(priv, HostCmd_CMD_UAP_STA_DEAUTH,
+ 					     HostCmd_ACT_GEN_SET, 0,
+-					     sta_node->mac_addr, true))
++					     mac, true)) {
+ 				return -1;
+-			mwifiex_uap_del_sta_data(priv, sta_node);
+-		}
++			}
++			mwifiex_uap_del_sta_data(priv, mac);
++		} while (1);
+ 	} else {
+ 		wiphy_dbg(wiphy, "%s: mac address %pM\n", __func__, mac);
+ 		spin_lock_irqsave(&priv->sta_list_spinlock, flags);
+@@ -1306,7 +1312,7 @@ mwifiex_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev,
+ 					     HostCmd_ACT_GEN_SET, 0,
+ 					     sta_node->mac_addr, true))
+ 				return -1;
+-			mwifiex_uap_del_sta_data(priv, sta_node);
++			mwifiex_uap_del_sta_data(priv, mac);
+ 		}
+ 	}
+ 
+diff --git a/drivers/net/wireless/mwifiex/main.h b/drivers/net/wireless/mwifiex/main.h
+index 58261f9..fab2c58 100644
+--- a/drivers/net/wireless/mwifiex/main.h
++++ b/drivers/net/wireless/mwifiex/main.h
+@@ -1209,8 +1209,7 @@ int mwifiex_set_mgmt_ies(struct mwifiex_private *priv,
+ 			 struct cfg80211_beacon_data *data);
+ int mwifiex_del_mgmt_ies(struct mwifiex_private *priv);
+ u8 *mwifiex_11d_code_2_region(u8 code);
+-void mwifiex_uap_del_sta_data(struct mwifiex_private *priv,
+-			      struct mwifiex_sta_node *node);
++void mwifiex_uap_del_sta_data(struct mwifiex_private *priv, u8 *mac);
+ 
+ void mwifiex_11h_process_join(struct mwifiex_private *priv, u8 **buffer,
+ 			      struct mwifiex_bssdescriptor *bss_desc);
+diff --git a/drivers/net/wireless/mwifiex/uap_event.c b/drivers/net/wireless/mwifiex/uap_event.c
+index 92e77a3..07e1689 100644
+--- a/drivers/net/wireless/mwifiex/uap_event.c
++++ b/drivers/net/wireless/mwifiex/uap_event.c
+@@ -186,13 +186,13 @@ int mwifiex_process_uap_event(struct mwifiex_private *priv)
+  * tables created for this station are deleted.
+  */
+ void mwifiex_uap_del_sta_data(struct mwifiex_private *priv,
+-			      struct mwifiex_sta_node *node)
++			      u8 *mac)
+ {
+-	if (priv->ap_11n_enabled && node->is_11n_enabled) {
+-		mwifiex_11n_del_rx_reorder_tbl_by_ta(priv, node->mac_addr);
+-		mwifiex_del_tx_ba_stream_tbl_by_ra(priv, node->mac_addr);
++	if (priv->ap_11n_enabled) {
++		mwifiex_11n_del_rx_reorder_tbl_by_ta(priv, mac);
++		mwifiex_del_tx_ba_stream_tbl_by_ra(priv, mac);
+ 	}
+-	mwifiex_del_sta_entry(priv, node->mac_addr);
++	mwifiex_del_sta_entry(priv, mac);
+ 
+ 	return;
+ }
+-- 
+2.1.0.rc2.206.gedb03e5
+
