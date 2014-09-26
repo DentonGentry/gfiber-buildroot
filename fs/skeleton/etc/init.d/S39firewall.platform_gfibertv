@@ -96,6 +96,8 @@ case "$1" in
       # ping
       iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+      # RFC4890 says RFC4380 requires forwarding ipv6 ping requests
+      ip6tables -A FORWARD -p icmpv6 --icmpv6-type echo-request -j ACCEPT
 
       # Incoming connections
       # TODO(apenwarr): Whitelist ports here too for added safety.
