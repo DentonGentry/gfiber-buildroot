@@ -93,8 +93,10 @@ case "$1" in
       # igmp group membership control
       ip46tables -A INPUT -p igmp -j ACCEPT
 
-      # ping
-      iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+      # ping and PMTUD
+      iptables -A INPUT -p icmp --icmp-type 8/0 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 3/4 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 11/0 -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
       # RFC4890 says RFC4380 requires forwarding ipv6 ping requests
       ip6tables -A FORWARD -p icmpv6 --icmpv6-type echo-request -j ACCEPT
