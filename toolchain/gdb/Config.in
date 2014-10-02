@@ -102,4 +102,4 @@ config BR2_GDB_VERSION
 	default "7.2a"     if BR2_GDB_VERSION_7_2
 	default "7.3.1"    if BR2_GDB_VERSION_7_3
 	default "7.4"      if BR2_GDB_VERSION_7_4
-	default "7.7"      if BR2_GDB_VERSION_7_7
+	default "7.7.1"    if BR2_GDB_VERSION_7_7

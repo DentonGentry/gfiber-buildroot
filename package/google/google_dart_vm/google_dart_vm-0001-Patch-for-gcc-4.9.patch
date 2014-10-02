@@ -1,0 +1,66 @@
+From daeab9b57573ec876f13b8abb27d8d5b37aad415 Mon Sep 17 00:00:00 2001
+From: John Newlin <jnewlin@google.com>
+Date: Thu, 2 Oct 2014 10:25:03 -0700
+Subject: [PATCH] Patch for gcc 4.9
+
+---
+ .../third_party/double-conversion/src/double-conversion.cc        | 3 ++-
+ dart/runtime/vm/class_finalizer.cc                                | 1 +
+ dart/runtime/vm/parser_test.cc                                    | 8 ++++----
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/dart/runtime/third_party/double-conversion/src/double-conversion.cc b/dart/runtime/third_party/double-conversion/src/double-conversion.cc
+index db3feec..26b1ef9 100644
+--- a/dart/runtime/third_party/double-conversion/src/double-conversion.cc
++++ b/dart/runtime/third_party/double-conversion/src/double-conversion.cc
+@@ -577,7 +577,8 @@ static double RadixStringToIeee(const char* current,
+   } while (current != end);
+ 
+   ASSERT(number < ((int64_t)1 << kSignificandSize));
+-  ASSERT(static_cast<int64_t>(static_cast<double>(number)) == number);
++  const double double_number = static_cast<double>(number);
++  ASSERT(static_cast<int64_t>(double_number) == number);
+ 
+   *trailing_pointer = current;
+ 
+diff --git a/dart/runtime/vm/class_finalizer.cc b/dart/runtime/vm/class_finalizer.cc
+index f7e6b57..8c3d37c 100644
+--- a/dart/runtime/vm/class_finalizer.cc
++++ b/dart/runtime/vm/class_finalizer.cc
+@@ -111,6 +111,7 @@ bool ClassFinalizer::ProcessPendingClasses() {
+ 
+   LongJumpScope jump;
+   if (setjmp(*jump.Set()) == 0) {
++    retval = true;
+     GrowableObjectArray& class_array = GrowableObjectArray::Handle();
+     class_array = object_store->pending_classes();
+     ASSERT(!class_array.IsNull());
+diff --git a/dart/runtime/vm/parser_test.cc b/dart/runtime/vm/parser_test.cc
+index 0595c9b..7ad11b9 100644
+--- a/dart/runtime/vm/parser_test.cc
++++ b/dart/runtime/vm/parser_test.cc
+@@ -19,17 +19,17 @@ DECLARE_FLAG(bool, show_invisible_frames);
+ 
+ void DumpFunction(const Library& lib, const char* cname, const char* fname) {
+   const String& classname = String::Handle(Symbols::New(cname));
+-  Class& cls = Class::Handle(lib.LookupClass(classname));
+-  EXPECT(!cls.IsNull());
+ 
+   String& funcname = String::Handle(String::New(fname));
+-  Function& function = Function::ZoneHandle(cls.LookupStaticFunction(funcname));
+-  EXPECT(!function.IsNull());
+ 
+   bool retval;
+   EXPECT(Isolate::Current() != NULL);
+   LongJumpScope jump;
+   if (setjmp(*jump.Set()) == 0) {
++    Class& cls = Class::Handle(lib.LookupClass(classname));
++    EXPECT(!cls.IsNull());
++    Function& function = Function::ZoneHandle(cls.LookupStaticFunction(funcname));
++    EXPECT(!function.IsNull());
+     ParsedFunction* parsed_function =
+         new ParsedFunction(Isolate::Current(), function);
+     Parser::ParseFunction(parsed_function);
+-- 
+2.1.0.rc2.206.gedb03e5
+
