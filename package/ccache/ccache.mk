@@ -24,7 +24,7 @@ HOST_CCACHE_POST_CONFIGURE_HOOKS += \
 	HOST_CCACHE_FIX_CCACHE_DIR
 
 # optimizations for ccache
-export CCACHE_COMPILERCHECK=%compiler% -v
+export CCACHE_COMPILERCHECK=%compiler% --version
 export CCACHE_BASEDIR=$(BUILD_DIR)
 export CCACHE_SLOPPINESS=time_macros
 
