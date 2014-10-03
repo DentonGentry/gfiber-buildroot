@@ -4,8 +4,7 @@
 #
 ################################################################################
 
-HOSTAPD_VERSION = 2.2
-HOSTAPD_SITE = http://hostap.epitest.fi/releases
+HOSTAPD_SITE = repo://vendor/opensource/hostap
 HOSTAPD_SUBDIR = hostapd
 HOSTAPD_CONFIG = $(HOSTAPD_DIR)/$(HOSTAPD_SUBDIR)/.config
 HOSTAPD_DEPENDENCIES = libnl

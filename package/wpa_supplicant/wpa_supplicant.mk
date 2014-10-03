@@ -4,8 +4,7 @@
 #
 ################################################################################
 
-WPA_SUPPLICANT_VERSION = 2.2
-WPA_SUPPLICANT_SITE = http://hostap.epitest.fi/releases
+WPA_SUPPLICANT_SITE = repo://vendor/opensource/hostap
 WPA_SUPPLICANT_LICENSE = GPLv2/BSD-3c
 WPA_SUPPLICANT_LICENSE_FILES = README
 WPA_SUPPLICANT_CONFIG = $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config
