@@ -18,7 +18,7 @@ update_config()
 update_server()
 {
   SERVER=127.0.0.1
-  if is-tv-box && [ -e /config/uitype ] ; then
+  if [ -e /config/uitype ] ; then
     read uimode uiserver uires uiremote < /config/uitype
     if [ "$uimode" = "extender" ] ; then
       if [ "$uiserver" = "auto" ] ; then
@@ -40,26 +40,21 @@ ulimit -c 49152
 
 SERVER_MAC=
 opts=
-if is-tv-box; then
-  # TV box starts in last mode before power off
-  if [ -e /rw/sage/TVUIon ] ; then
-    mode=miniclient
-  else
-    mode=waitpower
-  fi
-  if [ -e /tmp/runapp ] ; then
-    mode=app
-    read appname opts </tmp/runapp
-    # For now don't let opts through
-    opts=
-    if [ "$appname" = "miniclient" ]; then
-      mode=miniclient
-      mv /tmp/runapp /tmp/runappold
-    fi
-  fi
-else
-  opts="$opts --encodemode"
+# TV box starts in last mode before power off
+if [ -e /rw/sage/TVUIon ] ; then
   mode=miniclient
+else
+  mode=waitpower
+fi
+if [ -e /tmp/runapp ] ; then
+  mode=app
+  read appname opts </tmp/runapp
+  # For now don't let opts through
+  opts=
+  if [ "$appname" = "miniclient" ]; then
+    mode=miniclient
+    mv /tmp/runapp /tmp/runappold
+  fi
 fi
 
 
