@@ -122,6 +122,10 @@ case "$1" in
         ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
       fi
 
+      # cwmpd ACS kick
+      ip6tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
+      ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd
+
       if [ -e /tmp/factory_status ]; then
         ip46tables -A INPUT -p tcp --dport 8883 -j ACCEPT  # factory web server
       fi
