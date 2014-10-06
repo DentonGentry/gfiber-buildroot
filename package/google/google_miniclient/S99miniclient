@@ -4,6 +4,9 @@
 if is-html-tv-ui; then
   echo "configured for chrome"
   exit 0
+elif ! is-tv-box; then
+  echo "miniclient only runs on tv box"
+  exit 0
 fi
 
 case "$1" in
