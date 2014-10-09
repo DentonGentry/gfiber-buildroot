@@ -1,0 +1,12 @@
+diff -Naur bonnie-1.03e.orig/Makefile.in bonnie-1.03e/Makefile.in
+--- bonnie-1.03e.orig/Makefile.in	2014-10-10 16:36:11.946085347 +0000
++++ bonnie-1.03e/Makefile.in	2014-10-10 16:33:28.512918645 +0000
+@@ -9,7 +9,7 @@
+ #MORE_WARNINGS=-Weffc++ -Wcast-align
+ WFLAGS=-Wall -W -Wshadow -Wpointer-arith -Wwrite-strings -pedantic -ffor-scope $(MORE_WARNINGS)
+ CFLAGS=-O2 @debug@ -DNDEBUG $(WFLAGS) $(MORECFLAGS)
+-CXX=@CXX@ $(CFLAGS)
++CXX=@CXX@ @CXXFLAGS@ $(CFLAGS)
+ 
+ INSTALL=@INSTALL@
+ INSTALL_PROGRAM=@INSTALL_PROGRAM@
