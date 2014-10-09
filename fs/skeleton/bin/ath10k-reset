@@ -1,0 +1,42 @@
+#!/bin/sh
+# Reset the ath10k wifi module on gfrg2x0 devices.  Separating out the
+# two PCIe reset lines is tricky, so we end up also resetting ath9k
+# module, which sucks, but this should never happen anyway except when
+# there's a wifi firmware crash, in which case all bets are off anyway.
+#
+# Note: rather than reloading drivers, it would be nice to do something
+# like:
+#   echo 1 >/sys/bus/pci/devices/0000:00:00.0/remove
+#   echo 1 >/sys/bus/pci/devices/0000:01:00.0/remove
+#   ...reset PCIe bus...
+#   echo 1 >/sys/bus/pci/rescan
+# Unfortunately, this doesn't work correctly.  In the kernel, in
+# pcie-c2000.c, it tries to use pci_save_state() and pci_restore_state()
+# on all devices to make sure their PCI configuration registers aren't
+# lost across the bus reset.  But if we unregister the PCI devices,
+# there is nothing to pci_save_state() on, and so the values are lost.
+# When we subsequently rescan, we get default PCI configuration values,
+# including a missing IRQ line.  That's probably fixable, but this works
+# too.  As a bonus, it guarantees the ath9k module is always detected
+# before the ath10k module, which is how it works at bootup, so the
+# interface names should end up being the same as at boot.
+
+# Usually called straight from a kernel thread, so environment is empty.
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+exec >/dev/console 2>&1
+
+{
+  echo "removing drivers..." >&2
+  pkill -9 hostapd
+  rmmod ath10k_pci ath9k &&
+  echo "resetting PCIe buses..." >&2 &&
+  echo 1 >/sys/devices/platform/pcie.0/device_reset &&
+  echo 1 >/sys/devices/platform/pcie.1/device_reset &&
+  echo 0 >/sys/devices/platform/pcie.0/device_reset &&
+  echo 0 >/sys/devices/platform/pcie.1/device_reset &&
+  echo "'iw dev' says:" >&2 &&
+  iw dev &&
+  echo "reloading drivers..." >&2 &&
+  modprobe -a ath9k ath10k_pci
+  echo "done. (exit code $?)" >&2
+} 2>&1 | logos ath10k-reset

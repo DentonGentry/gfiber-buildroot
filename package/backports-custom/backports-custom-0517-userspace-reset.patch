@@ -1,0 +1,46 @@
+From b011395f4650ca9b2083a3f45dd4f0ba1f9e55a6 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 9 Oct 2014 03:48:27 -0400
+Subject: [PATCH] ath10k: call userspace ath10k-reset program on firmware
+ crash.
+
+This is the nuclear option: if the firmware crashes, we want to do a cold
+reset of the chip.  But there are bugs in the cold reset of the chip, and
+warm reset doesn't always work, and the driver also gets into a confused state
+(disagreement with the firmware about which things are where) that just
+makes things worse sometime later.
+
+Instead, call a script that will unload the driver, reset the PCIe bus
+entirely, and reload it again.
+---
+ drivers/net/wireless/ath/ath10k/pci.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
+index fdbabcc..ae58f5b 100644
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -831,6 +831,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 	u32 host_addr;
+ 	int ret;
+ 	u32 i;
++	char *argv[] = { "/bin/ath10k-reset", NULL };
+ 
+ 	ath10k_err("firmware crashed!\n");
+ 	ath10k_err("hardware name %s version 0x%x\n",
+@@ -866,7 +867,11 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 			   reg_dump_values[i + 2],
+ 			   reg_dump_values[i + 3]);
+ 
+-	queue_work(ar->workqueue, &ar->restart_work);
++	ath10k_err("trying to call userspace: ath10k-reset\n");
++	if (call_usermodehelper(argv[0], argv, NULL, UMH_NO_WAIT) != 0) {
++		ath10k_err("failed to execute ath10k-reset.  trying driver-level reset.\n");
++		queue_work(ar->workqueue, &ar->restart_work);
++	}
+ }
+ 
+ static void ath10k_pci_hif_send_complete_check(struct ath10k *ar, u8 pipe,
+-- 
+2.1.0.rc2.206.gedb03e5
+
