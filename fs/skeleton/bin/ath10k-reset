@@ -21,9 +21,12 @@
 # before the ath10k module, which is how it works at bootup, so the
 # interface names should end up being the same as at boot.
 
+# This doesn't depend on anything in the environment.
+echo "ath10k-reset: starting." >/dev/kmsg
+exec >/dev/kmsg 2>&1
+
 # Usually called straight from a kernel thread, so environment is empty.
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-exec >/dev/console 2>&1
 
 {
   echo "removing drivers..." >&2

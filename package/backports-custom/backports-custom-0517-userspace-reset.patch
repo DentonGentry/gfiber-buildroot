@@ -1,4 +1,4 @@
-From b011395f4650ca9b2083a3f45dd4f0ba1f9e55a6 Mon Sep 17 00:00:00 2001
+From b03bfdbc054f9995196d6fbe6b1402d83bf2224c Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Thu, 9 Oct 2014 03:48:27 -0400
 Subject: [PATCH] ath10k: call userspace ath10k-reset program on firmware
@@ -13,11 +13,11 @@ makes things worse sometime later.
 Instead, call a script that will unload the driver, reset the PCIe bus
 entirely, and reload it again.
 ---
- drivers/net/wireless/ath/ath10k/pci.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/wireless/ath/ath10k/pci.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
-index fdbabcc..ae58f5b 100644
+index fdbabcc..3adf01d 100644
 --- a/drivers/net/wireless/ath/ath10k/pci.c
 +++ b/drivers/net/wireless/ath/ath10k/pci.c
 @@ -831,6 +831,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
@@ -28,11 +28,30 @@ index fdbabcc..ae58f5b 100644
  
  	ath10k_err("firmware crashed!\n");
  	ath10k_err("hardware name %s version 0x%x\n",
-@@ -866,7 +867,11 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+@@ -842,7 +843,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 				       &reg_dump_area, sizeof(u32));
+ 	if (ret) {
+ 		ath10k_err("failed to read FW dump area address: %d\n", ret);
+-		return;
++		goto reset;
+ 	}
+ 
+ 	ath10k_err("target register Dump Location: 0x%08X\n", reg_dump_area);
+@@ -852,7 +853,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 				       REG_DUMP_COUNT_QCA988X * sizeof(u32));
+ 	if (ret != 0) {
+ 		ath10k_err("failed to read FW dump area: %d\n", ret);
+-		return;
++		goto reset;
+ 	}
+ 
+ 	BUILD_BUG_ON(REG_DUMP_COUNT_QCA988X % 4);
+@@ -866,7 +867,12 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
  			   reg_dump_values[i + 2],
  			   reg_dump_values[i + 3]);
  
 -	queue_work(ar->workqueue, &ar->restart_work);
++reset:
 +	ath10k_err("trying to call userspace: ath10k-reset\n");
 +	if (call_usermodehelper(argv[0], argv, NULL, UMH_NO_WAIT) != 0) {
 +		ath10k_err("failed to execute ath10k-reset.  trying driver-level reset.\n");
