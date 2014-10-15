@@ -31,7 +31,12 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 {
   echo "removing drivers..." >&2
   pkill -9 hostapd
-  rmmod ath10k_pci ath9k &&
+  for m in ath10k_pci ath9k; do
+    while [ -e "/sys/module/$m" ]; do
+      echo "removing module '$m'..." >&2
+      rmmod "$m" || { echo "failed to remove '$m'" >&2; exit 1; }
+    done
+  done
   echo "resetting PCIe buses..." >&2 &&
   echo 1 >/sys/devices/platform/pcie.0/device_reset &&
   echo 1 >/sys/devices/platform/pcie.1/device_reset &&

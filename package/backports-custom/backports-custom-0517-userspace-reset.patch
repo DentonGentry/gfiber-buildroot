@@ -1,4 +1,4 @@
-From b03bfdbc054f9995196d6fbe6b1402d83bf2224c Mon Sep 17 00:00:00 2001
+From 4e7bec31e0f06976a850da6dd772629fd0139f1a Mon Sep 17 00:00:00 2001
 From: Avery Pennarun <apenwarr@gmail.com>
 Date: Thu, 9 Oct 2014 03:48:27 -0400
 Subject: [PATCH] ath10k: call userspace ath10k-reset program on firmware
@@ -13,22 +13,79 @@ makes things worse sometime later.
 Instead, call a script that will unload the driver, reset the PCIe bus
 entirely, and reload it again.
 ---
- drivers/net/wireless/ath/ath10k/pci.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/net/wireless/ath/ath10k/core.c  | 11 +++++++++++
+ drivers/net/wireless/ath/ath10k/core.h  |  1 +
+ drivers/net/wireless/ath/ath10k/debug.c |  3 ++-
+ drivers/net/wireless/ath/ath10k/pci.c   |  7 +++++--
+ 4 files changed, 19 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
+index 2829177..d0189f8 100644
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -690,6 +690,16 @@ static void ath10k_core_restart(struct work_struct *work)
+ {
+ 	struct ath10k *ar = container_of(work, struct ath10k, restart_work);
+ 
++	if (ar->restart_do_reset) {
++		char *argv[] = { "/bin/ath10k-reset", NULL };
++		ar->restart_do_reset = 0;
++		ath10k_err("trying to call userspace: ath10k-reset\n");
++		if (!call_usermodehelper(argv[0], argv, NULL, UMH_WAIT_EXEC)) {
++			return;
++		}
++		ath10k_err("failed to execute ath10k-reset.  trying driver-level reset.\n");
++	}
++
+ 	mutex_lock(&ar->conf_mutex);
+ 
+ 	switch (ar->state) {
+@@ -761,6 +771,7 @@ struct ath10k *ath10k_core_create(void *hif_priv, struct device *dev,
+ 	skb_queue_head_init(&ar->wmi_mgmt_tx_queue);
+ 
+ 	INIT_WORK(&ar->restart_work, ath10k_core_restart);
++	ar->restart_do_reset = 0;
+ 
+ 	return ar;
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/core.h b/drivers/net/wireless/ath/ath10k/core.h
+index 7b5a313..9a5c751 100644
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -487,6 +487,7 @@ struct ath10k {
+ 	enum ath10k_state state;
+ 
+ 	struct work_struct restart_work;
++	int restart_do_reset;
+ 
+ 	/* cycle count is reported twice for each visited channel during scan.
+ 	 * access protected by data_lock */
+diff --git a/drivers/net/wireless/ath/ath10k/debug.c b/drivers/net/wireless/ath/ath10k/debug.c
+index a490ada..7417b2d 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -506,6 +506,7 @@ static ssize_t ath10k_write_simulate_fw_crash(struct file *file,
+ 	struct ath10k *ar = file->private_data;
+ 	char buf[32];
+ 	int ret;
++	size_t ocount = count;
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+@@ -543,7 +544,7 @@ static ssize_t ath10k_write_simulate_fw_crash(struct file *file,
+ 		goto exit;
+ 	}
+ 
+-	ret = count;
++	ret = ocount;
+ 
+ exit:
+ 	mutex_unlock(&ar->conf_mutex);
 diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
-index fdbabcc..3adf01d 100644
+index fdbabcc..6d77ce9 100644
 --- a/drivers/net/wireless/ath/ath10k/pci.c
 +++ b/drivers/net/wireless/ath/ath10k/pci.c
-@@ -831,6 +831,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
- 	u32 host_addr;
- 	int ret;
- 	u32 i;
-+	char *argv[] = { "/bin/ath10k-reset", NULL };
- 
- 	ath10k_err("firmware crashed!\n");
- 	ath10k_err("hardware name %s version 0x%x\n",
-@@ -842,7 +843,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+@@ -842,7 +842,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
  				       &reg_dump_area, sizeof(u32));
  	if (ret) {
  		ath10k_err("failed to read FW dump area address: %d\n", ret);
@@ -37,7 +94,7 @@ index fdbabcc..3adf01d 100644
  	}
  
  	ath10k_err("target register Dump Location: 0x%08X\n", reg_dump_area);
-@@ -852,7 +853,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+@@ -852,7 +852,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
  				       REG_DUMP_COUNT_QCA988X * sizeof(u32));
  	if (ret != 0) {
  		ath10k_err("failed to read FW dump area: %d\n", ret);
@@ -46,20 +103,16 @@ index fdbabcc..3adf01d 100644
  	}
  
  	BUILD_BUG_ON(REG_DUMP_COUNT_QCA988X % 4);
-@@ -866,7 +867,12 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+@@ -866,6 +866,9 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
  			   reg_dump_values[i + 2],
  			   reg_dump_values[i + 3]);
  
--	queue_work(ar->workqueue, &ar->restart_work);
 +reset:
-+	ath10k_err("trying to call userspace: ath10k-reset\n");
-+	if (call_usermodehelper(argv[0], argv, NULL, UMH_NO_WAIT) != 0) {
-+		ath10k_err("failed to execute ath10k-reset.  trying driver-level reset.\n");
-+		queue_work(ar->workqueue, &ar->restart_work);
-+	}
++	ath10k_err("scheduling ath10k-reset\n");
++	ar->restart_do_reset = 1;
+ 	queue_work(ar->workqueue, &ar->restart_work);
  }
  
- static void ath10k_pci_hif_send_complete_check(struct ath10k *ar, u8 pipe,
 -- 
 2.1.0.rc2.206.gedb03e5
 
