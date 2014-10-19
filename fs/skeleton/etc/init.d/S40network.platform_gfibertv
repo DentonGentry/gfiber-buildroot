@@ -5,7 +5,9 @@
 irq_affinity() {
   local irq="$1" cpu="$2"
   if [ -e "/proc/irq/$irq/smp_affinity" ]; then
-    echo "$cpu" >"/proc/irq/$irq/smp_affinity"
+    if ! echo "$cpu" >"/proc/irq/$irq/smp_affinity"; then
+      echo "Failed to set affinity for IRQ $irq @ CPU $cpu"
+    fi
   else
     echo "  ...irq #$irq not present, skipping" >&2
   fi
