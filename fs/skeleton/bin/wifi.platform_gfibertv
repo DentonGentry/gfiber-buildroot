@@ -3,6 +3,7 @@ CONFIG_DIR=/config/wifi
 band=
 show_bands="2.4 5"
 bridge=br0
+if_suffix=
 ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
 channel=auto
@@ -143,6 +144,7 @@ iw_find_phy() {
 
 iw_find_ifc() {
   phynum=$1
+  pattern="^wlan[0-9]${if_suffix}$"
   thisphynum=
   ifcname=
   iw dev | while read a b junk; do
@@ -150,8 +152,10 @@ iw_find_ifc() {
       thisphynum=${a#phy#}
     elif [ "$a" = "Interface" ] && ! startswith "$b" "mon."; then
       if [ "$thisphynum" = "$phynum" ]; then
-        echo "$b"
-        break
+        if echo "$b" | grep -q "$pattern"; then
+          echo "$b"
+          break
+        fi
       fi
     fi
   done
@@ -265,7 +269,7 @@ stopwifi() {
   band=$1
   if runnable iw; then
     ifc=$(iw_find_ifc_from_band "$band") || die
-    pkillwait -f "hostapd.*/tmp/hostapd.conf.$ifc"
+    pkillwait -f "hostapd.*/tmp/hostapd.conf.$ifc$"
     [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
     return 0
   fi
@@ -352,6 +356,10 @@ do
     *) usage ;;
   esac
 done
+
+if [ "$bridge" != "br0" ]; then
+  if_suffix="_${bridge}"
+fi
 
 case "$cmd" in
   show)
