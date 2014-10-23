@@ -10,7 +10,10 @@ BCM_CHROMIUM_DEPENDENCIES=\
 	google_miniclient \
 	libpng jpeg zlib freetype openssl expat \
 	libcurl libxml2 libxslt fontconfig boost \
-	cairo
+	cairo avahi
+
+# This will result in defining a meaningful APPLIBS_TOP
+BCM_APPS_DIR=$(abspath $(@D))
 
 BCM_CHROMIUM_INSTALL_STAGING=NO
 BCM_CHROMIUM_INSTALL_TARGET=YES
@@ -26,56 +29,56 @@ else
 endif
 
 define BCM_CHROMIUM_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) \
 		-C $(@D)/common dlna \
 		BUILDING_DLNA=1 BUILDING_PLAYBACK_IP=1 \
 		BUILDING_REFSW=1 BUILDING_DTCP_IP=0
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/thirdparty/youtube/mediasource/build \
 		BME_PROCESS_MODEL=single \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/thirdparty/youtube/mediasource/build \
 		install
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
 		media_mediaplayer_impl_install \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
 		media_mediaplayer_impl_static_archive \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
 		media_filesource_impl_static_archive \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
 		media_networksource_impl_static_archive \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
 		media_pushsource_impl_static_archive \
 		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
 	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/opensource/content \
 		APPLIBS_PROCESS_MODEL=single \
 		$(BCM_CHROMIUM_CCACHE) \

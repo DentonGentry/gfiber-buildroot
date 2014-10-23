@@ -1,9 +1,9 @@
 GOOGLE_SAGESERVER_SITE = repo://vendor/google/sageserver
-GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin
+GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin google_spicerack_migration
 
 ifeq ($(BR2_mipsel),y)
 	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
-	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/mipsel-5k-linux-uclibc/Development/Standard.jar
+	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/mipsel-5k-linux-uclibc/development/lib/Standard.jar
 else ifeq ($(BR2_arm),y)
 	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
 	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/arm-v7l-linux-gnueabi/development/lib/Standard.jar

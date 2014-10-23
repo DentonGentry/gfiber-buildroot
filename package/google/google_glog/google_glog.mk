@@ -1,0 +1,9 @@
+GOOGLE_GLOG_SITE = https://google-glog.googlecode.com/files/
+GOOGLE_GLOG_VERSION = 0.3.3
+GOOGLE_GLOG_SOURCE = glog-$(GOOGLE_GLOG_VERSION).tar.gz
+GOOGLE_GLOG_INSTALL_STAGING = YES
+GOOGLE_GLOG_INSTALL_TARGET = YES
+GOOGLE_GLOG_DEPENDENCIES= google_gflags
+
+$(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

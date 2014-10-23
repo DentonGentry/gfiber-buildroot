@@ -33,6 +33,12 @@ check_pairing() {
 }
 
 FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200
+
+BOXTYPE=`cat /etc/platform`
+if [ "GFRG210" = "$BOXTYPE" ] ; then
+  FLAGS=$FLAGS,pin_block_bitmaps
+fi
+
 case "$1" in
   start)
     if ! is-storage-box; then
@@ -60,6 +66,7 @@ case "$1" in
       echo "Mounting ext4 /var/media from '$mediafs'"
       mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
     elif [ -e /dev/sda ]; then
+      hdparm -q -B255 /dev/sda  # disable power saving
       check_pairing
       echo "Mounting SATA device."
       if [ -e /dev/sda1 ]; then

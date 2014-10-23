@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_SPICERACK_MIGRATION
+	bool "google_spicerack_migration"
+	help
+	  Plugin for migrating Sage accounts to Spicerack

@@ -6,7 +6,7 @@
 #
 # To re-enable core dumps right away, just do "pkill coredump-min-delay".
 #
-DELAY=600
+DELAY=$1
 
 echo "coredump: core dumps disabled for $DELAY seconds." >&2
 

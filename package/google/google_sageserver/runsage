@@ -82,16 +82,24 @@ fi
 WEBSERVERJARS=ant.jar:core-3.1.1.jar:jetty-6.1.19.jar:jetty-ajp-6.1.19.jar:jetty-rewrite-handler-6.1.19.jar:jetty-sslengine-6.1.19.jar:jetty-starter.jar:jetty-util-6.1.19.jar:jsp-2.1.jar:jsp-2.1-jetty-6.1.19.jar:jsp-api-2.1.jar:sagex-api.jar:servlet-api-2.5-6.1.19.jar
 MOBILEAPIJARS=gftv_mobile_api_deploy.jar
 ANALYTICSJARS=gfiber_analytics_sage_plugin_deploy.jar
-GFIBERJARS=$MOBILEAPIJARS:$ANALYTICSJARS
+MIGRATIONJARS=gftv_spicerack_migration_deploy.jar
+GFIBERJARS=$MOBILEAPIJARS:$ANALYTICSJARS:$MIGRATIONJARS
 if [ "$MODE" = "client" ]; then
   GFIBERJARS=$ANALYTICSJARS
 fi
 
 (
   cat Sage.properties.defaults.base
-  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver && cat Sage.properties.defaults.mobileapi
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.webserver
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.mobileapi
+  [ "$MODE" = "server" ] && cat Sage.properties.defaults.migration
   cat SageClient.properties.defaults.analytics
 ) >/tmp/Sage.properties.defaults
+
+BOXTYPE=`cat /etc/platform`
+if [ "GFHD100" = "$BOXTYPE" ] ; then
+  echo "fiber/miracast/enable=true" >> /tmp/Sage.properties.defaults
+fi
 
 read junk1 memtotal junk2 </proc/meminfo
 echo "System memory: $memtotal kb" >&2
@@ -125,9 +133,11 @@ babysit 10 alivemonitor $PREKILL_OPTIONS \
     -Djava.library.path=.:./lib \
     -Dsage.paths.logs=/tmp/log \
     -Dsage.embedded=1 \
+    -Dsage.platform=$BOXTYPE \
     -Dsage.paths.cache="$PATHS_CACHE" \
     -Djava.lang.runtime.exec.vfork \
     -Djava.lang.system.gc.force \
+    -Xss256k \
     -cp Sage.jar:vecmath.jar:skelmir/Libraries/Apache.jar:jcifs.jar:jce-jdk13-150.jar:apache.jar:log4j-1.2.17.jar:jrestubs.jar:lucene-core-3.6.0.jar:$WEBSERVERJARS:$GFIBERJARS \
     $HEAPSIZE \
     -verbose:gc \

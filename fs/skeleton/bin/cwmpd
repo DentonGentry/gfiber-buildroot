@@ -8,6 +8,11 @@ case "$platform" in
   *) board="$platform" ;;
 esac
 
+# A previous run of cwmpd might have left this running.
+# run-isostream knows how to kill its children (isostream itself) when
+# terminated politely.
+pkillwait run-isostream
+
 CWMP="
   /usr/catawampus/cwmpd
       --platform=$board

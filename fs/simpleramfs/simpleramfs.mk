@@ -42,7 +42,7 @@ endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
-	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat; do \
+	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat veritytmp; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
 
@@ -75,6 +75,7 @@ define SIMPLERAMFS_BUILD_CMDS
 	ln -f $(TARGET_DIR)/bin/dash $(@D)/fs/bin/sh
 	ln -f 	$(TARGET_DIR)/bin/toolbox \
 		$(TARGET_DIR)/bin/toybox \
+		$(TARGET_DIR)/usr/sbin/nanddump \
 		$(TARGET_DIR)/usr/sbin/ubiattach \
 		$(TARGET_DIR)/usr/sbin/ubidetach \
 		$(TARGET_DIR)/usr/sbin/dmsetup \

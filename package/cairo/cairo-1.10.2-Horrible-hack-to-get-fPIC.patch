@@ -1,0 +1,26 @@
+From 9cf3c722a2553f8c2bd6df4b49c1c4481a210b7d Mon Sep 17 00:00:00 2001
+From: John Newlin <jnewlin@google.com>
+Date: Wed, 15 Oct 2014 11:53:33 -0700
+Subject: [PATCH] Horrible hack to get fPIC
+
+I'm sure there's a better way.. this gets cairo to link with -fPIC.
+---
+ build/libtool.m4 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/libtool.m4 b/build/libtool.m4
+index a3fee53..964680e 100644
+--- a/build/libtool.m4
++++ b/build/libtool.m4
+@@ -4388,7 +4388,7 @@ _LT_EOF
+ 	 && test "$tmp_diet" = no
+       then
+ 	tmp_addflag=
+-	tmp_sharedflag='-shared'
++	tmp_sharedflag='-shared -fPIC'
+ 	case $cc_basename,$host_cpu in
+         pgcc*)				# Portland Group C compiler
+ 	  _LT_TAGVAR(whole_archive_flag_spec, $1)='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; $ECHO \"$new_convenience\"` ${wl}--no-whole-archive'
+-- 
+2.1.0.rc2.206.gedb03e5
+

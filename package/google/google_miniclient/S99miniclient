@@ -4,6 +4,9 @@
 if is-html-tv-ui; then
   echo "configured for chrome"
   exit 0
+elif ! is-tv-box; then
+  echo "miniclient only runs on tv box"
+  exit 0
 fi
 
 case "$1" in
@@ -20,8 +23,8 @@ case "$1" in
     pkillwait -x miniclient
     pkillwait -x waitpower
     pkillwait -x netflix
-    pkillwait -x content_shell
     pkillwait -x browser_shell
+    pkillwait -x fiber_shell
     pkillwait -x vudu
     pkillwait -x StandaloneWFDPlayer
     rc_pipe_deinit

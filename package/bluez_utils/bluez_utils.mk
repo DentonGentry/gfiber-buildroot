@@ -5,7 +5,7 @@
 #############################################################
 
 BLUEZ_UTILS_SITE = repo://vendor/opensource/bluez
-BLUEZ_UTILS_DEPENDENCIES = dbus libglib2
+BLUEZ_UTILS_DEPENDENCIES = dbus libglib2 readline
 BLUEZ_UTILS_INSTALL_STAGING = YES
 BLUEZ_UTILS_CONF_OPT = \
 	--prefix=/usr \

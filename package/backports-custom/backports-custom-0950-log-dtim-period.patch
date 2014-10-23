@@ -17,7 +17,7 @@ index 0a2d04c..49f10f0 100644
  	cmd->disable_hw_ack  = __cpu_to_le32(arg->disable_hw_ack);
  	cmd->beacon_interval = __cpu_to_le32(arg->bcn_intval);
  	cmd->dtim_period     = __cpu_to_le32(arg->dtim_period);
-+	printk(KERN_WARNING "ath10k_wmi_vdev_start_restart: dtim_period=%d",
++	printk(KERN_WARNING "ath10k_wmi_vdev_start_restart: dtim_period=%d\n",
 +	       arg->dtim_period);
  	cmd->flags           = __cpu_to_le32(flags);
  	cmd->bcn_tx_rate     = __cpu_to_le32(arg->bcn_tx_rate);

@@ -7,6 +7,13 @@ interface_exists() {
 
 case "$1" in
   start)
+    if is-network-box; then
+      babysit 60 waveguide --high-power --scan-interval=300 \
+          2>&1 | logos waveguide &
+    elif has_wifi && runnable iw; then
+      babysit 60 waveguide --no-high-power --scan-interval=300 \
+          2>&1 | logos waveguide &
+    fi
     if runnable wl && has_wifi && interface_exists eth2; then
       read wifimac </sys/class/net/eth2/address
       wl ap 1
@@ -17,6 +24,7 @@ case "$1" in
     ;;
   stop)
     wifi stop
+    pkillwait -f waveguide
     ;;
   restart)
     $0 stop; $0 start

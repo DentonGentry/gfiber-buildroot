@@ -6,6 +6,7 @@ config BR2_PACKAGE_SIMPLERAMFS
 	select BR2_PACKAGE_UTIL_LINUX
 	select BR2_PACKAGE_MTD
 	select BR2_PACKAGE_LVM2
+	select BR2_PACKAGE_UTIL_LINUX_MOUNT
 	depends on !BR2_TARGET_ROOTFS_INITRAMFS
 	help
 	  Generate the simplest possible initramfs for finding,

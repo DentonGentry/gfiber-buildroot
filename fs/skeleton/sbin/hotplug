@@ -4,6 +4,14 @@
 HOTPLUG_FW_DIR=/lib/firmware
 exec >/dev/kmsg 2>&1
 
+# BlueZ: adjust repeat speed on remotes
+if [ "$SUBSYSTEM" = "input" -a "$ACTION" = "add" ]; then
+  if [ -n "$DEVNAME" -a -c "/dev/$DEVNAME" ]; then
+    echo "hotplug: setting autorepeat on $DEVNAME"
+    input-repeat -f /dev/$DEVNAME -d 600
+  fi
+fi
+
 # BlueZ: Configure hci0 interface link mode
 if [ "$SUBSYSTEM" = "bluetooth" -a "$ACTION" = "add" ]; then
   hcidev=${DEVPATH##*/}

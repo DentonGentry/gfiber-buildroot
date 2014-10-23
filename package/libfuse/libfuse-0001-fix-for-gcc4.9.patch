@@ -1,0 +1,24 @@
+From 05a73fbbaff2a7001e004dd0c057962dc633c866 Mon Sep 17 00:00:00 2001
+From: John Newlin <jnewlin@google.com>
+Date: Thu, 2 Oct 2014 12:04:43 -0700
+Subject: [PATCH] fix for gcc4.9
+
+---
+ util/fusermount.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/util/fusermount.c b/util/fusermount.c
+index 70c18b7..172b06a 100644
+--- a/util/fusermount.c
++++ b/util/fusermount.c
+@@ -26,6 +26,7 @@
+ #include <sys/fsuid.h>
+ #include <sys/socket.h>
+ #include <sys/utsname.h>
++#define __USE_GNU
+ #include <sched.h>
+ 
+ #define FUSE_COMMFD_ENV		"_FUSE_COMMFD"
+-- 
+2.1.0.rc2.206.gedb03e5
+

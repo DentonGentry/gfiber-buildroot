@@ -93,9 +93,13 @@ case "$1" in
       # igmp group membership control
       ip46tables -A INPUT -p igmp -j ACCEPT
 
-      # ping
-      iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+      # ping and PMTUD
+      iptables -A INPUT -p icmp --icmp-type 8/0 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 3/4 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 11/0 -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+      # RFC4890 says RFC4380 requires forwarding ipv6 ping requests
+      ip6tables -A FORWARD -p icmpv6 --icmpv6-type echo-request -j ACCEPT
 
       # Incoming connections
       # TODO(apenwarr): Whitelist ports here too for added safety.
@@ -116,6 +120,14 @@ case "$1" in
         ip46tables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
         ip46tables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
         ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
+      fi
+
+      # cwmpd ACS kick
+      ip6tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
+      ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd
+
+      if [ -e /tmp/factory_status ]; then
+        ip46tables -A INPUT -p tcp --dport 8883 -j ACCEPT  # factory web server
       fi
 
       # active FTP out
@@ -162,13 +174,13 @@ case "$1" in
       ip46tables -A FORWARD -i wan0+ -j log
 
       # Set the WAN 802.1q pbits
-      iptables -t mangle -A OUTPUT -p all -j CLASSIFY --set-class 0:2
-      iptables -t mangle -A OUTPUT -p igmp -j CLASSIFY --set-class 0:6
-      iptables -t mangle -A OUTPUT -p icmp -j CLASSIFY --set-class 0:6
-      ip6tables -t mangle -A OUTPUT -p icmpv6 -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p all -j CLASSIFY --set-class 0:2
+      iptables -t mangle -A OUTPUT -o wan0.2 -p igmp -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p icmp -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p icmpv6 -j CLASSIFY --set-class 0:6
       # DHCP and DHCPv6
-      iptables -t mangle -A OUTPUT -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
-      ip6tables -t mangle -A OUTPUT -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
 
       # Default DROP policy above is safe, but REJECT is friendlier.
       # But you can't use REJECT as a policy, so add a catchall rule at the

@@ -11,7 +11,7 @@ verify_drm_state()
   if [ "$drmcert" != "$fscert" ]; then
     echo Certificate doesn\'t match current state, clearing files
     rm -rf /user/drm/*
-    echo $fscert > /user/drm/drmcert
+    echo "$fscert" > /user/drm/drmcert
   fi
 }
 

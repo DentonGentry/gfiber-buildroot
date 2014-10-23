@@ -22,6 +22,7 @@ uniqid=coredump-$$-coredump
 alarm()
 {
   log core took too long to save, quitting to avoid panic, core will be truncated
+  sysctl -w kernel.hung_task_timeout_secs=120
   pkill -f "$uniqid"
 }
 
@@ -35,12 +36,21 @@ elif pgrep -x coredump-delay >/dev/null; then
   log "coredump-delay not yet reached; not saving."
 else
   # read and compress the core dump from stdin, limiting max output size
-  coredump-delay &
   log "dumping core in '$out'"
-  # abort after 100 seconds.  bruno kernel will panic with hung_task at 120 seconds
-  (sleep 100; alarm) &
+  # siege coredumps can take a long time and we need them, increase the hung task
+  # timeout in the kernel and wait for longer to accomodate this
+  if [ "$exe" = "siege" ]; then
+    coredump-delay 900 &
+    sysctl -w kernel.hung_task_timeout_secs=900
+    (sleep 840; alarm) &
+  else
+    coredump-delay 600 &
+    # abort after 100 seconds.  bruno kernel will panic with hung_task at 120 seconds
+    (sleep 100; alarm) &
+  fi
   # --suffix is a trick to be able to pkill exactly this gzip
   gzip --fast -c --suffix "$uniqid" | dd bs=1024 count=163840 2>/dev/null >"$out"
   upload-logs-now
+  sysctl -w kernel.hung_task_timeout_secs=120
   log "finished dumping core for pid $pid ($exe)"
 fi
