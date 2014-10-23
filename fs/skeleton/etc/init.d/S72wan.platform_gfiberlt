@@ -8,11 +8,6 @@ hostname GFiberONU
 case $1 in
   start)
     echo "Starting WAN."
-    # Creating this file tells the dhclient-script that it is okay to use
-    # IPv6 DNS.  There's a bug in older uclib's that causes memory corruption
-    # and a crash, but it's fixed in Marvell's version 0.9.32.
-    echo 1 >/tmp/ipv6_dns_ok
-
     # Configure dhclient with the right hostname etc.
     setup-dhclient
     echo "Starting interface."

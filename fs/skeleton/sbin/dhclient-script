@@ -59,28 +59,18 @@ internal_resolv_conf="
 # suitable for end users, use /tmp/resolv.conf.external instead.
 nameserver 8.8.8.8
 nameserver 8.8.4.4
-"
-
-# Only populate ipv6 nameservers for the GFLT* platforms since they don't suffer
-# from the crash bug noted below.
-plat=$(cat /etc/platform)
-if startswith "$plat" "GFLT"; then
-  internal_resolv_conf=${internal_resolv_conf}"
 nameserver 2001:4860:4860::8888
 nameserver 2001:4860:4860::8844
 "
-fi
 
 merge_resolv_conf() {
-    # TODO(dgentry) fix uclibc (http://lists.uclibc.org/pipermail/uclibc/2011-June/045440.html)
-    # and then also add /tmp/resolv.conf.dhclient6
     local confs=""
 
     if [ -e "/tmp/resolv.conf.dhclient" ] ; then
         confs="$confs /tmp/resolv.conf.dhclient"
     fi
 
-    if [ -e /tmp/ipv6_dns_ok ] && [ -e "/tmp/resolv.conf.dhclient6" ]; then
+    if [ -e "/tmp/resolv.conf.dhclient6" ]; then
         confs="$confs /tmp/resolv.conf.dhclient6"
     fi
 
