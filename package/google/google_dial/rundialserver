@@ -8,7 +8,7 @@ UITYPE="sage"
 if [ -e /config/nickname ]; then
   FRIENDLYNAME="$(cat /config/nickname)"
 fi
-if [ -e /config/uitype ]; then
-  UITYPE="$(cat /config/uitype)"
+if is-html-tv-ui; then
+  UITYPE="oregano"
 fi
 /app/client/dialserver -M $PLATFORM -U $SERIALNUMBER -F "$FRIENDLYNAME" -I $UITYPE 2>&1 | logos dialserver &
