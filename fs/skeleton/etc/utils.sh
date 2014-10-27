@@ -140,3 +140,21 @@ mac_addr_increment() {
     echo "$m1:$m2:$m3:$m4:$m5:$m6"
   )
 }
+
+get_mac_addr_for_interface() {
+  cat "/sys/class/net/$1/address" 2> /dev/null
+}
+
+find_phy_for_interface() {
+  local interface="$1"
+  local phy_name=
+  iw dev | while read a b junk; do
+    if startswith "$a" "phy"; then
+      phy_name="$a"
+    elif [ "$a" = Interface -a "$b" = "$interface" ]; then
+      echo "phy${phy_name#phy\#}"
+      break
+    fi
+  done
+}
+
