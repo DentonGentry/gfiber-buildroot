@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/zsh
+# We need to use zsh for 'ulimit -e'
 . /etc/utils.sh
 
 cd "$(dirname "$0")"
@@ -126,6 +127,9 @@ PREKILL_OPTIONS=
 if [ -e /tmp/DEBUG ]; then
   PREKILL_OPTIONS="-S 11 -T 15"
 fi
+
+# Allow the JVM to increase its thread priorities above normal
+ulimit -e 40
 
 babysit 10 alivemonitor $PREKILL_OPTIONS \
     /tmp/sagetvalive 300 60 600 setuid video "$JVM" \

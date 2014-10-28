@@ -39,7 +39,7 @@ case "$1" in
     # Set the alivemonitor to somewhat longer than that.
     babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
-      cwmpd $DIAGUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
+      nice cwmpd $DIAGUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
 
     if is-network-box || is-storage-box; then
       poll_hostnames | logos hostnames &

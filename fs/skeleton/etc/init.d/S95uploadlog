@@ -2,7 +2,7 @@
 case "$1" in
   start)
     echo "SOFTWARE_VERSION=$(cat /etc/version)" | logos system
-    upload-logs-loop 2>&1 | logos upload-crash-log &
+    nice upload-logs-loop 2>&1 | logos upload-crash-log &
     ;;
   stop)
     # Should really just kill upload-logs-loop, but pkill can only recognize
