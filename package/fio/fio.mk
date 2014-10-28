@@ -10,11 +10,11 @@ FIO_SITE = git://git.kernel.dk/fio.git
 FIO_DEPENDENCIES = linux libaio
 
 define FIO_BUILD_CMDS
-  $(MAKE) CC="$(TARGET_CC)" -C $(@D) DESTDIR="$(TARGET_DIR)" all
+  $(MAKE) CC="$(TARGET_CC)" $(TARGET_CONFIGURE_OPTS) -C $(@D) DESTDIR="$(TARGET_DIR)" all
 endef
 
 define FIO_INSTALL_TARGET_CMDS
-  $(MAKE) CC="$(TARGET_CC)" -C $(@D) DESTDIR="$(TARGET_DIR)" install
+  $(MAKE) CC="$(TARGET_CC)" $(TARGET_CONFIGURE_OPTS) -C $(@D) DESTDIR="$(TARGET_DIR)" install
 endef
 
 $(eval $(call GENTARGETS))
