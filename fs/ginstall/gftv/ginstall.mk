@@ -139,6 +139,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			-a 0x03008000 -e 0x03008000 -n Linux \
 			-d zImage:simpleramfs.cpio.gz \
 			uImage && \
+		chmod a+r uImage && \
 		( \
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
 		); \
