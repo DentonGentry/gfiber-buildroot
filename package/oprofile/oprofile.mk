@@ -4,10 +4,11 @@
 #
 #############################################################
 
-OPROFILE_VERSION = 0.9.7
+OPROFILE_VERSION = 0.9.8
 OPROFILE_CONF_OPT = --localstatedir=/var --with-kernel-support
 OPROFILE_BINARIES = utils/ophelp pp/opannotate pp/oparchive pp/opgprof
 OPROFILE_BINARIES += pp/opreport opjitconv/opjitconv daemon/oprofiled
+OPROFILE_BINARIES += utils/op-check-perfevents pe_profiling/operf libabi/opimport
 
 ifeq ($(BR2_i386),y)
 OPROFILE_ARCH = i386
@@ -30,6 +31,7 @@ OPROFILE_DEPENDENCIES = popt binutils gawk coreutils
 define OPROFILE_INSTALL_TARGET_CMDS
 	$(INSTALL) -d -m 755 $(TARGET_DIR)/usr/bin
 	$(INSTALL) -d -m 755 $(TARGET_DIR)/usr/share/oprofile
+	$(INSTALL) -d -m 755 $(TARGET_DIR)/usr/lib/oprofile
 	if [ -d $(@D)/events/$(OPROFILE_ARCH) ]; then \
 		cp -dpfr $(@D)/events/$(OPROFILE_ARCH) \
 			$(TARGET_DIR)/usr/share/oprofile; \
@@ -37,6 +39,7 @@ define OPROFILE_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 644 $(@D)/libregex/stl.pat $(TARGET_DIR)/usr/share/oprofile
 	$(INSTALL) -m 755 $(@D)/utils/opcontrol $(TARGET_DIR)/usr/bin
 	$(INSTALL) -m 755 $(addprefix $(@D)/, $(OPROFILE_BINARIES)) $(TARGET_DIR)/usr/bin
+	$(INSTALL) -m 755 $(@D)/libopagent/.libs/*.so* $(TARGET_DIR)/usr/lib/oprofile
 	ln -sf /tmp/oprofile $(TARGET_DIR)/var/lib/oprofile
 	ln -sf /tmp/oprofile $(TARGET_DIR)/root/.oprofile
 endef
@@ -45,6 +48,7 @@ define OPROFILE_UNINSTALL_TARGET_CMDS
 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/, $(notdir $(OPROFILE_BINARIES)))
 	rm -f $(TARGET_DIR)/usr/bin/opcontrol
 	rm -rf $(TARGET_DIR)/usr/share/oprofile
+	rm -rf $(TARGET_DIR)/usr/lib/oprofile
 endef
 
 $(eval $(call AUTOTARGETS))
