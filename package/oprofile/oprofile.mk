@@ -59,11 +59,4 @@ define OPROFILE_INSTALL_TARGET_CMDS
 	ln -sf /tmp/oprofile $(TARGET_DIR)/root/.oprofile
 endef
 
-define OPROFILE_UNINSTALL_TARGET_CMDS
-	rm -f $(addprefix $(TARGET_DIR)/usr/bin/, $(notdir $(OPROFILE_BINARIES)))
-	rm -f $(TARGET_DIR)/usr/bin/opcontrol
-	rm -rf $(TARGET_DIR)/usr/share/oprofile
-	rm -rf $(TARGET_DIR)/usr/lib/oprofile
-endef
-
 $(eval $(call AUTOTARGETS))
