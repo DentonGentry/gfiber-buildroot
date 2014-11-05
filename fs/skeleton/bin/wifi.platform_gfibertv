@@ -415,7 +415,7 @@ C_5HIGH_40="5745 5785"
 C_5HIGH_80="5745"
 C_5DFS_20="5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700"
 C_5DFS_40=""  # TODO(apenwarr): figure out which 40/80 MHz DFS are allowed
-C_5DFS_80=""
+C_5DFS_80="5250"
 
 case "$band-$autotype-$width" in
   # There are no 80Mhz channels in 2.4Ghz band.
