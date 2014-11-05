@@ -2,7 +2,7 @@
 CONFIG_DIR=/config/wifi
 band=
 show_bands="2.4 5"
-bridge=br0
+bridge=
 if_suffix=
 ssid=$(serial)_TestWifi
 crypto=WPA2_PSK_AES
@@ -66,16 +66,20 @@ Usage: $bin set [options...]
  -B <bridge>      Bridge device to use (default=$bridge)
  -X               Use extra short timeout intervals for stress testing
  -P               Persist settings so we can restore them with 'wifi restore'
+ -S               wlan interface suffix (default: none)
 $bin <off|stop> [options...]
  disable wifi on the given band(s)
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
  -P               Also remove persisted wifi settings
+ -S               wlan interface suffix (default: none)
 $bin restore [options...]
  restore the wifi settings from the last time you used -P
  -b <band>        Wifi band to restore (default='$show_bands')
+ -S               wlan interface suffix (default: none)
 $bin show [options...]
  print all known parameters
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
+ -S               wlan interface suffix (default: none)
 "
 usage() {
   echo "$USAGE" >&2
@@ -336,7 +340,7 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:fp:w:HMGB:PX" opt
+while getopts "b:c:a:s:e:fp:w:HMGB:PXS:" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
@@ -353,13 +357,10 @@ do
     B) bridge=$OPTARG ;;
     P) persist=1; mkdir -p "$CONFIG_DIR" ;;
     X) extra_short_timeouts=1 ;;
+    S) if_suffix=$OPTARG ;;
     *) usage ;;
   esac
 done
-
-if [ "$bridge" != "br0" ]; then
-  if_suffix="_${bridge}"
-fi
 
 case "$cmd" in
   show)
