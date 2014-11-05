@@ -83,6 +83,8 @@ case "$1" in
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -t filter -N acs-captive-portal-filter
+      ip46tables -t filter -A FORWARD -j acs-captive-portal-filter
       ip46tables -A FORWARD -i br0 -j ACCEPT
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
@@ -139,6 +141,9 @@ case "$1" in
       # add ACS-configured things
       ip46tables -t filter -N acsrules-filter-forward
       ip46tables -t filter -A FORWARD -j acsrules-filter-forward
+
+      iptables -t nat -N acs-captive-portal-nat
+      iptables -t nat -A PREROUTING -j acs-captive-portal-nat
 
       iptables -t nat -N acsrules-nat-prerouting
       iptables -t nat -A PREROUTING -j acsrules-nat-prerouting
@@ -231,3 +236,4 @@ case "$1" in
     echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
+
