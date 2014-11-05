@@ -141,6 +141,17 @@ mac_addr_increment() {
   )
 }
 
+# set the locally administered bit on the input mac address and return the
+# result (see http://en.wikipedia.org/wiki/MAC_address)
+get_locally_administered_mac_addr() {
+  echo $1 | {
+    IFS=":" read m1 m2 m3 m4 m5 m6
+    m1="0x${m1}"
+    m1=$((m1 | 0x02))
+    printf '%02x:%s:%s:%s:%s:%s\n' $m1 $m2 $m3 $m4 $m5 $m6
+  }
+}
+
 get_mac_addr_for_interface() {
   cat "/sys/class/net/$1/address" 2> /dev/null
 }
