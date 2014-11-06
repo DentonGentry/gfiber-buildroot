@@ -1,6 +1,6 @@
-GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/1.5/deps/standalone.deps
+GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/1.7/deps/standalone.deps
 GOOGLE_DART_VM_SITE_METHOD=gclient
-GOOGLE_DART_VM_VERSION=38477
+GOOGLE_DART_VM_VERSION=41096
 GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
@@ -29,6 +29,7 @@ AR.target="$(TARGET_AR)"
 
 define GOOGLE_DART_VM_BUILD_CMDS
 	$(MAKE) -C $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart $(GOOGLE_DART_VM_MAKE_VARS)
+	cp $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(GOOGLE_DART_VM_BTYPE)/dart $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(GOOGLE_DART_VM_BTYPE)/dart_nostrip
 	$(TARGET_STRIP) $(BUILD_DIR)/$($(PKG)_BASE_NAME)/dart/out/$(GOOGLE_DART_VM_BTYPE)/dart
 endef
 
