@@ -5,11 +5,32 @@ interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
 
+create_secondary_interface() {
+  local interface="$1"
+  local suffix="$2"
+  local phy=$(find_phy_for_interface "$interface")
+  local mac=$(get_mac_addr_for_interface "$interface")
+
+  mac=$(get_locally_administered_mac_addr "$mac")
+  interface="${interface}${suffix}"
+  if ! interface_exists $interface; then
+    iw phy "$phy" interface add "$interface" type managed
+    ip link set dev "$interface" address "$mac"
+  fi
+}
+
 case "$1" in
   start)
     if is-network-box; then
       babysit 60 waveguide --high-power --scan-interval=300 \
           2>&1 | logos waveguide &
+
+      for interface in wlan0 wlan1; do
+        if interface_exists $interface; then
+          create_secondary_interface $interface _portal
+        fi
+      done
+
     elif has_wifi && runnable iw; then
       babysit 60 waveguide --no-high-power --scan-interval=300 \
           2>&1 | logos waveguide &
