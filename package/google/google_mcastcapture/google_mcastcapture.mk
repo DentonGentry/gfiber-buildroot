@@ -6,6 +6,7 @@ HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest host-gmock host-openssl \
 
 define GOOGLE_MCASTCAPTURE_BUILD_CMDS
 	TARGET=$(TARGET_CROSS) \
+	HOSTDIR=$(HOST_DIR) \
 	$(MAKE) -C $(@D)
 endef
 
