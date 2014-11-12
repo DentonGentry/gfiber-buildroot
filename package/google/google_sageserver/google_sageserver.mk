@@ -3,12 +3,12 @@ GOOGLE_SAGESERVER_DEPENDENCIES = google_mobile_api google_sage_analytics_plugin 
 
 ifeq ($(BR2_mipsel),y)
 	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
-	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/mipsel-5k-linux-uclibc/development/lib/Standard.jar
+	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/mipsel-5k-linux-uclibc/development/lib/
 else ifeq ($(BR2_arm),y)
 	GOOGLE_SAGESERVER_DEPENDENCIES += google_skelmir
-	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/arm-v7l-linux-gnueabi/development/lib/Standard.jar
+	STANDARD_JAR_PATH=$(GOOGLE_SKELMIR_DIR)/arm-v7l-linux-gnueabi/development/lib/
 else
-	STANDARD_JAR_PATH=jars/Standard.jar
+	STANDARD_JAR_PATH=jars/
 endif
 
 define GOOGLE_SAGESERVER_BUILD_CMDS
