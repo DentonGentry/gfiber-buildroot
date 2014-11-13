@@ -1,0 +1,84 @@
+#!/bin/sh
+
+interfaces="wlan0_portal"
+port="8888"
+allowed_list=
+
+bin=$(basename "$0")
+USAGE="
+Usage:
+$bin start [options...]
+  -p <port>         port on which HTTP bouncer will listen (default: $port)
+  -i <interface>    list of interfaces on which to enable captive portal
+                    (default: $interfaces)
+  -a <allowed_ip>   list of allowed IPs/subnets
+
+$bin stop
+"
+usage() {
+  echo "$USAGE" >&2
+  exit 1
+}
+
+
+if [ $# -eq 0 ]; then
+  usage
+fi
+
+cmd=$1
+shift
+
+while getopts "i:p:a:" opt
+do
+  case $opt in
+    i) interfaces="$OPTARG" ;;
+    p) port="$OPTARG" ;;
+    a) allowed_list="$OPTARG" ;;
+    *) usage ;;
+  esac
+done
+
+start_iptables() {
+  for interface in $interfaces; do
+    sysctl "net.ipv6.conf.${interface}.disable_ipv6=1"
+    ip6tables -t filter -A acs-captive-portal-filter -i "$interface" -j REJECT \
+      --reject-with icmp6-no-route
+
+    for dest in $allowed_list; do
+      iptables -t filter -A acs-captive-portal-filter -i "$interface" -d "$dest" \
+        -j ACCEPT
+    done
+    iptables -t filter -A acs-captive-portal-filter -i "$interface" -j REJECT \
+      --reject-with icmp-admin-prohibited
+
+    for dest in $allowed_list; do
+      iptables -t nat -A acs-captive-portal-nat -i "$interface" -d "$dest" -j ACCEPT
+    done
+    iptables -t nat -A acs-captive-portal-nat -i "$interface" -p tcp --dport 80 \
+      -j REDIRECT --to-ports "$port"
+  done
+}
+
+stop_iptables() {
+  iptables -t nat -F acs-captive-portal-nat
+  iptables -t filter -F acs-captive-portal-filter
+  ip6tables -t filter -F acs-captive-portal-filter
+
+  for interface in $interfaces; do
+    sysctl "net.ipv6.conf.${interface}.disable_ipv6=0"
+  done
+}
+
+case "$cmd" in
+  start|restart)
+    stop_iptables
+    start_iptables
+    ;;
+  stop)
+    stop_iptables
+    ;;
+  *)
+    usage
+    ;;
+esac
+
