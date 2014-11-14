@@ -116,6 +116,17 @@ stop_adloader() {
   fi
 }
 
+start_adsmgr() {
+  # Start up native ads manager
+  babysit 10 \
+  /app/sage/adsmgr 2>&1 | logos ads 0 20000000 &
+}
+
+stop_adsmgr() {
+  pkillwait -f '(babysit.*)(adsmgr)'
+  pkillwait -x 'adsmgr'
+}
+
 mac_addr_increment() {
   echo "$1" | (
     IFS=: read m1 m2 m3 m4 m5 m6

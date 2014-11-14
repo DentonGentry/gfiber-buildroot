@@ -50,6 +50,7 @@ ulimit -c 49152
 if [ "$MODE" = "server" ]; then
   start_adloader
   start_sagesrv
+  start_adsmgr
 
   # Start up channel service for dogfood, but only if off_the_grid is set.
   if [ "$(readarg off_the_grid)" = "true" ]; then

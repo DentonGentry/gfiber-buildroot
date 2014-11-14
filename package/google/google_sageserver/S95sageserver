@@ -24,6 +24,7 @@ stop() {
   pkillwait -f '(babysit.*)(runsage|chsrv|sage.Sage)'
   pkillwait -x 'runsage|chsrv|siege|java'
   stop_sagesrv
+  stop_adsmgr
   stop_adloader
 }
 
