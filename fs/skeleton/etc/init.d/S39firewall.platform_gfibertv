@@ -88,7 +88,7 @@ case "$1" in
       ip46tables -A FORWARD -i br0 -j ACCEPT
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
-      for ifc in lo br0; do
+      for ifc in lo br0 wlan0_portal wlan1_portal; do
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
       done
 
