@@ -28,6 +28,17 @@ case "$1" in
     rm -f $swimage/*.gi
     rm -rf $swimage/dnld
     babysit 60 cwmp_monitor | logos cwmp_monitor &
+
+    if runnable moca2json; then
+      [ -e /sys/class/net/eth1 ] && iface=eth1
+      [ -e /sys/class/net/moca0 ] && iface=moca0
+      dir=/tmp/cwmp/monitoring/moca2
+      mkdir -p "$dir"
+      if [ -n "$iface" ]; then
+        babysit 60 moca2json -i "$iface" -d "$dir" 2>&1 | logos moca2json &
+      fi
+    fi
+
     if is-network-box; then
       DIAGUI="--diagui"
     fi
@@ -51,6 +62,7 @@ case "$1" in
     pkillwait -x cwmp_monitor
     pkillwait -x isostream
     pkillwait -x poll_hostnames
+    pkillwait -x moca2json
     ;;
   restart)
     $0 stop; $0 start

@@ -60,6 +60,21 @@ define BCM_DRIVERS_BUILD_MOCA
 		CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/python2.7 \
 		    -I$(@D)/moca2/lib -L$(@D)/moca2/bin " \
 		$(HOST_DIR)/usr/bin/python setup.py build
+	cd $(@D)/google/moca2json && \
+		HOSTDIR=$(HOST_DIR) \
+		DESTDIR=$(TARGET_DIR) \
+		CFLAGS="$(TARGET_CFLAGS) -I$(@D)/moca2/lib -L$(@D)/moca2/bin " \
+		CROSS_COMPILE=$(TARGET_CROSS) \
+		$(MAKE)
+endef
+
+define BCM_DRIVERS_TEST_CMDS_MOCA
+	cd $(@D)/google/moca2json && \
+		HOSTDIR=$(HOST_DIR) \
+		DESTDIR=$(TARGET_DIR) \
+		CFLAGS="$(TARGET_CFLAGS) -I$(@D)/moca2/lib -L$(@D)/moca2/bin " \
+		CROSS_COMPILE=$(TARGET_CROSS) \
+		$(MAKE) test
 endef
 
 define BCM_DRIVERS_INSTALL_STAGING_MOCA
@@ -106,6 +121,9 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 		PYTHONPATH=$(TARGET_PYTHONPATH) \
 		$(HOST_DIR)/usr/bin/python setup.py install \
 			--prefix=$(TARGET_DIR)/usr
+	$(INSTALL) -m 0755 \
+	    $(@D)/google/moca2json/moca2json \
+	    $(TARGET_DIR)/bin/
 endef
 endif  # MOCA2
 
@@ -197,4 +215,9 @@ define BCM_DRIVERS_INSTALL_TARGET_CMDS
 	$(BCM_DRIVERS_INSTALL_TARGET_WIFI)
 endef
 
+define BCM_DRIVERS_TEST_CMDS
+    $(BCM_DRIVERS_TEST_CMDS_MOCA)
+endef
+
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
