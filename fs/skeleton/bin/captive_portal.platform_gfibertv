@@ -3,6 +3,7 @@
 interfaces="wlan0_portal"
 port="8888"
 allowed_list=
+url=
 
 bin=$(basename "$0")
 USAGE="
@@ -12,6 +13,7 @@ $bin start [options...]
   -i <interface>    list of interfaces on which to enable captive portal
                     (default: $interfaces)
   -a <allowed_ip>   list of allowed IPs/subnets
+  -u <url>          redirect URL
 
 $bin stop
 "
@@ -28,12 +30,13 @@ fi
 cmd=$1
 shift
 
-while getopts "i:p:a:" opt
+while getopts "i:p:a:u:" opt
 do
   case $opt in
     i) interfaces="$OPTARG" ;;
     p) port="$OPTARG" ;;
     a) allowed_list="$OPTARG" ;;
+    u) url="$OPTARG" ;;
     *) usage ;;
   esac
 done
@@ -69,13 +72,24 @@ stop_iptables() {
   done
 }
 
+start_http_bouncer() {
+  PYTHONPATH=/usr/catawampus/tr/vendor/tornado http_bouncer -p "$port" -u "$url" &
+}
+
+stop_http_bouncer() {
+  pkillwait http_bouncer
+}
+
 case "$cmd" in
   start|restart)
     stop_iptables
     start_iptables
+    stop_http_bouncer
+    start_http_bouncer
     ;;
   stop)
     stop_iptables
+    stop_http_bouncer
     ;;
   *)
     usage
