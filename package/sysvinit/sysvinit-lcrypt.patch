@@ -1,0 +1,15 @@
+Fix cross compilation: Don't change linker flags based on the existence of .a
+files on the host.
+--- a/src/Makefile	2014-11-18 12:47:07.590023557 -0800
++++ b/src/Makefile	2014-11-18 12:47:21.666031466 -0800
+@@ -78,9 +78,7 @@
+ endif
+ 
+ # Additional libs for GNU libc.
+-ifneq ($(wildcard /usr/lib*/libcrypt.a),)
+-  SULOGINLIBS	+= -lcrypt
+-endif
++SULOGINLIBS	+= -lcrypt
+ 
+ all:		$(BIN) $(SBIN) $(USRBIN)
+ 
