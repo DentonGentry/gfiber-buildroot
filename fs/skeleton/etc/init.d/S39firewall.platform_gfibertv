@@ -118,6 +118,7 @@ case "$1" in
       # TODO(apenwarr): Remove this when we have real port forwarding controls.
       if [ -e /tmp/DEBUG ]; then
         ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT    # ssh
+        ip46tables -A FORWARD -p tcp --dport 22 -j ACCEPT  # ssh for lan clients
         ip46tables -A INPUT -p tcp --dport 2103 -j ACCEPT  # cmm CLI
         ip46tables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
         ip46tables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
