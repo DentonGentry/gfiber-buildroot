@@ -605,7 +605,12 @@ elif runnable iw; then
     #  Ideally it should scan for longer, to get a better activity sample.
     #  It would also be nice to continue scanning in the background while
     #  hostapd is running, using 'iw offchannel'.
-    IWC scan passive >/dev/null
+    # Retry this a few times if it fails, just in case there was a scan
+    # already in progress started somewhere else (eg. from waveguide).
+    for i in 1 2 3 4 5 6 7 8 9; do
+      ( IWC scan passive >/dev/null ) && break
+      sleep 0.5
+    done
 
     # TODO(apenwarr): this algorithm doesn't deal with overlapping channels.
     #  Just because channel 1 looks good doesn't mean we should use it;
