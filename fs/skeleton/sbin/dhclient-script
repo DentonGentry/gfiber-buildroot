@@ -264,7 +264,7 @@ exit_with_hooks() {
     BOUND|RENEW|REBIND|REBOOT)
       write_ntp_conf_new /tmp/ntpd4.servers
       if [ "$addr_added" = 1 ]; then
-        QUIET=1 restart igmpproxy upnpd
+        QUIET=1 restart igmpproxy upnpd ssdpd dialserver
         runnable update-acs-iptables && update-acs-iptables
       fi
       ;;
