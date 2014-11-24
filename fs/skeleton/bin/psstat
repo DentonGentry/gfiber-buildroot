@@ -67,6 +67,27 @@ carriers()
 }
 
 
+fdcount()
+{
+  ps ax -o pid,comm |
+  while read pid comm junk; do
+    for d in "/proc/$pid/fd/*"; do
+      echo "$comm"
+    done
+ done |
+ sort |
+ uniq -c |
+ sort -nr |
+ head -n10 | {
+   out=
+   while read count comm junk; do
+     out="$out$comm($count) "
+   done
+   echo "$1 $out"
+ }
+}
+
+
 contains()
 {
   [ "$1" != "${1#.*$2}" ]
@@ -207,6 +228,7 @@ while :; do
   buddyinfo "buddyinfo:"
   dfspace "df:"
   carriers "carriers:"
+  fdcount "fdcount:"
 
   for phy in /sys/kernel/debug/ieee80211/phy*; do
     wifistats "$(basename "$phy")"
