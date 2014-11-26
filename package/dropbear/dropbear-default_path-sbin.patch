@@ -1,0 +1,12 @@
+--- dropbear-2014.63-orig/options.h	2014-11-26 15:38:39.361932396 -0800
++++ dropbear-2014.63/options.h	2014-11-26 15:39:43.941985954 -0800
+@@ -313,7 +313,8 @@
+ #define DEFAULT_IDLE_TIMEOUT 0
+ 
+ /* The default path. This will often get replaced by the shell */
+-#define DEFAULT_PATH "/usr/bin:/bin"
++#define DEFAULT_PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:" \
++	"/sbin:/bin"
+ 
+ /* Some other defines (that mostly should be left alone) are defined
+  * in sysoptions.h */
