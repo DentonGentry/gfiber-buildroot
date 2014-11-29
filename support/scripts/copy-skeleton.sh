@@ -37,12 +37,12 @@ if [ -d "$TARGET_SKELETON" ]; then \
           touch --reference="$line" "$NEW_TARGET_FILE" &&
           chmod --reference="$line" "$NEW_TARGET_FILE"
         else
-          cp -alf "$line" "$NEW_TARGET_FILE"
+          cp -f --preserve=all "$line" "$NEW_TARGET_FILE"
         fi
       fi
     done
   else
-    cp -alf "$TARGET_SKELETON/." "$TARGET_DIR/"
+    cp -f --preserve=all "$TARGET_SKELETON/." "$TARGET_DIR/"
   fi
 fi
 
