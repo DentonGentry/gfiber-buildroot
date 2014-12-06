@@ -88,8 +88,17 @@ case "$1" in
       ip46tables -A FORWARD -i br0 -j ACCEPT
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
-      for ifc in lo br0 wlan0_portal wlan1_portal; do
+      for ifc in lo br0; do
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
+      done
+
+      # allow icmp, DNS, DHCP, and HTTP bouncer on seconrary interfaces.
+      # OUTPUT rules are not needed because OUTPUT chain policy is ACCEPT
+      for ifc in wlan0_portal wlan1_portal; do
+        ip46tables -A INPUT -i "$ifc" -p icmp -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p udp --dport 53 -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p udp --dport 67:68 -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p tcp --dport 8888 -j ACCEPT
       done
 
       # igmp group membership control
