@@ -18,6 +18,7 @@ enable_80211n=
 enable_wmm=
 hidden=
 guard_interval=
+vht_guard_interval=
 persist=
 extra_short_timeouts=
 force_restart=
@@ -353,7 +354,8 @@ do
     w) width=$OPTARG ;;
     H) hidden="ignore_broadcast_ssid=1" ;;
     M) enable_wmm="wmm_enabled=1" ;;
-    G) guard_interval="[SHORT-GI-20][SHORT-GI-40]" ;;
+    G) guard_interval="[SHORT-GI-20][SHORT-GI-40]"
+       vht_guard_interval="[SHORT-GI-80]";;
     B) bridge=$OPTARG ;;
     P) persist=1; mkdir -p "$CONFIG_DIR" ;;
     X) extra_short_timeouts=1 ;;
@@ -742,8 +744,9 @@ elif runnable iw; then
     20) ;;
     40) ht40="[HT40+]" ;;
     80) ht40="[HT40+]"
+        ldpc="[RXLDPC]"
         vht_settings=$(cat <<-EOF
-		vht_capab=$ampdu
+		vht_capab=$ampdu$vht_guard_interval$ldpc
 		vht_oper_chwidth=1
 
 		# Wifi channel numbers define the center of a 20 MHz
