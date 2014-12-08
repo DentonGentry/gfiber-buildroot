@@ -25,6 +25,7 @@ define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
         $(INSTALL) -m 0755 -D package/google/google_miniclient/S99miniclient $(TARGET_DIR)/etc/init.d/S99miniclient; \
         $(INSTALL) -D -m 0755 package/google/google_miniclient/clear-app $(TARGET_DIR)/app/client/clear-app
         $(INSTALL) -D -m 0755 package/google/google_miniclient/run-app $(TARGET_DIR)/app/client/run-app
+        $(INSTALL) -D -m 0755 package/google/google_miniclient/run-netflix $(TARGET_DIR)/app/client/run-netflix
         $(INSTALL) -D -m 0755 package/google/google_miniclient/runminiclient $(TARGET_DIR)/app/client/runminiclient
 endef
 
