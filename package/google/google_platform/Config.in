@@ -99,6 +99,11 @@ config BR2_PACKAGE_GOOGLE_NETWORK_BOX
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
 
+config BR2_PACKAGE_GOOGLE_SPACECAST
+	bool "Device can act as Google SpaceCast Box"
+	default n
+	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+
 config BR2_PACKAGE_GOOGLE_STORAGE_BOX
 	bool "Device can act as Google Fiber Storage Box"
 	default n

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Do this early because hnvram needs it.
+update-mtd-links
+# FIXME(kedong): Remove this once the spacecast board is available.
+echo "GFSC100" >/etc/platform
