@@ -1,33 +1,49 @@
 #!/bin/sh
 # SUBSYSTEM, ACTION, DEVPATH, and FIRMWARE are all provided by the kernel
 # when this script is started.
-HOTPLUG_FW_DIR=/lib/firmware
 exec >/dev/kmsg 2>&1
 
-# BlueZ: adjust repeat speed on remotes
-if [ "$SUBSYSTEM" = "input" -a "$ACTION" = "add" ]; then
-  if [ -n "$DEVNAME" -a -c "/dev/$DEVNAME" ]; then
-    echo "hotplug: setting autorepeat on $DEVNAME"
-    input-repeat -f /dev/$DEVNAME -d 600
-  fi
-fi
+. /etc/utils.sh
+register_experiment RwFirmware
 
-# BlueZ: Configure hci0 interface link mode
-if [ "$SUBSYSTEM" = "bluetooth" -a "$ACTION" = "add" ]; then
-  hcidev=${DEVPATH##*/}
-  if [ "${hcidev}" = "hci0" ]; then
-    echo "hotplug: configuring ${hcidev}"
-    hciconfig "${hcidev}" lm ACCEPT,MASTER
-  fi
-fi
 
-if [ "$SUBSYSTEM" = "firmware" -a "$ACTION" = "add" ]; then
-  echo "hotplug: sys=$SUBSYSTEM act=$ACTION fw=$FIRMWARE dev=$DEVPATH"
-  if [ -f "$HOTPLUG_FW_DIR/$FIRMWARE" ]; then
-    echo 1 >/sys/$DEVPATH/loading
-    cat "$HOTPLUG_FW_DIR/$FIRMWARE" >/sys/$DEVPATH/data
-    echo 0 >/sys/$DEVPATH/loading
-  else
+load_firmware() {
+  echo "Trying firmware '$1'" &&
+  [ -r "$1" ] &&
+  echo 1 >/sys/$DEVPATH/loading &&
+  cat "$1" >/sys/$DEVPATH/data &&
+  echo 0 >/sys/$DEVPATH/loading &&
+  echo "  ...loaded firmware '$1'"
+}
+
+
+case "$SUBSYSTEM-$ACTION" in
+  input-add)
+    # BlueZ: adjust repeat speed on remotes
+    if [ -c "/dev/$DEVNAME" ]; then
+      echo "hotplug: setting autorepeat on $DEVNAME"
+      input-repeat -f /dev/$DEVNAME -d 600
+    fi
+    ;;
+
+  bluetooth-add)
+    # BlueZ: Configure hci0 interface link mode
+    hcidev=${DEVPATH##*/}
+    if [ "$hcidev" = "hci0" ]; then
+      echo "hotplug: configuring $hcidev"
+      hciconfig "$hcidev" lm ACCEPT,MASTER
+    fi
+    ;;
+
+  firmware-add)
+    echo "hotplug: sys=$SUBSYSTEM act=$ACTION fw=$FIRMWARE dev=$DEVPATH"
+    if experiment RwFirmware; then
+      load_firmware "/rw/firmware/$FIRMWARE" ||
+      load_firmware "/rw/firmware/$(basename "$FIRMWARE")"
+    else
+      false  # fall back
+    fi ||
+    load_firmware "/lib/firmware/$FIRMWARE" ||
     echo -1 >/sys/$DEVPATH/loading
-  fi
-fi
+    ;;
+esac

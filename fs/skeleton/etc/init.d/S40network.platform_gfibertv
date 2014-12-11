@@ -116,7 +116,7 @@ case "$1" in
     fi
 
     modprobe bmoca 2>/dev/null
-    if [ "$(kernopt wifical)" != "1" ]; then
+    if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
       # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
       # the production firmware at all, or it barfs.
       #
