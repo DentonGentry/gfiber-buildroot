@@ -131,17 +131,6 @@ make_resolv_conf() {
   fi
 }
 
-make_dnsmasq_acs() {
-  if [ -n "$new_cwmp_acs_url" ]; then
-    atomic /tmp/dnsmasq/acs.conf "$(
-      echo "# Set flag cwmp, when vendor-class contains dslform.org"
-      echo "dhcp-vendorclass=set:cwmp,enterprise:3561,dslforum.org"
-      echo "# Sends option 1 with option space cwmp if the flag cwmp is set"
-      echo "dhcp-option=tag:cwmp,vi-encap:3561,option6:1,\"$new_cwmp_acs_url\""
-    )"
-  fi
-}
-
 make_dnsmasq_ipv6() {
   local prefix64="$1"
   if [ -n "$prefix64" ]; then
@@ -251,7 +240,6 @@ remove_ip6_prefix() {
     ip -6 addr del $(ip_prefix_to_addr "$prefix") dev $bridge_ifc
     rm -f /tmp/dnsmasq/ipv6.conf
     ip -6 addr flush dev $bridge_ifc scope global
-    rm -f /tmp/dnsmasq/acs.conf
     QUIET=1 restart dnsmasq
   fi
 }
@@ -275,12 +263,6 @@ exit_with_hooks() {
       if [ "$restart_dnsmasq" = 1 ]; then
         local prefix=$(echo "$new_ip6_prefix" | sed -e 's@/..$@@')
         make_dnsmasq_ipv6 "$prefix"
-      fi
-
-      if [ -n "$new_cwmp_acs_url" ] && \
-        [ "$new_cwmp_acs_url" != "$old_cwmp_acs_url" ]; then
-        make_dnsmasq_acs
-        restart_dnsmasq=1
       fi
 
       if [ "$restart_dnsmasq" != 0 ]; then
