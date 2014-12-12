@@ -1,0 +1,23 @@
+#!/bin/sh
+. /etc/utils.sh
+
+case "$1" in
+  start)
+    if is-network-box; then
+      babysit 60 waveguide --high-power --scan-interval=300 \
+          2>&1 | logos waveguide &
+    elif has_wifi && runnable iw; then
+      babysit 60 waveguide --no-high-power --scan-interval=300 \
+          2>&1 | logos waveguide &
+    fi
+    ;;
+  stop)
+    pkillwait -f waveguide
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

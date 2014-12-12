@@ -22,18 +22,11 @@ create_secondary_interface() {
 case "$1" in
   start)
     if is-network-box; then
-      babysit 60 waveguide --high-power --scan-interval=300 \
-          2>&1 | logos waveguide &
-
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then
           create_secondary_interface $interface _portal
         fi
       done
-
-    elif has_wifi && runnable iw; then
-      babysit 60 waveguide --no-high-power --scan-interval=300 \
-          2>&1 | logos waveguide &
     fi
     if runnable wl && has_wifi && interface_exists eth2; then
       read wifimac </sys/class/net/eth2/address
@@ -45,7 +38,6 @@ case "$1" in
     ;;
   stop)
     wifi stop
-    pkillwait -f waveguide
     ;;
   restart)
     $0 stop; $0 start
