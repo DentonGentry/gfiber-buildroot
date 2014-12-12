@@ -4,14 +4,13 @@
 #
 ################################################################################
 
-INADYN_VERSION = 1.99.6
-INADYN_SITE = $(call github,troglobit,inadyn,$(INADYN_VERSION))
+INADYN_VERSION = 1.99.12
+INADYN_SITE = https://github.com/troglobit/inadyn/releases/download/$(INADYN_VERSION)
+INADYN_SOURCE = inadyn-$(INADYN_VERSION).tar.xz
 INADYN_LICENSE = GPLv2+
 INADYN_LICENSE_FILES = COPYING LICENSE
-
-define INADYN_BUILD_CMDS
-	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D)
-endef
+INADYN_DEPENDENCIES = openssl
+INADYN_CONF_OPT = --enable-openssl
 
 define INADYN_INSTALL_CHROOT
 	mkdir -p $(TARGET_DIR)/chroot/inadyn
@@ -22,11 +21,11 @@ define INADYN_INSTALL_CHROOT
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/tmp
 endef
 
-define INADYN_INSTALL_TARGET_CMDS
-	$(INADYN_INSTALL_CHROOT)
-	$(INSTALL) -D -m 0755 $(@D)/src/inadyn $(TARGET_DIR)/usr/sbin/inadyn
+define INADYN_INSTALL_INIT_SYSV
 	$(INSTALL) -D -m 0755 package/inadyn/S70inadyn \
 		$(TARGET_DIR)/etc/init.d/S70inadyn
 endef
 
-$(eval $(call GENTARGETS))
+INADYN_POST_INSTALL_TARGET_HOOKS += INADYN_INSTALL_CHROOT INADYN_INSTALL_INIT_SYSV
+
+$(eval $(call AUTOTARGETS))

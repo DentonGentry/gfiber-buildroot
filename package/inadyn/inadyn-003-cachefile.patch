@@ -1,0 +1,24 @@
+From 1a28d7440b1b521cfa1a9b80af848a0e0baf437c Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Thu, 11 Dec 2014 22:31:11 -0800
+Subject: [PATCH] Support --cachefile for backward compatibility.
+
+---
+ src/cmd.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/cmd.c b/src/cmd.c
+index 962b55f..ca0ae42 100644
+--- a/src/cmd.c
++++ b/src/cmd.c
+@@ -101,6 +101,7 @@ static cmd_desc_t cmd_options_table[] = {
+ 	{"-c",          1, {set_cache_dir, NULL}, ""},
+ 	{"--cache-dir", 1, {set_cache_dir, NULL}, "<DIR>\n"
+ 	 "\t\t\tSet directory for persistent cache files, default " RUNTIME_DATA_DIR},
++	{"--cachefile", 1, {set_cache_dir, NULL}, "<DIR>\nSynonym for cache-dir"},
+ 
+ 	{"-d", 1, {set_change_persona_handler, NULL}, ""},
+ 	{"--drop-privs", 1, {set_change_persona_handler, NULL},
+-- 
+2.2.0.rc0.207.ga3a616c
+
