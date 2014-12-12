@@ -274,7 +274,7 @@ stopwifi() {
   band=$1
   if runnable iw; then
     ifc=$(iw_find_ifc_from_band "$band") || die
-    pkillwait -f "hostapd.*/tmp/hostapd.conf.$ifc$"
+    iw_stop_hostapd "$ifc"
     [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
     return 0
   fi
