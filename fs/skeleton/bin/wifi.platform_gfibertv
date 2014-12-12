@@ -22,6 +22,7 @@ vht_guard_interval=
 persist=
 extra_short_timeouts=
 force_restart=
+RGSETUPPSK="very_secret_passphrase"
 
 chop_multiline()
 {
@@ -205,6 +206,10 @@ iw_stop_hostapd() {
   ip link set "$ifc" down
 }
 
+is_interface_up() {
+  [ -e "/sys/class/net/$1" ] && [ "$(cat /sys/class/net/$1/operstate 2>/dev/null)" = "up" ]
+}
+
 
 iw_start_hostapd() {
   local ifc="$1"
@@ -234,8 +239,24 @@ iw_start_hostapd() {
     iw_check1_hostapd "$ifc" || break
     if iw_check2_hostapd "$ifc"; then
       [ -n "$persist" ] && atomic "$CONFIG_DIR/hostapd.conf.$ifc" "$hostconf"
-      log ok
-      exit 0
+      if is-network-box; then
+        if [ "$ifc" = "wlan0" ]; then
+          ifconfig wlan0.tv $WLAN0TVIP 2>/dev/null
+          ifconfig wlan0.setup $WLAN0SETUPIP 2>/dev/null
+        else
+          ifconfig wlan1.tv $WLAN1TVIP 2>/dev/null
+          ifconfig wlan1.setup $WLAN1SETUPIP 2>/dev/null
+        fi
+        if is_interface_up "$ifc.tv" && is_interface_up "$ifc.setup"; then
+          log ok
+          brctl addif br0 $ifc.tv
+          brctl addif br0 $ifc.setup
+          exit 0
+        fi
+      else
+        log ok
+        exit 0
+      fi
     fi
     echo -n . >&2
     sleep 0.1
@@ -759,6 +780,46 @@ elif runnable iw; then
 		EOF
         ) ;;
   esac
+  setupvdev=
+  if is-network-box; then
+    if [ "$ifc" = "wlan0" ]; then
+      bssid=$(hnvram -qr MAC_ADDR_WIFI)
+    else
+      bssid=$(hnvram -qr MAC_ADDR_WIFI2)
+    fi
+
+    if [ -z "$bssid" ]; then
+      bssid=$(hnvram -rq MAC_ADDR)
+      if [ -z "$bssid" ]; then
+        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI(2)"
+        # should not happen, but hardcode one for extreme case.
+        bssid="f8:8f:ca:80:11:22"
+      fi
+    fi
+
+    bssidtv=$(mac_addr_increment "${bssid}" 4)
+    bssidsetup=$(mac_addr_increment "${bssid}" 5)
+    setupvdev=$(cat <<-EOF
+	bss=${ifc}.tv
+	bssid=$bssidtv
+	ssid=${ssid}tv
+	auth_algs=$auth_algs
+	wpa=$wpa
+	wpa_passphrase=$psk
+	wpa_key_mgmt=WPA-PSK
+	wpa_pairwise=$wpa_pairwise
+
+	bss=${ifc}.setup
+	bssid=$bssidsetup
+	ssid=${ifc}setup
+	auth_algs=$auth_algs
+	wpa=$wpa
+	wpa_passphrase=$RGSETUPPSK
+	wpa_key_mgmt=WPA-PSK
+	wpa_pairwise=$wpa_pairwise
+	EOF
+    )
+  fi
   hostconf=$(cat <<-EOF
 	ctrl_interface=/var/run/hostapd
 	interface=$ifc
@@ -780,6 +841,9 @@ elif runnable iw; then
 	$require_ht
 	$require_vht
 	$hidden
+
+	$setupvdev
+
 	ht_capab=$ht20$ht40$guard_interval$ht_rxstbc
 	$vht_settings
 	EOF

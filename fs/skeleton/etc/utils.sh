@@ -1,6 +1,12 @@
 #!/bin/bash
 # Useful shell utility functions.
 
+#Pre-allocated virtual wlan IPs used for routing.
+WLAN0TVIP="192.168.1.2"
+WLAN0SETUPIP="192.168.1.3"
+WLAN1TVIP="192.168.1.4"
+WLAN1SETUPIP="192.168.1.5"
+
 # Atomically rewrite a file by writing to a temp file and then renaming it.
 # Only rewrites the file if it's different from before.  This helps avoid
 # unnecessary flash churn.
