@@ -2,13 +2,12 @@
 
 case "$1" in
   start)
-    babysit 60 logmark &
+    logmark-once
     if runnable sysvar_cmd; then
       sysvar_cmd -g GOOGLE_SSL_CRT >/dev/random
     fi
     ;;
   stop)
-    pkillwait -x logmark
     ;;
   restart|reload)
     $0 stop; $0 start ;;

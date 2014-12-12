@@ -10,6 +10,7 @@ case "$1" in
     # instead and kill both upload-logs and upload-logs-loop.
     pkillwait upload-logs
     pkillwait log-delay
+    pkillwait upload-crash
     ;;
   restart|reload)
     $0 stop; $0 start
