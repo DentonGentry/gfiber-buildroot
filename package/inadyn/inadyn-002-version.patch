@@ -1,27 +1,29 @@
-From 416a3f80e2818f16c62e480b9c620eb310d06810 Mon Sep 17 00:00:00 2001
+From e563346c704c5a72f977994ceff8ccabf1cd43e5 Mon Sep 17 00:00:00 2001
 From: Denton Gentry <dgentry@google.com>
-Date: Mon, 28 Jul 2014 18:05:42 -0700
-Subject: [PATCH] Update version information.
+Date: Thu, 11 Dec 2014 20:32:36 -0800
+Subject: [PATCH] Update version.
 
 Acknowledge the author, but direct problem reports
 to Google Fiber.
 ---
- include/dyndns.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ configure | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/dyndns.h b/include/dyndns.h
-index f2dee53..c923f10 100644
---- a/include/dyndns.h
-+++ b/include/dyndns.h
-@@ -29,7 +29,7 @@
+diff --git a/configure b/configure
+index 07797b6..7a4ebb9 100755
+--- a/configure
++++ b/configure
+@@ -581,8 +581,8 @@ MAKEFLAGS=
+ PACKAGE_NAME='inadyn'
+ PACKAGE_TARNAME='inadyn'
+ PACKAGE_VERSION='1.99.12'
+-PACKAGE_STRING='inadyn 1.99.12'
+-PACKAGE_BUGREPORT='https://github.com/troglobit/inadyn/issues'
++PACKAGE_STRING='inadyn 1.99.12 (Google Fiber)'
++PACKAGE_BUGREPORT='Google Fiber customer support'
+ PACKAGE_URL=''
  
- #define DYNDNS_VERSION_STRING	"Inadyn version " VERSION_STRING " -- Dynamic DNS update client."
- #define DYNDNS_AGENT_NAME	"inadyn/" VERSION_STRING
--#define DYNDNS_EMAIL_ADDR	"troglobit@gmail.com"
-+#define DYNDNS_EMAIL_ADDR	"(Google Fiber version; acknowledging work by troglobit@gmail.com)"
- 
- /* DDNS system ID's */
- enum {
+ ac_unique_file="src/main.c"
 -- 
-2.0.0.526.g5318336
+2.2.0.rc0.207.ga3a616c
 
