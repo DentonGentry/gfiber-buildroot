@@ -1,28 +1,33 @@
 #!/bin/sh
-
 MODULE_PATH=/usr/lib/modules
+. /etc/utils.sh
 
-[ -e ${MODULE_PATH}/wl.ko ] && insmod ${MODULE_PATH}/wl.ko
+register_experiment SkipBluetoothWifi
+
+if experiment SkipBluetoothWifi; then
+  exit 0
+fi
+
+[ -e "$MODULE_PATH/wl.ko" ] && insmod "$MODULE_PATH/wl.ko"
 
 # Set up BT, if present
 if is-tv-box; then
   BT_MAC=$(hnvram -rq MAC_ADDR_BT)
-  if [ -z "${BT_MAC}" ]; then
+  if [ -z "$BT_MAC" ]; then
     MAC=$(hnvram -rq MAC_ADDR)
-    if [ -z "${MAC}" ]; then
+    if [ -z "$MAC" ]; then
       echo "$0: ERROR: TV Box has no MAC_ADDR nor MAC_ADDR_BT"
       exit 1
     fi
-    . /etc/utils.sh
-    BT_MAC=$(mac_addr_increment "${MAC}" 2)
+    BT_MAC=$(mac_addr_increment "$MAC" 2)
   fi
-  BT_MAC=$(echo "${BT_MAC}" | sed 's/./\U&/g')
-  echo "${BT_MAC}" >/tmp/btmacaddress
+  BT_MAC=$(echo "$BT_MAC" | sed 's/./\U&/g')
+  echo "$BT_MAC" >/tmp/btmacaddress
 fi
 
 if ! is-bluez-platform; then
-  [ -e ${MODULE_PATH}/btusb.ko ] && insmod ${MODULE_PATH}/btusb.ko
-  [ -e ${MODULE_PATH}/bthid.ko ] && insmod ${MODULE_PATH}/bthid.ko
+  [ -e "$MODULE_PATH/btusb.ko" ] && insmod "$MODULE_PATH/btusb.ko"
+  [ -e "$MODULE_PATH/bthid.ko" ] && insmod "$MODULE_PATH/bthid.ko"
 elif [ "$(kernopt wifical)" = "1" ]; then
   # If we're trying to calibrate Wifi/BT, loading
   # the production driver disrupts the process, and we need the "primary
@@ -35,7 +40,7 @@ else  # Not trying to calibrate
   modprobe -a compat
   insmod /lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko
   modprobe -a bluetooth hidp hid-gfrm uhid
-  modprobe btmrvl bdaddr_base=${BT_MAC}
+  modprobe btmrvl bdaddr_base="$BT_MAC"
   modprobe btmrvl_sdio
-  modprobe btusb bdaddr_base=${BT_MAC}
+  modprobe btusb bdaddr_base="$BT_MAC"
 fi
