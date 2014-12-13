@@ -1,0 +1,72 @@
+#!/bin/sh
+
+#
+# Configure GFRG2X0 QCA8337N switch:
+# - Enabling hardware IGMP snooping of join/leave requests to avoid multicast
+#   flooding
+# - Disable flow control on port 0 (Mindspeed C2K SoC)
+#
+
+disable_multicast_flood_cmds()
+{
+  echo igmp rp set 0x1
+  echo igmp cmd set cpycpu
+  for n in $(seq 1 4); do
+    echo igmp mode set $n enable
+    echo igmp portJoin set $n enable
+    echo igmp portLeave set $n enable
+  done
+}
+
+restore_defaults_cmd()
+{
+  echo igmp rp set 0x0
+  echo igmp cmd set rdtcpu
+  for n in $(seq 1 4); do
+    echo igmp mode set $n disable
+    echo igmp portJoin set $n disable
+    echo igmp portLeave set $n disable
+  done
+}
+
+disable_flowctrl_port0_cmds()
+{
+        echo port flowCtrl set 0 disable
+}
+
+enable_flowctrl_port0_cmds()
+{
+        echo port flowCtrl set 0 enable
+}
+
+case "$1" in
+  start)
+    if is-qca83xx-present; then
+      qca83xx --stats
+    fi
+
+    if runnable ssdk_sh; then
+      {
+        #disable_multicast_flood_cmds           # commented out for for b/16856861"
+        disable_flowctrl_port0_cmds
+        echo quit
+      } | ssdk_sh 2>&1 | logos switch
+    fi
+    ;;
+  stop)
+    if runnable ssdk_sh; then
+      {
+        #restore_defaults_cmds                  # commented out for for b/16856861"
+        enable_flowctrl_port0_cmds
+        echo quit
+      } | ssdk_sh 2>&1 | logos switch
+    fi
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

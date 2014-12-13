@@ -1,0 +1,101 @@
+#!/bin/sh
+# Install an image from a USB stick if there's one plugged in and a file
+# named <platformprefix>-*.gi exists in its root directory.
+#
+. /etc/utils.sh
+
+log()
+{
+  echo "$(basename $0):" "$@" >&2
+}
+
+
+findall()
+{
+  local path=
+  for path in "$@"; do
+    [ -e "$path" ] && echo "$path"
+  done
+}
+
+
+try_install()
+{
+  wait-scsi usb
+  any=
+  current_ver=$(cat /etc/version)
+  platform_prefix=${current_ver%%-*}
+  for path in $(findall /sys/block/sd*/device); do
+    if realpath $path | grep -q -e "/usb[0-9]*/"; then
+      any=1
+      dev=$(basename $(dirname $path))
+      log "Checking $dev for installable images."
+      for partpath in $(findall /sys/block/$dev/*/partition); do
+        part=$(basename $(dirname $partpath))
+        log "Trying $part:"
+        mkdir -p /tmp/installsrc
+        if mount -t vfat /dev/$part /tmp/installsrc; then
+          log "  mounted."
+
+          if [ -e /tmp/installsrc/factory_status ]; then
+            # Note for the future: never execute files from USB.
+            # Anybody can put anything they want on a USB stick.
+            #
+            # In this case they could make the factory_status server
+            # start, which wouldn't actually hurt anything.
+            echo :>/tmp/factory_status
+          fi
+
+          # we deliberately use the last *.gi file alphabetically.  That
+          # one has the highest version number so it's the best choice.
+          lastimg=
+          for img in $(findall /tmp/installsrc/*.gi); do
+            imgbase=$(basename "$img")
+            if startswith "$imgbase" "$platform_prefix-"; then
+              log "  considering $imgbase"
+              lastimg=$img
+            else
+              log "  skipping $imgbase (wrong platform)"
+            fi
+          done
+          if [ "$(basename $lastimg)" = "$current_ver.gi" ]; then
+            log "  already installed; skipping."
+          elif [ -n "$lastimg" ]; then
+            log "  installing $(basename $lastimg)"
+            leds 15 0 15 0 15 0  # super noisy leds while doing update
+            if ginstall -t "$lastimg" -p other; then
+              log "  installed successfully."
+              leds 0  # turn off leds, indicating finished + halted
+            else
+              log "  ...install failed!"
+              leds 1 0  # blinking red means install tried and failed
+            fi
+            umount /tmp/installsrc
+            log "Please remove USB and reboot."
+            while sleep 10; do
+              echo -n '.'
+            done
+          else
+            log "  no files matching *.gi"
+          fi
+          umount /tmp/installsrc
+        fi
+      done  # partition loop
+    fi
+  done  # disk loop
+  [ -z "$any" ] && log "no removable media found."
+}
+
+
+case "$1" in
+  start)
+    try_install
+    ;;
+  stop)
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}" >&2
+    exit 1
+esac

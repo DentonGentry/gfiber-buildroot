@@ -1,0 +1,103 @@
+#!/bin/sh
+. /etc/utils.sh
+
+trim() {
+  local var="$1"
+  var="${var#"${var%%[![:space:]]*}"}"
+  var="${var%"${var##*[![:space:]]}"}"
+  echo -n $var
+}
+
+hddserial() {
+  local var
+  var=$(hdparm -I /dev/sda | grep "Serial Number")
+  trim "${var##*:}"
+}
+
+check_pairing() {
+  attachedSerial=$(hddserial)
+  pairedSerial=$(hnvram -rq PAIRED_DISK)
+  echo "Attached HDD Serial:$attachedSerial, Paired HDD Serial:$pairedSerial"
+  if [ "$attachedSerial" = "$pairedSerial" ]; then
+    echo "   MATCH!"
+  else
+    if [ "$pairedSerial" = "" ]; then
+      echo "   NO PAIR; PAIRING:$attachedSerial"
+      hnvram -w PAIRED_DISK="$attachedSerial"
+    else
+      echo "   NO MATCH; NO MOUNT"
+      echo 1 >/tmp/gpio/ledcontrol/hdd_bad_pair
+      exit 0
+    fi
+  fi
+}
+
+FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200,pin_block_bitmaps
+
+case "$1" in
+  start)
+    if ! is-storage-box; then
+      echo "Not a storage box."
+      exit 0
+    fi
+    failure_media=0
+    failure_backup=0
+    mediafs=$(kernopt mediafs)
+    wait-scsi
+    if ! [ -e /dev/sda ]; then
+      echo "No drive found; rescanning."
+      # "ata1.00: both IDENTIFYs aborted, assuming NODEV"
+      # This happens sometimes, make it rescan.
+      for d in /sys/class/scsi_host/host*/scan; do
+        [ -e "$d" ] && echo "0 0 0" >$d
+      done
+      sleep 5
+    fi
+    if startswith "$mediafs" "9p:"; then
+      echo "Mounting 9p /var/media."
+      mount -t 9p -o trans=virtio,version=9p2000.L "${mediafs#9p:}" /var/media
+      failure_media=$?
+    elif startswith "$mediafs" "/dev/"; then
+      echo "Mounting ext4 /var/media from '$mediafs'"
+      mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
+    elif [ -e /dev/sda ]; then
+      hdparm -q -B255 /dev/sda  # disable power saving
+      check_pairing
+      echo "Mounting SATA device."
+      if [ -e /dev/sda1 ]; then
+        tune2fs -m 0 /dev/sda1
+        mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
+        failure_media=$?
+        if [ -e /dev/sda2 ]; then
+          mount -o "$FLAGS" -t ext4 /dev/sda2 /var/backup
+          failure_backup=$?
+        fi
+      elif [ -h /dev/sda ]; then
+        tune2fs -m 0 /dev/sda
+        mount -o "$FLAGS" -t ext4 /dev/sda /var/media
+        failure_media=$?
+      fi
+    elif is-storage-box; then
+      echo "No drive found in Storage Box; failing."
+      failure_media=1
+    fi
+    if [ "$failure_media" != 0 ] || [ "$failure_backup" != 0 ]; then
+      echo "HDD mounting error."
+      echo 1 >/tmp/gpio/ledcontrol/hdd_mount_err
+      exit 0
+    fi
+    ;;
+  stop)
+    # Unmount SATA device
+    echo "Unmounting SATA device"
+    umount /var/media >/dev/null 2>&1
+    umount /var/backup >/dev/null 2>&1
+    ;;
+  restart|reload)
+    $0 stop
+    $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
