@@ -18,9 +18,11 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-python-setuptools \
 	protobuf \
 
+HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest
+
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM),y)
 GOOGLE_PLATFORM_DEPENDENCIES += humax_misc
-HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest host-humax_misc
+HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-humax_misc
 endif
 
 
