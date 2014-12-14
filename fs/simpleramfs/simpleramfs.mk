@@ -42,7 +42,7 @@ endif
 
 define SIMPLERAMFS_BUILD_CMDS
 	rm -rf $(@D)/fs
-	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat veritytmp; do \
+	for d in sbin bin lib proc dev sys rootfs mnt tmp vfat veritytmp etc; do \
 		mkdir -p $(@D)/fs/$$d; \
 	done
 
@@ -88,6 +88,7 @@ define SIMPLERAMFS_BUILD_CMDS
 
 	# driver firmware and modules
 	ln -f	fs/skeleton/sbin/hotplug $(@D)/fs/sbin/
+	ln -f	fs/skeleton/etc/utils.sh $(@D)/fs/etc/
 	if [ "$(BR2_PACKAGE_MINDSPEED_DRIVERS)" = "y" ]; then \
 		mkdir -p $(@D)/fs/lib/modules $(@D)/fs/lib/firmware && \
 		ln -f	$(TARGET_DIR)/lib/modules/*/extra/pfe.ko \
