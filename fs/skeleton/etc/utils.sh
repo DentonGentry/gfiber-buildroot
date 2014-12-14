@@ -96,6 +96,10 @@ setup_ads() {
   chmod 770 /rw/sagesrv
   chown video.video /rw/sagesrv
   chown video.video /rw/sagesrv/*
+  mkdir -p /var/media/ads
+  chmod 770 /var/media/ads
+  chown video.video /var/media/ads
+  chown video.video /var/media/ads/*
 }
 
 
