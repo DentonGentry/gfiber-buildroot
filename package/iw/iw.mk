@@ -4,7 +4,7 @@
 #
 #############################################################
 
-IW_VERSION = 3.15
+IW_VERSION = 3.17
 IW_SOURCE = iw-$(IW_VERSION).tar.gz
 IW_SITE = https://kernel.org/pub/software/network/iw
 IW_DEPENDENCIES = host-pkg-config libnl
