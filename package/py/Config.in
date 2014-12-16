@@ -32,5 +32,6 @@ config BR2_PACKAGE_PY_CURL
 source "package/py/py-dns/Config.in"
 source "package/py/py-monotime/Config.in"
 source "package/py/py-yaml/Config.in"
+source "package/py/py-numpy/Config.in"
 
 endmenu
