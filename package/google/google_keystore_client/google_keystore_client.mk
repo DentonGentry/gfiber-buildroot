@@ -38,7 +38,7 @@ endef
 define HOST_GOOGLE_KEYSTORE_CLIENT_BUILD_CMDS
 	if [ -n "$(GOOGLE_KEYSTORE_CLIENT_MISSING_KEYS)" ]; then \
 		cd $(@D)/depot/google3; \
-		blaze --batch build \
+		blaze --batch --blazerc=/dev/null build \
 			--noshow_progress \
 			--forge -- \
 			//isp/fiber/drm:drm_keystore_client; \
@@ -51,7 +51,7 @@ define GOOGLE_KEYSTORE_CLIENT_EXECUTE
 		cp "$(LICENSE_STATIC_PATH)/$(1)" $(2); \
 	else \
 		cd $(HOST_GOOGLE_KEYSTORE_CLIENT_DIR)/depot/google3; \
-		blaze --batch run \
+		blaze --batch --blazerc=/dev/null run \
 			--noshow_progress -- \
 			//isp/fiber/drm:drm_keystore_client \
 			--key_type $(1) \
