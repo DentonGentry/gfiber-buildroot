@@ -21,8 +21,4 @@ define PYTHON_NUMPY_CONFIGURE_CMDS
 	echo "libraries =" >> $(@D)/site.cfg
 endef
 
-# Some package may include few headers from NumPy, so let's install it
-# in the staging area.
-PYTHON_NUMPY_INSTALL_STAGING = YES
-
-$(eval $(python-package))
+$(eval $(call PYTARGETS))
