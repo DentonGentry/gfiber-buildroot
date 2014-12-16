@@ -2,136 +2,8 @@
 . /etc/utils.sh
 
 
-irq_affinity() {
-  local irq="$1" cpu="$2"
-  if [ -e "/proc/irq/$irq/smp_affinity" ]; then
-    if ! echo "$cpu" >"/proc/irq/$irq/smp_affinity"; then
-      echo "Failed to set affinity for IRQ $irq @ CPU $cpu"
-    fi
-  else
-    echo "  ...irq #$irq not present, skipping" >&2
-  fi
-}
-
-
-redistribute_irqs()
-{
-  # if a second CPU isn't available, do nothing.
-  echo "distribute IRQ handling between cores"
-  if ! taskset 2 true 2>/dev/null; then
-    echo "  ...only one CPU available, skipped."
-  fi
-
-  # Rule of thumb:
-  #  - interrupts are generally by default on first CPU (bitfield=1)
-  #  - let's move realtime sensitive stuff to second CPU (bitfield=2)
-  #  - non-realtime userspace processes can default to both (bitfield=3)
-  if is-storage-box || is-network-box; then
-    # Storage box serves MoCA and ethernet simultaneously.
-    # - put them both on separate CPUs to maximize throughput.
-    # - consider ethernet (not MoCA) to be realtime sensitive, since it
-    #   carries the multicast feed.
-    # - consider disk to be non-realtime, since it can prefetch/writeback.
-    serialcpu=1
-    eth0cpu=2
-    mocacpu=1
-    wificpu=1  # may not actually have wifi
-    diskcpu=1
-  else
-    # TV box handles video interrupts (via miniclient) and
-    # (ethernet *or* MoCA) traffic (which carries the video stream), and wifi.
-    # Network traffic includes the video stream, but it's TCP, so it should
-    # be able to retransmit if packets are lost (unlike multicast on the
-    # storage box) so it should be okay to put it on the non-realtime CPU.
-    serialcpu=1
-    eth0cpu=1
-    mocacpu=1
-    wificpu=1
-    diskcpu=1  # doesn't actually have a disk
-  fi
-
-  if grep -q BCM7425 /proc/cpuinfo; then
-    irq_affinity 62 $serialcpu
-    irq_affinity 18 $eth0cpu
-    irq_affinity 19 $eth0cpu
-    irq_affinity 20 $mocacpu
-    irq_affinity 21 $mocacpu
-    irq_affinity 31 $mocacpu
-    irq_affinity 34 $wificpu  # bcm wifi, if present
-    irq_affinity 42 $diskcpu
-  elif grep -q BCM7429 /proc/cpuinfo; then
-    irq_affinity 52 $serialcpu
-    irq_affinity 16 $eth0cpu
-    irq_affinity 17 $eth0cpu
-    irq_affinity 18 $mocacpu
-    irq_affinity 19 $mocacpu
-    irq_affinity 28 $mocacpu
-    # Wifi is on one of mmc0 or mmc1, but it has varied between early
-    # device models.  Since mmc is pretty fast and seldom used (and we happen
-    # to want it on the non-realtime cpu anyway, like wifi), let's just
-    # blindly put them both on the wifi cpu.
-    irq_affinity 35 $wificpu  # mmc1
-    irq_affinity 36 $wificpu  # mmc0
-    # Note: no disk present, ignore $diskcpu
-  elif grep -q comcerto /proc/iomem; then
-    # TODO(apenwarr): we steer *all* PFE network traffic to $eth0cpu.
-    #  Ideally we want only multicast to go there, and other traffic to
-    #  go to the non-realtime CPU.  There may be some way to do this by
-    #  changing PFE somehow.  As is, incoming WAN traffic destined for wifi
-    #  could end up sucking all available CPU and interfere with multicast.
-    irq_affinity  59 $serialcpu  # serial
-    irq_affinity  62 $serialcpu  # i2c (NOR flash)
-    irq_affinity  36 $eth0cpu    # *all* PFE
-    irq_affinity  77 $mocacpu
-    irq_affinity 128 $wificpu    # new boards, ath10k
-    irq_affinity 160 $wificpu    # new boards, ath9k
-    irq_affinity  96 $wificpu  2>/dev/null  # old boards, ath10k
-    irq_affinity 164 $wificpu  2>/dev/null  # old boards, ath9k
-    irq_affinity  48 $diskcpu
-  fi
-}
-
 case "$1" in
   start)
-    # TODO(apenwarr): remove this once all devices use 'moca0' as the name.
-    if [ -e /sys/class/net/moca0 ]; then
-      # GFRG200
-      mocaifc=moca0
-    else
-      # GFMS100/GFHD100/GFHD200
-      mocaifc=eth1
-    fi
-
-    WIFI_MAC=$(hnvram -rq MAC_ADDR_WIFI)
-    if [ -z "$WIFI_MAC" ]; then
-      MAC=$(hnvram -rq MAC_ADDR)
-      if [ -z "${MAC}" ]; then
-        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
-      else
-        WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
-      fi
-    fi
-    if [ -n "$WIFI_MAC" ]; then
-      mwifi_param="wifi_addr=$WIFI_MAC"
-    fi
-
-    modprobe bmoca 2>/dev/null
-    if [ "$(kernopt wifical)" != "1" ]; then
-      # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
-      # the production firmware at all, or it barfs.
-      #
-      # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
-      # the wifi device ordering is constant.
-      modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
-      modprobe mwifiex $mwifi_param 2>/dev/null
-      modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
-
-      # Enable wifi beacon debug logging.
-      echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
-      # Enable wifi beacon and fatal debug logging.
-      echo 0x00004400 >/sys/module/ath9k/parameters/debug
-    fi
-
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -159,20 +31,6 @@ case "$1" in
     # configure loopback
     ifup lo
 
-    # Set the wifi mac address from values in hnvram.
-    if [ -e /sys/class/net/wlan0 ]; then
-      a=$(hnvram -qr MAC_ADDR_WIFI)
-      if [ -n "$a" ]; then
-        ip link set wlan0 address "$a"
-      fi
-    fi
-    if [ -e /sys/class/net/wlan1 ]; then
-      a=$(hnvram -qr MAC_ADDR_WIFI2)
-      if [ -n "$a" ]; then
-        ip link set wlan1 address "$a"
-      fi
-    fi
-
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
     brctl setfd br0 1
@@ -185,54 +43,34 @@ case "$1" in
     elif is-storage-box; then
       brctl setbridgeprio br0 0x7990
     fi
-    for i in lan0 eth0; do
-      [ -e /sys/class/net/$i/address ] && \
-        ip link set br0 address \
-        $(cat /sys/class/net/$i/address) && \
-        break
-    done
+    [ -e /sys/class/net/lan0/address ] && \
+      ip link set br0 address \
+      $(cat /sys/class/net/lan0/address)
     echo "done"
     ip link set br0 up
     ip link set br0 up  # kernel 3.2.26 bug: fails the first time
 
-    # VLAN tag for MoCA interface
-    ip link add link $mocaifc name $mocaifc.0 type vlan id 0
-    # SO_PRIORITY -> 802.1p mapping
-    for prio in 0 1 2 3 4 5 6 7; do
-      vconfig set_egress_map $mocaifc.0 $prio $prio >/dev/null 2>&1
-    done
-
     echo "Adding interfaces... "
     # Move any existing network info from primary network interfaces to
     # the bridge.
-    for x in \
-        /sys/class/net/[ea]th[0-9] \
-        /sys/class/net/lan[0-9] \
-        /sys/class/net/moca[0-9] \
-        /sys/class/net/wlan[0-9]; do
-      x=${x#/sys/class/net/}
-      echo "Adding interface $x..."
-      ip link set $x up &&
-      ip -o -f inet addr show $x |
-      while read a b c ip d brd junk; do
-        ip addr add $ip broadcast $brd dev br0
-      done &&
-      if [ $x = $mocaifc ]; then
-        x=$mocaifc.0
-      fi &&
-      brctl addif br0 $x &&
-      ip -o -f inet route list dev $x |
-      while read dst routeinfo; do
-        if [ "$dst" = "default" ]; then
-          echo "Moving route '$dst' from $x to br0" &&
-          ip route del dev $x $dst $routeinfo &&
-          ip route add dev br0 $dst $routeinfo
-        fi
-      done &&
-      ip -o -f inet addr show $x |
-      while read a b c ip junk; do
-        ip addr del $ip dev $x
-      done
+    echo "Adding interface lan0..."
+    ip link set lan0 up &&
+    ip -o -f inet addr show lan0 |
+    while read a b c ip d brd junk; do
+      ip addr add $ip broadcast $brd dev br0
+    done &&
+    brctl addif br0 lan0 &&
+    ip -o -f inet route list dev lan0 |
+    while read dst routeinfo; do
+      if [ "$dst" = "default" ]; then
+        echo "Moving route '$dst' from lan0 to br0" &&
+        ip route del dev $x $dst $routeinfo &&
+        ip route add dev br0 $dst $routeinfo
+      fi
+    done &&
+    ip -o -f inet addr show lan0 |
+    while read a b c ip junk; do
+      ip addr del $ip dev lan0
     done
     kernopt ip |
     while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
@@ -247,61 +85,17 @@ case "$1" in
     echo "Bringing up the bridge..."
     ifup br0
 
-    redistribute_irqs
-
-    if [ -e /dev/bmoca0 ]; then
-      echo "starting moca..."
-      babysit 30 runmoca 2>&1 | logos mocad &
-    fi
-
-    if [ -e /sys/class/net/wan0 ]; then
-      echo "Bringing up the WAN port..."
-      ip link add link wan0 name wan0.2 type vlan id 2
-      sysctl net.ipv4.conf.all.forwarding=1
-      sysctl net.ipv6.conf.all.forwarding=1
-      sysctl net.ipv6.conf.wan0.accept_ra=2
-      sysctl net.ipv6.conf.wan0/2.accept_ra=2
-      ifup wan0
-      ifup wan0.2
-
-      # set the class priority to 802.1p bit mapping.  We don't want
-      # pbit=0,1 ever, so force into 2.
-      vconfig set_egress_map wan0.2 0 2
-      vconfig set_egress_map wan0.2 1 2
-      for prio in 2 3 4 5 6 7; do
-        vconfig set_egress_map wan0.2 $prio $prio >/dev/null 2>&1
-      done
-    fi
-
-    # Enable hardware offloads, do this at the end to avoid
-    # invalid access caused by powered down core
-    ethtool -K eth0 rx on tx on sg on gso on gro on
-    ethtool -K $mocaifc rx on tx on sg on gso on gro on
-
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
-      if [ -e /sys/class/net/wan0 ]; then
-        echo "Shutting down the WAN port..."
-        ifdown wan0
-        ifdown wan0.2
-        ip link del wan0.2
+      if [ -n /sys/class/net/lan0/bridge ]; then
+        ifdown lan0
+        echo "Shutting down lan0 interface"
       fi
-      for x in $(ls /sys/class/net); do
-        if [ -n /sys/class/net/$x/bridge ]; then
-          ifdown $x
-          echo "Shutting down $x interface"
-        fi
-        if [ -e /sys/class/net/$x/device ]; then
-          brctl delif br0 $x
-        fi
-      done
+      if [ -e /sys/class/net/lan0/device ]; then
+        brctl delif br0 lan0
+      fi
       ifdown br0
-      # Kill mocad and mocactl
-      if [ -e /dev/bmoca0 ]; then
-        echo -n "mocacfg kill"
-        pkillwait mocad
-      fi
     fi
     [ -e /sys/class/net/br0 ] && brctl delbr br0
     ;;
