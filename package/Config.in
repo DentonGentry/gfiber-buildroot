@@ -671,6 +671,7 @@ menu "Drivers"
 source "package/backports/Config.in"
 source "package/backports-custom/Config.in"
 source "package/firmware/Config.in"
+source "package/simpleramfs_firmware/Config.in"
 endmenu
 
 menu "Manufacturing support"
