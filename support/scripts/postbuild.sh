@@ -23,7 +23,15 @@ repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 #  involving git submodules, just don't want to change too much
 #  in this code all at once.  This should work for now.
 tagname=$(git describe 2>/dev/null)
-version="$PLATFORM_PREFIX-${tagname#*-}"
+tagabbrev=$(git describe --abbrev=0 2>/dev/null)
+tree_state=$(git rev-list "$tagabbrev"..HEAD)
+if [ -n "$tree_state" ]; then
+  # Tree has commits since last tag, rebuild the image name
+  count=$(repo forall -c "git rev-list HEAD..'$tagabbrev' 2>/dev/null" | wc -l)
+  version="$PLATFORM_PREFIX-${tagabbrev#*-}-$count-${tagname##*-}"
+else
+  version="$PLATFORM_PREFIX-${tagname#*-}"
+fi
 echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
 
 if [ "$PROD" != "y" ]; then
