@@ -1,0 +1,22 @@
+#!/bin/sh
+. /etc/utils.sh
+
+# This applies only to the network box
+is-network-box || exit 0
+# If the MAC address is already in HNVRAM, we are done
+hnvram -rq MAC_ADDR >/dev/null && exit 0
+# The bootloader passes all three MAC addresses from the env partition on the
+# kernel command line
+macaddr=$(kernopt mac_addr)
+# Ensure the kernel command line argument matches the format we are expecting
+# i.e. three MAC addresses separated by commas.
+pattern='([[:alnum:]]{2}:){5}[[:alnum:]]{2}'
+echo $macaddr | grep -qEe "$pattern,$pattern,$pattern" || exit 1
+echo $macaddr | while IFS=, read a b c d; do
+	echo "Migrating MAC addresses from barebox env partition to HNVRAM"
+	echo "LAN  $a"
+	echo "WAN  $b"
+	echo "MOCA $c"
+	hnvram -w MAC_ADDR=$a -w MAC_ADDR_WAN=$b -w MAC_ADDR_MOCA=$c &&
+	echo "Successfully migrated all three MAC addresses"
+done
