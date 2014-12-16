@@ -1,0 +1,136 @@
+#!/bin/sh
+#
+# Program the hardware watchdog counter.
+#
+
+onusr1()
+{
+  done=1
+}
+
+trap onusr1 USR1
+
+if grep -q "BCM7425" /proc/cpuinfo; then
+  # GFHD100
+  init=bcm7425_init
+  setup=bcm_setup
+  pushback=bcm_pushback
+  stop=
+elif grep -q "BCM7429" /proc/cpuinfo; then
+  # GFHD200
+  init=bcm7429_init
+  setup=bcm_setup
+  pushback=bcm_pushback
+  stop=
+elif grep -q "Optimus" /proc/cpuinfo; then
+  # GFRG200/210
+  init=mindspeed_init
+  setup=mindspeed_setup
+  pushback=mindspeed_pushback
+  stop=mindspeed_stop
+else
+  echo "Unknown CPU type, cannot initialize watchdog timer"
+  cat /proc/cpuinfo
+  exit 1
+fi
+
+echo -1000 >/proc/$$/oom_score_adj
+
+write()
+{
+  devmem "$@" >/dev/null
+}
+
+#
+# BCM support
+#
+
+# The watch counter.  It counts at a clock rate of 27Mhz,
+# so the largest timeout we can program is 159s.  The watchdog timer triggers
+# an NMI midway which as at approx. 79.5s.  Our custom NMI handler in the
+# kernel dumps the CPU registers and calls panic() i.e. reboots the box. If,
+# for some reason, this fails, the watchdog timer will eventually assert a chip
+# reset event after another 79.5s.  (The software watchdog is currently at 70s)
+
+bcm7425_init()
+{
+  timer_wdtimeout_reg=0x104067e8
+  timer_wdcmd_reg=0x104067ec
+  timer_wdchiprst_cnt_reg=0x104067f0
+  timer_wdctrl_reg=0x104067fc
+}
+
+bcm7429_init()
+{
+  timer_wdtimeout_reg=0x104066e8
+  timer_wdcmd_reg=0x104066ec
+  timer_wdchiprst_cnt_reg=0x104066f0
+  timer_wdctrl_reg=0x104066fc
+}
+
+bcm_setup()
+{
+  # WD timeout value: 159.072862778 seconds (an NMI is triggered halfway through)
+  wdtimeout_val=0xffffffff
+
+  # WD event mode: NMI asserted when WD timer is midway, and chip reset asserted
+  # when WD timer expires
+  wd_event_mode=0x2
+
+  # WD chip reset length: 2.49 seconds (maximum)
+  wdchiprst_cnt_val=0x3ffffff
+
+  # Stop and reprogram the watchdog timer
+  write $timer_wdcmd_reg 32 0xee00
+  write $timer_wdcmd_reg 32 0x00ee
+  write $timer_wdtimeout_reg 32 $wdtimeout_val
+  write $timer_wdctrl_reg 32 $wd_event_mode
+  write $timer_wdchiprst_cnt_reg 32 $wdchiprst_cnt_val
+}
+
+bcm_pushback()
+{
+  write $timer_wdcmd_reg 32 0xff00
+  write $timer_wdcmd_reg 32 0x00ff
+}
+
+#
+# mindspeed support
+#
+
+# default wd is 70 seconds
+
+mindspeed_init()
+{
+  :
+}
+
+mindspeed_setup()
+{
+  exec 9>/dev/comcerto_wdt
+}
+
+mindspeed_pushback()
+{
+  echo -n X >&9
+}
+
+mindspeed_stop()
+{
+  echo -n V >&9
+}
+
+#
+# init, setup, pushback timer
+#
+
+$init
+$setup
+
+# Start the watchdog timer and reload every 5 seconds
+while [ ! "$done" ]; do
+  $pushback
+  sleep 5
+done
+
+$stop
