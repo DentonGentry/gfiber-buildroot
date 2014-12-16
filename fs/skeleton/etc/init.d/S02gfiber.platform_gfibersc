@@ -1,3 +1,8 @@
 #!/bin/sh
 # Do this early because hnvram needs it.
 update-mtd-links
+
+PLATFORM=$(hnvram -qr PLATFORM_NAME)
+[ -n "$PLATFORM" ] &&
+echo "$PLATFORM" >/etc/platform &&
+chmod 444 /etc/platform
