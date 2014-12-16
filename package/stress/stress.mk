@@ -2,13 +2,12 @@
 #
 # stress - a workload generator
 #
-# http://weather.ou.edu/~apw/projects/stress/
-#
 #############################################################
 
 STRESS_VERSION = 1.0.4
-STRESS_SITE    = http://weather.ou.edu/~apw/projects/stress
+STRESS_SITE    = http://people.seas.harvard.edu/~apw/stress/
 STRESS_AUTORECONF = YES
+STRESS_DEPENDENCIES = host-automake
 
 # Stress is linked statically if the --enable-static is specified.
 # However, this option is always specified in the global
