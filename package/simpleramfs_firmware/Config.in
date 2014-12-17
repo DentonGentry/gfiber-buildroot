@@ -1,0 +1,12 @@
+config BR2_PACKAGE_SIMPLERAMFS_FIRMWARE
+	bool "Include vendor firmware blobs used when boot with simpleramfs"
+
+if BR2_PACKAGE_SIMPLERAMFS_FIRMWARE
+
+config BR2_PACKAGE_SIMPLERAMFS_FIRMWARE_FILENAMES
+	string "Simple RAMFS firmware filenames"
+	default ""
+	help
+	  Space-separated list of filenames relative to /lib/firmware/
+
+endif

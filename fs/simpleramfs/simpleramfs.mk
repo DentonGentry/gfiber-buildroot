@@ -12,7 +12,8 @@ SIMPLERAMFS_DEPENDENCIES= \
 	util-linux \
 	lvm2 \
 	google_signing \
-	mtd
+	mtd \
+	simpleramfs_firmware
 
 ifeq ($(BR2_PACKAGE_GOOGLE_HNVRAM),y)
 SIMPLERAMFS_DEPENDENCIES+=google_hnvram
@@ -95,6 +96,17 @@ define SIMPLERAMFS_BUILD_CMDS
 			$(@D)/fs/lib/modules/ && \
 		ln -f	$(TARGET_DIR)/lib/firmware/*c2000*.elf \
 			$(@D)/fs/lib/firmware/; \
+	fi
+	if [ "$(BR2_PACKAGE_SIMPLERAMFS_FIRMWARE)" = "y" ]; then \
+		mkdir -p $(@D)/fs/lib/firmware; \
+		tmp=$(BR2_PACKAGE_SIMPLERAMFS_FIRMWARE_FILENAMES); \
+		for d in $$tmp; do \
+		  for dd in $(@D)/$$d; do \
+		    dir=$$(dirname "$(@D)/fs/lib/firmware/$$d"); \
+		    mkdir -p "$$dir"; \
+		    ln -f $(TARGET_DIR)/lib/firmware/$$d $$dir; \
+		  done; \
+		done; \
 	fi
 
 	# strip all the binaries
