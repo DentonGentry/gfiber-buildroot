@@ -12,8 +12,11 @@ SIMPLERAMFS_DEPENDENCIES= \
 	util-linux \
 	lvm2 \
 	google_signing \
-	mtd \
-	simpleramfs_firmware
+	mtd
+
+ifeq ($(BR2_PACKAGE_SIMPLERAMFS_FIRMWARE),y)
+SIMPLERAMFS_DEPENDENCIES+=simpleramfs_firmware
+endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_HNVRAM),y)
 SIMPLERAMFS_DEPENDENCIES+=google_hnvram
