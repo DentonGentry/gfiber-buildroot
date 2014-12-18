@@ -66,7 +66,7 @@ is_link_up() {
     return $?
   fi
   if is-tv-box; then
-    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0
+    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0 || is_interface_up wlan0c
   else
     is_interface_up eth0
   fi
@@ -102,7 +102,7 @@ while read f; do
     if does_interface_exist wan0; then
       ifs="wan0 wan0.2"
     else
-      ifs="br0"
+      ifs="br0 wlan0c"
     fi
     for ifname in $ifs; do
       if has_ip_address $ifname; then
