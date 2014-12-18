@@ -17,6 +17,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	python-setuptools \
 	host-python-setuptools \
 	protobuf \
+	gtest \
 
 HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest
 
