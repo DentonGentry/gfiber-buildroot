@@ -1,9 +1,11 @@
 config BR2_PACKAGE_MV_APP_PON_TYPE
 	string "XPON"
+	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
 	help
 	  PON Type, e.g. GPON, EPON.
 
 config BR2_PACKAGE_MV_APP
 	bool "mv_app"
+	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
 	help
 	  Builds application for Marvell boards
