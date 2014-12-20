@@ -1,8 +1,12 @@
 #!/bin/sh
+. /etc/utils.sh
+
+register_experiment NoFastForwarding
 
 case "$1" in
   start)
-    if runnable cmm; then
+    if runnable cmm && ! experiment NoFastForwarding; then
+      echo "Starting cmm."
       modprobe -a nfnetlink fci auto_bridge
       MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
       [ -c /dev/vwd0 ] || mknod /dev/vwd0 c $MAJOR 0
