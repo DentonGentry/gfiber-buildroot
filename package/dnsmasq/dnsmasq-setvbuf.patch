@@ -1,6 +1,6 @@
-From 7f79ef7e169b1a770a706979bada1cfb3cbbe199 Mon Sep 17 00:00:00 2001
+From a202c6b6efa0b3770ef674bd8a2dc7c6d813b531 Mon Sep 17 00:00:00 2001
 From: Denton Gentry <dgentry@google.com>
-Date: Mon, 17 Feb 2014 11:24:05 -0800
+Date: Fri, 19 Dec 2014 20:22:59 -0800
 Subject: [PATCH] Set stdout to unbuffered, for better logging.
 
 ---
@@ -8,18 +8,18 @@ Subject: [PATCH] Set stdout to unbuffered, for better logging.
  1 file changed, 2 insertions(+)
 
 diff --git a/src/dnsmasq.c b/src/dnsmasq.c
-index a2b37dc..20668c4 100644
+index f4a89fc..e0f776a 100644
 --- a/src/dnsmasq.c
 +++ b/src/dnsmasq.c
-@@ -80,6 +80,8 @@ int main (int argc, char **argv)
+@@ -81,6 +81,8 @@ int main (int argc, char **argv)
  
    umask(022); /* known umask, create leases and pid files as 0644 */
- 
+  
 +  setvbuf(stdout, NULL, _IONBF, 0);
 +
+   rand_init(); /* Must precede read_opts() */
+   
    read_opts(argc, argv, compile_opts);
-     
-   if (daemon->edns_pktsz < PACKETSZ)
 -- 
-1.9.0.rc1.175.g0b1dcb5
+2.2.0.rc0.207.ga3a616c
 
