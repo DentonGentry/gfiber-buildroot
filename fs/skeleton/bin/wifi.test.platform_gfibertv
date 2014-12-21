@@ -57,7 +57,7 @@ WVPASS wifi set -b2.4 -c11
 WVFAIL [ -e "$chanfile" ]
 
 
-WVSTART "autochannel only has one choice with -w40"
+WVSTART "autochannel 2.4GHz only has one choice with -w40"
 WVPASS wifi set -b2.4 -w40
 WVPASSEQ 1 "$(cat /tmp/autochan.wlan*)"
 
@@ -81,6 +81,18 @@ fi
 WVPASS wifi stop
 WVFAIL hostapd_running
 WVPASS ls -l /config/wifi
+
+
+WVSTART "primary channel selection with mixed widths"
+WVPASS wifi set -b5 -c40 -w80
+WVPASS hostapd_running
+WVPASS grep -q vht_oper_centr_freq_seg0_idx=42 /tmp/hostapd.conf.*
+WVPASS wifi set -b5 -c161 -w80
+WVPASS hostapd_running
+WVPASS grep -q vht_oper_centr_freq_seg0_idx=155 /tmp/hostapd.conf.*
+# fail on a channel with no HT40/VHT80 companion channels
+WVFAIL wifi set -b5 -c165 -w80
+WVFAIL wifi set -b5 -c165 -w40
 
 
 WVSTART "wifi restore"
