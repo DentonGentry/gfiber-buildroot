@@ -27,7 +27,7 @@ tagabbrev=$(git describe --abbrev=0 2>/dev/null)
 tree_state=$(git rev-list "$tagabbrev"..HEAD)
 if [ -n "$tree_state" ]; then
   # Tree has commits since last tag, rebuild the image name
-  count=$(repo forall -c "git rev-list HEAD..'$tagabbrev' 2>/dev/null" | wc -l)
+  count=$(repo forall -c "git rev-list '$tagabbrev'..HEAD 2>/dev/null" | wc -l)
   version="$PLATFORM_PREFIX-${tagabbrev#*-}-$count-${tagname##*-}"
 else
   version="$PLATFORM_PREFIX-${tagname#*-}"
