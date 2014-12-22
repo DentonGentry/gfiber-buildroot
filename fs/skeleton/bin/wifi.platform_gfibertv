@@ -35,6 +35,7 @@ chop_multiline()
 psk=$(chop_multiline "$WIFI_PSK")
 
 . /etc/utils.sh
+register_experiment AutoSetupSSID
 
 
 log() {
@@ -239,7 +240,7 @@ iw_start_hostapd() {
     iw_check1_hostapd "$ifc" || break
     if iw_check2_hostapd "$ifc"; then
       [ -n "$persist" ] && atomic "$CONFIG_DIR/hostapd.conf.$ifc" "$hostconf"
-      if is-network-box; then
+      if is-network-box && experiment AutoSetupSSID; then
         if [ "$ifc" = "wlan0" ]; then
           ifconfig wlan0.tv $WLAN0TVIP 2>/dev/null
           ifconfig wlan0.setup $WLAN0SETUPIP 2>/dev/null
@@ -797,10 +798,11 @@ elif runnable iw; then
       fi
     fi
 
-    bssidtv=$(mac_addr_increment "${bssid}" 4)
-    bssidsetup=$(mac_addr_increment "${bssid}" 5)
-    setupvdev=$(cat <<-EOF
-	bss=${ifc}.tv
+    if experiment AutoSetupSSID; then
+      bssidtv=$(mac_addr_increment "$bssid" 4)
+      bssidsetup=$(mac_addr_increment "$bssid" 5)
+      setupvdev=$(cat <<-EOF
+	bss=$ifc.tv
 	bssid=$bssidtv
 	ssid=${ssid}tv
 	auth_algs=$auth_algs
@@ -809,7 +811,7 @@ elif runnable iw; then
 	wpa_key_mgmt=WPA-PSK
 	wpa_pairwise=$wpa_pairwise
 
-	bss=${ifc}.setup
+	bss=$ifc.setup
 	bssid=$bssidsetup
 	ssid=${ifc}setup
 	auth_algs=$auth_algs
@@ -818,7 +820,8 @@ elif runnable iw; then
 	wpa_key_mgmt=WPA-PSK
 	wpa_pairwise=$wpa_pairwise
 	EOF
-    )
+      )
+    fi
   fi
   hostconf=$(cat <<-EOF
 	ctrl_interface=/var/run/hostapd
