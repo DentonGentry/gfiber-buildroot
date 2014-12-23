@@ -22,8 +22,17 @@ endif
 define PROTOBUF_REMOVE_PROTOC
 	rm -f $(TARGET_DIR)/usr/bin/protoc
 endef
-
 PROTOBUF_POST_INSTALL_TARGET_HOOKS += PROTOBUF_REMOVE_PROTOC
+
+define PROTOBUF_REMOVE_EXTRA_STUFF
+	rm -f $(TARGET_DIR)/usr/lib/libprotobuf.a
+	rm -f $(TARGET_DIR)/usr/lib/libprotoc.a
+	rm -f $(TARGET_DIR)/usr/lib/libprotobuf.so*
+	rm -f $(TARGET_DIR)/usr/lib/libprotoc.so*
+endef
+ifeq ($(BR2_PACKAGE_PROTOBUF_ONLY_LITE),y)
+PROTOBUF_POST_INSTALL_TARGET_HOOKS += PROTOBUF_REMOVE_EXTRA_STUFF
+endif
 
 $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
