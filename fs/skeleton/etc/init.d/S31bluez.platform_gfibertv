@@ -39,9 +39,9 @@ case "$1" in
     echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
     echo "UserspaceHID=true" >>"${BLUEZ_INPUT_CONF}"
 
-    # configure driver: 8 x 1.25ms = 10ms response time.  Required by OAD
-    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval
-    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval
+    # configure driver: 40,56 x 1.25ms = 50,70ms response time.  Makes pairing reliable
+    echo 40 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval
+    echo 56 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval
 
     # Start BlueZ stack
     (
