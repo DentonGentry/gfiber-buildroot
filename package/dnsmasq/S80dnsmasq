@@ -27,9 +27,11 @@ case "$1" in
         --resolv-file=/tmp/resolv.conf.external \
         --keep-in-foreground \
         --log-facility=- 2>&1 | logos dnsmasq &
+    babysit 60 dnsmasqstats | logos dnsmasqstats &
     ;;
   stop)
     pkillwait -x dnsmasq
+    pkillwait -x dnsmasqstats
     ;;
   restart)
     $0 stop; $0 start

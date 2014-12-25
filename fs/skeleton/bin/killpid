@@ -1,21 +1,42 @@
 #!/bin/sh
 # Kill the pid referenced by a pidfile, if any.
 
+progname="$0"
+
 log() {
   echo "$@" >&2
 }
-
 
 die() {
   log "Fatal:" "$@"
   exit 1
 }
 
-
-pidfile=$1
-if [ -z "$pidfile" ]; then
-  log "Usage: $0 <pidfile>"
+usage() {
+  log "Usage: $progname [-s signal] <pidfile>"
   exit 99
+}
+
+while getopts "hs:" option
+do
+  case "$option" in
+  s)
+    signal="$OPTARG"
+    ;;
+  h|\?|*)
+    usage
+    exit 1
+    ;;
+  esac
+done
+
+# the rest are non-option arguments
+shift $(($OPTIND-1))
+
+
+pidfile="$1"
+if [ -z "$pidfile" ]; then
+  usage
 fi
 
 [ -e "$pidfile" ] || exit 0
@@ -25,12 +46,17 @@ read pid junk <"$pidfile"
 [ -n "$pid" ] || die "'$pidfile' exists but has no pid inside"
 [ "$pid" -gt 1 ] || die "'$pidfile' pid is '$pid'; must be > 1"
 
-kill -15 "$pid" 2>/dev/null
-for d in $(seq 20); do
-  kill -0 "$pid" 2>/dev/null || break
-  msleep 100
-done
-kill -9 "$pid" 2>/dev/null
+if [ -n "$signal" ]; then
+  kill -"$signal" "$pid" 2>/dev/null
+else
+  # By default, kill the process
+  kill -15 "$pid" 2>/dev/null
+  for d in $(seq 20); do
+    kill -0 "$pid" 2>/dev/null || break
+    msleep 100
+  done
+  kill -9 "$pid" 2>/dev/null
 
-# return an error if the process *does* exist
-! kill -0 "$pid" 2>/dev/null
+  # return an error if the process *does* exist
+  ! kill -0 "$pid" 2>/dev/null
+fi

@@ -92,6 +92,7 @@ define DNSMASQ_INSTALL_TARGET_EXTRAS
 	$(INSTALL) -m 755 -D package/dnsmasq/S80dnsmasq $(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -m 755 -D package/dnsmasq/dnsmasq.conf $(TARGET_DIR)/etc/
 	$(INSTALL) -m 755 -D package/dnsmasq/dhcp-script $(TARGET_DIR)/bin/
+	$(INSTALL) -m 755 -D package/dnsmasq/dnsmasqstats $(TARGET_DIR)/bin/
 endef
 
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# dnsmasq logs statistics about its DNS cache
+# operation when sent SIGUSR1, so send it one
+# every few minutes.
+
+while sleep 600; do
+  if [ -e /var/run/dnsmasq.pid ]; then
+    killpid -s USR1 /var/run/dnsmasq.pid
+  fi
+done
