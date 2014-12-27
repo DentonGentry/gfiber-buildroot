@@ -26,13 +26,12 @@ if [ -n "$1" ]; then
 fi
 
 
-pattern="$debugubifs/ubi*_*/readonly"
+pattern="$debugubifs/ubi*_*/readonly $debugubifs/ubi*_*/ro_error"
 
 while :; do
   for i in $pattern; do
-    if [ "$i" = "$pattern" ]; then
-      echo "Cannot find ubifs related files in sysfs" 1>&2
-      exit 1
+    if [ ! -e "$i" ]; then
+      continue
     fi
     value=''
     value="$(cat "$i")"

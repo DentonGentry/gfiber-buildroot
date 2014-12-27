@@ -11,7 +11,9 @@ expands() {
 
 case "$1" in
   start)
-    if [ ! -z "$(lsubi)" ] && expands "/sys/kernel/debug/ubifs/*/readonly"; then
+    if [ ! -z "$(lsubi)" ] && \
+          ( expands "/sys/kernel/debug/ubifs/*/readonly" || \
+            expands "/sys/kernel/debug/ubifs/*/ro_error" ) ; then
       babysit 60 ubifsmonitor 2>&1 | logos ubifsmonitor &
     fi
     ;;
