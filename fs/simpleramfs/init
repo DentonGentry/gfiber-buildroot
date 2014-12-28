@@ -17,9 +17,6 @@ trap 'log FATAL - INIT EXITED - Rebooting.; reboot >&9 2>&1 9>&-' EXIT
 # Mount /dev, /proc, /sys
 /mounts-sys || die "couldn't mount special purpose directories"
 
-log 'Disable repartitioning'
-echo 1 >/proc/sys/dev/repartition/disable
-
 # Initialize any loadable driver modules
 for d in /lib/modules/*.ko /lib/modules/*/*.ko; do
   [ -e "$d" ] && insmod $d
