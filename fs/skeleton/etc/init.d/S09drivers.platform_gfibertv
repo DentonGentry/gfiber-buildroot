@@ -35,10 +35,12 @@ elif [ "$(kernopt wifical)" = "1" ]; then
   insmod /lib/modules/$(uname -r)/kernel/net/bluetooth/bluetooth.ko
   modprobe -a bluetooth
 else  # Not trying to calibrate
-  # With the "real" btmrvl driver we want the bluetooth core from
-  # linux-backports, not the one in the kernel.
   modprobe -a compat
-  insmod /lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko
+
+  # If a backports bluetooth module is present, use it.
+  backport="/lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko"
+  [ -e "$backport" ] && insmod "$backport"
+
   modprobe -a bluetooth hidp hid-gfrm uhid
   modprobe btmrvl bdaddr_base="$BT_MAC"
   modprobe btmrvl_sdio

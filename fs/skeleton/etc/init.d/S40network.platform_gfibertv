@@ -127,9 +127,13 @@ case "$1" in
       modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
 
       # Enable wifi beacon debug logging.
-      echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
+      if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
+        echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
+      fi
       # Enable wifi beacon and fatal debug logging.
-      echo 0x00004400 >/sys/module/ath9k/parameters/debug
+      if [ -e /sys/module/ath9k/parameters/debug ]; then
+        echo 0x00004400 >/sys/module/ath9k/parameters/debug
+      fi
     fi
 
     # if the file exists and it isn't empty
