@@ -10,3 +10,11 @@ config BR2_PACKAGE_PROTOBUF
 
 comment "protobuf needs a toolchain w/ C++, threads"
 	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_TOOLCHAIN_HAS_THREADS
+
+
+config BR2_PACKAGE_PROTOBUF_ONLY_LITE
+	bool "only install libprotobuf-lite"
+	depends on BR2_PACKAGE_PROTOBUF
+	help
+	  Do not install protoc or the full libproto on the target,
+	  only install the libprotobuf-lite runtime library.

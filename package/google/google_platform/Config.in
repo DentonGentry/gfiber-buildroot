@@ -93,6 +93,7 @@ config BR2_PACKAGE_GOOGLE_FIBER_JACK
 	bool "Device can act as Google Fiber Jack"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_PROTOBUF_ONLY_LITE
 
 config BR2_PACKAGE_GOOGLE_NETWORK_BOX
 	bool "Device can act as Google Fiber Network Box"
