@@ -53,8 +53,8 @@ is_interface_up() {
 }
 
 has_ip_address() {
-  [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
-    [ -n "$(ip -f inet addr show dev $1 scope global)" ]
+  [ -n "$(ip -f inet6 addr show dev $1 scope global 2>/dev/null)" ] ||
+    [ -n "$(ip -f inet addr show dev $1 scope global 2>/dev/null)" ]
 }
 
 is_link_up() {
