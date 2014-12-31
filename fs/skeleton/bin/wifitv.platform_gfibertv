@@ -92,7 +92,7 @@ switch_route() {
       "${rgtvssid}tv")
         ip route add default via $WLAN1TVIP
         ;;
-    done
+    esac
   else
     ip route add default via 192.168.1.1 dev br0
   fi
