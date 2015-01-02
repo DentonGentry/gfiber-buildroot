@@ -1,0 +1,17 @@
+config BR2_TOOLCHAIN_GOLANG
+	bool "Build Go language (golang) distribution"
+	depends on BR2_arm || BR2_i386 || BR2_x86_64
+	default n
+	help
+	  This is the Go language distribution.
+
+	  http://golang.org
+
+config BR2_TOOLCHAIN_GOLANG_CGO
+	bool "Enable Cgo for Go language (golang)"
+	depends on BR2_TOOLCHAIN_GOLANG
+	default y
+	help
+	  Cgo enables the creation of Go packages that call C code.
+
+	  http://golang.org/cmd/cgo/
