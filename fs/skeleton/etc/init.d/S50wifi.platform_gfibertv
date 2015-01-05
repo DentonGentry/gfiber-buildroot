@@ -21,6 +21,7 @@ create_secondary_interface() {
 
 case "$1" in
   start)
+    mkdir -p /tmp/wifi/fingerprints
     if is-network-box; then
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then

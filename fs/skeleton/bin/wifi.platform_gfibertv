@@ -225,6 +225,7 @@ iw_start_hostapd() {
       alivemonitor "/tmp/hostapd.$ifc.alive" 30 2 65 \
       hostapd $opts \
       -A "/tmp/hostapd.$ifc.alive" \
+      -F "/tmp/wifi/fingerprints" \
       "/tmp/hostapd.conf.$ifc" \
       2>&1 | logos "hostapd-$ifc" &
 
