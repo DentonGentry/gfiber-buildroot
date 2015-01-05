@@ -193,6 +193,32 @@ define DOWNLOAD_REPO
 	fi
 endef
 
+define DOWNLOAD_RREPO
+	${DOWNLOAD_REPO} ;\
+	for dir in $$(find $(TOPDIR)/../$($(PKG)_REPO_PATH) -mindepth 2 -name .git -type d) ; do \
+		repo_dir=$$(echo $${dir} | sed 's:$(TOPDIR)/../:$(TOPDIR)/../.repo/projects/:g' | sed 's:/.git$$:.git:'); \
+		target_dir=$($(PKG)_BASE_NAME)/$$(echo $${dir} | sed 's:$(TOPDIR)/../$($(PKG)_REPO_PATH)/::g' | sed 's:/.git$$::'); \
+		if [ -d $(BUILD_DIR)/$${target_dir}/.git ]; then \
+			(cd $(BUILD_DIR)/$${target_dir} && $(GIT) reset --hard) ; \
+		else \
+			(cd $(BUILD_DIR) && \
+			if [ "$($(PKG)_DL_VERSION)" == "HEAD" ]; then \
+				DL_VERSION="$$($(GIT) --git-dir=$${dir} show-ref --head HEAD --hash)"; \
+				DL_BRANCH="$$($(GIT) --git-dir=$${dir} symbolic-ref HEAD 2>/dev/null)"; \
+				[ -n "$$DL_BRANCH" ] && DL_VERSION="$${DL_BRANCH#refs/heads/}"; \
+			else \
+				DL_VERSION=$($(PKG)_DL_VERSION); \
+			fi; \
+			rm -rf $${target_dir}.tmp/ && \
+			sh /usr/share/doc/git/contrib/workdir/git-new-workdir \
+				$${repo_dir} \
+				$${target_dir}.tmp/ $$DL_VERSION && \
+			mv $${target_dir}.tmp $${target_dir}/ \
+			) ; \
+		fi ; \
+	done
+endef
+
 define DOWNLOAD_GIT
 	test -e $(DL_DIR)/$($(PKG)_SOURCE) || \
 	(pushd $(DL_DIR) > /dev/null && \
@@ -386,6 +412,7 @@ define DOWNLOAD
 			scp) $($(DL_MODE)_SCP) && exit ;; \
 			hg) $($(DL_MODE)_HG) && exit ;; \
 			repo) $($(DL_MODE)_REPO) && exit ;; \
+			rrepo) $($(DL_MODE)_RREPO) && exit ;; \
 			mpm) $($(DL_MODE)_MPM) && exit ;; \
 			gclient) $($(DL_MODE)_GCLIENT) && exit ;; \
 			null) exit ;; \
@@ -559,7 +586,7 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 $(BUILD_DIR)/%/.stamp_dircleaned:
 	$($(PKG)_DIRCLEAN_CMDS)
 	rm -Rf $(@D)
-	@if [[ "$($(PKG)_SITE_METHOD)" == "repo" ]]; then \
+	@if [[ "$($(PKG)_SITE_METHOD)" == "repo" ]] || [[ "$($(PKG)_SITE_METHOD)" == "rrepo" ]]; then \
 		echo rm -f $(DL_DIR)/$($(PKG)_SOURCE); \
 		rm -f $(DL_DIR)/$($(PKG)_SOURCE); \
 	fi
@@ -604,6 +631,10 @@ ifndef $(2)_VERSION
   $(2)_VERSION = undefined
   $(2)_DL_VERSION = undefined
   ifeq ($(firstword $(subst ://, ,$(call qstrip,$($(2)_SITE)))),repo)
+    $(2)_VERSION=HEAD
+    $(2)_DL_VERSION=HEAD
+  endif
+  ifeq ($(firstword $(subst ://, ,$(call qstrip,$($(2)_SITE)))),rrepo)
     $(2)_VERSION=HEAD
     $(2)_DL_VERSION=HEAD
   endif
@@ -708,9 +739,13 @@ $(2)_TARGET_DIRCLEAN =		$$($(2)_DIR)/.stamp_dircleaned
 ifeq ($$($(2)_SITE_METHOD),repo)
 $(2)_EXTRACT_CMDS ?=
 else
+ifeq ($$($(2)_SITE_METHOD),rrepo)
+$(2)_EXTRACT_CMDS ?=
+else
 $(2)_EXTRACT_CMDS ?= \
 	$$(if $$($(2)_SOURCE),$$(INFLATE$$(suffix $$($(2)_SOURCE))) $(DL_DIR)/$$($(2)_SOURCE) | \
 	$(TAR) $(TAR_STRIP_COMPONENTS)=1 -C $$($(2)_DIR) $(TAR_OPTIONS) -)
+endif
 endif
 
 # post-steps hooks
