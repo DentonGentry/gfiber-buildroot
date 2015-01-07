@@ -37,4 +37,5 @@ source "package/google/google_oregano/Config.in"
 source "package/google/google_gflags/Config.in"
 source "package/google/google_glog/Config.in"
 source "package/google/google_gfrm200/Config.in"
+source "package/google/google_spacecast/Config.in"
 endmenu
