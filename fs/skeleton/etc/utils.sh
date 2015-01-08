@@ -100,6 +100,10 @@ setup_ads() {
   chmod 770 /var/media/ads
   chown video.video /var/media/ads
   chown video.video /var/media/ads/*
+  mkdir -p /rw/ads/database
+  chmod 770 /rw/ads
+  chmod 770 /rw/ads/database
+  chown -R video.video /rw/ads
 }
 
 
