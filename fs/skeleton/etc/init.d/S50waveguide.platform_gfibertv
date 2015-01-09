@@ -6,7 +6,6 @@ register_experiment WifiUseActiveTime
 register_experiment WifiChannelsLimited2G
 register_experiment WifiLowIsHigh
 register_experiment WifiUseDFS
-register_experiment WifiUseActiveTime
 
 case "$1" in
   start)
