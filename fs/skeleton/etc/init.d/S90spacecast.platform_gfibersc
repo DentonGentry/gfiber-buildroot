@@ -1,0 +1,35 @@
+#!/bin/sh
+# SpaceCast init script.
+
+BINARY="/app/spacecast/appliance"
+
+FLAGS="-cache_base_dir=/var/media/data/cache \
+       -tmp_dir=/var/media/data/tmp \
+       -static_dir=/var/media/static \
+       -disable_dir=/var/media/disable \
+       -api_key_path=/var/media/keys/apiarykey \
+       -if_names=lo,br0 \
+       -port=8080"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "SpaceCast is already running!"
+    else
+      babysit 10 ${BINARY} ${FLAGS} | logos spacecast &
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

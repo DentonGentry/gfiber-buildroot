@@ -59,6 +59,7 @@ case "$1" in
       ip addr add $ip broadcast $brd dev br0
     done &&
     brctl addif br0 lan0 &&
+    ip route add 224.1.1.1 dev br0 # Enable multicast binding.
     ip -o -f inet route list dev lan0 |
     while read dst routeinfo; do
       if [ "$dst" = "default" ]; then
