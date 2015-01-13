@@ -1,0 +1,8 @@
+if [ -z "$1" ]; then
+  echo vudu > /tmp/runappold.tmp
+else
+  echo vudu -g $1 > /tmp/runappold.tmp
+fi
+
+mv /tmp/runappold.tmp /tmp/runappold
+/app/client/run-app
