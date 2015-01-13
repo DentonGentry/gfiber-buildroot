@@ -275,6 +275,11 @@ case "$1" in
       for prio in 2 3 4 5 6 7; do
         vconfig set_egress_map wan0.2 $prio $prio >/dev/null 2>&1
       done
+
+      # Enable receive interrupt coalescing, this is a significant
+      # performance gain for multicast receive.
+      ethtool -C wan0 rx-usecs 1000
+
     fi
 
     # Enable hardware offloads, do this at the end to avoid
