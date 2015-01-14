@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# Run dhclient, the system DHCP client, with the appropriate parameters for
+# SpaceCast.
 iface=$1
 
 lock=/var/run/dhclient.$iface.lock
