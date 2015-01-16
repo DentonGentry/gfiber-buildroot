@@ -1,8 +1,10 @@
 iface="$1"
+
+# Bring up the interface.
 ip link set dev "$iface" up
+
 if [ "$iface" = br0 ]; then
-  # FIXME(kedong): For now using static IP, but we need to bring up dhclient
-  # on the final product.
-  # run-dhclient "$iface"
-  ip addr add 192.168.1.1/24 dev br0
+  # TODO(reddaly): Configure fallback IP for appliance in case DHCP client
+  # fails?
+  run-dhclient "$iface"
 fi
