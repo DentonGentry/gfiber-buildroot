@@ -249,6 +249,7 @@ case "$1" in
       fi
     done
     echo "Bringing up the bridge..."
+    ip link set br0 up  # kernel 3.16 behavior, sometimes br0 does not come up.
     ifup br0
 
     redistribute_irqs
