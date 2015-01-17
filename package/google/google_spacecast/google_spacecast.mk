@@ -9,7 +9,6 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-golang
 define GOOGLE_SPACECAST_BUILD_CMDS
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/golib:$(@D)/go:$$GOPATH ; \
-	export CGO_ENABLED=1 ; \
 	go get -u code.google.com/p/go-uuid/uuid ; \
 	go get -u code.google.com/p/go.net/{netutil,ipv4,context} ; \
 	go get -u code.google.com/p/google-api-go-client/googleapi ; \
@@ -29,7 +28,6 @@ endef
 define GOOGLE_SPACECAST_CLEAN_CMDS
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/golib:$(@D)/go:$$GOPATH ; \
-	export CGO_ENABLED=1 ; \
 	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance
 endef
 
