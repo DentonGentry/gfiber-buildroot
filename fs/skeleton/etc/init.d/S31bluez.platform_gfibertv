@@ -43,6 +43,12 @@ case "$1" in
     echo 40 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval
     echo 56 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval
 
+    if [ "$(cat /etc/platform)" = GFHD100 ]; then
+      # BCM20702 USB Bluetooth chip
+      wl reset_bt_chip 2>&1
+      sleep 1  # chip needs time to stabilize, else it will be flakey
+    fi
+
     # Start BlueZ stack
     (
       echo "$0: Starting btmon"
