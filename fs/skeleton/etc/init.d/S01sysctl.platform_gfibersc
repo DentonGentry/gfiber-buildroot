@@ -1,10 +1,12 @@
 #!/bin/sh
 case "$1" in
   start)
+    # SpaceCast receives packets from a 60Mbps multicast UDP stream.
     # Avoid UDP packet loss by increasing socket buffer size.
+    # rmem_default defines the default receive socket buffer size in bytes.
+    sysctl net.core.rmem_default=16777216 #16MB
     # rmem_max defines the maximum receive socket buffer size in bytes.
-    # The actual buffer size is set in sagesrv.
-    sysctl net.core.rmem_max=4194304
+    sysctl net.core.rmem_max=33554432 #32MB
     # Set the socket write buffer size large enough to hold a complete
     # blocksize from the streamer.
     # wmem_max defines the maximum send socket buffer size in bytes.
