@@ -70,3 +70,21 @@ echo "$(hnvram -r MAC_ADDR_WIFI 2>&1)"
 echo "$(hnvram -r MAC_ADDR_WIFI2 2>&1)"
 echo "$(hnvram -r MAC_ADDR_WAN 2>&1)"
 echo "SW=$(cat /etc/version 2>&1)"
+echo
+
+for path in /sys/block/sd*/device; do
+  if [ ! -e "$path" ]; then
+    continue
+  fi
+  if realpath $path | grep -q -e "/usb[0-9]*/"; then
+    continue
+  fi
+  dev=$(basename $(dirname $path))
+  serial=$(smartctl -i /dev/$dev | grep "Serial Number")
+  echo "$dev: $serial"
+  smartctl -A "/dev/$dev" | while read line; do
+    echo "$dev: $line"
+  done
+done
+
+echo
