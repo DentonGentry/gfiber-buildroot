@@ -1,13 +1,13 @@
 #############################################################
 #
-# golang 1.4 - https://go.googlesource.com/go/+/go1.4
+# golang 1.3.3 - https://go.googlesource.com/go/+/go1.3.3
 #
 #############################################################
-GOLANG_VERSION = c303df658d43b9f3e98e56e646f8e84a83495991
+GOLANG_VERSION = 3dbc53ae6ad4e3b93f31d35d98b38f6dda25f4ee
 GOLANG_SITE = https://go.googlesource.com/go
 GOLANG_SITE_METHOD = git
 
-GOLANG_RELEASE = 1.4
+GOLANG_RELEASE = 1.3.3
 GOLANG_GOROOT = $(HOST_DIR)/usr/lib/golang-$(GOLANG_RELEASE)
 
 ifeq ("arm",$(BR2_ARCH))
