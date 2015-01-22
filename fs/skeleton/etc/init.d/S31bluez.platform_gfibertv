@@ -14,6 +14,16 @@ BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 # Start BlueZ stack only on select platforms
 ! is-bluez-platform && exit 0
 
+# in debug mode, support multiple BT adapters
+if [ -f /tmp/DEBUG ]; then
+  hci_ifaces=$(cd /sys/kernel/debug/bluetooth; echo hci* 2> /dev/null)
+else
+  hci_ifaces=hci0
+fi
+
+# if there are multiple BT interfaces, use the last one
+hci_active=${hci_ifaces##* }
+
 case "$1" in
   start)
     BT_MAC=$(cat "${BT_MAC_FILE}")
@@ -39,10 +49,21 @@ case "$1" in
     echo "Encryption=false" >>"${BLUEZ_INPUT_CONF}"
     echo "UserspaceHID=true" >>"${BLUEZ_INPUT_CONF}"
 
+    # link to active hci for gfiber-agent
+    rm -f /tmp/hci
+    ln -s /sys/kernel/debug/bluetooth/$hci_active /tmp/hci
+
+    # ignore non-active interfaces
+    for n in $hci_ifaces; do
+      if [ "$n" != "$hci_active" ]; then
+        export IGNORE_$n=1
+      fi
+    done
+
     # configure driver: 8,8 x 1.25ms = 10,10ms response time.  Makes OAD fast and bonding reliable
-    # gfiber-agent briefly sets 40/56 when pairing, whicn makes pairing reliable
-    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval
-    echo 8 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval
+    # gfiber-agent briefly sets 40/56 when pairing, which makes pairing reliable
+    echo 8 > /tmp/hci/conn_min_interval
+    echo 8 > /tmp/hci/conn_max_interval
 
     if [ "$(cat /etc/platform)" = GFHD100 ]; then
       # BCM20702 USB Bluetooth chip
@@ -68,7 +89,8 @@ case "$1" in
     ;;
   stop)
     wait-until-created /tmp/S31bluez_done
-    hciconfig hci0 down
+    for n in $hci_ifaces; do hciconfig $n down; done
+    rm -f /tmp/hci
     pkillwait -x gfiber-agent
     pkillwait -x bluetoothd
     pkillwait -x btmon
