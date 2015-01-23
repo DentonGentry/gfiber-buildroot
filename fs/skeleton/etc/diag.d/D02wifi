@@ -50,10 +50,14 @@ testwifi()
 
 case "$1" in
   diag | quick)
-    if testwifi; then
-      echo PASS
+    if [ "$has_wifi" -ne 1 ]; then
+      echo "PASS test disabled"
     else
-      echo FAIL "$error"
+        if testwifi; then
+          echo PASS
+        else
+          echo FAIL "$error"
+        fi
     fi
     ;;
   *)

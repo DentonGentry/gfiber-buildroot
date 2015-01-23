@@ -46,6 +46,8 @@ fan_temp2_max=45000
 
 fan_max_rpm=5000
 
+has_wifi=1
+
 #
 # platform specific configs follow
 #
@@ -56,6 +58,11 @@ case "$PLATFORM_NAME" in
   GFMS100)
     ;;
   GFRG200)
+    ;;
+  GFRG210)
+    ;;
+  GFSC100)
+    has_wifi=0
     ;;
   *)
     echo "$0: WARNING: unknown platform '$PLATFORM_NAME', using defaults" 1>&2
