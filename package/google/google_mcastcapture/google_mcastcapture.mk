@@ -32,10 +32,13 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
 endef
 
 define HOST_GOOGLE_MCASTCAPTURE_TEST_CMDS
+	TARGET=unittest; \
+	if [ "$(TSAN)" ]; then TARGET=ThreadSanitizer; \
+	elif [ "$(ASAN)" ]; then TARGET=AddressSanitizer; fi; \
 	LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib:$(HOST_DIR)/lib:$(LD_LIBRARY_PATH) \
 	HOSTDIR=$(HOST_DIR) \
 	$(HOST_MAKE_ENV) \
-	$(MAKE) -C $(@D) test
+	$(MAKE) -C $(@D) $$TARGET
 endef
 
 define HOST_GOOGLE_MCASTCAPTURE_COVERAGE_CMDS
