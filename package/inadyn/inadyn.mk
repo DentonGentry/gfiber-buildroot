@@ -19,6 +19,7 @@ define INADYN_INSTALL_CHROOT
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/usr/lib
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/usr/sbin
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/tmp
+	ln -s tmp/dev $(TARGET_DIR)/chroot/inadyn/dev
 endef
 
 define INADYN_INSTALL_INIT_SYSV

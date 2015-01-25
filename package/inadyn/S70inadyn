@@ -10,7 +10,9 @@ mounts() {
     mount -o bind /usr/sbin usr/sbin && \
     mount -o bind /lib lib && \
     mount -o bind /etc etc && \
-    mount -t tmpfs -o size=1048576 none tmp
+    mount -t tmpfs -o size=1048576 none tmp && \
+    mkdir tmp/dev && \
+    mknod tmp/dev/urandom c 1 9
 }
 
 umounts() {
