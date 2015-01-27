@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Setup DVB network interface
+
+# getconfig NAME DEFAULT
+getconfig() {
+  VAL=$(hnvram -qr "$1" 2> /dev/null)
+  [ -z "$VAL" ] && VAL="$2"
+  echo "$VAL"
+}
+
+# Read network interface name
+DEV_NAME=$(getconfig SPACECAST_NETIF dvb0_0)
+
+# Read PID from config
+PID=$(getconfig SPACECAST_PID 10)
+
+# Read IP encapsulation config
+ENCAP=$(getconfig SPACECAST_ENCAP MPE)
+[ "$ENCAP" = ULE ] && ULE=-u
+
+# Read satellite IP multicast route config
+ROUTE=$(getconfig SPACECAST_ROUTE "224.1.1.1")
+
+# TODO(erdi): Tuning should be done by Spacecast App
+IFREQ=$(getconfig SPACECAST_IFREQ 1260000)
+SYMBOL_RATE=$(getconfig SPACECAST_SRATE 30000)
+POLARIZATION=$(getconfig SPACECAST_POLARIZATRION h)
+
+setup_dvbnet() {
+  dvbnet -p "$PID" "$ULE"
+  ip link set "$DEV_NAME" up
+  ip route add "$ROUTE" dev "$DEV_NAME"
+}
+
+shutdow_dvbnet() {
+  ip link set "$DEV_NAME" down
+  dvbnet -r 0
+}
+
+case "$1" in
+  start)
+    setup_dvbnet 2>&1 | logos dvbnet
+    babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" 2>&1 | logos dvbtune &
+  ;;
+
+  stop)
+    pkillwait -x dvbtune
+    shutdow_dvbnet 2>&1 | logos dvbnet
+  ;;
+
+  restart|reload)
+    $0 stop; $0 start
+  ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
