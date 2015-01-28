@@ -9,7 +9,9 @@ FLAGS="-cache_base_dir=/var/media/data/cache \
        -disable_dir=/var/media/disable \
        -api_key_path=/var/media/keys/apiarykey \
        -if_names=lo,br0 \
-       -port=8080"
+       -port=8080 \
+       -logtostderr=true \
+       -stderrthreshold=WARNING"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
