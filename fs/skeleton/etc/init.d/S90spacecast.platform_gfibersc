@@ -22,7 +22,7 @@ case "$1" in
     if running; then
       echo "SpaceCast is already running!"
     else
-      babysit 10 ${BINARY} ${FLAGS} | logos spacecast &
+      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos spacecast &
     fi
     ;;
   stop)

@@ -85,6 +85,11 @@ case "$1" in
     echo "Bringing up the bridge..."
     ifup br0
 
+    # Enable receive interrupt coalescing, this is a significant
+    # performance gain for multicast receive.
+    # This applies to all interfaces.
+    ethtool -C lan0 rx-usecs 1000
+
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
