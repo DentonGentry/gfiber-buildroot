@@ -52,6 +52,7 @@ start()
 stop()
 {
   killpid /var/run/miniupnpd.pid
+  iptables -F MINIUPNPD
 }
 
 
