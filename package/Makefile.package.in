@@ -213,7 +213,9 @@ define DOWNLOAD_RREPO
 			sh /usr/share/doc/git/contrib/workdir/git-new-workdir \
 				$${repo_dir} \
 				$${target_dir}.tmp/ $$DL_VERSION && \
-			mv $${target_dir}.tmp $${target_dir}/ \
+			mkdir -p $${target_dir}/ && \
+			mv $${target_dir}.tmp/* $${target_dir}.tmp/.??* $${target_dir}/ && \
+			rmdir $${target_dir}.tmp \
 			) ; \
 		fi ; \
 	done
