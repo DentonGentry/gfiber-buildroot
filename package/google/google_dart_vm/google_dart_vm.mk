@@ -1,6 +1,6 @@
-GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/1.7/deps/standalone.deps
+GOOGLE_DART_VM_SITE=http://dart.googlecode.com/svn/branches/1.8/deps/standalone.deps
 GOOGLE_DART_VM_SITE_METHOD=gclient
-GOOGLE_DART_VM_VERSION=41096
+GOOGLE_DART_VM_VERSION=42828
 GOOGLE_DART_VM_INSTALL_STAGING=YES
 
 ifeq ($(ARCH),arm)
