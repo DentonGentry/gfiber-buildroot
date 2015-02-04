@@ -21,6 +21,7 @@ uniqid=coredump-$$-coredump
 
 alarm()
 {
+  pgrep -f "$uniqid" >/dev/null || return
   log core took too long to save, quitting to avoid panic, core will be truncated
   sysctl -w kernel.hung_task_timeout_secs=120
   pkill -f "$uniqid"
