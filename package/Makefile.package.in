@@ -214,8 +214,8 @@ define DOWNLOAD_RREPO
 				$${repo_dir} \
 				$${target_dir}.tmp/ $$DL_VERSION && \
 			mkdir -p $${target_dir}/ && \
-			mv $${target_dir}.tmp/* $${target_dir}.tmp/.??* $${target_dir}/ && \
-			rmdir $${target_dir}.tmp \
+			rsync -a $${target_dir}.tmp/ $${target_dir}/ && \
+			rm -rf $${target_dir}.tmp/ \
 			) ; \
 		fi ; \
 	done
