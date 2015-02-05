@@ -48,6 +48,7 @@ case "$1" in
     # With default CWMPRetryIntervalMultiplier, CWMP
     # maximum exponential backoff is 5120 seconds.
     # Set the alivemonitor to somewhat longer than that.
+    umask 022
     babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
       nice cwmpd $DIAGUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &

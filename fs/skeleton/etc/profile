@@ -1,5 +1,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+umask 022
+
 if [ -n "$ZSH_VERSION" ]; then
   unsetopt NOMATCH
   unsetopt AUTO_MENU
