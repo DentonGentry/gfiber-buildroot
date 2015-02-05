@@ -1,46 +1,12 @@
 #!/bin/sh
-#
-# setup-dhclient: A program taking no arguments that writes the dhclient (the
-# system DHCP client) configuration file to /tmp/dhclient.conf and
-# /tmp/dhclient6.conf.
 
 rm -f /tmp/dhclient.conf
-rm -f /tmp/dhclient6.conf
 
 cat >/tmp/dhclient.conf <<-EOF
-  # dhclient configuration.  For more details about parameters, see
-  #  `man dhclient' or https://www.freebsd.org/cgi/man.cgi?query=dhclient.conf
-
-  # Retry every 30 seconds if unable to contact a DHCP server.
 	retry 30;
-
-  # The list of options the client is to request from the server (-R option of
-  # dhclient binary).  Possible values:
-  #   subnet-mask, broadcast-address, time-offset, routers, domain-name,
-  #   domain-name-servers, host-name, nis-domain, nis-servers, ntp-servers,
-  #   interface-mtu
 	request subnet-mask, broadcast-address, routers,
 		domain-name, domain-name-servers, ntp-servers;
-
-  # The value of the host-name option to send to the DHCP server (-H option of
-  # dhclient binary).
 	send host-name "$(hostname)";
-
-  # The value of the DHCP client identifier to send to the server (-I option of
-  # dhclient binary).
 	send dhcp-client-identifier "$(serial)";
-
-  # The script statement is used to specify the pathname of the DHCP client
-  # configuration script.  This script is used by the DHCP client to set each
-  # interface's initial configuration prior to requesting an address, to test
-  # the address once it has been offered, and to set the interface's final
-  # configuration once a lease has been acquired.  If no lease is acquired, the
-  # script is used to test predefined leases, if any, and also called once if no
-  # valid lease can be identified.  For more information, see
-  # dhclient.leases(5).
 	script "/sbin/dhclient-script";
 EOF
-
-# TODO(reddaly): This seems like a hack.  The DHCP6 config should probably be
-# written the same way as the DHCP4 version.
-cp /etc/dhclient6.conf /tmp/dhclient6.conf
