@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+register_experiment BigInitRwnd
+
 
 irq_affinity() {
   local irq="$1" cpu="$2"
@@ -245,7 +247,12 @@ case "$1" in
       #  But right now its included networking commands are too limited.
       if [ -n "$gatewayip" ]; then
         echo "IP: adding default gateway '$gatewayip'"
-        ip route add default via "$gatewayip"
+        if experiment BigInitRwnd; then
+          initrwnd='initrwnd 1000'
+        else
+          initrwnd=
+        fi
+        ip route add default via "$gatewayip" $initrwnd
       fi
     done
     echo "Bringing up the bridge..."

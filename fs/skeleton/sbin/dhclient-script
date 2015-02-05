@@ -28,6 +28,12 @@ printenv
 
 . /etc/utils.sh
 
+if experiment BigInitRwnd; then
+  initrwnd='initrwnd 1000'
+else
+  initrwnd=
+fi
+
 mkdir -p /tmp/dnsmasq
 
 ip=ip
@@ -372,7 +378,7 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
           $ip -4 route add ${router} dev $interface
         fi
         $ip -4 route add default via ${router} dev ${interface} \
-                    ${metric_arg}
+                    ${metric_arg} $initrwnd
       done
     fi
   fi
@@ -431,7 +437,7 @@ if [ x$reason = xTIMEOUT ]; then
         $ip -4 route add ${router} dev $interface
       fi
       $ip -4 route add default via ${router} dev ${interface} \
-                    ${metric_arg}
+                    ${metric_arg} $initrwnd
     done
     make_resolv_conf
     make_cwmp_files
