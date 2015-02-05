@@ -240,6 +240,8 @@ case "$1" in
         ip addr del $ip dev $x
       done
     done
+    echo "Adding RFC2365 multicast route..."
+    ip route add 239.0.0.0/8 dev br0
     kernopt ip |
     while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
       # $ip should be already setup by simpleramfs.
