@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /etc/utils.sh
+
 PATH="/usr/bin/bluetooth:${PATH}"
 BLUEZ_STOR_DIR="/user/bluez/lib/bluetooth"
 BLUEZ_CONF_DIR="/tmp/bluez/etc/bluetooth"
@@ -13,6 +15,9 @@ BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 
 # Start BlueZ stack only on select platforms
 ! is-bluez-platform && exit 0
+
+# implemented in Blue/Z for GFRM100.
+register_experiment BluezUnplugNoKeypress
 
 # in debug mode, support multiple BT adapters
 if [ -f /tmp/DEBUG ]; then
