@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_GOOGLE_API
+        bool "go_google_api"
+        help
+          Auto-generated Google APIs for Go

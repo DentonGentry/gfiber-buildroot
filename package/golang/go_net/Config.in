@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_NET
+        bool "go_net"
+        help
+          Go supplementary network libraries
