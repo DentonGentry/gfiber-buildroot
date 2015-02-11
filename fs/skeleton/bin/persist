@@ -1,0 +1,34 @@
+#!/usr/bin/python -S
+
+"""Utility to support storing and re-using command-line arguments.
+
+persist save [args...]
+    Print a JSON-encoded set of command line arguments.  Example usage:
+
+    persist save "$@" >$persistfile
+
+persist run <command> [args...]
+    Run a command with JSON-encoded command line arguments stored with persist
+    save read from stdin.  Any arguments specified will come before persisted
+    arguments. Example usage:
+
+    persist run wifi set <$persistfile
+"""
+
+import json
+import os
+import sys
+
+
+def main():
+  if not sys.argv[1:] or sys.argv[1] not in ['save', 'run']:
+    print __doc__
+    sys.exit(1)
+  elif sys.argv[1] == 'save':
+    print json.dumps(sys.argv[2:])
+  else:
+    os.execvp(sys.argv[2], sys.argv[2:] + json.loads(sys.stdin.read()))
+
+
+if __name__ == '__main__':
+  main()
