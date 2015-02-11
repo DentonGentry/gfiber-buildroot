@@ -1,0 +1,34 @@
+###############################################################################
+# Google Buffet package README
+###############################################################################
+
+* Buffet is a component in Chrome OS Core (Brillo) operating system, responsible
+for command dispatch and device state publishing, on both local and GCD cloud
+channels. For more information about Buffet design, please read:
+  https://docs.google.com/document/d/1OBwLHDQ-UA9PR41miXm1D1Q5MulAyQwxQoTUMDTVPdM
+
+
+* Procedure to port Buffet component from Brillo to SpaceCast platform:
+- Build Buffet component and its dependencies using Chrome OS build environment.
+See details here: http://dev.chromium.org/chromium-os/developer-guide
+- Tarball the Buffet binaries, dependencies, and configs under //chromeos root
+dir as below:
+    chromeos
+        |__ bin -> buffet, buffet_client, test_buffet_daemon etc.
+        |__ lib -> libprotobuf, libpthread, libdbus etc.
+        |__ etc -> etc/buffet -> buffet.conf, gcd.json etc.
+        |__ var -> var/run/dbus/system_bus_socket
+- Ensure Buffet daemon can run and communicate with buffet_client in target box.
+- Name the tarball 'google_buffet-<ChromeOS version>.tar.gz.
+- Drop the tarball in repo://vendor/google/tarballs
+
+
+* This directory contains all necessary configs to build and setup Buffet in the
+SpaceCast platform
+- google_buffet.mk extracts the Buffet tarballs and setup the proper rootfs so
+that Buffet is under //chroot/chromeos to utilize the ChromeOS environment.
+- S99buffet starts Buffet daemon in init.d.
+- org.chromium.Buffet.conf is the additional DBus configuration customized to
+run in SpaceCat platform.
+- buffet.conf contains required configuration to start Buffet as a GCD client.
+- *.json are required configs for other applications to communicate with Buffet.

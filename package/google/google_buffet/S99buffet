@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+#   Buffet service is a system daemon responsible for command dispatch and
+# device state publishing on local and GCD cloud channels.
+#
+#   Note: Buffet is ported from ChromeOS as a binary so it expects the ChromeOS
+# environment. Therefore, chroot is needed to execute buffet.
+#
+
+# Sanity check
+[ -x /chroot/chromeos/bin/buffet ] || exit 0
+[ -d /chroot/chromeos/etc/buffet ] || exit 0
+
+# Create necessary directories
+mkdir -m 0755 -p /chroot/chromeos/var/run/buffet
+
+start() {
+  echo "Starting buffet service..."
+  chroot /chroot/chromeos /bin/buffet &
+
+  [ $? -eq 0 ] && echo "Buffet started successfully" && exit 0
+  echo "Failed to start buffet..." && exit 1
+}
+
+stop() {
+  echo "Stop buffet not supported yet..."
+  exit 1
+}
+
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    restart
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
