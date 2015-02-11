@@ -1,5 +1,5 @@
 config BR2_PACKAGE_GOOGLE_BUFFET
        bool "google_buffet"
-       default y
+       default n
        help
          Google's Buffet
