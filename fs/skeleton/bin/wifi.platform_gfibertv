@@ -5,6 +5,7 @@ show_bands="2.4 5"
 bridge=
 if_suffix=
 ssid=$(serial)_TestWifi
+client_ssid=
 crypto=WPA2_PSK_AES
 channel=auto
 autotype=NONDFS
@@ -29,10 +30,11 @@ chop_multiline()
   echo "$1" | { read x; echo "$x"; }
 }
 
-# use $WIFI_PSK from the environment if given.
+# use $WIFI_PSK and $WIFI_CLIENT_PSK from the environment if given.
 # You shouldn't pass passwords as command-line options because they show up
 # in 'ps' even to users other than you.
 psk=$(chop_multiline "$WIFI_PSK")
+client_psk=$(chop_multiline "$WIFI_CLIENT_PSK")
 
 . /etc/utils.sh
 register_experiment AutoSetupSSID
@@ -72,6 +74,7 @@ Usage: $bin set [options...]
  -X               Use extra short timeout intervals for stress testing
  -P               Persist settings so we can restore them with 'wifi restore'
  -S               wlan interface suffix (default: none)
+ -C               SSID to join as a client (overrides -c and -w)
 $bin <off|stop> [options...]
  disable wifi on the given band(s)
  -b <band>        Wifi band to use (5 GHz or 2.4 GHz, default='$show_bands')
@@ -152,11 +155,19 @@ iw_find_phy() {
 }
 
 
+iw_find_ap_ifc() {
+  echo $(iw_find_ifc $1 "^wlan[0-9]${if_suffix}\$")
+}
+
+iw_find_client_ifc() {
+  echo $(iw_find_ifc $1 "^wcli[0-9]${if_suffix}\$")
+}
+
 iw_find_ifc() {
-  phynum=$1
-  pattern="^wlan[0-9]${if_suffix}$"
-  thisphynum=
-  ifcname=
+  local phynum=$1
+  local pattern=$2
+  local thisphynum=
+  local ifcname=
   iw dev | while read a b junk; do
     if startswith "$a" "phy#"; then
       thisphynum=${a#phy#}
@@ -172,13 +183,49 @@ iw_find_ifc() {
 }
 
 
-iw_find_ifc_from_band() {
+iw_find_ap_ifc_from_band() {
+  local band=$1
   phy=$(iw_find_phy "$band" auto)
   [ -n "$phy" ] || die "no wifi phy for band='$band'"
   phynum=${phy#phy}
-  ifc=$(iw_find_ifc "$phynum")
+  ifc=$(iw_find_ap_ifc "$phynum")
   [ -n "$ifc" ] || die "no wifi interface for band='$band'"
   echo "$ifc"
+}
+
+
+iw_find_client_ifc_from_band() {
+  local band=$1
+  phy=$(iw_find_phy "$band" auto)
+  [ -n "$phy" ] || return 1
+  phynum=${phy#phy}
+  client_ifc=$(iw_find_client_ifc "$phynum")
+  [ -n "$client_ifc" ] || return 1
+  echo "$client_ifc"
+}
+
+
+iw_find_width() {
+  local client_ifc=$1
+  local channel_width="$(iw $client_ifc info 2>/dev/null |
+                         grep "width: " |
+                         sed "s/.*width: \([0-9]\+\) MHz.*/\1/")"
+  if [ -z "$channel_width" ]; then
+    die "Couldn't find width"
+  fi
+  echo $channel_width
+}
+
+
+iw_find_channel() {
+  local client_ifc=$1
+  local channel="$(iw $client_ifc info 2>/dev/null |
+                   grep "channel " |
+                   sed "s/.*channel \([0-9]\+\).*/\1/")"
+  if [ -z "$channel" ]; then
+    die "Couldn't find channel"
+  fi
+  echo $channel
 }
 
 
@@ -189,14 +236,27 @@ iw_check1_hostapd() {
 }
 
 
+iw_check1_wpa_supplicant() {
+  local ifc="$1"
+  local pidfile="/tmp/wpa_supplicant.pid.$ifc"
+  [ -e "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null
+}
+
+
 iw_check2_hostapd() {
   local ifc="$1"
   hostapd_cli -i "$ifc" get_config >/dev/null 2>&1
 }
 
 
+iw_check2_wpa_supplicant() {
+  local ifc="$1"
+  wpa_cli -i "$ifc" status >/dev/null 2>&1
+}
+
+
 iw_stop_hostapd() {
-  local ifc=$1
+  local ifc="$1"
   local pidfile=/tmp/hostapd.pid.$ifc
   pkillwait -f "hostapd .* /tmp/hostapd.conf.$ifc\$"
   killpid "$pidfile"
@@ -209,6 +269,18 @@ iw_stop_hostapd() {
   iw dev "mon.$ifc" del 2>/dev/null
   ip link set "$ifc" down
 }
+
+
+iw_stop_wpa_supplicant() {
+  local ifc=$1
+  local pidfile=/tmp/wpa_supplicant.pid.$ifc
+  pkillwait -f "wpa_supplicant .* /tmp/wpa_supplicant.conf.$ifc\$"
+  killpid "$pidfile"
+  rm -f "$pidfile"
+  ip link set "$ifc" down
+}
+
+
 
 is_interface_up() {
   [ -e "/sys/class/net/$1" ] && [ "$(cat /sys/class/net/$1/operstate 2>/dev/null)" = "up" ]
@@ -296,21 +368,116 @@ iw_maybe_restart_hostapd() {
 }
 
 
+iw_start_wpa_supplicant() {
+  local client_ifc=$1
+  local pidfile="/tmp/wpa_supplicant.pid.$client_ifc"
+  log "pidfile is $pidfile"
+
+  log "Starting wpa_supplicant."
+  babysit 10 \
+    startpid "$pidfile" \
+    wpa_supplicant -Dnl80211 -i $client_ifc -c "/tmp/wpa_supplicant.conf.$client_ifc" \
+    2>&1 | logos "wpa_supplicant-$client_ifc" &
+
+  # Wait for wpa_supplicant to start, and return an error if it doesn't
+  for d in $(seq 10); do
+    iw_check1_wpa_supplicant "$client_ifc" && break
+    echo -n . >&2
+    sleep 0.1
+  done
+  log
+
+  # wpa_supplicant_cli returns success on command timeouts.  If we time this
+  # perfectly and manage to connect but then wpa_supplicant dies right after,
+  # we'd think it succeeded.  So sleep a bit to try to give hostapd a chance to
+  # die from its error before we try to connect to it.
+  sleep 0.5
+  for d in $(seq 50); do
+    iw_check1_wpa_supplicant "$client_ifc" || break
+    if iw_check2_wpa_supplicant "$client_ifc"; then
+      [ -n "$persist" ] && atomic "$CONFIG_DIR/wpa_supplicant.conf.$client_ifc" "$wpa_conf"
+      log "Requesting IP via DHCP"
+      dhclient "$client_ifc" >/dev/null
+      log ok
+      return 0
+    fi
+    echo -n . >&2
+    sleep 0.1
+  done
+  log
+  die "wpa_supplicant failed to start. Look at wpa_supplicant logs for details."
+}
+
+iw_maybe_restart_wpa_supplicant() {
+  local client_ifc="$1"
+  local cfgdata="$2"
+  local cfgfile="/tmp/wpa_supplicant.conf.$client_ifc"
+  local oldcfgdata="$(cat "$cfgfile")"
+  if ! iw_check2_wpa_supplicant "$client_ifc"; then
+    log "wpa_supplicant not running yet, starting."
+    stopwifi "$band" || exit 1
+  elif [ "$oldcfgdata" != "$cfgdata" ]; then
+    log "wpa_supplicant config changed, restarting."
+    stopwifi "$band" || exit 1
+  elif [ -n "$force_restart" ]; then
+    stopwifi "$band" || exit 1
+    log "Forced restart requested."
+  else
+    log "wpa_supplicant-$client_ifc already configured and running."
+    return
+  fi
+
+  # make sure it's stopped *before* replacing config, so that if we
+  # get interrupted, we won't accidentally think the new config is the
+  # one that's running
+  iw_stop_wpa_supplicant "$client_ifc"
+  atomic "$cfgfile" "$cfgdata"
+  iw_start_wpa_supplicant "$client_ifc"
+}
+
+# Creates a wpa_supplicant.conf for the specified SSID and PSK.
+create_wpa_conf() {
+  local ssid="$1"
+  local passphrase="$2"
+  local psk="$(wpa_passphrase "$ssid" "$passphrase" |
+               grep "\spsk=" |
+               sed s/.*psk=//)"
+  psk=${psk#psk=}
+  cat <<-EOF
+	ctrl_interface=/var/run/wpa_supplicant
+	ap_scan=1
+	network={
+	  ssid="$ssid"
+	  psk=$psk
+	}
+	EOF
+}
+
+
 stopwifi() {
   band=$1
   if runnable iw; then
-    ifc=$(iw_find_ifc_from_band "$band") || die
-    iw_stop_hostapd "$ifc"
-    [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
+    local ifc=$(iw_find_ap_ifc_from_band "$band")
+    if [ -n "$ifc" ]; then
+      iw_stop_hostapd "$ifc"
+      [ -n "$persist" ] && rm -f "$CONFIG_DIR/hostapd.conf.$ifc"
+    fi
+
+    local client_ifc=$(iw_find_client_ifc_from_band "$band")
+    if [ -n "$client_ifc" ]; then
+      iw_stop_wpa_supplicant "$client_ifc"
+      [ -n "$persist" ] && rm -f "$CONFIG_DIR/wpa_supplicant.conf.$client_ifc"
+    fi
     return 0
   fi
 }
 
 
+# TODO(rofrankel): Make restore work with client mode (-C).
 restorewifi() {
   band=$1
   if runnable iw; then
-    ifc=$(iw_find_ifc_from_band "$band") || die
+    ifc=$(iw_find_ap_ifc_from_band "$band") || die
     if [ -r "$CONFIG_DIR/hostapd.conf.$ifc" ]; then
       cfgdata=$(cat "$CONFIG_DIR/hostapd.conf.$ifc")
       ( iw_maybe_restart_hostapd "$ifc" "$cfgdata" )
@@ -323,13 +490,14 @@ restorewifi() {
 
 # TODO(apenwarr): extend this to notice actual running settings.
 #  Including whether hostapd is up or down, etc.
+# TODO(rofrankel): extend this to show client interface info.
 showwifi() {
   band=$1
   if runnable iw; then
     # TODO(dgentry): iw says 'Do NOT screenscrape this tool,
     # we don't consider its output stable.'
     # should we write an iwget tool using iwlib, where the API is more stable?
-    ifc=$(iw_find_ifc_from_band "$band") || die
+    ifc=$(iw_find_ap_ifc_from_band "$band") || die
 
     echo "Band: $band"
     output=$(iw reg get)
@@ -367,7 +535,7 @@ fi
 cmd=$1
 shift
 
-while getopts "b:c:a:s:e:fp:w:HMGB:PXS:" opt
+while getopts "b:c:a:s:e:fp:w:HMGB:PXS:C:" opt
 do
   case $opt in
     b) band=$OPTARG; show_bands=$OPTARG ;;
@@ -386,6 +554,7 @@ do
     P) persist=1; mkdir -p "$CONFIG_DIR" ;;
     X) extra_short_timeouts=1 ;;
     S) if_suffix=$OPTARG ;;
+    C) client_ssid=$OPTARG ;;
     *) usage ;;
   esac
 done
@@ -475,7 +644,7 @@ case "$band-$autotype-$width" in
   2*-*-80) die "80Mhz not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
 
   # DFS is not valid in 2.4Ghz
-  2*-DFS-*)die "dfs not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
+  2*-DFS-*) die "dfs not valid in 2.4Ghz: type='$autotype' band='$band' width='$width'" ;;
 
   # There are no overlapping channels in 5Ghz, so requesting that isn't valid.
   5*-OVERLAP-*) die "overlap not allowed in 5ghz: type='$autotype band='$band' width='$width'" ;;
@@ -539,6 +708,9 @@ case "$crypto" in
 esac
 
 if runnable wl && [ -z "$(iw list 2>/dev/null)" ]; then
+  if [ -z "$client_ssid" ]; then
+    log "client mode (-C) not supported for broadcom; ignoring..."
+  fi
   log "Configuring broadcom wifi."
   WL radio on
   WL down
@@ -598,14 +770,34 @@ if runnable wl && [ -z "$(iw list 2>/dev/null)" ]; then
       ;;
   esac
 elif runnable iw; then
-  log "Configuring cfg80211 wifi."
   phy=$(iw_find_phy "$band" "$channel")
   [ -n "$phy" ] || die "no wifi phy for band='$band' channel='$channel'"
   phynum=${phy#phy}
   log "phy='$phy' phynum='$phynum'"
-  ifc=$(iw_find_ifc "$phynum")
+  ifc=$(iw_find_ap_ifc "$phynum")
   [ -n "$ifc" ] || die "no wifi interface for band='$band' channel='$channel'"
   log "ifc='$ifc'"
+  log "Configuring cfg80211 wifi."
+
+  # If client mode was specified with -C, we have to turn off our AP, set up the
+  # client connection, and then turn on our AP interface with the same channel
+  # and width specified by the AP we connected to as a client.
+  if [ -n "$client_ssid" ]; then
+    client_ifc=wcli$phynum
+    if ! iw "$client_ifc" info >/dev/null 2>&1; then
+      log "Creating client interface"
+      iw phy "$phy" interface add "$client_ifc" type station >/dev/null 2>&1
+      ip link set "$client_ifc" address $(mac_addr_increment $(get_mac_addr_for_interface "$ifc") 1)
+    fi
+    ip link set dev "$client_ifc" up
+
+    wpa_conf=$(create_wpa_conf "$client_ssid" $WIFI_CLIENT_PSK)
+    iw_maybe_restart_wpa_supplicant "$client_ifc" "$wpa_conf"
+
+    width=$(iw_find_width "$client_ifc") || die
+    channel=$(iw_find_channel "$client_ifc") || die
+    log "Using channel=$channel, width=$width MHz specified by $client_ssid"
+  fi
 
   IWC() {
     IW dev "$ifc" "$@"
@@ -837,7 +1029,7 @@ elif runnable iw; then
     if [ -z "$bssid" ]; then
       bssid=$(hnvram -rq MAC_ADDR)
       if [ -z "$bssid" ]; then
-        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI(2)"
+        log "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI(2)"
         # should not happen, but hardcode one for extreme case.
         bssid="f8:8f:ca:80:11:22"
       fi
@@ -911,6 +1103,7 @@ elif runnable iw; then
     )
   fi
   log "configuration ready."
+
   iw_maybe_restart_hostapd "$ifc" "$hostconf"
 else
   die "No wifi runtime found."

@@ -107,4 +107,15 @@ else
 fi
 
 
+# We can't really test client mode in a unit test because there is nothing to
+# connect to.  So dhclient should time out, making the WVFAIL line pass.
+WVSTART "client mode generates a correct wpa_supplicant.conf"
+export WIFI_CLIENT_PSK=e0b3e76d15f938fcd6ce682459a868312a0e0b779aee825a66aca6837701e685
+# This will fail because (hopefully) this SSID doesn't exist.
+WVFAIL wifi set -b2.4 -C HOPEFULLY_NONEXISTENT_SSID
+# ...but we can at least check that the expected config was generated.
+WVPASS grep "ap_scan=1" /tmp/wpa_supplicant.conf.wcli0
+WVPASS grep "ssid=\"HOPEFULLY_NONEXISTENT_SSID\"" /tmp/wpa_supplicant.conf.wcli0
+WVPASS grep "psk=$WIFI_CLIENT_PSK" /tmp/wpa_supplicant.conf.wcli0
+
 WVPASS wifi stop -P
