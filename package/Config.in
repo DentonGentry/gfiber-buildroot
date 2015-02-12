@@ -80,6 +80,7 @@ source "package/intltool/Config.in"
 source "package/make/Config.in"
 source "package/mpc/Config.in"
 source "package/mpfr/Config.in"
+source "package/ninja/Config.in"
 source "package/libtool/Config.in"
 source "package/m4/Config.in"
 if BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
