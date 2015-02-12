@@ -37,6 +37,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE
 	help
 	  Waveguide tool for Wi-Fi.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD
+	bool "include log upload tool"
+	default n
+	help
+	  Log upload tool for Google platforms.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n

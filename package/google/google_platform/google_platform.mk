@@ -51,6 +51,10 @@ else ifeq ($(BR2_i386),y)
 GOOGLE_PLATFORM_ARCH   := i386
 endif
 
+ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD),y)
+BUILD_LOGUPLOAD=y
+endif
+
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),y)
 BUILD_WAVEGUIDE=y
 endif
@@ -63,15 +67,12 @@ endif
 #  in that script instead of making one "platform" per flag combination.
 ifeq      ($(BR2_PACKAGE_GOOGLE_STORAGE_BOX),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfibertv
-BUILD_LOGUPLOAD=y
 else ifeq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfiberlt
 else ifeq ($(BR2_PACKAGE_GOOGLE_NETWORK_BOX),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfibertv
-BUILD_LOGUPLOAD=y
 else ifeq ($(BR2_PACKAGE_GOOGLE_SPACECAST),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfibersc
-BUILD_LOGUPLOAD=y
 endif
 
 define GOOGLE_PLATFORM_PERMISSIONS
@@ -140,6 +141,7 @@ endef
 define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	$(GPLAT_MAKE) -C $(@D) install
 
+	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD),$(INSTALL) -m 0755 -D package/google/google_platform/S95uploadlog $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),$(INSTALL) -m 0755 -D package/google/google_platform/S50waveguide $(TARGET_DIR)/etc/init.d/)
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
