@@ -51,6 +51,10 @@ else ifeq ($(BR2_i386),y)
 GOOGLE_PLATFORM_ARCH   := i386
 endif
 
+ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),y)
+BUILD_WAVEGUIDE=y
+endif
+
 # TODO(apenwarr): postbuild.sh should use flags instead of platform_*.
 #  BR2_TARGET_GOOGLE_PLATFORM is only used in postbuild.sh to choose which
 #  variants of a few files it should use.  To allow for more flexibility
@@ -98,6 +102,7 @@ GPLAT_MAKE = \
 	BUILD_DNSSD=$(BUILD_DNSSD) \
 	BUILD_LOGUPLOAD=$(BUILD_LOGUPLOAD) \
 	BUILD_IBEACON=$(BUILD_IBEACON) \
+	BUILD_WAVEGUIDE=$(BUILD_WAVEGUIDE) \
 	BR2_TARGET_GOOGLE_PLATFORM=$(BR2_TARGET_GOOGLE_PLATFORM) \
 	$(MAKE)
 
@@ -135,6 +140,7 @@ endef
 define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	$(GPLAT_MAKE) -C $(@D) install
 
+	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),$(INSTALL) -m 0755 -D package/google/google_platform/S50waveguide $(TARGET_DIR)/etc/init.d/)
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/

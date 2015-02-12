@@ -31,6 +31,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
     help
       NVRAM manipulation utility for Google platforms.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE
+	bool "include waveguide tool"
+	default n
+	help
+	  Waveguide tool for Wi-Fi.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
