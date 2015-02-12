@@ -194,11 +194,28 @@ fi
 
 # DMZ, goes last
 if [ -f $acs/dmzhostv4 ]; then
-  dmzhostv4=$(cat $acs/dmzhostv4)
-  iptables -t nat -A acsrules-nat-prerouting -i $wan -s 0/0 -d "$wanipv4" \
-      -j DNAT --to "$dmzhostv4" -m comment --comment "DMZ4"
-  iptables -A acsrules-filter-forward -i $wan -d "$dmzhostv4" -j ACCEPT \
+  file_contents=$(cat $acs/dmzhostv4)
+  # TODO(jnewlin): Change this to use while x .. < $acs/dmzhostv4
+  # after catawampus if fixed to append a newline to the end of the file.
+  echo "$file_contents" | while read dmz_lanv4 dmz_wanv4; do
+    if [ -z "$dmz_wanv4" ]; then
+      # Legacy case, map everything from the wan's ip to the lan_ip
+      dmz_wanv4="$wanipv4"
+    fi
+    # Map external dmz_wanv4 to internal dmz_lanv4.
+    iptables -t nat -A acsrules-nat-prerouting -i $wan -s 0/0 \
+      -d "$dmz_wanv4" -j DNAT --to "$dmz_lanv4" -m comment --comment "DMZ4"
+
+    # Map traffic coming from internal dmz_lanv4 to have a source address of
+    # dmz_wanv4.
+    iptables -t nat -A acsrules-nat-postrouting -o $wan -s "$dmz_lanv4" \
+      -j SNAT --to "$dmz_wanv4"  -m comment --comment "DMZ4"
+
+    # Allows any traffic to be forwarded through the firewall to this lan
+    # ipv4 address.
+    iptables -A acsrules-filter-forward -i $wan -d "$dmz_lanv4" -j ACCEPT  \
       -m comment --comment "DMZ4"
+  done
 fi
 if [ -f $acs/dmzhostv6 ]; then
   dmzhostv6=$(cat $acs/dmzhostv6)
