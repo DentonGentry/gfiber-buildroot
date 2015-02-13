@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_GONZOJIVE_MDNS
+        bool "go_gonzojive_mdns"
+        help
+          Simple mDNS client/server library in Golang

@@ -628,6 +628,7 @@ endif
 endmenu
 
 menu "Bruno custom build"
+source "package/golang/Config.in"
 source "package/google/Config.in"
 source "package/humax_misc/Config.in"
 endmenu

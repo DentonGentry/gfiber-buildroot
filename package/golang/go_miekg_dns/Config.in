@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_MIEKG_DNS
+        bool "go_miekg_dns"
+        help
+          DNS library in Go
