@@ -32,10 +32,10 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_DVBUTILS
 
 config BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
 	bool "include hnvram access tools"
-    default n
-    select BR2_PACKAGE_HUMAX_MISC
-    help
-      NVRAM manipulation utility for Google platforms.
+	default n
+	select BR2_PACKAGE_HUMAX_MISC
+	help
+	  NVRAM manipulation utility for Google platforms.
 
 config BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE
 	bool "include waveguide tool"
