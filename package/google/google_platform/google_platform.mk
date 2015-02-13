@@ -55,6 +55,10 @@ ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),y)
 BUILD_WAVEGUIDE=y
 endif
 
+ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_DVBUTILS),y)
+BUILD_DVBUTILS=y
+endif
+
 # TODO(apenwarr): postbuild.sh should use flags instead of platform_*.
 #  BR2_TARGET_GOOGLE_PLATFORM is only used in postbuild.sh to choose which
 #  variants of a few files it should use.  To allow for more flexibility
@@ -102,6 +106,7 @@ GPLAT_MAKE = \
 	BUILD_LOGUPLOAD=$(BUILD_LOGUPLOAD) \
 	BUILD_IBEACON=$(BUILD_IBEACON) \
 	BUILD_WAVEGUIDE=$(BUILD_WAVEGUIDE) \
+	BUILD_DVBUTILS=$(BUILD_DVBUTILS) \
 	BR2_TARGET_GOOGLE_PLATFORM=$(BR2_TARGET_GOOGLE_PLATFORM) \
 	$(MAKE)
 

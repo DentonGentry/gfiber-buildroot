@@ -24,6 +24,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fibler devices.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_DVBUTILS
+	bool "include dvb tools"
+	default n
+	help
+	  DVB utility tools.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
 	bool "include hnvram access tools"
     default n
