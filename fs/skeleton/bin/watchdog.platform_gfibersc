@@ -22,8 +22,7 @@ elif grep -q "BCM7429" /proc/cpuinfo; then
   setup=bcm_setup
   pushback=bcm_pushback
   stop=
-elif grep -q "Optimus" /proc/cpuinfo; then
-  # GFRG200/210
+elif grep -q "Spacecast" /proc/cpuinfo; then
   init=mindspeed_init
   setup=mindspeed_setup
   pushback=mindspeed_pushback
