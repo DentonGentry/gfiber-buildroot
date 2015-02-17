@@ -22,12 +22,15 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/appliance \
 		$(TARGET_DIR)/app/spacecast/appliance
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/S90spacecast \
+		$(TARGET_DIR)/etc/init.d/
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/golib:$(@D)/go:$$GOPATH ; \
-	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance
+	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance; \
+	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
 endef
 
 $(eval $(call GENTARGETS))
