@@ -136,6 +136,9 @@ case "$1" in
       if [ -e /sys/module/ath9k/parameters/debug ]; then
         echo 0x00004400 >/sys/module/ath9k/parameters/debug
       fi
+
+      # Enable pktgen.
+      modprobe pktgen 2>/dev/null
     fi
 
     # if the file exists and it isn't empty
