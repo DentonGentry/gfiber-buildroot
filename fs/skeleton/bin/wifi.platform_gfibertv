@@ -209,25 +209,57 @@ iw_find_client_ifc_from_band() {
 
 iw_find_width() {
   local client_ifc=$1
-  local channel_width="$(iw $client_ifc info 2>/dev/null |
+
+  local channel_width="$(iw "$client_ifc" info 2>/dev/null |
                          grep "width: " |
                          sed "s/.*width: \([0-9]\+\) MHz.*/\1/")"
+
   if [ -z "$channel_width" ]; then
-    die "Couldn't find width"
+    local tx_bitrate="$(iw dev "$client_ifc" link 2>/dev/null |
+                        grep "tx bitrate: ")"
+    if [ "$?" -ne 0 ]; then
+      die "Couldn't find width."
+    fi
+
+    channel_width="$(echo "$tx_bitrate" | sed -n "s/.*[^0-9]\\([0-9]\\+\\)MHz .*/\1/ip")"
+    if [ -z "$channel_width" ]; then
+      channel_width=20
+    fi
   fi
-  echo $channel_width
+
+  echo "$channel_width"
 }
 
 
 iw_find_channel() {
   local client_ifc=$1
-  local channel="$(iw $client_ifc info 2>/dev/null |
+  local channel="$(iw "$client_ifc" info 2>/dev/null |
                    grep "channel " |
                    sed "s/.*channel \([0-9]\+\).*/\1/")"
   if [ -z "$channel" ]; then
-    die "Couldn't find channel"
+    local freq="$(iw_find_freq "$client_ifc")"
+    channel="$(iw phy | while IFS=" []" read a b c d junk; do
+      if [ "$c" = "MHz" ] && [ "$b" = "$freq" ]; then
+        echo "$d"
+      fi
+    done)"
   fi
-  echo $channel
+  if [ -z "$channel" ]; then
+    die "Couldn't find channel."
+  fi
+  echo "$channel"
+}
+
+
+iw_find_freq() {
+  local client_ifc=$1
+  local freq="$(iw dev "$client_ifc" link 2>/dev/null |
+                   grep "freq: " |
+                   sed "s/.*freq: \([0-9]\+\)/\1/")"
+  if [ -z "$freq" ]; then
+    die "Couldn't find frequency."
+  fi
+  echo "$freq"
 }
 
 
