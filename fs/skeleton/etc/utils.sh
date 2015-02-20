@@ -149,7 +149,7 @@ start_adsmgr() {
   VIDEO_UID=$(id -u video)
   VIDEO_GID=$(id -g video)
   # Start up native ads manager
-  babysit 10 \
+  babysit 60 \
   /app/sage/adsmgr -U $VIDEO_UID -G $VIDEO_GID 2>&1 | logos ads 0 20000000 &
 }
 
