@@ -27,7 +27,7 @@ start() {
     for conf in tmp/configs/*.conf; do
       if [ -e "$conf" ]; then
         babysit 120 chroot /chroot/inadyn \
-          inadyn --input_file /"$conf" --cachefile /tmp --pidfile /tmp/inadyn.pid \
+          inadyn --input_file /"$conf" --cache-dir /tmp --pidfile /tmp/inadyn.pid \
           --change_persona nobody:nogroup 2>&1 | logos dyndns &
       fi
     done

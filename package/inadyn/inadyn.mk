@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-INADYN_VERSION = 1.99.12
+INADYN_VERSION = 1.99.13
 INADYN_SITE = https://github.com/troglobit/inadyn/releases/download/$(INADYN_VERSION)
 INADYN_SOURCE = inadyn-$(INADYN_VERSION).tar.xz
 INADYN_LICENSE = GPLv2+
@@ -19,7 +19,7 @@ define INADYN_INSTALL_CHROOT
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/usr/lib
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/usr/sbin
 	mkdir -p $(TARGET_DIR)/chroot/inadyn/tmp
-	ln -s tmp/dev $(TARGET_DIR)/chroot/inadyn/dev
+	ln -sf tmp/dev $(TARGET_DIR)/chroot/inadyn/dev
 endef
 
 define INADYN_INSTALL_INIT_SYSV

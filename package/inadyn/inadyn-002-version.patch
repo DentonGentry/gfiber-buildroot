@@ -16,10 +16,10 @@ index 07797b6..7a4ebb9 100755
 @@ -581,8 +581,8 @@ MAKEFLAGS=
  PACKAGE_NAME='inadyn'
  PACKAGE_TARNAME='inadyn'
- PACKAGE_VERSION='1.99.12'
--PACKAGE_STRING='inadyn 1.99.12'
+ PACKAGE_VERSION='1.99.13'
+-PACKAGE_STRING='inadyn 1.99.13'
 -PACKAGE_BUGREPORT='https://github.com/troglobit/inadyn/issues'
-+PACKAGE_STRING='inadyn 1.99.12 (Google Fiber)'
++PACKAGE_STRING='inadyn 1.99.13 (Google Fiber)'
 +PACKAGE_BUGREPORT='Google Fiber customer support'
  PACKAGE_URL=''
  
