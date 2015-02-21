@@ -59,6 +59,10 @@ ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_DVBUTILS),y)
 BUILD_DVBUTILS=y
 endif
 
+ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR),y)
+BUILD_SYSMGR=y
+endif
+
 # TODO(apenwarr): postbuild.sh should use flags instead of platform_*.
 #  BR2_TARGET_GOOGLE_PLATFORM is only used in postbuild.sh to choose which
 #  variants of a few files it should use.  To allow for more flexibility
@@ -113,6 +117,7 @@ GPLAT_MAKE = \
 	BUILD_IBEACON=$(BUILD_IBEACON) \
 	BUILD_WAVEGUIDE=$(BUILD_WAVEGUIDE) \
 	BUILD_DVBUTILS=$(BUILD_DVBUTILS) \
+	BUILD_SYSMGR=$(BUILD_SYSMGR) \
 	BR2_TARGET_GOOGLE_PLATFORM=$(BR2_TARGET_GOOGLE_PLATFORM) \
 	$(MAKE)
 
@@ -152,6 +157,7 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD),$(INSTALL) -m 0755 -D package/google/google_platform/S95uploadlog $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),$(INSTALL) -m 0755 -D package/google/google_platform/S50waveguide $(TARGET_DIR)/etc/init.d/)
+	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR),$(INSTALL) -m 0755 -D package/google/google_platform/S04sysmgr $(TARGET_DIR)/etc/init.d/)
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/

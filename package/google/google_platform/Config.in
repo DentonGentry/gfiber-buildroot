@@ -49,6 +49,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD
 	help
 	  Log upload tool for Google platforms.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR
+	bool "include system manager"
+	default n
+	help
+	  System manager.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
