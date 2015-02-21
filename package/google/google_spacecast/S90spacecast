@@ -7,6 +7,7 @@ FLAGS="-cache_base_dir=/var/media/data/cache \
        -tmp_dir=/var/media/data/tmp \
        -static_dir=/var/media/static \
        -disable_dir=/var/media/disable \
+       -key_dir=/var/media/keys/bandaid/public_keys \
        -api_key_path=/var/media/keys/apiarykey \
        -if_names=lo,br0 \
        -port=8080 \
