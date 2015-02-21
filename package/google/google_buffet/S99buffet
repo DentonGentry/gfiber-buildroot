@@ -10,13 +10,20 @@
 # Sanity check
 [ -x /chroot/chromeos/bin/buffet ] || exit 0
 [ -d /chroot/chromeos/etc/buffet ] || exit 0
+[ -e /chroot/chromeos/var/run/dbus/system_bus_socket ] || exit 0
 
-# Create necessary directories
-mkdir -m 0755 -p /chroot/chromeos/var/run/buffet
+# Create necessary directories and dependencies to run Buffet.
+mkdir -p /chroot/chromeos/var/run/buffet
+mkdir -p /chroot/chromeos/etc/ssl/certs
+# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
+ln -s /etc/ssl/certs/ca-certificates.crt /chroot/chromeos/etc/ssl/certs/578d5c04.0
+# Copy resolv.conf and nsswitch.conf so Buffet can resolve hostname.
+cp -p /etc/resolv.conf /chroot/chromeos/etc
+cp -p /etc/nsswitch.conf /chroot/chromeos/etc
 
 start() {
   echo "Starting buffet service..."
-  chroot /chroot/chromeos /bin/buffet &
+  chroot /chroot/chromeos /bin/buffet 2>&1 | logos buffet &
 
   [ $? -eq 0 ] && echo "Buffet started successfully" && exit 0
   echo "Failed to start buffet..." && exit 1
