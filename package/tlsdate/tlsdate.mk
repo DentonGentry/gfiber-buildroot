@@ -6,6 +6,12 @@ TLSDATE_DEPENDENCIES = host-pkg-config openssl
 TLSDATE_PRE_CONFIGURE_HOOKS += TLSDATE_AUTOGEN
 TLSDATE_CONF_OPT = --disable-hardened-checks
 
+define TLSDATE_INSTALL_DAEMON_INITSCRIPT
+	$(INSTALL) -m 0755 package/tlsdate/S75tlsdate $(TARGET_DIR)/etc/init.d/
+endef
+
+TLSDATE_POST_INSTALL_TARGET_HOOKS += TLSDATE_INSTALL_DAEMON_INITSCRIPT
+
 define TLSDATE_AUTOGEN
 	cd $(@D) && \
 	$(TARGET_MAKE_ENV) ./autogen.sh
