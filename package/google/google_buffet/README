@@ -11,15 +11,13 @@ channels. For more information about Buffet design, please read:
 * Procedure to port Buffet component from Brillo to SpaceCast platform:
 - Build Buffet component and its dependencies using Chrome OS build environment.
 See details here: http://dev.chromium.org/chromium-os/developer-guide
-- Tarball the Buffet binaries, dependencies, and configs under //chromeos root
-dir as below:
+- Tarball the Buffet binaries and their required shared libraries under
+//chromeos root dir as below:
     chromeos
         |__ bin -> buffet, buffet_client, test_buffet_daemon etc.
         |__ lib -> libprotobuf, libpthread, libdbus etc.
-        |__ etc -> etc/buffet -> buffet.conf, gcd.json etc.
-        |__ var -> var/run/dbus/system_bus_socket
 - Ensure Buffet daemon can run and communicate with buffet_client in target box.
-- Name the tarball 'google_buffet-<ChromeOS version>.tar.gz.
+- Name the tarball 'google_buffet-<ChromeOS version>.tar.gz'.
 - Drop the tarball in repo://vendor/google/tarballs
 
 
