@@ -9,4 +9,4 @@ DVBSNOOP_SITE = http://downloads.sourceforge.net/project/dvbsnoop/dvbsnoop/dvbsn
 DVBSNOOP_LICENSE = GPLv2
 DVBSNOOP_LICENSE_FILES = COPYING
 
-$(eval $(autotools-package))
+$(eval $(call AUTOTARGETS))

@@ -681,4 +681,8 @@ menu "Manufacturing support"
 source "package/mrvl_mfg/Config.in"
 endmenu
 
+menu "DVB tools"
+source "package/dvbsnoop/Config.in"
+endmenu
+
 endmenu
