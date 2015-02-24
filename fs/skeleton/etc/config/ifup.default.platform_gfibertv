@@ -6,7 +6,7 @@ if is-network-box; then
     uplink=1
   fi
 else
-  if [ "$iface" = br0 ] || [ "$iface" = wlan0c ]; then
+  if [ "$iface" = br0 ]; then
     uplink=1
   fi
 fi

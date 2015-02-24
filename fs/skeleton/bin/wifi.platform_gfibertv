@@ -38,7 +38,6 @@ psk=$(chop_multiline "$WIFI_PSK")
 client_psk=$(chop_multiline "$WIFI_CLIENT_PSK")
 
 . /etc/utils.sh
-register_experiment AutoSetupSSID
 register_experiment NoSwapWifiPrimaryChannel  # checked by hostapd itself
 register_experiment NoAutoNarrowWifiChannel   # checked by hostapd itself
 
@@ -349,24 +348,8 @@ iw_start_hostapd() {
   for d in $(seq 50); do
     iw_check1_hostapd "$ifc" || break
     if iw_check2_hostapd "$ifc"; then
-      if is-network-box && experiment AutoSetupSSID; then
-        if [ "$ifc" = "wlan0" ]; then
-          ifconfig wlan0.tv $WLAN0TVIP 2>/dev/null
-          ifconfig wlan0.setup $WLAN0SETUPIP 2>/dev/null
-        else
-          ifconfig wlan1.tv $WLAN1TVIP 2>/dev/null
-          ifconfig wlan1.setup $WLAN1SETUPIP 2>/dev/null
-        fi
-        if is_interface_up "$ifc.tv" && is_interface_up "$ifc.setup"; then
-          log ok
-          brctl addif br0 $ifc.tv
-          brctl addif br0 $ifc.setup
-          return 0
-        fi
-      else
-        log ok
-        return 0
-      fi
+      log ok
+      return 0
     fi
     echo -n . >&2
     sleep 0.1
@@ -997,31 +980,6 @@ setwifi() {
           # should not happen, but hardcode one for extreme case.
           bssid="f8:8f:ca:80:11:22"
         fi
-      fi
-
-      if experiment AutoSetupSSID; then
-        bssidtv=$(mac_addr_increment "$bssid" 4)
-        bssidsetup=$(mac_addr_increment "$bssid" 5)
-        setupvdev=$(cat <<-EOF
-	bss=$ifc.tv
-	bssid=$bssidtv
-	ssid=${ssid}tv
-	auth_algs=$auth_algs
-	wpa=$wpa
-	wpa_passphrase=$psk
-	wpa_key_mgmt=WPA-PSK
-	wpa_pairwise=$wpa_pairwise
-
-	bss=$ifc.setup
-	bssid=$bssidsetup
-	ssid=${ifc}setup
-	auth_algs=$auth_algs
-	wpa=$wpa
-	wpa_passphrase=$RGSETUPPSK
-	wpa_key_mgmt=WPA-PSK
-	wpa_pairwise=$wpa_pairwise
-	EOF
-        )
       fi
     fi
     hostconf=$(cat <<-EOF
