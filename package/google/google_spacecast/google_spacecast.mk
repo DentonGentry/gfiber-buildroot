@@ -9,6 +9,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-golang \
 				go_glog \
 				go_gonzojive_mdns \
 				go_google_api \
+				go_guelfey_go_dbus \
 				go_miekg_dns \
 				go_net \
 				go_protobuf
