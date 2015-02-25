@@ -1,6 +1,7 @@
 ###############################################################################
 # Google Buffet package README
 ###############################################################################
+* Full details: go/sc-buffet
 
 * Buffet is a component in Chrome OS Core (Brillo) operating system, responsible
 for command dispatch and device state publishing, on both local and GCD cloud
