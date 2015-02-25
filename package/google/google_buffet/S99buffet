@@ -16,7 +16,7 @@
 mkdir -p /chroot/chromeos/var/run/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
 # libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
-ln -s /etc/ssl/certs/ca-certificates.crt /chroot/chromeos/etc/ssl/certs/578d5c04.0
+cp -p /etc/ssl/certs/ca-certificates.crt /chroot/chromeos/etc/ssl/certs/578d5c04.0
 # Copy resolv.conf and nsswitch.conf so Buffet can resolve hostname.
 cp -p /etc/resolv.conf /chroot/chromeos/etc
 cp -p /etc/nsswitch.conf /chroot/chromeos/etc
@@ -24,14 +24,15 @@ cp -p /etc/nsswitch.conf /chroot/chromeos/etc
 start() {
   echo "Starting buffet service..."
   chroot /chroot/chromeos /bin/buffet 2>&1 | logos buffet &
-
-  [ $? -eq 0 ] && echo "Buffet started successfully" && exit 0
-  echo "Failed to start buffet..." && exit 1
+  [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
+  echo "Buffet started successfully"
 }
 
 stop() {
-  echo "Stop buffet not supported yet..."
-  exit 1
+  echo "Stopping buffet..."
+  pkill -x buffet
+  [ $? -ne 0 ] && echo "Failed to stop buffet..." && exit 1
+  echo "Buffet stopped successfully"
 }
 
 restart() {
