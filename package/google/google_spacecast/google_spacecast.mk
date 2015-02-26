@@ -35,22 +35,35 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/go:$(@D)/proto:$$GOPATH ; \
-	cd $(@D) && go build spacecast/appliance
+	export CGO_ENABLED=1 ; \
+	cd $(@D) && go build spacecast/appliance; \
+	cd $(@D) && go build spacecast/appliance/statemanager
 endef
 
 define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/appliance \
 		$(TARGET_DIR)/app/spacecast/appliance
+	$(INSTALL) -D -m 0755 $(@D)/statemanager \
+		$(TARGET_DIR)/app/spacecast/statemanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
+	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/statemanager
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/S90spacecast \
 		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/S85statemanager \
+		$(TARGET_DIR)/etc/init.d/
+	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.StateManager.conf \
+		$(TARGET_DIR)/etc/dbus-1/system.d/
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/golib:$(@D)/go:$$GOPATH ; \
-	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance; \
+	export CGO_ENABLED=1 ; \
+	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance spacecast/appliance/statemanager; \
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
+	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
+	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf
 endef
 
 $(eval $(call GENTARGETS))

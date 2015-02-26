@@ -1,0 +1,27 @@
+#!/bin/sh
+# State Manager init script.
+
+BINARY="/app/spacecast/statemanager"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "State Manager is already running!"
+    else
+      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos statemanager &
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
