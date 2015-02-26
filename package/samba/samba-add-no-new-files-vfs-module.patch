@@ -1,0 +1,360 @@
+From f9b9fbb5d3580dfb8cceedeb972e03069a1d7b8f Mon Sep 17 00:00:00 2001
+From: Jeremy Allison <jra@samba.org>
+Date: Thu, 19 Feb 2015 09:26:18 -0800
+Subject: [PATCH] s3: smbd: Add new no_new_files VFS module.
+
+Provides a read-only filesystem on which files can still be deleted.
+
+Signed-off-by: Jeremy Allison <jra@samba.org>
+Extra config patches added by: Jeffrey Kardatzke <jkardatzke@google.com>
+---
+ source3/Makefile.in                |   5 +
+ source3/configure                  |  36 ++++++++
+ source3/configure.in               |   2 +
+ source3/include/config.h.in        |   3 +
+ source3/modules/vfs_no_new_files.c | 181 +++++++++++++++++++++++++++++++++++++
+ source3/modules/wscript_build      |   8 ++
+ source3/wscript                    |   2 +-
+ 7 files changed, 236 insertions(+), 1 deletion(-)
+ create mode 100644 source3/modules/vfs_no_new_files.c
+
+diff --git a/source3/Makefile.in b/source3/Makefile.in
+index 9e8e03d..67274fa 100644
+--- a/source3/Makefile.in
++++ b/source3/Makefile.in
+@@ -848,6 +848,7 @@ VFS_SCANNEDONLY_OBJ = modules/vfs_scannedonly.o
+ VFS_CROSSRENAME_OBJ = modules/vfs_crossrename.o
+ VFS_LINUX_XFS_SGID_OBJ = modules/vfs_linux_xfs_sgid.o
+ VFS_TIME_AUDIT_OBJ = modules/vfs_time_audit.o
++VFS_NO_NEW_FILES_OBJ = modules/vfs_no_new_files.o
+ 
+ PAM_ERRORS_OBJ = ../libcli/auth/pam_errors.o
+ PLAINTEXT_AUTH_OBJ = auth/pampass.o auth/pass_check.o $(PAM_ERRORS_OBJ)
+@@ -3191,6 +3192,10 @@ bin/time_audit.@SHLIBEXT@: $(BINARY_PREREQS) $(VFS_TIME_AUDIT_OBJ)
+ 	@echo "Building plugin $@"
+ 	@$(SHLD_MODULE) $(VFS_TIME_AUDIT_OBJ)
+ 
++bin/no_new_files.@SHLIBEXT@: $(BINARY_PREREQS) $(VFS_NO_NEW_FILES_OBJ)
++	@echo "Building plugin $@"
++	@$(SHLD_MODULE) $(VFS_NO_NEW_FILES_OBJ)
++
+ #########################################################
+ ## IdMap NSS plugins
+ 
+diff --git a/source3/configure b/source3/configure
+index 5ab687b..ced1973 100755
+--- a/source3/configure
++++ b/source3/configure
+@@ -8430,6 +8430,7 @@ default_shared_modules="$default_shared_modules vfs_crossrename"
+ default_shared_modules="$default_shared_modules vfs_linux_xfs_sgid"
+ default_shared_modules="$default_shared_modules vfs_time_audit"
+ default_shared_modules="$default_shared_modules idmap_autorid"
++default_shared_modules="$default_shared_modules vfs_no_new_files"
+ 
+ if test "x$developer" = xyes; then
+    default_static_modules="$default_static_modules rpc_rpcecho pdb_ads"
+@@ -40125,6 +40126,41 @@ $as_echo "not" >&6; }
+ 	fi
+ 
+ 
++	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking how to build vfs_no_new_files" >&5
++$as_echo_n "checking how to build vfs_no_new_files... " >&6; }
++	if test "$MODULE_vfs_no_new_files"; then
++		DEST=$MODULE_vfs_no_new_files
++	elif test "$MODULE_vfs" -a "$MODULE_DEFAULT_vfs_no_new_files"; then
++		DEST=$MODULE_vfs
++	else
++		DEST=$MODULE_DEFAULT_vfs_no_new_files
++	fi
++
++	if test x"$DEST" = xSHARED; then
++
++$as_echo "#define vfs_no_new_files_init init_samba_module" >>confdefs.h
++
++		VFS_MODULES="$VFS_MODULES "bin/no_new_files.$SHLIBEXT""
++		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: shared" >&5
++$as_echo "shared" >&6; }
++
++		string_shared_modules="$string_shared_modules vfs_no_new_files"
++	elif test x"$DEST" = xSTATIC; then
++		init_static_modules_vfs="$init_static_modules_vfs  vfs_no_new_files_init();"
++		decl_static_modules_vfs="$decl_static_modules_vfs extern NTSTATUS vfs_no_new_files_init(void);"
++		string_static_modules="$string_static_modules vfs_no_new_files"
++		VFS_STATIC="$VFS_STATIC \$(VFS_NO_NEW_FILES_OBJ)"
++
++
++		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: static" >&5
++$as_echo "static" >&6; }
++	else
++	    string_ignored_modules="$string_ignored_modules vfs_no_new_files"
++		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not" >&5
++$as_echo "not" >&6; }
++	fi
++
++
+ 
+ 
+ 
+diff --git a/source3/configure.in b/source3/configure.in
+index 42c23e3..6b0b859 100644
+--- a/source3/configure.in
++++ b/source3/configure.in
+@@ -463,6 +463,7 @@ default_shared_modules="$default_shared_modules vfs_crossrename"
+ default_shared_modules="$default_shared_modules vfs_linux_xfs_sgid"
+ default_shared_modules="$default_shared_modules vfs_time_audit"
+ default_shared_modules="$default_shared_modules idmap_autorid"
++default_shared_modules="$default_shared_modules vfs_no_new_files"
+ 
+ if test "x$developer" = xyes; then
+    default_static_modules="$default_static_modules rpc_rpcecho pdb_ads"
+@@ -7007,6 +7008,7 @@ SMB_MODULE(vfs_scannedonly, \$(VFS_SCANNEDONLY_OBJ), "bin/scannedonly.$SHLIBEXT"
+ SMB_MODULE(vfs_crossrename, \$(VFS_CROSSRENAME_OBJ), "bin/crossrename.$SHLIBEXT", VFS)
+ SMB_MODULE(vfs_linux_xfs_sgid, \$(VFS_LINUX_XFS_SGID_OBJ), "bin/linux_xfs_sgid.$SHLIBEXT", VFS)
+ SMB_MODULE(vfs_time_audit, \$(VFS_TIME_AUDIT_OBJ), "bin/time_audit.$SHLIBEXT", VFS)
++SMB_MODULE(vfs_no_new_files, \$(VFS_NO_NEW_FILES_OBJ), "bin/no_new_files.$SHLIBEXT", VFS)
+ 
+ SMB_SUBSYSTEM(VFS,smbd/vfs.o)
+
+diff --git a/source3/include/config.in.h b/source3/include/config.in.h
+index 63f0cf0..5b6b9b3 100644
+--- a/source3/include/config.h.in
++++ b/source3/include/config.h.in
+@@ -3473,6 +3473,9 @@
+ /* Whether to build vfs_notify_fam as shared module */
+ #undef vfs_notify_fam_init
+
++/* Whether to build vfs_no_new_files as shared module */
++#undef vfs_no_new_files_init
++
+ /* Whether to build vfs_onefs as shared module */
+ #undef vfs_onefs_init
+
+diff --git a/source3/modules/vfs_no_new_files.c b/source3/modules/vfs_no_new_files.c
+new file mode 100644
+index 0000000..3a73363
+--- /dev/null
++++ b/source3/modules/vfs_no_new_files.c
+@@ -0,0 +1,181 @@
++/*
++ * Copyright (c) Jeremy Allison 2015.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "includes.h"
++#include "system/filesys.h"
++#include "smbd/smbd.h"
++
++static int nnf_mkdir(vfs_handle_struct *handle, const char *path, mode_t mode)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static int nnf_open_fn(vfs_handle_struct *handle,
++			struct smb_filename *smb_fname,
++			files_struct *fsp,
++			int flags,
++			mode_t mode)
++{
++	if (flags & O_CREAT) {
++		errno = EACCES;
++		return -1;
++	}
++	return SMB_VFS_NEXT_OPEN(handle, smb_fname, fsp, flags, mode);
++}
++
++static NTSTATUS nnf_create_file(vfs_handle_struct *handle,
++			struct smb_request *req,
++			uint16_t root_dir_fid,
++			struct smb_filename *smb_fname,
++			uint32_t access_mask,
++			uint32_t share_access,
++			uint32_t create_disposition,
++			uint32_t create_options,
++			uint32_t file_attributes,
++			uint32_t oplock_request,
++			uint64_t allocation_size,
++			uint32_t private_flags,
++			struct security_descriptor *sd,
++			struct ea_list *ea_list,
++			files_struct **result_fsp,
++			int *pinfo)
++{
++	switch (create_disposition) {
++	case FILE_OPEN:
++	case FILE_OVERWRITE:
++		break;
++	default:
++		errno = EACCES;
++		return NT_STATUS_ACCESS_DENIED;
++	}
++
++	return SMB_VFS_NEXT_CREATE_FILE(
++		handle,                                 /* handle */
++		req,                                    /* req */
++		root_dir_fid,                           /* root_dir_fid */
++		smb_fname,                              /* fname */
++		access_mask,                            /* access_mask */
++		share_access,                           /* share_access */
++		create_disposition,                     /* create_disposition*/
++		create_options,                         /* create_options */
++		file_attributes,                        /* file_attributes */
++		oplock_request,                         /* oplock_request */
++		allocation_size,                        /* allocation_size */
++		private_flags,
++		sd,                                     /* sd */
++		ea_list,                                /* ea_list */
++		result_fsp,                             /* result */
++		pinfo);                                 /* pinfo */
++}
++
++static int nnf_rename(vfs_handle_struct *handle,
++			const struct smb_filename *smb_fname_src,
++			const struct smb_filename *smb_fname_dst)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static ssize_t nnf_pwrite(vfs_handle_struct *handle,
++			files_struct *fsp,
++			const void *data,
++			size_t n,
++			SMB_OFF_T offset)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static ssize_t nnf_write(vfs_handle_struct *handle,
++			files_struct *fsp,
++			const void *data,
++			size_t n)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static int nnf_fallocate(vfs_handle_struct *handle,
++			files_struct *fsp,
++			enum vfs_fallocate_mode mode,
++			SMB_OFF_T offset,
++			SMB_OFF_T len)
++{
++	if (mode == VFS_FALLOCATE_EXTEND_SIZE) {
++		errno = ENOSPC;
++		return -1;
++	}
++	return SMB_VFS_NEXT_FALLOCATE(handle, fsp, mode, offset, len);
++}
++
++static int nnf_symlink(vfs_handle_struct *handle,
++			const char *oldpath,
++			const char *newpath)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static int nnf_link(vfs_handle_struct *handle,
++			const char *oldpath,
++			const char *newpath)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static int nnf_mknod(vfs_handle_struct *handle,
++			const char *pathname,
++			mode_t mode,
++			SMB_DEV_T dev)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static int nnf_aio_write(struct vfs_handle_struct *handle,
++			struct files_struct *fsp,
++			SMB_STRUCT_AIOCB *aiocb)
++{
++	errno = EACCES;
++	return -1;
++}
++
++static struct vfs_fn_pointers vfs_no_new_files_fns = {
++	.mkdir = nnf_mkdir,
++	.open_fn = nnf_open_fn,
++	.create_file = nnf_create_file,
++	.rename = nnf_rename,
++	.pwrite = nnf_pwrite,
++	.write = nnf_write,
++	.fallocate = nnf_fallocate,
++	.symlink = nnf_symlink,
++	.link = nnf_link,
++	.mknod = nnf_mknod,
++	.aio_write = nnf_aio_write
++};
++
++/*******************************************************************
++ Module initialization boilerplate.
++*******************************************************************/
++
++NTSTATUS vfs_no_new_files_init(void)
++{
++	return smb_register_vfs(SMB_VFS_INTERFACE_VERSION, "no_new_files",
++				&vfs_no_new_files_fns);
++}
+diff --git a/source3/modules/wscript_build b/source3/modules/wscript_build
+index ff7163f..12aa86e 100644
+--- a/source3/modules/wscript_build
++++ b/source3/modules/wscript_build
+@@ -50,6 +50,7 @@ VFS_SCANNEDONLY_SRC = 'vfs_scannedonly.c'
+ VFS_CROSSRENAME_SRC = 'vfs_crossrename.c'
+ VFS_LINUX_XFS_SGID_SRC = 'vfs_linux_xfs_sgid.c'
+ VFS_TIME_AUDIT_SRC = 'vfs_time_audit.c'
++VFS_NO_NEW_FILES_SRC = 'vfs_no_new_files.c'
+ 
+ 
+ bld.SAMBA3_SUBSYSTEM('NFS4_ACLS',
+@@ -408,6 +409,13 @@ bld.SAMBA3_MODULE('vfs_time_audit',
+                  internal_module=bld.SAMBA3_IS_STATIC_MODULE('vfs_time_audit'),
+                  enabled=bld.SAMBA3_IS_ENABLED_MODULE('vfs_time_audit'))
+ 
++bld.SAMBA3_MODULE('vfs_no_new_files',
++                 subsystem='vfs',
++                 source=VFS_NO_NEW_FILES_SRC,
++                 init_function='',
++                 internal_module=bld.SAMBA3_IS_STATIC_MODULE('vfs_no_new_files'),
++                 enabled=bld.SAMBA3_IS_ENABLED_MODULE('vfs_no_new_files'))
++
+ 
+ 
+ CHARSET_WEIRD_SRC = 'weird.c'
+diff --git a/source3/wscript b/source3/wscript
+index bcc6ce1..afbc358 100644
+--- a/source3/wscript
++++ b/source3/wscript
+@@ -1764,7 +1764,7 @@ main() {
+                                       vfs_streams_xattr vfs_streams_depot vfs_acl_xattr vfs_acl_tdb
+                                       vfs_smb_traffic_analyzer vfs_preopen vfs_catia vfs_scannedonly
+                                       vfs_crossrename vfs_linux_xfs_sgid
+-                                      vfs_time_audit idmap_autorid''')
++                                      vfs_time_audit vfs_no_new_files idmap_autorid''')
+ 
+     if Options.options.developer:
+         default_static_modules.extend(TO_LIST('pdb_ads auth_netlogond'))
+-- 
+1.9.1
+
