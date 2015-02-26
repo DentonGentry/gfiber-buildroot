@@ -40,6 +40,7 @@ client_psk=$(chop_multiline "$WIFI_CLIENT_PSK")
 . /etc/utils.sh
 register_experiment NoSwapWifiPrimaryChannel  # checked by hostapd itself
 register_experiment NoAutoNarrowWifiChannel   # checked by hostapd itself
+register_experiment Wifi80211k
 
 
 log() {
@@ -1010,6 +1011,20 @@ setwifi() {
 	$vht_settings
 	EOF
     )
+
+    if experiment Wifi80211k; then
+      hostconf=$(cat <<-EOF
+	$hostconf
+
+	# 802.11k support
+	radio_measurements=1
+	local_pwr_constraint=3
+	spectrum_mgmt_required=1
+	neighbor_ap_list_file=/tmp/waveguide/APs.$ifc
+	EOF
+      )
+    fi
+
     if [ -n "$extra_short_timeouts" ]; then
       hostconf=$(cat <<-EOF
 	$hostconf
