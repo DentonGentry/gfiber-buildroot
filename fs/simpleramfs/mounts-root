@@ -22,17 +22,27 @@ find_mtd()
   [ -n "$result" ] && echo "$result"
 }
 
-find_mmc()
+find_gpt()
 {
   local result=
-  sgdisk -p /dev/mmcblk0 >/tmp/mmcpart 2>/dev/null
+  sgdisk -p "$1" >/tmp/gptpart 2>/dev/null
   while read number start end size unit code name; do
-    if [ "$name" = "$1" ]; then
+    if [ "$name" = "$2" ]; then
       result=$number
     fi
-  done </tmp/mmcpart
-  rm -f /tmp/mmcpart
+  done </tmp/gptpart
+  rm -f /tmp/gptpart
   [ -n "$result" ] && echo "$result"
+}
+
+find_mmc()
+{
+  find_gpt /dev/mmcblk0 "$1"
+}
+
+find_hdd()
+{
+  find_gpt /dev/sda "$1"
 }
 
 read_cmdline
@@ -151,9 +161,11 @@ elif [ -n "$ROOTDEV" ]; then
       KERNELNAME=$(replacefirst $ROOTDEV rootfs kernel)
       mtd=/dev/mtd$(find_mtd "$ROOTDEV")
       mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
+      hdd=/dev/sda$(find_hdd "$ROOTDEV")
       IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
       mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
-      [ -e "$mtd" -o -e "$mmcraw" -o -e "$mmcvfat" -o -e $ROOTDEV ] && break
+      [ -e "$mtd" -o -e "$mmcraw" -o -e "$hdd" -o -e "$mmcvfat" \
+        -o -e $ROOTDEV ] && break
       log "No rootfs found, sleeping"
       # eMMC is sometimes slow to appear; try again.
       sleep $s
@@ -173,6 +185,11 @@ elif [ -n "$ROOTDEV" ]; then
       log "Found root='$ROOTDEV': $mmcraw"
       ROOTDEV=$mmcraw
       VERITYDEV=/dev/mmcblk0p$(find_mmc "$KERNELNAME")
+    elif [ -e "$hdd" ]; then
+      log "Found root='$ROOTDEV': $hdd"
+      ROOTDEV=$hdd
+      # On SpaceCast the kernel still lives in the NOR flash
+      VERITY_CHAR_DEV=/dev/mtd$(find_mtd "$KERNELNAME")
     elif [ -e "$mmcvfat" ]; then
       # TODO(jnewlin): Remove this after verifying vfat is not used.
       log "Found root='$ROOTDEV': $mmcvfat"
