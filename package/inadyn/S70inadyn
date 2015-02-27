@@ -13,6 +13,7 @@ mounts() {
     mount -t tmpfs -o size=1048576 none tmp && \
     mkdir tmp/dev && \
     mknod tmp/dev/urandom c 1 9
+    chmod 666 tmp/dev/urandom
 }
 
 umounts() {
