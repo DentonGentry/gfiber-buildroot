@@ -25,7 +25,6 @@ stop() {
   pkillwait -x 'runsage|chsrv|siege|java'
   stop_sagesrv
   stop_adsmgr
-  stop_adloader
 }
 
 case "$1" in

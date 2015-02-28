@@ -24,7 +24,6 @@ case "$1" in
     pkillwait -f '(dart.*)([a]uthTokens\.dart)' &
     pkillwait -x chsrv &
     stop_sagesrv
-    stop_adloader
     wait
     ;;
   restart)

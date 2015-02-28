@@ -111,35 +111,8 @@ setup_ads() {
 }
 
 
-setup_adloader() {
-  mkdir -p /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
-  chmod 770 /var/media/ads /var/media/ads/contracts /var/media/ads/metadata
-  chown video.video /var/media/ads /var/media/ads/* /var/media/ads/contracts/* \
-    /var/media/ads/metadata/*
-}
-
-
-start_adloader() {
-  setup_adloader
-  if [ -e /app/sage/adloader ]; then
-    VIDEO_UID=$(id -u video)
-    VIDEO_GID=$(id -g video)
-    babysit 10 ionice -c 3 -n 7 /app/sage/adloader -U $VIDEO_UID -G $VIDEO_GID 2>&1 \
-      | logos adsld 0 20000000 &
-  fi
-}
-
-
-stop_adloader() {
-  if [ -e /app/sage/adloader ]; then
-    pkillwait -f '(babysit.*)(adloader)'
-    pkillwait -x 'adloader'
-    pkillwait -f '(alivemonitor.*)(adloader)'
-  fi
-}
-
-
 start_adsmgr() {
+  setup_ads
   VIDEO_UID=$(id -u video)
   VIDEO_GID=$(id -g video)
   # Start up native ads manager
