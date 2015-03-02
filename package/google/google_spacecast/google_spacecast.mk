@@ -6,6 +6,7 @@
 GOOGLE_SPACECAST_SITE = repo://vendor/google/spacecast
 GOOGLE_SPACECAST_DEPENDENCIES = host-golang \
 				host-go_protobuf \
+				go_fsnotify \
 				go_glog \
 				go_gonzojive_mdns \
 				go_google_api \

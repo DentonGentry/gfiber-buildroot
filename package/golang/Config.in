@@ -1,4 +1,5 @@
 menu "Go packages"
+source "package/golang/go_fsnotify/Config.in"
 source "package/golang/go_glog/Config.in"
 source "package/golang/go_gonzojive_mdns/Config.in"
 source "package/golang/go_google_api/Config.in"

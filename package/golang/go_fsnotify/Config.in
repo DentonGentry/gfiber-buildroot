@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_FSNOTIFY
+        bool "go_fsnotify_dbus"
+        help
+          File system notifications for Go
