@@ -65,11 +65,12 @@ case "$1" in
       fi
     done
 
-    # configure driver: 40,56 x 1.25ms = 50,70ms response time
+    # configure driver: 8,8/7 x 1.25ms = 10,10ms response time/7 skips
     # Recommended by philips for battery remote battery life
-    echo 6 > /tmp/hci/conn_min_interval         # in case current min > 56
-    echo 56 > /tmp/hci/conn_max_interval
-    echo 40 > /tmp/hci/conn_min_interval
+    echo 6 > /tmp/hci/conn_min_interval         # in case current min > new max
+    echo 8 > /tmp/hci/conn_max_interval
+    echo 8 > /tmp/hci/conn_min_interval
+    echo 7 > /tmp/hci/conn_latency
 
     if [ "$(cat /etc/platform)" = GFHD100 ]; then
       # BCM20702 USB Bluetooth chip
