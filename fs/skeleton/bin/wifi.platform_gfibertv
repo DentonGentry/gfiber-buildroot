@@ -24,7 +24,6 @@ vht_guard_interval=
 persist=
 extra_short_timeouts=
 force_restart=
-RGSETUPPSK="very_secret_passphrase"
 
 chop_multiline()
 {
