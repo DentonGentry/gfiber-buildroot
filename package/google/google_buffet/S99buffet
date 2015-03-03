@@ -14,6 +14,7 @@
 
 # Create necessary directories and dependencies to run Buffet.
 mkdir -p /chroot/chromeos/var/run/buffet
+mkdir -p /chroot/chromeos/var/lib/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
 # libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
 cp -p /etc/ssl/certs/ca-certificates.crt /chroot/chromeos/etc/ssl/certs/578d5c04.0
