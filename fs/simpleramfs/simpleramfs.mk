@@ -141,6 +141,11 @@ define SIMPLERAMFS_BUILD_CMDS
 				cp $(TARGET_DIR)/usr/lib/$$fn $(@D)/fs/lib/; \
 		done; \
 	done
+
+	# strip all the libraries
+	# TODO(mka): the libraries should be already stripped, but for some reason
+	# sometimes (at least) libstdc++ is unstripped
+	$(STRIPCMD) $(@D)/fs/lib/*.so*
 endef
 
 define SIMPLERAMFS_INSTALL_IMAGES_CMDS
