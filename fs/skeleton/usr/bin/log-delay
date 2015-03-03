@@ -11,3 +11,4 @@ pid=$!
 trap 'kill -15 $pid' EXIT
 trap 'exit 1' INT TERM
 wait
+trap - EXIT
