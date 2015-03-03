@@ -1,0 +1,4 @@
+config BR2_PACKAGE_QCA95XX
+	bool "qca95xx"
+	help
+	  Builds qca95xx drivers and apps for WindCharger boards

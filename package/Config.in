@@ -664,6 +664,7 @@ endmenu
 menu "Qualcomm-provided drivers"
 source "package/qualcomm_drivers/Config.in"
 source "package/qualcomm_switch/Config.in"
+source "package/qca95xx/Config.in"
 endmenu
 
 menu "Marvell custom build"
