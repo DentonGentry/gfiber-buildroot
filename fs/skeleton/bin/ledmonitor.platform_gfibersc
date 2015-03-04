@@ -5,33 +5,41 @@
 
 . /etc/utils.sh
 
-# Output file.
 BASE_PATH="/tmp/gpio"
-LEDS_FILE="$BASE_PATH/leds"
 CONTROL_PATH="$BASE_PATH/ledcontrol"
 
+# Output file.
 LEDSTATE_FILE="$BASE_PATH/ledstate"
-IP_FILE="$BASE_PATH/ipconnected"
-LINK_DOWN_FILE="$BASE_PATH/link_down"
-ACS_FILE="$CONTROL_PATH/acsconnected"
+
+# Indicator files.
+SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
+HALT_FILE="$CONTROL_PATH/halted"
+KEYBOX_FILE="$CONTROL_PATH/invalid_keybox"
 OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
 HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
 HDMOUNT_FILE="$CONTROL_PATH/hdd_mount_err"
-HALT_FILE="$CONTROL_PATH/halted"
-WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
-SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
-KEYBOX_FILE="$CONTROL_PATH/invalid_keybox"
+TUNER_FILE="$CONTROL_PATH/tuner_err"
+WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+LINK_DOWN_FILE="$BASE_PATH/link_down"
+IP_FILE="$BASE_PATH/ipconnected"
+TPM_FILE="$CONTROL_PATH/tpm_enroll"
+GCD_UP_FILE="$CONTROL_PATH/gcd_access"
+GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
+PARAMS_FILE="$CONTROL_PATH/has_params"
+NOT_AUTHORIZED_FILE="$CONTROL_PATH/app_not_authorized"
+NO_TUNER_LOCK_FILE="$CONTROL_PATH/app_no_tuner_lock"
+UPDATING_FILE="CONTROL_PATH/updating"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
-UNSECUREBOOT_LED_ON="5" # solid purple
-HALT_LED_ON="1"
 HW_FAIL_LED_ON="1" # solid red
-ACS_LED_ON="4" # solid blue
-IP_LED_ON="4 0 4 0 4 0" # fast blue
-LINK_DOWN_LED_ON="1 0" # blink red
-ANYTHING_ELSE="x2 4 0" # slow blink blue
+SW_FAIL_LED_ON="1 0" # blink red
+LINK_DOWN_LED_ON="x2 5 0" # slow blink purple
+NO_IP_LED_ON="5 0 5 0 5 0" # fast blink purple
+NO_TUNER_LOCK_LED_ON="5" # solid purple
+UPDATING_LED_ON="4 0" # blink blue
+RUNNING_LED_ON="4" # solid blue
 
 change_state() {
   # Check if the new state is different from the previous one
@@ -120,10 +128,11 @@ while read f; do
     rm -f "$ACS_FILE" "$IP_FILE"
   fi
 
-  if is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
-    change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
+  # TODO(efirst): Note secure boot check disabled for testing, need to remove this before production.
+  if 0 && is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
+    change_state UNSECUREBOOT "$HW_FAIL_LED_ON"
   elif [ -f "$HALT_FILE" ]; then
-    change_state HALT "$HALT_LED_ON"
+    change_state HALT "$HW_FAIL_LED_ON"
   elif [ -f "$KEYBOX_FILE" -a ! -f /rw/ignore-bad-keybox ]; then
     change_state INVALID_KEYBOX "$HW_FAIL_LED_ON"
   elif [ -f "$OVERTEMP_FILE" ]; then
@@ -134,15 +143,29 @@ while read f; do
     change_state HDMOUNT_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$BADBLOCK_FILE" ]; then
     change_state BADBLOCK "$HW_FAIL_LED_ON"
+  elif [ -f "$TUNER_FILE" ]; then
+    change_state TUNER_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
     change_state POWEROFF "$ALL_LEDS_OFF"
   elif [ -f "$LINK_DOWN_FILE" ]; then
     change_state LINKDOWN "$LINK_DOWN_LED_ON"
   elif [ ! -f "$IP_FILE" ]; then
-    change_state NOIP "$ANYTHING_ELSE"                  # progress: link but no ip
-  elif [ ! -f "$ACS_FILE" ]; then
-    change_state IPV6ACQUIRED "$IP_LED_ON"              # progress: ip but no acs
+    change_state NOIP "$NO_IP_LED_ON"
+  elif [ ! -f "$TPM_FILE" ]; then
+    change_state TPM_NOTENROLLED "$SW_FAIL_LED_ON"
+  elif [ ! -f "$GCD_UP_FILE" ]; then
+    change_state GCD_UNREACHABLE "$SW_FAIL_LED_ON"
+  elif [ ! -f "$GCD_REG_FILE" ]; then
+    change_state GCD_UNREGISTERED "$SW_FAIL_LED_ON"
+  elif [ ! -f "$PARAMS_FILE" ]; then
+    change_state NOPARAMS "$SW_FAIL_LED_ON"
+  elif [ -f "$NOT_AUTHORIZED_FILE" ]; then
+    change_state APP_NOTAUTHORIZED "$SW_FAIL_LED_ON"
+  elif [ -f "$NO_TUNER_LOCK_FILE" ]; then
+    change_state APP_NOTUNERLOCK "$NO_TUNER_LOCK_LED_ON"
+  elif [ -f "$UPDATING_FILE" ]; then
+    change_state UPDATING "$UPDATING_LED_ON"
   else
-    change_state ACSCONTACT "$ACS_LED_ON"               # success!
+    change_state RUNNING "$RUNNING_LED_ON"
   fi
 done
