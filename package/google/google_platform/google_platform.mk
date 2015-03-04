@@ -75,6 +75,12 @@ BR2_TARGET_GOOGLE_PLATFORM := gfibertv
 BUILD_LOGUPLOAD=y
 else ifeq ($(BR2_PACKAGE_GOOGLE_SPACECAST),y)
 BR2_TARGET_GOOGLE_PLATFORM := gfibersc
+else ifeq ($(BR2_PACKAGE_GOOGLE_WINDCHARGER),y)
+BR2_TARGET_GOOGLE_PLATFORM := gfiberwc
+# TODO(allanzhang): change it to y eventually.
+# currently the uploader causes compiling error for mips platform, must
+# resolve it and change here to y.
+BUILD_LOGUPLOAD=n
 endif
 
 define GOOGLE_PLATFORM_PERMISSIONS
