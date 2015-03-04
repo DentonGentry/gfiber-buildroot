@@ -16,6 +16,9 @@ case "$PLATFORM_PREFIX" in
   gfsc*)
     PLATFORM_SUFFIX=gfibersc
     ;;
+  gfwc*)
+    PLATFORM_SUFFIX=gfiberwc
+    ;;
   gftv*|gfrg*|gfibertv|kvm)
     PLATFORM_SUFFIX=gfibertv
     ;;
