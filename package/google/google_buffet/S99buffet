@@ -7,6 +7,14 @@
 # environment. Therefore, chroot is needed to execute buffet.
 #
 
+# Bind chroot directories to tmpfs, as chroot may exist in a read-only
+# filesystem. These directories are used for the DBus socket and Buffet
+# libraries.
+mkdir -p /tmp/lib
+mount -o bind /tmp/run /chroot/chromeos/var/run
+mount -o bind /tmp/lib /chroot/chromeos/var/lib
+mount -o bind /etc /chroot/chromeos/etc
+
 # Sanity check
 [ -x /chroot/chromeos/bin/buffet ] || exit 0
 [ -d /chroot/chromeos/etc/buffet ] || exit 0
@@ -16,11 +24,6 @@
 mkdir -p /chroot/chromeos/var/run/buffet
 mkdir -p /chroot/chromeos/var/lib/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
-# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
-cp -p /etc/ssl/certs/ca-certificates.crt /chroot/chromeos/etc/ssl/certs/578d5c04.0
-# Copy resolv.conf and nsswitch.conf so Buffet can resolve hostname.
-cp -p /etc/resolv.conf /chroot/chromeos/etc
-cp -p /etc/nsswitch.conf /chroot/chromeos/etc
 
 start() {
   echo "Starting buffet service..."
