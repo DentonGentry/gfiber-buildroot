@@ -4,8 +4,24 @@ signal=$2
 exe=$3
 
 # TODO(kedong) need to specify different size based on platform.
-out=/user/core.gz
-outdir=$(dirname "$out")
+
+# If we have a disk available, dump the core there and don't overwrite older
+# ones. Since the only usable partition of decent size is /var/media, we just
+# create a "cores" folder in there.
+# If no disk is available, use flash and overwrite previous cores (due to size
+# limits).
+hdd_media_dir="/var/media"
+hdd_cores_dir="${hdd_media_dir}/cores"
+flash_cores_dir="/user"
+flash_cores_last_core_link="${flash_cores_dir}/last-core"
+if [ is-storage-box -a -w "$hdd_media_dir" ]; then
+  mkdir -p "$hdd_cores_dir"
+  outdir="$hdd_cores_dir"
+  out="${hdd_cores_dir}/core-${pid}-${exe}.gz"
+else
+  outdir="$flash_cores_dir"
+  out="${flash_cores_dir}/core.gz"
+fi
 
 # Send all output to kernel log.  We don't want to use the 'logger' program
 # here in case there's something wrong with syslogd (eg. it's the one core
@@ -53,5 +69,9 @@ else
   gzip --fast -c --suffix "$uniqid" | dd bs=1024 count=163840 2>/dev/null >"$out"
   upload-logs-now
   sysctl -w kernel.hung_task_timeout_secs=120
+  # if we dumped to HDD, create a symbolic link at the alternate place in flash
+  if [ "$outdir" = "$hdd_cores_dir" ]; then
+    ln -s -f "$out" "$flash_cores_last_core_link"
+  fi
   log "finished dumping core for pid $pid ($exe)"
 fi
