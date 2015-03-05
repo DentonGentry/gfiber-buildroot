@@ -1,0 +1,119 @@
+#!/bin/sh
+. /etc/utils.sh
+. /etc/ath/apcfg
+
+
+##TODO, change to gfiber style
+
+case "$1" in
+  start)
+    # if the file exists and it isn't empty
+    if [ -s /config/tcp_congestion_control ]; then
+      algorithm=$(cat /config/tcp_congestion_control)
+      echo "Registering congestion control algorithm $algorithm"
+      sysctl net.ipv4.tcp_congestion_control=$algorithm
+    fi
+
+    # create a default resolv.conf and /etc/hosts in case DHCP doesn't.
+    # (this is always true if using nfsroot).
+    # 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
+    # that can be used from anywhere, so it makes a good place to start.
+    # DHCP will just overwrite this file when it's ready to go.
+    if [ ! -r /etc/resolv.conf ]; then
+      #TODO(apenwarr): add IPv6 DNS once our uClibc can handle it.
+      (echo 'nameserver 8.8.8.8';
+       echo 'nameserver 8.8.4.4') >/etc/resolv.conf
+    fi
+    if [ ! -r /etc/hosts ]; then
+      echo "127.0.0.1 localhost $(hostname)" >/etc/hosts
+    fi
+
+    # Configure dhclient with the right hostname etc.
+    setup-dhclient
+
+    # configure loopback
+    ifup lo
+    echo -n "Creating bridge... "
+    brctl addbr br0 || exit 1
+    brctl setfd br0 0
+    brctl stp br0 on
+    [ -e /sys/class/net/eth1/address ] && \
+      ip link set br0 address \
+      $(cat /sys/class/net/eth1/address)
+    echo "done"
+    ip link set br0 up
+    ip link set br0 up  # kernel 3.2.26 bug: fails the first time
+
+    echo "Adding interfaces... "
+    # Move any existing network info from primary network interfaces to
+    # the bridge.
+    echo "Adding interface eth1..."
+    ip link set eth1 up &&
+    ifconfig br0 192.168.1.2 &&
+    brctl addif br0 eth0 &&
+    brctl addif br0 eth1 &&
+    ip route add 224.1.1.1 dev br0 # Enable multicast binding.
+    ip -o -f inet route list dev eth1 |
+    while read dst routeinfo; do
+      if [ "$dst" = "default" ]; then
+        echo "Moving route '$dst' from eth1 to br0" &&
+        ip route del dev $x $dst $routeinfo &&
+        ip route add dev br0 $dst $routeinfo
+      fi
+    done &&
+    ip -o -f inet addr show eth1 |
+    while read a b c ip junk; do
+      ip addr del $ip dev eth1
+    done
+    kernopt ip |
+    while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
+      # $ip should be already setup by simpleramfs.
+      # TODO(apenwarr): simpleramfs should set up $gatewayip too.
+      #  But right now its included networking commands are too limited.
+      if [ -n "$gatewayip" ]; then
+        echo "IP: adding default gateway '$gatewayip'"
+        ip route add default via "$gatewayip"
+      fi
+    done
+    echo "Bringing up the bridge..."
+    ifup br0
+
+    ifconfig lo 127.0.0.1 up
+
+    ##
+    ## Bring up the 4 port interface
+    ##
+
+    #ifconfig $LAN_IF up
+#    brctl addbr br0
+#    if [ "${WAN_MODE}" = "bridged" ]; then
+#      ifconfig $WAN_IF up
+#      brctl addif br0 $WAN_IF
+#    fi
+#    brctl addif br0 $LAN_IF
+#    brctl setfd br0 0
+
+#    ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
+    
+    ;;
+  stop)
+    if [ ! -e /tmp/NFS ]; then
+      if [ -n /sys/class/net/eth1/bridge ]; then
+        ifdown eth1
+        echo "Shutting down eth1 interface"
+      fi
+      if [ -e /sys/class/net/eth1/device ]; then
+        brctl delif br0 eth1
+      fi
+      ifdown br0
+    fi
+    [ -e /sys/class/net/br0 ] && brctl delbr br0
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

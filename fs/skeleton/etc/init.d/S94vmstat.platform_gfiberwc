@@ -1,0 +1,16 @@
+#!/bin/sh
+case "$1" in
+  start)
+    babysit 60 vmstat 15 2>&1 | logos vmstat &
+    babysit 60 diskperf 15 2>&1 | logos diskperf &
+    ;;
+  stop)
+    pkillwait -x vmstat
+    pkillwait -x diskperf
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
