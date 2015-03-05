@@ -27,7 +27,13 @@ case "$1" in
 			echo "read-only file system detected...done"
 			exit
 		fi
-		rm -f /etc/random-seed
+		# Make non sym-linked running path avoid calling realpath.
+		if [ -h /etc/random-seed ]
+		then
+			rm -f `realpath /etc/random-seed`
+		else
+			rm -f /etc/random-seed
+		fi
 		umask 077
 		dd if=/dev/urandom of=/etc/random-seed count=1 \
 			>/dev/null 2>&1 || echo "urandom start: failed."
