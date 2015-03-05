@@ -1,0 +1,63 @@
+#!/bin/sh
+
+CONFIG_MTD_NO=
+
+check_mtd()
+{
+  local a b c d e
+  cat /proc/mtd |
+  while read a b c d; do
+    # convert 'mtdxx:' to 'xx'
+    e=${a%:*}
+    [ $d = $1 ] && echo "${e#mtd}"
+  done
+}
+
+mount_jffs2()
+{
+  local mtd_no=$1
+  local device=/dev/mtdblock$mtd_no
+  local dir="$2"
+
+  mount -t jffs2 -o defaults,noatime $device $dir \
+    || { echo "error mounting jffs2 on '$device' as '$dir'"; return 1; }
+}
+
+recover_jffs2()
+{
+  local mtd_no=$1
+  local device=/dev/mtd$mtd_no
+  local dir="$2"
+
+  echo "formating '$device' for jffs2"
+
+  flash_erase --jffs $device 0 0
+  mount_jffs2 $mtd_no "$dir"
+}
+
+case "$1" in
+  start)
+    # Get MTD partition number
+    CONFIG_MTD_NO=$(check_mtd '"config"')
+
+    mount_jffs2 $CONFIG_MTD_NO /config \
+      || recover_jffs2 $CONFIG_MTD_NO /config
+
+    # /config must be writeable by non-root
+    chown bin.sys /config
+    chmod 775 /config
+
+    if [ -e /config/DEBUG ]; then
+      echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
+      echo >/tmp/DEBUG
+    fi
+    ;;
+  stop)
+    umount /config
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}" >&2
+    exit 1
+esac
