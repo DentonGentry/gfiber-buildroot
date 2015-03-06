@@ -74,6 +74,7 @@ case "$1" in
       # multicast (fiber TV, EAS)
       ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
       ip46tables -A FORWARD -m pkttype --pkt-type multicast -j ACCEPT
+      iptables -t nat -A PREROUTING -m pkttype --pkt-type multicast -j ACCEPT
 
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -131,6 +132,7 @@ case "$1" in
       # cwmpd ACS kick
       ip6tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
       ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd
+      iptables -t nat -A PREROUTING -p tcp --dport 7547 -j ACCEPT  # cwmpd
 
       if [ -e /tmp/factory_status ]; then
         ip46tables -A INPUT -p tcp --dport 8883 -j ACCEPT  # factory web server
