@@ -19,7 +19,7 @@ try_start() {
         --restore_defaults \
         $xinit \
         --rf_band 3 \
-        --beacon_channel 575 \
+        --beacon_channel_set 575 \
         --lof 575 \
         --tpc_en 0
     mocap set --start
