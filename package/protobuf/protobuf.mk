@@ -4,14 +4,14 @@
 #
 ################################################################################
 
-PROTOBUF_VERSION = 2.5.0
-PROTOBUF_SITE = http://protobuf.googlecode.com/files/
+PROTOBUF_VERSION = 2.6.1
+PROTOBUF_SITE = https://github.com/google/protobuf/archive
 PROTOBUF_LICENSE = BSD-3c
 PROTOBUF_LICENSE_FILES = COPYING.txt
 
 # N.B. Need to use host protoc during cross compilation.
 PROTOBUF_DEPENDENCIES = host-protobuf
-HOST_PROTOBUF_DEPENDENCIES =
+HOST_PROTOBUF_DEPENDENCIES = host-automake
 PROTOBUF_CONF_OPT = --with-protoc=$(HOST_DIR)/usr/bin/protoc --enable-static
 
 PROTOBUF_INSTALL_STAGING = YES
@@ -34,6 +34,14 @@ endef
 ifeq ($(BR2_PACKAGE_PROTOBUF_ONLY_LITE),y)
 PROTOBUF_POST_INSTALL_TARGET_HOOKS += PROTOBUF_REMOVE_EXTRA_STUFF
 endif
+
+PROTOBUF_PRE_CONFIGURE_HOOKS += PROTOBUF_AUTOGEN
+HOST_PROTOBUF_PRE_CONFIGURE_HOOKS += PROTOBUF_AUTOGEN
+
+define PROTOBUF_AUTOGEN
+	cd $(@D) && \
+	$(TARGET_MAKE_ENV) ./autogen.sh
+endef
 
 $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
