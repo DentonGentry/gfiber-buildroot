@@ -37,7 +37,8 @@ for init in "$INIT" /sbin/init /linuxrc /bin/sh; do
     *) args= ;;
   esac
   cd /rootfs
-  [ -n "$INIT" ] && exec >&9 2>&1 9>&-  # probably a shell; bring back tty
+  [ "$init" = "$INIT" ] && exec >&9 2>&1  # probably a shell; bring back tty
+  exec 9>&-   # close fd to console
   exec switch_root /rootfs "$init" $args
 done
 
