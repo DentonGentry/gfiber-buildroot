@@ -41,6 +41,7 @@ case "$1" in
       exit 0
     fi
     failure_media=0
+    failure_config=0
     mediafs=$(kernopt mediafs)
     wait-scsi
     if ! [ -e /dev/sda ]; then
@@ -67,6 +68,10 @@ case "$1" in
         tune2fs -m 0 /dev/sda1
         mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
         failure_media=$?
+        if [ -e /dev/sda20 ]; then
+          mount -o "$FLAGS" -t ext4 /dev/sda20 /config
+          failure_config=$?
+        fi
       elif [ -h /dev/sda ]; then
         tune2fs -m 0 /dev/sda
         mount -o "$FLAGS" -t ext4 /dev/sda /var/media
@@ -76,7 +81,7 @@ case "$1" in
       echo "No drive found in Storage Box; failing."
       failure_media=1
     fi
-    if [ "$failure_media" != 0 ]; then
+    if [ "$failure_media" != 0 ] || [ "$failure_config" != 0 ]; then
       echo "HDD mounting error."
       echo 1 >/tmp/gpio/ledcontrol/hdd_mount_err
       exit 0
@@ -86,6 +91,7 @@ case "$1" in
     # Unmount SATA device
     echo "Unmounting SATA device"
     umount /var/media >/dev/null 2>&1
+    umount /config >/dev/null 2>&1
     ;;
   restart|reload)
     $0 stop
