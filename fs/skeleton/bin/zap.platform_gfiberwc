@@ -1,0 +1,64 @@
+#!/bin/sh
+
+OPT=$(getopt -n "$0" -o er -l i-really-mean-it,erase-backups -- "$@")
+if [ $? != 0 ]; then
+  echo "getopt failed"
+  exit 1
+fi
+eval set -- "$OPT"
+
+ireallymeanit=0
+erasebackups=0
+while true; do
+  case "$1" in
+    -r|--i-really-mean-it ) ireallymeanit=1 ;;
+    -e|--erase-backups ) erasebackups=1 ;;
+    -- ) shift; break ;;
+    * ) echo "***Illegal option: $1" >&2; exit 1 ;;
+  esac
+  shift
+done
+
+if [ $ireallymeanit -eq 0 ]; then
+  echo
+  echo "                       *    *    *"
+  echo "THIS PROGRAM WILL WIPE ALL DATA IN THE FLASH PARTITIONS!"
+  echo "                       *    *    *"
+  echo
+  echo -n "Are you sure (y/n)? "
+  read yesno
+  [ "$yesno" = "y" ] || exit 1
+  echo
+  ireallymeanit=1
+fi
+
+check_mtd()
+{
+  local a b c d e
+  cat /proc/mtd |
+  while read a b c d; do
+    # convert 'mtdxx:' to 'xx'
+    e=${a%:*}
+    [ $d = $1 ] && echo "${e#mtd}"
+  done
+}
+
+leds 0 15 0 15 0 15  # noisy leds as we wipe things
+
+# try to umount what we can
+sleep 5
+(
+lsof | grep /config
+) | sed -e 's/^/BUSY: /'
+umount -f /config
+
+mtd_no=$(check_mtd '"config"')
+device=/dev/mtd$mtd_no
+echo "formating '$device' for jffs2 from factory reset cmd"
+flash_erase --jffs $device 0 0
+
+leds 0  # done
+
+echo "Rebooting in 10 seconds..."
+sleep 10
+reboot

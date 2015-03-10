@@ -2,7 +2,7 @@
 
 # TODO(allanzhang): read PLATFORM_NAME, two SNs from sysvar
 # and persist to etc. Pending sysvar tool porting.
-echo "GFRG250" >/etc/platform &&
+echo "GFMN100" >/etc/platform &&
 chmod 444 /etc/platform
 
 hostname WindCharger

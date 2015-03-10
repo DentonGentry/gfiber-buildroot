@@ -1,0 +1,17 @@
+iface="$1"
+uplink=0
+
+if [ "$iface" = eth1 ]; then
+  uplink=1
+fi
+
+ip link set dev "$iface" up
+
+if [ "$uplink" = 1 ]; then
+  if [ -z "$(ip -o -4 addr show $iface)" ]; then
+    run-dhclient "$iface"
+  else
+    # dhclient would do this if we had run it
+    upload-logs-now
+  fi
+fi

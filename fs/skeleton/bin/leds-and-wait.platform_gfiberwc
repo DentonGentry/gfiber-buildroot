@@ -1,0 +1,17 @@
+#!/bin/sh
+# Update the leds control, then wait for gpio-mailbox to actually perform
+# the operation.
+#
+
+# Set the leds.
+leds "$@"
+
+# In case gpio-mailbox isn't running, make sure we don't wait forever.
+pid=$$
+(
+  sleep 5
+  kill -15 $pid 2>/dev/null
+) &
+
+rm -f /tmp/gpio/leds-ready
+wait-until-created /tmp/gpio/leds-ready
