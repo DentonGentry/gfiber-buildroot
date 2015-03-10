@@ -10,6 +10,12 @@ config BR2_TARGET_UBOOT_BOARDNAME
 	  One of U-Boot supported boards to be built.
 	  This will be suffixed with _config to meet U-Boot standard naming.
 
+config BR2_TARGET_UBOOT_FWPRINTENV
+  bool "fw_printenv"
+  help
+    Determines whether u-boot should attempt ot build the fw_printenv/fw_setenv
+    tools.  These are used to read/write from the u-boot env.
+
 choice
 	prompt "U-Boot Version"
 	default BR2_TARGET_UBOOT_2011_12
