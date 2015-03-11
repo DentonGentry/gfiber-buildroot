@@ -6,14 +6,7 @@ if [ $# -eq 0 -o "$1" = "-h" ]; then
   echo ""
   echo "Usage: rc <keystr> [<keystr>...]"
   echo ""
-  echo "  Feed RC key presses into soft_rc,"
-  echo "  supported <keystr> (case-insensitive):"
-  echo "    DIGIT_1, DIGIT_2, .. , DIGIT_9, DIGIT_0, DEL"
-  echo "    TV_BOX_POWER, TV_POWER, INPUT"
-  echo "    STOP, RECORD, REWIND, PLAY, PAUSE, FAST_FORWARD"
-  echo "    SKIP_BACKWARD, SKIP_FORWARD, MENU, BACK, GUIDE"
-  echo "    UP, LEFT, OK, RIGHT, DOWN, EXIT, INFO, VOL_UP"
-  echo "    SEARCH, CH_UP, VOL_DOWN, MUTE, CH_DOWN, PREV"
+  echo "  Feed RC key presses into soft_rc"
   echo ""
   echo "  Special macro: <abc> -> DIGIT_a DIGIT_b DIGIT_c OK"
   echo ""
@@ -23,6 +16,9 @@ if [ $# -eq 0 -o "$1" = "-h" ]; then
   echo "    rc info"
   echo "    rc exit"
   echo "    rc 308"
+  echo ""
+  echo "  Supported keys (soft_rc -k):"
+  soft_rc -k | sed -e 's/^/  /'
   echo ""
   exit 0
 fi
