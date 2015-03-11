@@ -30,6 +30,7 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/lib
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/run
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/etc
+	mkdir -p $(TARGET_DIR)/chroot/chromeos/tmp
 	# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
 	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
 endef
