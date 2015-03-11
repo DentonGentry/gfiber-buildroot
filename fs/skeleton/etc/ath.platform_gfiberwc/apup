@@ -1,0 +1,233 @@
+#!/bin/sh
+##################################################################################
+## configure_vlanvap
+##
+## shell function to configure the vap for vlan
+## arguments
+##   $1 - $APNAME - name of the interface eg. ath0
+##   $2 - $BRNAME - name of the bridge eg. br2
+##   $3 - $VLANID - Id of the VLAN, eg 2
+##   $4 - $SECMODE - Security mode like WPA
+##   $5 - $SECFILE - like 8021x.conf
+## call as
+##     configure_vlanvap ath0 br2 2 WPA wpa2EAP.conf
+##
+configure_vlanvap() {
+        VAPNAME=$1
+        VBRNAME=$2
+        VVLANID=$3
+        VSECMODE=$4
+        VSECFILE=$5
+        VIPADDR=$6
+        #verify sec args 
+        if [ "${VSECMODE}" != "None" ]; then
+            if [ ${VSECFILE} = "None" ]; then
+                echo "No security file specified for $VSECMODE on $VAPNAME"
+                exit 1
+            fi
+        fi
+        #add tags on both eth0, eth1 and athx
+        VESSID=`iwconfig ${VAPNAME} | grep ESSID | cut -f2 -d\"`
+        brctl addbr $VBRNAME
+        brctl delif br0 $VAPNAME
+        vconfig add $VAPNAME $VVLANID
+        vconfig add eth0 $VVLANID
+        vconfig add eth1 $VVLANID
+        brctl addif $VBRNAME $VAPNAME.$VVLANID
+        brctl addif $VBRNAME eth0.$VVLANID
+        brctl addif $VBRNAME eth1.$VVLANID
+        ifconfig $VAPNAME.$VVLANID up
+        ifconfig eth0.$VVLANID up
+        ifconfig eth1.$VVLANID up
+        ifconfig $VBRNAME $VIPADDR up
+
+        ##
+        ## Add a gratutious ARP after the bridge is up to ensure
+        ## "Everybody knows your name"
+        ##
+
+        if [ "_$VIPADDR" != "_" ]; then
+            arping -U -c 1 -I ${VBRNAME} $VIPADDR
+        fi
+
+        ##
+        ## If hostapd or topology needs to know about this, lets create
+        ## a bridge record
+        ##
+
+        if [ "${VSECMODE}" != "WEP" -a "${VSECMODE}" != "None" ]; then
+            echo -e "\tinterface $VAPNAME" >> /tmp/bc$VVLANID
+        fi
+} 
+#end configure_vlanvap
+
+#####################################################################################
+##
+## "main" procedure
+##
+
+##force delay of 2 seconds 
+##On peregrine environments we are seeing random crashes when apup and
+##apdown are done immediate
+sleep 2
+MODLIST=`lsmod | cut -f1,0 -d" " | grep ath_hal`
+
+if [ "${MODLIST}" = "ath_hal" ]; then
+    echo "AP is already up"
+    exit
+fi
+
+export PATH=/etc/ath:$PATH
+
+##
+## Bring in the default environmental variables
+##
+
+. /etc/ath/apcfg
+
+ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
+
+WAN_IF=${WAN_IF:=eth0}
+LAN_IF=${LAN_IF:=eth1}
+HOSTAPD_VER=`hostapd -v 2>&1|grep hostapd|cut -f2 -d' '`
+
+##
+## For safety, delete all /tmp nodes we may re-create
+##
+
+rm -rf /tmp/br*
+rm -rf /tmp/bc*
+rm -rf /tmp/ap*
+rm -rf /tmp/sta*
+rm -rf /tmp/top*
+
+if [ "${AP_CONF_ACFG}" = "1" ]; then
+	prepareACFG load
+	exit 0
+fi
+
+##
+## Determine the number of radios installed
+##
+
+NUMRADIO_AHB=${NUMRADIO_AHB:=0}
+NUMRADIO_PCI=`grep -c 168c /proc/bus/pci/devices`
+NUMRADIO=`expr ${NUMRADIO_PCI} + ${NUMRADIO_AHB}`
+
+##
+## Make sure the number is 1 or 2.  Any other is invalid
+##
+
+if [ $NUMRADIO -gt 2 -o $NUMRADIO -lt 1 ]; then
+    echo "INVALID CONFIGURATION, RADIO NOT INSTALLED"
+    exit 255
+fi
+
+if [ "${AP_STARTMODE}" != "standard" ]; then
+  echo "Bad AP mode"
+  exit 1
+fi
+
+ap_modes="standard"
+
+for i in $ap_modes;
+do
+    if [ "${AP_STARTMODE}" = "${i}" ]; then
+        cfg -a DEF_ATH_countrycode=841
+    fi
+done
+
+##
+## Now, process the modes
+##
+
+if [ "${AP_STARTMODE}" = "standard" ]; then
+    /etc/ath/makeVAP ap "$AP_SSID" $AP_RADIO_ID:$AP_RFPARAM
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+    activateVAP ath0:$AP_RADIO_ID br0 $AP_SECMODE $AP_SECFILE $WPS_ENABLE $WPS_VAP_TIE
+fi
+
+##############
+
+echo "CHH: System Configuration"
+cfg -s
+
+##############
+
+if [ -f /tmp/conf_filename ]; then
+    mkdir /tmp/wpa2
+    hostapd  -B `cat /tmp/conf_filename` -e /tmp/wpa2/entropy
+fi
+
+
+#check if VoW need to be enabled
+if [ "${VOW_ENABLE}" = "1" ]; then
+    iwpriv wifi0 setVowExt 31
+fi
+
+if [ "${VOW_ENABLE_2}" = "1" ]; then
+    iwpriv wifi1 setVowExt 31
+fi
+
+if [ "${ICM_ENABLE}" = "1" ]; then
+
+    ## Determine mode to be used by icm:
+    ## server (agent for external entity) or standalone (manage channel by itself).
+    ## Create argument string accordingly.
+
+    ## Default mode: standalone
+    ICM_MODE_ARG=""
+
+    if [ "${ICM_MODE}" = "server" ]; then
+        ICM_MODE_ARG="-v"
+    fi
+
+    ## Create argument string for enabling/disabling daemon mode.
+    ## Default: enabled
+    ICM_DAEMON_ENABLE_ARG="-e"
+
+    if [ "${ICM_DAEMON_ENABLE}" = "0" ]; then
+        ICM_DAEMON_ENABLE_ARG=""
+    fi
+
+    ## Create argument string for enabling selection debug information dump
+    ## Default: Whatever is set in icm.conf
+    ICM_DEBUG_SELDEBUG_DUMP_ARG=""
+    if [ "${ICM_ENABLE_SELDEBUG_DUMP}" -eq "1" ]; then
+        ICM_DEBUG_SELDEBUG_DUMP_ARG="-i"
+    fi
+
+    ## Create argument string for setting debug level
+    ## Default: Whatever is set in icm.conf
+    ICM_DEBUG_LEVEL_ARG=""
+
+    if [ -n "${ICM_DEBUG_LEVEL}" ]; then
+       #The application carries out verification of debug level string
+       ICM_DEBUG_LEVEL_ARG="-q ${ICM_DEBUG_LEVEL}";
+    fi
+
+    ## Create argument string for setting debug mask
+    ## Default: Whatever is set in icm.conf
+    ICM_DEBUG_MASK_ARG=""
+
+    if [ -n "${ICM_DEBUG_MASK}" ]; then
+        #The application carries out verification of debug mask string
+        ICM_DEBUG_MASK_ARG="-u ${ICM_DEBUG_MASK}";
+    fi
+
+    #Currently, we support the below AP_STARTMODE values for ICM. More will be added in the future.
+    if [ "${AP_STARTMODE}" = "standard" -o "${AP_STARTMODE}" = "rootap" -o "${AP_STARTMODE}" = "repeater" -o "${AP_STARTMODE}" = "dual" -o "${AP_STARTMODE}" = "multi" ]; then
+        echo "Waiting for ${ICM_WAIT_TIME_IN_SECS} seconds for the device to settle"
+        sleep ${ICM_WAIT_TIME_IN_SECS}
+        icm $ICM_MODE_ARG $ICM_DAEMON_ENABLE_ARG $ICM_DEBUG_SELDEBUG_DUMP_ARG $ICM_DEBUG_LEVEL_ARG $ICM_DEBUG_MASK_ARG -f &
+    else
+        echo "Error: This AP_STARTMODE configuration is currently unsupported by ICM."
+        echo "Supported configurations: standard, rootap, repeater, dual, multi."
+        echo "Please restart with a supported configuration."
+    fi
+fi
+
+

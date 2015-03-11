@@ -1,0 +1,5 @@
+#!/bin/sh
+# A shortcut to print the serial number of this device.
+# TODO(allanzhang): read SN from sysvar and printout.
+echo "WindChargerDvt"
+exit 0

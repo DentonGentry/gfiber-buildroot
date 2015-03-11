@@ -1,0 +1,139 @@
+#!/bin/sh
+#
+# This script monitors CONTROL_PATH folder and decides which is the
+# led sequence that has to be echoed to the LEDS_FILE.
+
+. /etc/utils.sh
+
+# Output file.
+BASE_PATH="/tmp/gpio"
+LEDS_FILE="$BASE_PATH/leds"
+CONTROL_PATH="$BASE_PATH/ledcontrol"
+
+LEDSTATE_FILE="$BASE_PATH/ledstate"
+IP_FILE="$BASE_PATH/ipconnected"
+LINK_DOWN_FILE="$BASE_PATH/link_down"
+ACS_FILE="$CONTROL_PATH/acsconnected"
+OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
+HALT_FILE="$CONTROL_PATH/halted"
+WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
+KEYBOX_FILE="$CONTROL_PATH/invalid_keybox"
+
+# Bit sequences.
+ALL_LEDS_OFF="0"
+UNSECUREBOOT_LED_ON="5" # solid purple
+HALT_LED_ON="1"
+HW_FAIL_LED_ON="1" # solid red
+ACS_LED_ON="4" # solid blue
+IP_LED_ON="4 0 4 0 4 0" # fast blue
+LINK_DOWN_LED_ON="1 0" # blink red
+ANYTHING_ELSE="x2 4 0" # slow blink blue
+
+change_state() {
+  # Check if the new state is different from the previous one
+  if [ ! -e "$LEDSTATE_FILE" ] || [ "$last_ledstate" != "$1" ]; then
+    leds $2
+    last_leds="$2"
+    atomic $LEDSTATE_FILE "$1"
+    last_ledstate="$1"
+    echo "state changed to: $last_ledstate $last_leds"
+  fi
+}
+
+does_interface_exist() {
+  [ -e "/sys/class/net/$1" ]
+}
+
+is_interface_up() {
+  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
+}
+
+has_ip_address() {
+  [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
+    [ -n "$(ip -f inet addr show dev $1 scope global)" ]
+}
+
+is_link_up() {
+  # If there is an explicit WAN link, use that.
+  # Otherwise for TV Boxes, check MoCA and Ethernet
+  # and for Storage Boxes check only Ethernet
+  if does_interface_exist wan0; then
+    is_interface_up wan0
+    return $?
+  fi
+  if is-tv-box; then
+    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0
+  else
+    is_interface_up eth0
+  fi
+}
+
+is_manufactured_recently() {
+  if [ ! "$is_manufactured_recently_status" ]; then
+    platform=$(cat /etc/platform)
+    if [ "$platform" != GFHD100 ] && [ "$platform" != GFMS100 ]; then
+      true
+      is_manufactured_recently_status=$?
+    else
+      # Check if the device is made within or after 2013 by checking serial number.
+      serial=$(serial)
+
+      # Serial number format: GABCYWWSSSSS.
+      # Check if the serial number matches this format (starting from G)
+      # and YWWSSSSS >= 30000000
+      date_manufactured=${serial#G???}
+      [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
+      is_manufactured_recently_status=$?
+    fi
+  fi
+  return $is_manufactured_recently_status
+}
+
+watch-dir $CONTROL_PATH |
+while read f; do
+
+  if is_link_up; then
+    test ! -e "$LINK_DOWN_FILE" || rm -f "$LINK_DOWN_FILE"
+    success=
+    if does_interface_exist wan0; then
+      ifs="wan0 wan0.2"
+    else
+      ifs="br0"
+    fi
+    for ifname in $ifs; do
+      if has_ip_address $ifname; then
+        success="IP address acquired on $ifname"
+        break
+      fi
+    done
+    if [ -n "$success" ]; then
+      echo "$success" >"$IP_FILE"
+    else
+      rm -f "$ACS_FILE" "$IP_FILE"
+    fi
+  else
+    echo "Link down" >"$LINK_DOWN_FILE"
+    rm -f "$ACS_FILE" "$IP_FILE"
+  fi
+
+  if is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
+    change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
+  elif [ -f "$HALT_FILE" ]; then
+    change_state HALT "$HALT_LED_ON"
+  elif [ -f "$KEYBOX_FILE" -a ! -f /rw/ignore-bad-keybox ]; then
+    change_state INVALID_KEYBOX "$HW_FAIL_LED_ON"
+  elif [ -f "$OVERTEMP_FILE" ]; then
+    change_state OVERTEMP "$HW_FAIL_LED_ON"
+  elif [ -f "$WAITPOWER_FILE" ]; then
+    change_state POWEROFF "$ALL_LEDS_OFF"
+  elif [ -f "$LINK_DOWN_FILE" ]; then
+    change_state LINKDOWN "$LINK_DOWN_LED_ON"
+  elif [ ! -f "$IP_FILE" ]; then
+    change_state NOIP "$ANYTHING_ELSE"                  # progress: link but no ip
+  elif [ ! -f "$ACS_FILE" ]; then
+    change_state IPV6ACQUIRED "$IP_LED_ON"              # progress: ip but no acs
+  else
+    change_state ACSCONTACT "$ACS_LED_ON"               # success!
+  fi
+done

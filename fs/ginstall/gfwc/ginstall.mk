@@ -22,7 +22,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
 	echo 'image_type: unlocked' >>$(BINARIES_DIR)/manifest && \
-	echo 'platforms: [GFRG250]' >>$(BINARIES_DIR)/manifest && \
+	echo 'platforms: [GFMN100]' >>$(BINARIES_DIR)/manifest && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
 	cd $(BINARIES_DIR) && \
 	cp $(value GFWC_LOADER) loader.img && \
@@ -30,7 +30,7 @@ define ROOTFS_GINSTALL_CMD
 	mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -all-root -pf $(QCA_DIR)/build/devsqsh.txt && \
         $(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
-        -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 -e 0x801cf6a0  \
+        -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 -e 0x801b8d40 \
 	-n 'Linux Kernel Image' \
         -d vmlinux.bin.lzma uImage && \
 	cp uImage kernel.img && \
