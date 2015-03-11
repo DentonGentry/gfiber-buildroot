@@ -65,12 +65,16 @@ case "$1" in
       fi
     done
 
-    # configure driver: 8,8/7 x 1.25ms = 10,10ms response time/7 skips
-    # Recommended by philips for battery remote battery life
+    # configure BLE connection parameters:
+    # - conn_{min,max}_interval = 8  (8 x 1.25ms = 10ms)
+    # - conn_latency = 7             (slave can skip 7 connection intervals)
+    # - supervision_timeout = 300    (300 x 10ms = 3000ms)
+    #   -> connection is declared down if nothing is received in 3000ms
     echo 6 > /tmp/hci/conn_min_interval         # in case current min > new max
     echo 8 > /tmp/hci/conn_max_interval
     echo 8 > /tmp/hci/conn_min_interval
     echo 7 > /tmp/hci/conn_latency
+    echo 300 > /tmp/hci/supervision_timeout
 
     if [ "$(cat /etc/platform)" = GFHD100 ]; then
       # BCM20702 USB Bluetooth chip
