@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Loads sc100 driver.
+modprobe dvb-usb-sc100

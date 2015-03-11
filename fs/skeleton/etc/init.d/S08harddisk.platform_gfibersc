@@ -36,13 +36,8 @@ FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200,
 
 case "$1" in
   start)
-    if ! is-storage-box; then
-      echo "Not a storage box."
-      exit 0
-    fi
-    failure_media=0
-    failure_config=0
-    mediafs=$(kernopt mediafs)
+    failure_media=1
+    failure_config=1
     wait-scsi
     if ! [ -e /dev/sda ]; then
       echo "No drive found; rescanning."
@@ -53,14 +48,13 @@ case "$1" in
       done
       sleep 5
     fi
-    if startswith "$mediafs" "9p:"; then
-      echo "Mounting 9p /var/media."
-      mount -t 9p -o trans=virtio,version=9p2000.L "${mediafs#9p:}" /var/media
-      failure_media=$?
-    elif startswith "$mediafs" "/dev/"; then
-      echo "Mounting ext4 /var/media from '$mediafs'"
-      mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
-    elif [ -e /dev/sda ]; then
+    if [ -e /dev/sda ]; then
+      (
+        smartctl -A /dev/sda
+        smartctl -t short /dev/sda
+        sleep 60
+        smartctl -l selftest /dev/sda
+      ) 2>&1 | logos smartctl &
       hdparm -q -B255 /dev/sda  # disable power saving
       check_pairing
       echo "Mounting SATA device."
@@ -72,20 +66,24 @@ case "$1" in
           mount -o "$FLAGS" -t ext4 /dev/sda20 /config
           failure_config=$?
         fi
-      elif [ -h /dev/sda ]; then
-        tune2fs -m 0 /dev/sda
-        mount -o "$FLAGS" -t ext4 /dev/sda /var/media
-        failure_media=$?
       fi
-    elif is-storage-box; then
+    else
       echo "No drive found in Storage Box; failing."
-      failure_media=1
     fi
     if [ "$failure_media" != 0 ] || [ "$failure_config" != 0 ]; then
       echo "HDD mounting error."
       echo 1 >/tmp/gpio/ledcontrol/hdd_mount_err
       exit 0
     fi
+    # /config must be writeable by non-root
+    chown bin.sys /config
+    chmod 775 /config
+
+    if [ -e /config/DEBUG ]; then
+      echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
+      echo >/tmp/DEBUG
+    fi
+
     ;;
   stop)
     # Unmount SATA device

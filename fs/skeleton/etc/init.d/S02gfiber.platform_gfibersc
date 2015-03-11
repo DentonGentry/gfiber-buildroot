@@ -37,6 +37,3 @@ else
   # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
   : >/var/run/gpio-mailbox
 fi
-
-# Loads sc100 driver.
-modprobe dvb-usb-sc100
