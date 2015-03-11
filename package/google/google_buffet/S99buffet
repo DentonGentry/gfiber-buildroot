@@ -14,6 +14,7 @@ mkdir -p /tmp/lib
 mount -o bind /tmp/run /chroot/chromeos/var/run
 mount -o bind /tmp/lib /chroot/chromeos/var/lib
 mount -o bind /etc /chroot/chromeos/etc
+mount -o bind /tmp /chroot/chromeos/tmp
 
 # Sanity check
 [ -x /chroot/chromeos/bin/buffet ] || exit 0
