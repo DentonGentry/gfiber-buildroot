@@ -214,16 +214,6 @@ case "$1" in
       fi
     fi
 
-    [ ! -d /user/rw ] && mkdir -p /user/rw
-    [ ! -d /user/bsa ] && mkdir -p /user/bsa
-    [ ! -d /user/netflix ] && mkdir -p /user/netflix
-    [ ! -d /user/vudu ] && mkdir -p /user/vudu
-    [ ! -d /user/drm ] && mkdir -p /user/drm
-    [ ! -d /user/widevine ] && mkdir -p /user/widevine
-    [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
-    [ ! -d /tmp/vudu ] && mkdir -p /tmp/vudu
-    [ ! -d /tmp/oprofile ] && mkdir -p /tmp/oprofile
-
     rm -rf /user/diag/diagdb.bin /user/diag/*.tmp /user/diag/log
 
     # /config must be writeable by non-root

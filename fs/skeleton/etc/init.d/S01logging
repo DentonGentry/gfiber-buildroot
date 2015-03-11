@@ -4,7 +4,9 @@ case "$1" in
   start)
     logmark-once
     if runnable sysvar_cmd; then
-      sysvar_cmd -g GOOGLE_SSL_CRT >/dev/random
+      GOOGLE_SSL_CRT=$(sysvar_cmd -g GOOGLE_SSL_CRT)
+      [ -z "$GOOGLE_SSL_CRT" ] && echo "GOOGLE_SSL_CRT not set, skipping write to random pool" && exit 1
+      echo $GOOGLE_SSL_CRT >/dev/random
     fi
     ;;
   stop)
