@@ -10,9 +10,9 @@
 # Bind chroot directories to tmpfs, as chroot may exist in a read-only
 # filesystem. These directories are used for the DBus socket and Buffet
 # libraries.
-mkdir -p /tmp/lib
+mkdir -p /config/buffet
 mount -o bind /tmp/run /chroot/chromeos/var/run
-mount -o bind /tmp/lib /chroot/chromeos/var/lib
+mount -o bind /config/buffet /chroot/chromeos/var/lib/buffet
 mount -o bind /etc /chroot/chromeos/etc
 mount -o bind /tmp /chroot/chromeos/tmp
 
@@ -23,7 +23,6 @@ mount -o bind /tmp /chroot/chromeos/tmp
 
 # Create necessary directories and dependencies to run Buffet.
 mkdir -p /chroot/chromeos/var/run/buffet
-mkdir -p /chroot/chromeos/var/lib/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
 
 start() {
