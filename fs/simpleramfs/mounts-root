@@ -9,16 +9,18 @@
 
 find_sata_blkdev()
 {
-  local blkdev result=
+  local dev_node result=
 
-  cd /dev
-  for blkdev in $(ls sd?); do
-    local removable=$(cat /sys/block/$blkdev/removable)
-    if [ "$removable" -eq "0" ]; then
-      result=/dev/$blkdev
+  for dev_node in /dev/sd?; do
+    [ -b "$dev_node" ] || continue
+
+    local blkdev=${dev_node#/dev/}
+    local dev_path=$(realpath "/sys/block/$blkdev/device")
+    if [ "${dev_path#*usb}" = "$dev_path" ]; then
+      result="$dev_node"
+      break
     fi
   done
-  cd "$OLDPWD"
 
   [ -n "$result" ] && echo "$result"
 }
