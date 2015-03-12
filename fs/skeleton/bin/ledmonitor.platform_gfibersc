@@ -41,6 +41,8 @@ NO_TUNER_LOCK_LED_ON="5" # solid purple
 UPDATING_LED_ON="4 0" # blink blue
 RUNNING_LED_ON="4" # solid blue
 
+ifname="br0"
+
 change_state() {
   # Check if the new state is different from the previous one
   if [ ! -e "$LEDSTATE_FILE" ] || [ "$last_ledstate" != "$1" ]; then
@@ -66,39 +68,9 @@ has_ip_address() {
 }
 
 is_link_up() {
-  # If there is an explicit WAN link, use that.
-  # Otherwise for TV Boxes, check MoCA and Ethernet
-  # and for Storage Boxes check only Ethernet
-  if does_interface_exist wan0; then
-    is_interface_up wan0
-    return $?
-  fi
-  if is-tv-box; then
-    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0
-  else
-    is_interface_up eth0
-  fi
-}
-
-is_manufactured_recently() {
-  if [ ! "$is_manufactured_recently_status" ]; then
-    platform=$(cat /etc/platform)
-    if [ "$platform" != GFHD100 ] && [ "$platform" != GFMS100 ]; then
-      true
-      is_manufactured_recently_status=$?
-    else
-      # Check if the device is made within or after 2013 by checking serial number.
-      serial=$(serial)
-
-      # Serial number format: GABCYWWSSSSS.
-      # Check if the serial number matches this format (starting from G)
-      # and YWWSSSSS >= 30000000
-      date_manufactured=${serial#G???}
-      [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
-      is_manufactured_recently_status=$?
-    fi
-  fi
-  return $is_manufactured_recently_status
+  # FIXME TODO(efirst): Check whether a network cable is connected instead of whether the interface is up once
+  # CL from Denton is complete that integrates ifplugd, which can take action when links go up or down.
+  is_interface_up "$ifname"
 }
 
 watch-dir $CONTROL_PATH |
@@ -106,30 +78,18 @@ while read f; do
 
   if is_link_up; then
     test ! -e "$LINK_DOWN_FILE" || rm -f "$LINK_DOWN_FILE"
-    success=
-    if does_interface_exist wan0; then
-      ifs="wan0 wan0.2"
+    if has_ip_address $ifname; then
+      echo "IP address acquired on $ifname" >"$IP_FILE"
     else
-      ifs="br0"
-    fi
-    for ifname in $ifs; do
-      if has_ip_address $ifname; then
-        success="IP address acquired on $ifname"
-        break
-      fi
-    done
-    if [ -n "$success" ]; then
-      echo "$success" >"$IP_FILE"
-    else
-      rm -f "$ACS_FILE" "$IP_FILE"
+      rm -f "$IP_FILE"
     fi
   else
     echo "Link down" >"$LINK_DOWN_FILE"
-    rm -f "$ACS_FILE" "$IP_FILE"
+    rm -f "$IP_FILE"
   fi
 
-  # TODO(efirst): Note secure boot check disabled for testing, need to remove this before production.
-  if 0 && is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
+  # FIXME TODO(efirst): Note secure boot check disabled for testing, need to remove this before production.
+  if 0 && [ ! -f "$SECUREBOOT_FILE" ]; then
     change_state UNSECUREBOOT "$HW_FAIL_LED_ON"
   elif [ -f "$HALT_FILE" ]; then
     change_state HALT "$HW_FAIL_LED_ON"
