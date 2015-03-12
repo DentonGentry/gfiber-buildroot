@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+sata_blkdev=$(find_sata_blkdev)
+
 trim() {
   local var="$1"
   var="${var#"${var%%[![:space:]]*}"}"
@@ -10,7 +12,7 @@ trim() {
 
 hddserial() {
   local var
-  var=$(hdparm -I /dev/sda | grep "Serial Number")
+  var=$(hdparm -I "$sata_blkdev" | grep "Serial Number")
   trim "${var##*:}"
 }
 
@@ -44,7 +46,7 @@ case "$1" in
     failure_backup=0
     mediafs=$(kernopt mediafs)
     wait-scsi
-    if ! [ -e /dev/sda ]; then
+    if ! [ -e "$sata_blkdev" ]; then
       echo "No drive found; rescanning."
       # "ata1.00: both IDENTIFYs aborted, assuming NODEV"
       # This happens sometimes, make it rescan.
@@ -60,21 +62,21 @@ case "$1" in
     elif startswith "$mediafs" "/dev/"; then
       echo "Mounting ext4 /var/media from '$mediafs'"
       mount -o "$FLAGS" -t ext4 "$mediafs" /var/media
-    elif [ -e /dev/sda ]; then
-      hdparm -q -B255 /dev/sda  # disable power saving
+    elif [ -e "$sata_blkdev" ]; then
+      hdparm -q -B255 "$sata_blkdev"  # disable power saving
       check_pairing
       echo "Mounting SATA device."
-      if [ -e /dev/sda1 ]; then
-        tune2fs -m 0 /dev/sda1
-        mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
+      if [ -e "$sata_blkdev"1 ]; then
+        tune2fs -m 0 "$sata_blkdev"1
+        mount -o "$FLAGS" -t ext4 "$sata_blkdev"1 /var/media
         failure_media=$?
-        if [ -e /dev/sda2 ]; then
-          mount -o "$FLAGS" -t ext4 /dev/sda2 /var/backup
+        if [ -e "$sata_blkdev"2 ]; then
+          mount -o "$FLAGS" -t ext4 "$sata_blkdev"2 /var/backup
           failure_backup=$?
         fi
-      elif [ -h /dev/sda ]; then
-        tune2fs -m 0 /dev/sda
-        mount -o "$FLAGS" -t ext4 /dev/sda /var/media
+      elif [ -h "$sata_blkdev" ]; then
+        tune2fs -m 0 "$sata_blkdev"
+        mount -o "$FLAGS" -t ext4 "$sata_blkdev" /var/media
         failure_media=$?
       fi
     elif is-storage-box; then

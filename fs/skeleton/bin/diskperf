@@ -1,13 +1,17 @@
 #!/bin/sh
+. /etc/utils.sh
 
-if [ -e /sys/block/sda/stat ]; then
+sata_blkdev=$(find_sata_blkdev)
+sata_dev=${sata_blkdev#/dev/}
+
+if [ -e /sys/block/${sata_dev}/stat ]; then
   interval=$1
   if [ -z "$interval" ]; then
     interval=15
   fi
 
   while :; do
-    read line </sys/block/sda/stat
+    read line </sys/block/${sata_dev}/stat
     echo "$line"
     sleep "$interval"
   done

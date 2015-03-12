@@ -230,3 +230,21 @@ experiment() {
     return 1
   fi
 }
+
+find_sata_blkdev()
+{
+  local dev_node result=
+
+  for dev_node in /dev/sd?; do
+    [ -b "$dev_node" ] || continue
+
+    local blkdev=${dev_node#/dev/}
+    local dev_path=$(realpath "/sys/block/$blkdev/device")
+    if [ "${dev_path#*usb}" = "$dev_path" ]; then
+      result="$dev_node"
+      break
+    fi
+  done
+
+  [ -n "$result" ] && echo "$result"
+}

@@ -3,6 +3,10 @@
 # Volume check service
 #
 
+. /etc/utils.sh
+
+sata_blkdev=$(find_sata_blkdev)
+
 # 'data+ubi' partition
 DATA_MTD_NAME='"data+ubi"'
 DATA_MTD_NO=
@@ -230,12 +234,12 @@ case "$1" in
     chown bin.sys /config
     chmod 775 /config
 
-    if [ -e /dev/sda ]; then
+    if [ -e "$sata_blkdev" ]; then
       (
-        smartctl -A /dev/sda
-        smartctl -t short /dev/sda
+        smartctl -A "$sata_blkdev"
+        smartctl -t short "$sata_blkdev"
         sleep 60
-        smartctl -l selftest /dev/sda
+        smartctl -l selftest "$sata_blkdev"
       ) 2>&1 | logos smartctl &
     fi
 

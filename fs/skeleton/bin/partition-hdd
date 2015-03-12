@@ -6,8 +6,11 @@
 # /dev/sda2 mounted at /var/backup ext4, size 512MB
 
 # All sizes in blocks (1KB)
+
+. /etc/utils.sh
+
 set -e
-DEV_FILE=/dev/sda
+DEV_FILE=$(find_sata_blkdev)
 BACKUP_PART_SIZE=$((512*1024))
 MEDIA_PART_START=4 # Align to 4KB boundary
 FORCE=0

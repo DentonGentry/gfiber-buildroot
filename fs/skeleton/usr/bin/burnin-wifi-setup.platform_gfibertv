@@ -1,4 +1,5 @@
 #!/bin/sh
+. /etc/utils.sh
 
 # Prints the ethernet MAC address of eth0.
 get_mac_addr()
@@ -37,7 +38,7 @@ render_ssid()
 # Returns true if the machine is a fat bruno (ie. has storage)
 is_fat()
 {
-  [ -e /dev/sda ] && grep GFMS /tmp/platform >/dev/null
+  [ -e $(find_sata_blkdev) ] && grep GFMS /tmp/platform >/dev/null
 }
 
 

@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+sata_blkdev=$(find_sata_blkdev)
+
 trim() {
   local var="$1"
   var="${var#"${var%%[![:space:]]*}"}"
@@ -10,7 +12,7 @@ trim() {
 
 hddserial() {
   local var
-  var=$(hdparm -I /dev/sda | grep "Serial Number")
+  var=$(hdparm -I "$sata_blkdev" | grep "Serial Number")
   trim "${var##*:}"
 }
 
@@ -39,7 +41,7 @@ case "$1" in
     failure_media=1
     failure_config=1
     wait-scsi
-    if ! [ -e /dev/sda ]; then
+    if ! [ -e "$sata_blkdev" ]; then
       echo "No drive found; rescanning."
       # "ata1.00: both IDENTIFYs aborted, assuming NODEV"
       # This happens sometimes, make it rescan.
@@ -48,22 +50,22 @@ case "$1" in
       done
       sleep 5
     fi
-    if [ -e /dev/sda ]; then
+    if [ -e "$sata_blkdev" ]; then
       (
-        smartctl -A /dev/sda
-        smartctl -t short /dev/sda
+        smartctl -A "$sata_blkdev"
+        smartctl -t short "$sata_blkdev"
         sleep 60
-        smartctl -l selftest /dev/sda
+        smartctl -l selftest "$sata_blkdev"
       ) 2>&1 | logos smartctl &
-      hdparm -q -B255 /dev/sda  # disable power saving
+      hdparm -q -B255 "$sata_blkdev"  # disable power saving
       check_pairing
       echo "Mounting SATA device."
-      if [ -e /dev/sda1 ]; then
-        tune2fs -m 0 /dev/sda1
-        mount -o "$FLAGS" -t ext4 /dev/sda1 /var/media
+      if [ -e "$sata_blkdev"1 ]; then
+        tune2fs -m 0 "$sata_blkdev"1
+        mount -o "$FLAGS" -t ext4 "$sata_blkdev"1 /var/media
         failure_media=$?
-        if [ -e /dev/sda20 ]; then
-          mount -o "$FLAGS" -t ext4 /dev/sda20 /config
+        if [ -e "$sata_blkdev"20 ]; then
+          mount -o "$FLAGS" -t ext4 "$sata_blkdev"20 /config
           failure_config=$?
         fi
       fi
