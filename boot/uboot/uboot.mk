@@ -47,6 +47,22 @@ UBOOT_MAKE_OPTS += \
 #  we use that might want uboot.
 UBOOT_MAKE_OPTS += SPIBOOT=1 SPI=1 DDR3=1 LARGEKERNEL=1
 
+ifeq ($(BR2_TARGET_UBOOT_FWPRINTENV),y)
+define UBOOT_FWPRINTENV_INSTALL_CMDS
+	$(INSTALL) -m 0755 -D $(@D)/tools/env/fw_printenv $(TARGET_DIR)/usr/sbin/fw_printenv
+	ln -sf fw_printenv $(TARGET_DIR)/usr/sbin/fw_setenv
+endef
+
+define UBOOT_FWPRINTENV_BUILD_CMDS
+	$(MAKE) -C $(@D) \
+		HOSTCC="$(TARGET_CC)" \
+		HOSTCFLAGS="$(TARGET_CFLAGS)" \
+		HOSTLDFLAGS="$(TARGET_LDFLAGS)" \
+		HOSTSTRIP=true \
+		env
+endef
+endif
+
 # Helper function to fill the U-Boot config.h file.
 # Argument 1: option name
 # Argument 2: option value
@@ -88,6 +104,7 @@ define UBOOT_CONFIGURE_CMDS
 endef
 
 define UBOOT_BUILD_CMDS
+	$(UBOOT_FWPRINTENV_BUILD_CMDS)
 	$(TARGET_CONFIGURE_OPTS) $(UBOOT_CONFIGURE_OPTS) 	\
 		$(MAKE) -C $(@D) $(UBOOT_MAKE_OPTS) 		\
 		$(UBOOT_MAKE_TARGET)
@@ -102,6 +119,7 @@ define UBOOT_INSTALL_IMAGES_CMDS
 	else \
 		cp -dpf $(@D)/$(UBOOT_BIN) $(BINARIES_DIR)/; \
 	fi
+	$(UBOOT_FWPRINTENV_INSTALL_CMDS)
 endef
 
 $(eval $(call GENTARGETS))
