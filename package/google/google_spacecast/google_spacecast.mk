@@ -13,7 +13,8 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-golang \
 				go_guelfey_go_dbus \
 				go_miekg_dns \
 				go_net \
-				go_protobuf
+				go_protobuf \
+				google_widevine_cenc
 
 GOOGLE_SPACECAST_GEN_PROTO = \
 	cd $(@D); \
