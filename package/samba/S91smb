@@ -42,10 +42,31 @@ mounts() {
   mount -o bind /tmp/samba tmp
 }
 
+media_empty() {
+  music=`find /var/media/music | wc -l`
+  videos=`find /var/media/videos | wc -l`
+  pictures=`find /var/media/pictures | wc -l`
+  landscapes=`[ -e /var/media/pictures/Landscapes ] && \
+      find /var/media/pictures/Landscapes | wc -l || echo "0"`
+  result=`[ $music -le 1 ] && [ $videos -le 1 ] && \
+      [ $pictures -eq $(($landscapes+1)) ] && [ $landscapes -le 11 ]`
+  return $result
+}
+
 case "$1" in
   start)
     if is-storage-box; then
       cleanup || die 'start failed'
+      SMB_CONF="/etc/samba/smb.conf"
+      if is-html-tv-ui; then
+        if media_empty; then
+          echo 'Not starting samba (UI=oregano and media folders empty)'
+          exit 0
+        else
+          echo 'Starting samba in read/delete mode, (UI=oregano)'
+          SMB_CONF="/etc/samba/smb.no_new_files.conf"
+        fi
+      fi
       mkdir -p /var/lock/samba/subsys /tmp/samba/sockets && \
       chown video.video /var/lock/samba/subsys /tmp/samba && \
       chown video.video /tmp/samba/sockets && \
@@ -55,7 +76,7 @@ case "$1" in
         ionice -c 3 -n 7 chg_mod_own --uid video --gid video --mode_dir 0775 \
           --mode_file 0664 tv videos pictures music
       ) || die 'prepare environment failed'
-      babysit 60 ionice -c 3 -n 7 smbd -F -D -S 2>&1 | logos smbd &
+      babysit 60 ionice -c 3 -n 7 smbd -s $SMB_CONF -F -D -S 2>&1 | logos smbd &
       babysit 60 nmbd -F -D -S 2>&1 | logos nmbd &
     fi 2>&1 | logos smbd &  # run in background to avoid slowing boot
     ;;
@@ -63,7 +84,7 @@ case "$1" in
     # we have to kill the babysitter too, because smbd eats the SIGTERM
     # exit code and returns 1 instead, so babysit thinks it needs to
     # restart.
-    pkillwait -f 'babysit 60 smbd'
+    pkillwait -f 'babysit 60 ionice .* smbd'
     pkillwait -f 'babysit 60 nmbd'
     pkillwait -x smbd
     pkillwait -x nmbd
