@@ -7,6 +7,22 @@
 
 . /helpers.sh
 
+find_sata_blkdev()
+{
+  local blkdev result=
+
+  cd /dev
+  for blkdev in $(ls sd?); do
+    local removable=$(cat /sys/block/$blkdev/removable)
+    if [ "$removable" -eq "0" ]; then
+      result=/dev/$blkdev
+    fi
+  done
+  cd "$OLDPWD"
+
+  [ -n "$result" ] && echo "$result"
+}
+
 # Finds the *last* /dev/mtd* device with the given realname
 find_mtd()
 {
@@ -42,7 +58,7 @@ find_mmc()
 
 find_hdd()
 {
-  find_gpt /dev/sda "$1"
+  find_gpt "$1" "$2"
 }
 
 read_cmdline
@@ -161,7 +177,8 @@ elif [ -n "$ROOTDEV" ]; then
       KERNELNAME=$(replacefirst $ROOTDEV rootfs kernel)
       mtd=/dev/mtd$(find_mtd "$ROOTDEV")
       mmcraw=/dev/mmcblk0p$(find_mmc "$ROOTDEV")
-      hdd=/dev/sda$(find_hdd "$ROOTDEV")
+      sata_blkdev=$(find_sata_blkdev)
+      hdd=${sata_blkdev}$(find_hdd "$sata_blkdev" "$ROOTDEV")
       IMAGENAME=$(replacefirst $ROOTDEV rootfs image)
       mmcvfat=/dev/mmcblk0p$(find_mmc "$IMAGENAME")
       [ -e "$mtd" -o -e "$mmcraw" -o -e "$hdd" -o -e "$mmcvfat" \
