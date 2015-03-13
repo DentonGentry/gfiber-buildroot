@@ -30,8 +30,12 @@ define ROOTFS_GINSTALL_CMD
 	mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -all-root -pf $(QCA_DIR)/build/devsqsh.txt && \
         $(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
-        -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 -e 0x801b8d40 \
-	-n 'Linux Kernel Image' \
+        -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 \
+				-e `$(CROSS_COMPILE)readelf \
+							-h $(BINARIES_DIR)/../build/linux-HEAD/vmlinux | \
+							grep 'Entry point address' | \
+							grep -o '0x.*'` \
+				-n 'Linux Kernel Image' \
         -d vmlinux.bin.lzma uImage && \
 	cp uImage kernel.img && \
 	(echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
