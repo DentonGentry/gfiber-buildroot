@@ -33,7 +33,7 @@ case "$1" in
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
     brctl setfd br0 1
-    brctl stp br0 on
+    brctl stp br0 off
     # Storage and network boxes should have higher precedence (lower value)
     #  when choosing the root of the spanning tree.
     #  The default in Linux is 0x8000.
