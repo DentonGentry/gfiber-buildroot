@@ -27,7 +27,7 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/org.chromium.Buffet.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Buffet.conf
 	# Create chroot binding point for dbus.
-	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/lib
+	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/lib/buffet
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/run
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/etc
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/tmp
