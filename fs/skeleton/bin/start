@@ -43,11 +43,11 @@ for prog in "$@"; do
   for script in /etc/init.d/S??$prog /etc/init.d/S??$prog.sh; do
     if [ -x "$script" ]; then
       found=1
-      $script $mode || rv=1
+      gsetsid $script $mode || rv=1
       break
     elif [ -e "$script" ] && endswith "$script" .sh; then
       found=1
-      . $script $mode || rv=1
+      gsetsid /bin/sh $script $mode || rv=1
       break
     fi
   done
