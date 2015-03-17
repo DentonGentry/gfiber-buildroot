@@ -18,3 +18,7 @@ config BR2_PACKAGE_PROTOBUF_ONLY_LITE
 	help
 	  Do not install protoc or the full libproto on the target,
 	  only install the libprotobuf-lite runtime library.
+
+config BR2_PACKAGE_PROTOBUF_VERSION_VALUE
+	string "Protobuf library version"
+	default "3.0.0-alpha-2"
