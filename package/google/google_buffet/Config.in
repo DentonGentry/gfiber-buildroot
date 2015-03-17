@@ -3,3 +3,8 @@ config BR2_PACKAGE_GOOGLE_BUFFET
        default n
        help
          Google's Buffet
+config BR2_PACKAGE_GOOGLE_BUFFET_DEMOS
+       bool "google_buffet_demos"
+       default n
+       help
+         Google's Buffet demos

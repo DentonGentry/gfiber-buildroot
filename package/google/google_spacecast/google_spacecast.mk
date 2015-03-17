@@ -58,6 +58,16 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.StateManager.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
+
+	# Buffet command and state definitions
+	# FIXME TODO(efirst): Modify buffet.conf to use prod GCD instead of staging and prod credentials before release.
+	mkdir -p $(TARGET_DIR)/etc/buffet && \
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/buffet.conf $(TARGET_DIR)/etc/buffet
+	# FIXME TODO(efirst): Replace JSON files with array versions once supported by Buffet (https://code.google.com/p/brillo/issues/detail?id=107).
+	mkdir -p $(TARGET_DIR)/etc/buffet/commands && \
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/sc-configuration.json $(TARGET_DIR)/etc/buffet/commands
+	mkdir -p $(TARGET_DIR)/etc/buffet/states && \
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/sc-configuration.schema.json $(TARGET_DIR)/etc/buffet/states
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS

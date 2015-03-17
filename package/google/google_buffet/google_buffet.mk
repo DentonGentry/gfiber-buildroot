@@ -7,19 +7,30 @@
 CHROMEOS_VERSION = R42-6798
 GOOGLE_BUFFET_SITE = repo://vendor/google/tarballs
 
+ifeq ($(BR2_PACKAGE_GOOGLE_BUFFET_DEMOS),y)
+define HOST_GOOGLE_BUFFET_DEMOS
+		mkdir -p $(TARGET_DIR)/etc/buffet && \
+		$(INSTALL) -m 0755 -D package/google/google_buffet/buffet.conf $(TARGET_DIR)/etc/buffet; \
+		mkdir -p $(TARGET_DIR)/etc/buffet/commands && \
+		$(INSTALL) -m 0755 -D package/google/google_buffet/test.json $(TARGET_DIR)/etc/buffet/commands
+endef
+else
+define HOST_GOOGLE_BUFFET_DEMOS
+	echo "Skip Buffet demos..."
+endef
+endif
+
 define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	# Untar and place the chromeos rootdir under /chroot
 	mkdir -p $(TARGET_DIR)/chroot && \
 	tar -zxvf $(@D)/google_buffet-$(CHROMEOS_VERSION).tar.gz -C $(TARGET_DIR)/chroot
-	# Copy necessary configs to /etc/buffet
+	# Copy global configs to /etc/buffet
 	mkdir -p $(TARGET_DIR)/etc/buffet && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/base_state.schema.json $(TARGET_DIR)/etc/buffet && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/base_state.defaults.json $(TARGET_DIR)/etc/buffet && \
-	$(INSTALL) -m 0755 -D package/google/google_buffet/buffet.conf $(TARGET_DIR)/etc/buffet && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/gcd.json $(TARGET_DIR)/etc/buffet
-	# Install demo test.json command definition to /etc/buffet/commands
-	mkdir -p $(TARGET_DIR)/etc/buffet/commands && \
-	$(INSTALL) -m 0755 -D package/google/google_buffet/test.json $(TARGET_DIR)/etc/buffet/commands
+	# Install Buffet demos
+	$(HOST_GOOGLE_BUFFET_DEMOS)
 	# Install /etc/init.d/S99buffet script
 	mkdir -p $(TARGET_DIR)/etc/init.d && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/S99buffet $(TARGET_DIR)/etc/init.d/S99buffet
