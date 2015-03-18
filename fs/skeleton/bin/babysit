@@ -1,5 +1,6 @@
 #!/bin/sh
 RETRY_TIMEOUT=$1
+TMP_LOG=/tmp/babysit_errors
 
 if [ -e /proc/$$/oom_score_adj ] ; then
   OOM_FILE=oom_score_adj
@@ -35,6 +36,10 @@ run() {
   wait $pid
 }
 
+error() {
+  echo "Error: '$name' exited with code $RV.  Retry in $RETRY_TIMEOUT secs."
+}
+
 # Run until the program manages to exit successfully.
 name=$(progname "$@")
 until run "$@"; do
@@ -47,7 +52,8 @@ until run "$@"; do
     echo "SIGTERM: '$name' was killed explicitly.  Not retrying." >&2
     exit $RV
   fi
-  echo "Error: '$name' exited with code $RV.  Retry in $RETRY_TIMEOUT secs." >&2
+  error >&2
+  error > $TMP_LOG
   sleep $RETRY_TIMEOUT || sleep 1  # just in case $RETRY_TIMEOUT is invalid
 done
 echo "'$name' exited successfully.  Not restarting." >&2
