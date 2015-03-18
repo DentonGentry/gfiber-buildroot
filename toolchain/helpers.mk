@@ -209,6 +209,8 @@ check_arm_abi = \
 	EXT_TOOLCHAIN_TARGET=`LANG=C $${__CROSS_CC} -v 2>&1 | grep ^Target | cut -f2 -d ' '` ; \
 	if echo $${EXT_TOOLCHAIN_TARGET} | grep -q 'eabi$$' ; then \
 		EXT_TOOLCHAIN_ABI="eabi" ; \
+	elif echo $${EXT_TOOLCHAIN_TARGET} | grep -q 'eabihf$$' ; then \
+		EXT_TOOLCHAIN_ABI="eabi" ; \
 	else \
 		EXT_TOOLCHAIN_ABI="oabi" ; \
 	fi ; \
