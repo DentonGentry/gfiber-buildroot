@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+#   MonLog pusher service is a userland daemon responsible for collecting the
+# device logs from a well-known directory and pushing the logs to the cloud.
+#
+
+start() {
+  echo "Starting MonLog pusher..."
+  /usr/bin/monlog_pusher 2>&1 | logos monlog_pusher &
+  [ $? -ne 0 ] && echo "Failed to start MonLog pusher..." && exit 1
+  echo "MonLog pusher started successfully"
+}
+
+stop() {
+  echo "Stopping MonLog pusher..."
+  pkill -x monlog_pusher
+  [ $? -ne 0 ] && echo "Failed to stop MonLog pusher..." && exit 1
+  echo "MonLog pusher stopped successfully"
+}
+
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    restart
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
