@@ -403,4 +403,4 @@ fully_reimport_playlists_every_scan=true
 fiber/vod/TrailerPark/Enable=false
 linux/enable_progressive_deletes=true
 linux/progressive_delete_increment=134217728
-ads_manager_api_enabled=true
+ads_manager_api_enabled=false
