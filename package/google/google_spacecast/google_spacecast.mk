@@ -4,7 +4,8 @@
 #
 #############################################################
 GOOGLE_SPACECAST_SITE = repo://vendor/google/spacecast
-GOOGLE_SPACECAST_DEPENDENCIES = host-golang \
+GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
+				host-golang \
 				host-go_protobuf \
 				go_fsnotify \
 				go_glog \
@@ -31,9 +32,10 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,feeds)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,file_encrypt)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,spacecast_api)
+	$(call GOOGLE_SPACECAST_GEN_PROTO,storage)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,video_corpus)
 
-        sed -i s/\.pb/_proto/ $(@D)/proto/src/spacecast/proto/spacecast_api_proto/spacecast_api.pb.go
+        find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
 
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/go:$(@D)/proto:$$GOPATH ; \
