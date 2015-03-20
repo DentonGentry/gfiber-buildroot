@@ -40,8 +40,11 @@ shutdow_dvbnet() {
 
 case "$1" in
   start)
-    setup_dvbnet 2>&1 | logos dvbnet
-    babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" 2>&1 | logos dvbtune &
+    (
+      wait-until-created /dev/dvb/adapter0
+      setup_dvbnet 2>&1 | logos dvbnet
+      babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" 2>&1 | logos dvbtune &
+    ) &
   ;;
 
   stop)
