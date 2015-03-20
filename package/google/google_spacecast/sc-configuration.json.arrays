@@ -8,7 +8,7 @@
             "type": "object",
             "properties": {
               "_device": { "type": "string" },
-              "_use_dhcp": { "type": "boolean" },
+              "_useDhcp": { "type": "boolean" },
               "_ipv4": { "type": "string" },
               "_netmask": { "type": "string" },
               "_gateway": { "type": "string" }
@@ -28,21 +28,21 @@
             "type": "object",
             "properties": {
               "_id": { "type": "string" },
-              "_feed_id": {
+              "_feedId": {
                 "type": "array",
                 "items": { "type": "string" }
               },
-              "_tuner_settings": {
+              "_tunerSettings": {
                 "type": "object",
                 "properties": {
-                  "_program_id": { "type": "integer" },
+                  "_programId": { "type": "integer" },
                   "_encapsulation": {
                     "type": "string",
                     "enum": ["RAW", "ULE", "MPE", "GSE"]
                   },
-                  "_max_packet_size_bytes": { "type": "integer" },
-                  "_lo_frequency_mhz": { "type": "integer" },
-                  "_rf_band": {
+                  "_maxPacketSizeBytes": { "type": "integer" },
+                  "_loFrequencyMhz": { "type": "integer" },
+                  "_rfBand": {
                     "type": "string",
                     "enum": ["L", "S", "C", "X", "KU", "K", "KA"]
                   },
@@ -50,15 +50,15 @@
                     "type": "string",
                     "enum": ["HORIZONTAL", "VERTICAL"]
                   },
-                  "_if_frequency_mhz": { "type": "integer" },
-                  "_symbol_rate_baud": { "type": "integer" },
+                  "_ifFrequencyMhz": { "type": "integer" },
+                  "_symbolRateBaud": { "type": "integer" },
                   "_modulation": {
                     "type": "string",
                     "enum": ["QPSK", "QAM_16", "QAM_32", "QAM_64", "QAM_128",
                         "QAM_256", "QAM_AUTO", "VSB_8", "VSB_16", "PSK_8",
                         "APSK_16", "APSK_32", "DQPSK"]
                   },
-                  "_fec_rate": {
+                  "_fecRate": {
                     "type": "string",
                     "enum": ["FEC_NONE", "FEC_1_2", "FEC_2_3", "FEC_3_4",
                         "FEC_4_5", "FEC_5_6", "FEC_6_7", "FEC_7_8", "FEC_8_9",
@@ -76,11 +76,11 @@
 
     "_setSubscriptionConfig": {
       "parameters": {
-        "_boradcast_id": {
+        "_boradcastId": {
           "type": "array",
           "items": { "type": "string" }
         },
-        "_feed_id": {
+        "_feedId": {
           "type": "array",
           "items": { "type": "string" }
         }
