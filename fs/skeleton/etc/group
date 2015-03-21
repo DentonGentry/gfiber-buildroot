@@ -22,3 +22,4 @@ video:x:200:video
 lp:x:7:
 netdev:x:113:
 dbus:x:105:
+buffet:x:106:
