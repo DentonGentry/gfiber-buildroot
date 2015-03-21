@@ -6,16 +6,33 @@ import optparse
 import sys
 import tornado.ioloop
 import tornado.web
+import tornado.httpclient
 
+PKI_HOSTS = set(['pki.google.com', 'clients1.google.com'])
 
 class Redirector(tornado.web.RequestHandler):
 
   def initialize(self, url):
     self._url = url
+    self._http_client = tornado.httpclient.HTTPClient()
 
   def get(self):
-    self.redirect(self._url)
+    if self._is_crl_request():
+      # proxy CRL/OCSP requests. Workaround for b/19825798.
+      url = '%s://%s%s' % (self.request.protocol, self.request.host,
+                           self.request.uri)
+      print 'Forwarding request to %s' % url
+      response = self._http_client.fetch(url)
+      for (name, value) in response.headers.get_all():
+        self.set_header(name, value)
+      self.write(response.body)
+    else:
+      self.redirect(self._url)
 
+  def _is_crl_request(self):
+    uri = self.request.uri
+    return self.request.host in PKI_HOSTS and (uri.startswith('/ocsp/')
+        or uri.endswith('.crl'))
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()
