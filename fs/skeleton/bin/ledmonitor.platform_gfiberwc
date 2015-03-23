@@ -15,15 +15,10 @@ IP_FILE="$BASE_PATH/ipconnected"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 ACS_FILE="$CONTROL_PATH/acsconnected"
 OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
-HALT_FILE="$CONTROL_PATH/halted"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
-SECUREBOOT_FILE="$CONTROL_PATH/secure_boot"
-KEYBOX_FILE="$CONTROL_PATH/invalid_keybox"
 
 # Bit sequences.
 ALL_LEDS_OFF="0"
-UNSECUREBOOT_LED_ON="5" # solid purple
-HALT_LED_ON="1"
 HW_FAIL_LED_ON="1" # solid red
 ACS_LED_ON="4" # solid blue
 IP_LED_ON="4 0 4 0 4 0" # fast blue
@@ -62,32 +57,7 @@ is_link_up() {
     is_interface_up wan0
     return $?
   fi
-  if is-tv-box; then
-    is_interface_up eth0 || is_interface_up eth1 || is_interface_up moca0
-  else
-    is_interface_up eth0
-  fi
-}
-
-is_manufactured_recently() {
-  if [ ! "$is_manufactured_recently_status" ]; then
-    platform=$(cat /etc/platform)
-    if [ "$platform" != GFHD100 ] && [ "$platform" != GFMS100 ]; then
-      true
-      is_manufactured_recently_status=$?
-    else
-      # Check if the device is made within or after 2013 by checking serial number.
-      serial=$(serial)
-
-      # Serial number format: GABCYWWSSSSS.
-      # Check if the serial number matches this format (starting from G)
-      # and YWWSSSSS >= 30000000
-      date_manufactured=${serial#G???}
-      [ "$serial" != "$date_manufactured" ] && [ "$date_manufactured" -ge 30000000 ]
-      is_manufactured_recently_status=$?
-    fi
-  fi
-  return $is_manufactured_recently_status
+  is_interface_up eth1
 }
 
 watch-dir $CONTROL_PATH |
@@ -117,13 +87,7 @@ while read f; do
     rm -f "$ACS_FILE" "$IP_FILE"
   fi
 
-  if is_manufactured_recently && [ ! -f "$SECUREBOOT_FILE" ]; then
-    change_state UNSECUREBOOT "$UNSECUREBOOT_LED_ON"
-  elif [ -f "$HALT_FILE" ]; then
-    change_state HALT "$HALT_LED_ON"
-  elif [ -f "$KEYBOX_FILE" -a ! -f /rw/ignore-bad-keybox ]; then
-    change_state INVALID_KEYBOX "$HW_FAIL_LED_ON"
-  elif [ -f "$OVERTEMP_FILE" ]; then
+  if [ -f "$OVERTEMP_FILE" ]; then
     change_state OVERTEMP "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
     change_state POWEROFF "$ALL_LEDS_OFF"
