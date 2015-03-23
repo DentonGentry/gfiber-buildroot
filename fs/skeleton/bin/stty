@@ -6,13 +6,14 @@
 __author__ = 'apenwarr@google.com (Avery Pennarun)'
 
 import os
+import pprint
 import sys
 import termios
 import tty
 
 
 def Usage():
-  sys.stderr.write('usage: %s <raw|sane|[-]echo|selftest>\n'
+  sys.stderr.write('usage: %s [raw|sane|[-]echo|selftest|<baud>|status>\n'
                    '  sets the tty mode\n' % sys.argv[0])
   sys.exit(99)
 
@@ -26,10 +27,10 @@ def SetSane(tc):
              termios.IXOFF |
              termios.IUCLC |
              termios.IXANY)
-  tc[0] |=  (termios.BRKINT |
-             termios.ICRNL |
-             termios.IMAXBEL |
-             termios.IXON)
+  tc[0] |= (termios.BRKINT |
+            termios.ICRNL |
+            termios.IMAXBEL |
+            termios.IXON)
   tc[1] &= ~(termios.NLDLY |
              termios.CRDLY |
              termios.TABDLY |
@@ -42,29 +43,42 @@ def SetSane(tc):
              termios.ONLRET |
              termios.OFILL |
              termios.OFDEL)
-  tc[1] |=  (termios.NL0 |
-             termios.CR0 |
-             termios.TAB0 |
-             termios.BS0 |
-             termios.VT0 |
-             termios.FF0 |
-             termios.OPOST |
-             termios.ONLCR)
+  tc[1] |= (termios.NL0 |
+            termios.CR0 |
+            termios.TAB0 |
+            termios.BS0 |
+            termios.VT0 |
+            termios.FF0 |
+            termios.OPOST |
+            termios.ONLCR)
   tc[2] &= ~(0)
-  tc[2] |=  (termios.CREAD)
+  tc[2] |= (termios.CREAD)
   tc[3] &= ~(termios.ECHONL |
              termios.NOFLSH |
              termios.XCASE |
              termios.TOSTOP |
              termios.ECHOPRT)
-  tc[3] |=  (termios.ICANON |
-             termios.ISIG |
-             termios.ECHO |
-             termios.ECHOE |
-             termios.ECHOK |
-             termios.ECHOCTL |
-             termios.ECHOKE)
+  tc[3] |= (termios.ICANON |
+            termios.ISIG |
+            termios.ECHO |
+            termios.ECHOE |
+            termios.ECHOK |
+            termios.ECHOCTL |
+            termios.ECHOKE)
   return tc
+
+
+# lifted from /usr/include/asm-generic/termbits.h:
+baud_map = {
+    '1200': 0000011,
+    '2400': 0000013,
+    '4800': 0000014,
+    '9600': 0000015,
+    '19200': 0000016,
+    '38400': 0000017,
+    '57600': 0010001,
+    '115200': 0010002,
+}
 
 
 def main():
@@ -101,6 +115,13 @@ def main():
     tc_orig[3] &= 0xfff
     tc_sane[3] &= 0xfff
     assert tc_orig[:4] == tc_sane[:4]
+  elif baud_map.get(sys.argv[1]):
+    tc = termios.tcgetattr(0)
+    tc[4] = tc[5] = baud_map[sys.argv[1]]
+    termios.tcsetattr(0, termios.TCSADRAIN, tc)
+  elif sys.argv[1] == 'status':
+    tc = termios.tcgetattr(0)
+    pprint.pprint(tc)
   else:
     Usage()
 
