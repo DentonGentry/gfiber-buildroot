@@ -19,7 +19,7 @@ WVFAIL hostapd_running
 WVPASS wifi restore
 WVFAIL hostapd_running
 
-rm -f /tmp/*.wlan[0-9] /tmp/*.wlan[0-9] /tmp/*.wcli[0-9]
+rm -f /tmp/*.wlan[0-9] /tmp/*.wlan[0-9] /tmp/*.wcli[0-9] /tmp/*.opts.2.4 /tmp/*.opts.5
 
 export WIFI_PSK=whatever
 WVPASS wifi set -b2.4 -P
@@ -108,12 +108,13 @@ fi
 
 
 # We can't really test client mode in a unit test because there is nothing to
-# connect to.  So dhclient should time out, making the WVFAIL line pass.
+# connect to, so setclient should fail...
 WVSTART "client mode generates a correct wpa_supplicant.conf"
 export WIFI_CLIENT_PSK=passphrase
 # This will fail because (hopefully) this SSID doesn't exist.
-WVFAIL wifi set -b2.4 -C HOPEFULLY_NONEXISTENT_SSID
+WVFAIL wifi setclient -b2.4 -s HOPEFULLY_NONEXISTENT_SSID
 # ...but we can at least check that the expected config was generated.
+WVPASS grep "ctrl_interface=/var/run/wpa_supplicant" /tmp/wpa_supplicant.conf.wcli0
 WVPASS grep "ap_scan=1" /tmp/wpa_supplicant.conf.wcli0
 WVPASS grep "ssid=\"HOPEFULLY_NONEXISTENT_SSID\"" /tmp/wpa_supplicant.conf.wcli0
 WVPASS grep "psk=59f3e4d481645275c0a76886a187025362eb606c5486cec354ae262fd62b2bb1" /tmp/wpa_supplicant.conf.wcli0
