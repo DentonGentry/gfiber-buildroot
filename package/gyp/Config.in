@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GYP
+	bool "gyp"
+	help
+	  Gyp is a generator of build files for different platforms
+
+	  https://code.google.com/p/gyp/
