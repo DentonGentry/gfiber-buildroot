@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PROTOBUF_VERSION = 2.6.1
+PROTOBUF_VERSION = $(call qstrip,$(BR2_PACKAGE_PROTOBUF_VERSION_VALUE))
 PROTOBUF_SITE = https://github.com/google/protobuf/archive
 PROTOBUF_LICENSE = BSD-3c
 PROTOBUF_LICENSE_FILES = COPYING.txt
