@@ -9,8 +9,8 @@
 # QUOTES.  Use only single quotes in all shell commands in this file, or
 # you'll get very weird, hard-to-find errors.
 
-
-ROOTFS_GINSTALL_DEPENDENCIES = linux
+#Note(allanzhang), please don't use host-lzma, mismatch with qca uboot.
+ROOTFS_GINSTALL_DEPENDENCIES = linux host-squashfs
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 GFWC_LOADER := u-boot.bin
@@ -26,9 +26,9 @@ define ROOTFS_GINSTALL_CMD
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
 	cd $(BINARIES_DIR) && \
 	cp $(value GFWC_LOADER) loader.img && \
-	cp $(QCA_DIR)/apps/busybox-1.01/busybox ../target/bin/busybox && \
-	mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -all-root -pf $(QCA_DIR)/build/devsqsh.txt && \
-        $(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
+	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
+	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -all-root -pf $(QCA_DIR)/build/devsqsh.txt && \
+	$(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
         -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 \
 				-e `$(CROSS_COMPILE)readelf \

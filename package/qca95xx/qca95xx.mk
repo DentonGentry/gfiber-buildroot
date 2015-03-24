@@ -12,8 +12,7 @@ define QCA95XX_BUILD_CMDS
 		INSTALL_ROOT=$(@D)/../../target \
 		KERNELVER=$(shell cat $(@D)/../linux-HEAD/include/config/kernel.release) \
 		BOARD_TYPE=ap143 BUILD_TYPE=jffs2 -f Makefile.board953x \
-		enet_build art_mod driver_build cgi busybox_build athr-hostapd \
-		acfg_build lzma_build
+		enet_build art_mod driver_build cgi athr-hostapd acfg_build lzma_build
 endef
 
 define QCA95XX_INSTALL_TARGET_CMDS
