@@ -77,23 +77,9 @@ case "$1" in
     done
     echo "Bringing up the bridge..."
     ifup br0
+    ifup eth1
 
     ifconfig lo 127.0.0.1 up
-
-    ##
-    ## Bring up the 4 port interface
-    ##
-
-    #ifconfig $LAN_IF up
-#    brctl addbr br0
-#    if [ "${WAN_MODE}" = "bridged" ]; then
-#      ifconfig $WAN_IF up
-#      brctl addif br0 $WAN_IF
-#    fi
-#    brctl addif br0 $LAN_IF
-#    brctl setfd br0 0
-
-#    ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
     
     ;;
   stop)

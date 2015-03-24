@@ -1,14 +1,8 @@
 #!/bin/sh
 
-# This script runs when init it run during the boot process.
-# Mounts everything in the fstab
-
-mount -a
-#
-# Mount the RAM filesystem to /tmp
-#
-
-mount -t ramfs -n none /tmp
+mount -rw -t proc none /proc
+mount -rw -t tmpfs none /tmp
+mount -rw -t sysfs none /sys
 
 export PATH=$PATH:/etc/ath
 
@@ -42,14 +36,6 @@ echo 20 > /proc/sys/vm/dirty_ratio
 # kick in the pdflush
 echo 5 > /proc/sys/vm/dirty_background_ratio
 
-##
-## Check for Auto AP Start
-##
-
-if [ "${WLAN_ON_BOOT}" = "y" ]; then
-    /etc/ath/apup
-fi
-
 echo DEBUG >/tmp/DEBUG
 
-exec /etc/init.d/rcS start  </dev/console >/dev/console 2>&1
+exec /sbin/init --init </dev/console >/dev/console 2>&1

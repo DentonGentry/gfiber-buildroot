@@ -1,10 +1,18 @@
-::sysinit:/init
+# /etc/inittab
 #
-# Uncomment the following line if getty
-# has to be spawned on the HSUART port
-# in addition to the normal 8250
-#
-#::respawn:/sbin/getty ttyS1 115200
-::respawn:/sbin/getty ttyS0 115200
-::shutdown:/etc/ath/killVAP all
-::shutdown:/bin/umount -a
+# This inittab is a basic inittab sample for sysvinit, which mimics
+# Buildroot's default inittab for Busybox.
+id:1:initdefault:
+
+run1:1:wait:/etc/init.d/rcS start
+S0:1:respawn:/sbin/rungetty ttyS0
+
+# Stuff to do for the 3-finger salute
+rebo::ctrlaltdel:/sbin/reboot
+
+# Stuff to do before reboot/shutdown
+run6:6:wait:/etc/init.d/rcS stop
+
+# Actually reboot/shutdown
+rebf:6:wait:/sbin/reboot -f
+shut:0:wait:/sbin/halt -p -f
