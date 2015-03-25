@@ -7,6 +7,7 @@ GOOGLE_SPACECAST_SITE = repo://vendor/google/spacecast
 GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				host-golang \
 				host-go_protobuf \
+				host-go_mock \
 				go_fsnotify \
 				go_glog \
 				go_gonzojive_mdns \
@@ -17,16 +18,29 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_protobuf \
 				google_widevine_cenc
 
-GOOGLE_SPACECAST_GEN_PROTO = \
-	cd $(@D); \
-        mkdir -p $(@D)/proto/src/spacecast/proto/$(1)_proto ; \
+define GOOGLE_SPACECAST_GOENV
+	export $(GOLANG_ENV) ; \
+	export GOPATH=$(@D)/go:$(@D)/gomock:$(@D)/proto:$$GOPATH ; \
+	export CGO_ENABLED=1
+endef
+
+define GOOGLE_SPACECAST_GEN_PROTO
+	mkdir -p $(@D)/proto/src/spacecast/proto/$(1)_proto
 	export PATH=$(TARGET_PATH) ; \
-        protoc --go_out=$(@D)/proto/src/spacecast/proto/$(1)_proto \
+	protoc --go_out=$(@D)/proto/src/spacecast/proto/$(1)_proto \
 		$(@D)/go/src/spacecast/proto/$(1).proto \
 		-I$(@D)/go/src/spacecast/proto \
 		-I$(@D)/go/src
+endef
 
-define GOOGLE_SPACECAST_BUILD_CMDS
+define GOOGLE_SPACECAST_GEN_MOCK
+	mkdir -p $(@D)/gomock/src/$(dir $(1))/mock_$(notdir $(1))
+	$(GOOGLE_SPACECAST_GOENV) ; \
+	export PATH=$(TARGET_PATH) ; \
+	GOARCH= mockgen $(1) $(2) > $(@D)/gomock/src/$(dir $(1))/mock_$(notdir $(1))/$(2).go
+endef
+
+define GOOGLE_SPACECAST_PROTOS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,auth)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,device)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,crypto)
@@ -35,13 +49,33 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,storage)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,video_corpus)
 
-        find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
+	find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
+endef
 
-	export $(GOLANG_ENV) ; \
-	export GOPATH=$(@D)/go:$(@D)/proto:$$GOPATH ; \
-	export CGO_ENABLED=1 ; \
+GOOGLE_SPACECAST_POST_CONFIGURE_HOOKS += GOOGLE_SPACECAST_PROTOS
+
+define GOOGLE_SPACECAST_MOCKS
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/adaptor,Cache)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusConn)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusObject)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/signature_validator/signature,Validator)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/common/api/client,Service)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/common/flute,Decoder)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/common/storage/cache,Manager)
+endef
+
+GOOGLE_SPACECAST_POST_CONFIGURE_HOOKS += GOOGLE_SPACECAST_MOCKS
+
+define GOOGLE_SPACECAST_BUILD_CMDS
+	$(GOOGLE_SPACECAST_GOENV) ; \
 	cd $(@D) && go build -tags widevine spacecast/appliance; \
 	cd $(@D) && go build spacecast/appliance/statemanager
+endef
+
+define GOOGLE_SPACECAST_TEST_CMDS
+	export $(HOST_GOLANG_ENV) ; \
+	export GOPATH=$(@D)/go:$(@D)/gomock:$(@D)/proto:$$GOPATH ; \
+	go test spacecast/...
 endef
 
 define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
@@ -71,10 +105,6 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
-	export $(GOLANG_ENV) ; \
-	export GOPATH=$(@D)/golib:$(@D)/go:$$GOPATH ; \
-	export CGO_ENABLED=1 ; \
-	cd $(@D) && $(HOST_DIR)/usr/bin/go clean spacecast/appliance spacecast/appliance/statemanager; \
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
 	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf
