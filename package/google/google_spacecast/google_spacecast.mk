@@ -40,7 +40,7 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/go:$(@D)/proto:$$GOPATH ; \
 	export CGO_ENABLED=1 ; \
-	cd $(@D) && go build spacecast/appliance; \
+	cd $(@D) && go build -tags widevine spacecast/appliance; \
 	cd $(@D) && go build spacecast/appliance/statemanager
 endef
 
