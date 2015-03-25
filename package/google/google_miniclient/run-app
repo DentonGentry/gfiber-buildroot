@@ -80,8 +80,9 @@ case $appname in
     ;;
   youtube)
     cd /usr/local/bin/webkitGl?
+    export PATH=$PWD:$PATH
     [ -z "$opts" ] && opts='https://www.youtube.com/tv'
-    ./start $opts 2>&1 | logos youtube
+    start_chromium $opts 2>&1 | logos youtube
     ;;
   miracast)
     /usr/local/bin/trellis/StandaloneWFDPlayer $opts 2>&1 | logos miracast
