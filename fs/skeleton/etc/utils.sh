@@ -187,40 +187,6 @@ find_phy_for_interface() {
   done
 }
 
-
-# Tell the experiment subsystem that we support the named system-level
-# (as opposed to catawampus-internal) experiment.
-#
-# Note: This is a little more subtle than it sounds.  The trick is that
-# system-level experiments should be persisted across reboots (so they can
-# take effect early on, as soon as /config is mounted), but even if they
-# are requested, they should only take effect the *next* time the system
-# executes the code that is affected by the experiment.  So "registering"
-# an experiment actually means two things:
-#  - create a file that tells cwmpd an experiment is available
-#  - if cwmpd has requested this experiment already, inform it that this
-#    experiment is now active.
-# It's important that cwmpd not be informed an experiment is active until
-# it has *actually* taken effect (sometimes not until the next reboot).
-# Otherwise the results of A/B tests will end up partially lying, where
-# cwmpd's periodic stats say an experiment is active even though we are using
-# the non-experimental behaviour.
-register_experiment() {
-  local expname="$1"
-  mkdir -p /tmp/experiments /config/experiments
-  : >"/tmp/experiments/$expname.available"
-  if [ -e "/config/experiments/$expname.requested" ]; then
-    echo "Activating experiment '$expname'." >&2
-    mv "/config/experiments/$expname.requested" \
-       "/config/experiments/$expname.active"
-  elif [ -e "/config/experiments/$expname.unrequested" ]; then
-    echo "Deactivating experiment '$expname'." >&2
-    rm -f "/config/experiments/$expname.active" \
-          "/config/experiments/$expname.unrequested"
-  fi
-}
-
-
 # Returns true if the given experiment is currently active.
 experiment() {
   local expname="$1"
