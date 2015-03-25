@@ -43,7 +43,11 @@ endswith() {
 
 # Returns true if the string $1 contains the string $2.
 contains() {
-  [ -n "$1" ] && [ -z "${1##*$2*}" ]
+  case "$1" in
+  *"$2"*)
+    return 0
+  esac
+  return 1
 }
 
 
