@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_MOCK
+        bool "go_mock"
+        help
+          GoMock - a mock framework for Go.
