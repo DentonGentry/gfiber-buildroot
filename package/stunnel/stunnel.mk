@@ -4,8 +4,8 @@
 #
 #############################################################
 
-STUNNEL_VERSION = 4.44
-STUNNEL_SITE = http://ftp.nluug.nl/pub/networking/stunnel
+STUNNEL_VERSION = 5.14
+STUNNEL_SITE = https://www.stunnel.org/downloads
 STUNNEL_DEPENDENCIES = openssl
 STUNNEL_CONF_OPT += \
 	--with-ssl=$(STAGING_DIR)/usr \
