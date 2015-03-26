@@ -6,3 +6,15 @@ echo "GFMN100" >/etc/platform &&
 chmod 444 /etc/platform
 
 hostname WindCharger
+
+# Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
+echo "Starting gpio-mailbox"
+mkdir -p /tmp/gpio/ledcontrol
+leds 4 0  # blink activity while booting
+ulimit -c 49152
+if runnable gpio-mailbox; then
+  reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &
+else
+  # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
+  : >/var/run/gpio-mailbox
+fi
