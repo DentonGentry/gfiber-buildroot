@@ -1,12 +1,23 @@
 #!/bin/sh
 . /etc/utils.sh
-. /etc/ath/apcfg
 
-
-##TODO, change to gfiber style
 
 case "$1" in
   start)
+    # TODO(allanzhang): change after sysvar is ready.
+    WIFI_MAC=$(hnvram -rq MAC_ADDR_WIFI)
+    if [ -z "$WIFI_MAC" ]; then
+      MAC=$(hnvram -rq MAC_ADDR)
+      if [ -z "${MAC}" ]; then
+        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
+      else
+        WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
+      fi
+    fi
+    if [ -n "$WIFI_MAC" ]; then
+      mwifi_param="wifi_addr=$WIFI_MAC"
+    fi
+
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -33,13 +44,29 @@ case "$1" in
 
     # configure loopback
     ifup lo
+
+    # Set the wifi mac address from values in hnvram.
+    if [ -e /sys/class/net/ath0 ]; then
+      a=$(hnvram -qr MAC_ADDR_WIFI)
+      if [ -n "$a" ]; then
+        ip link set ath0 address "$a"
+      fi
+    fi
+
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
-    brctl setfd br0 0
+    brctl setfd br0 1
     brctl stp br0 on
-    [ -e /sys/class/net/eth1/address ] && \
-      ip link set br0 address \
-      $(cat /sys/class/net/eth1/address)
+    # Storage and network boxes should have higher precedence (lower value)
+    #  when choosing the root of the spanning tree.
+    #  The default in Linux is 0x8000.
+    brctl setbridgeprio br0 0x7980
+    for i in eth0; do
+      [ -e /sys/class/net/$i/address ] && \
+        ip link set br0 address \
+        $(cat /sys/class/net/$i/address) && \
+        break
+    done
     echo "done"
     ip link set br0 up
     ip link set br0 up  # kernel 3.2.26 bug: fails the first time
@@ -47,24 +74,32 @@ case "$1" in
     echo "Adding interfaces... "
     # Move any existing network info from primary network interfaces to
     # the bridge.
-    echo "Adding interface eth1..."
-    ip link set eth1 up &&
-    ifconfig br0 192.168.1.2 &&
-    brctl addif br0 eth0 &&
-    brctl addif br0 eth1 &&
-    ip route add 224.1.1.1 dev br0 # Enable multicast binding.
-    ip -o -f inet route list dev eth1 |
-    while read dst routeinfo; do
-      if [ "$dst" = "default" ]; then
-        echo "Moving route '$dst' from eth1 to br0" &&
-        ip route del dev $x $dst $routeinfo &&
-        ip route add dev br0 $dst $routeinfo
-      fi
-    done &&
-    ip -o -f inet addr show eth1 |
-    while read a b c ip junk; do
-      ip addr del $ip dev eth1
+    for x in \
+        /sys/class/net/eth0 \
+        /sys/class/net/ath[0-9]; do
+      x=${x#/sys/class/net/}
+      echo "Adding interface $x..."
+      ip link set $x up &&
+      ip -o -f inet addr show $x |
+      while read a b c ip d brd junk; do
+        ip addr add $ip broadcast $brd dev br0
+      done &&
+      brctl addif br0 $x &&
+      ip -o -f inet route list dev $x |
+      while read dst routeinfo; do
+        if [ "$dst" = "default" ]; then
+          echo "Moving route '$dst' from $x to br0" &&
+          ip route del dev $x $dst $routeinfo &&
+          ip route add dev br0 $dst $routeinfo
+        fi
+      done &&
+      ip -o -f inet addr show $x |
+      while read a b c ip junk; do
+        ip addr del $ip dev $x
+      done
     done
+    echo "Adding RFC2365 multicast route..."
+    ip route add 239.0.0.0/8 dev br0
     kernopt ip |
     while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
       # $ip should be already setup by simpleramfs.
@@ -72,25 +107,39 @@ case "$1" in
       #  But right now its included networking commands are too limited.
       if [ -n "$gatewayip" ]; then
         echo "IP: adding default gateway '$gatewayip'"
-        ip route add default via "$gatewayip"
+        if experiment BigInitRwnd; then
+          initrwnd='initrwnd 1000'
+        else
+          initrwnd=
+        fi
+        ip route add default via "$gatewayip" $initrwnd
       fi
     done
     echo "Bringing up the bridge..."
+    ip link set br0 up  # kernel 3.16 behavior, sometimes br0 does not come up.
     ifup br0
-    ifup eth1
 
-    ifconfig lo 127.0.0.1 up
-    
+    echo "Bringing up the WAN port..."
+    sysctl net.ipv4.conf.all.forwarding=1
+    sysctl net.ipv6.conf.all.forwarding=1
+    sysctl net.ipv6.conf.eth1.accept_ra=2
+    ifup eth1
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
-      if [ -n /sys/class/net/eth1/bridge ]; then
+      if [ -e /sys/class/net/eth1 ]; then
+        echo "Shutting down the WAN port..."
         ifdown eth1
-        echo "Shutting down eth1 interface"
       fi
-      if [ -e /sys/class/net/eth1/device ]; then
-        brctl delif br0 eth1
-      fi
+      for x in $(ls /sys/class/net); do
+        if [ -n /sys/class/net/$x/bridge ]; then
+          ifdown $x
+          echo "Shutting down $x interface"
+        fi
+        if [ -e /sys/class/net/$x/device ]; then
+          brctl delif br0 $x
+        fi
+      done
       ifdown br0
     fi
     [ -e /sys/class/net/br0 ] && brctl delbr br0

@@ -3,6 +3,7 @@
 mount -rw -t proc none /proc
 mount -rw -t tmpfs none /tmp
 mount -rw -t sysfs none /sys
+mount -rw -t devpts none /dev/pts
 
 export PATH=$PATH:/etc/ath
 

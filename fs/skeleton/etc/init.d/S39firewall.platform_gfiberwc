@@ -1,0 +1,206 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+ip46tables()
+{
+  iptables $*
+  ip6tables $*
+}
+
+flush()
+{
+  ip46tables -F
+  ip46tables -X
+  # ipv4 only
+  iptables -t nat -F
+  iptables -t nat -X
+}
+
+case "$1" in
+  start|restart|reload)
+    if [ -e /sys/class/net/eth1 ]; then
+      flush
+
+      # Do these first to reduce race conditions
+      if [ -e /tmp/NFS ]; then
+        # Workaround because we can't have a temporary network dropout
+        # when NFS booted.
+        ip46tables -P INPUT ACCEPT
+      else
+        ip46tables -P INPUT DROP
+      fi
+      ip46tables -P FORWARD DROP
+
+      # multicast (fiber TV, EAS)
+      ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
+      ip46tables -A FORWARD -m pkttype --pkt-type multicast -j ACCEPT
+      iptables -t nat -A PREROUTING -m pkttype --pkt-type multicast -j ACCEPT
+
+      # Forwarding
+      ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip46tables -t filter -N acs-captive-portal-filter
+      ip46tables -t filter -A FORWARD -j acs-captive-portal-filter
+      ip46tables -A FORWARD -i br0 -j ACCEPT
+
+      # I wanted to use '!eth1' here but, it doesn't work as documented.
+      for ifc in lo br0; do
+        ip46tables -A INPUT -i "$ifc" -j ACCEPT
+      done
+
+      # allow icmp, DNS, DHCP, and HTTP bouncer on seconrary interfaces.
+      # OUTPUT rules are not needed because OUTPUT chain policy is ACCEPT
+      for ifc in ath0_portal ath1_portal; do
+        ip46tables -A INPUT -i "$ifc" -p icmp -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p udp --dport 53 -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p udp --dport 67:68 -j ACCEPT
+        ip46tables -A INPUT -i "$ifc" -p tcp --dport 8888 -j ACCEPT
+      done
+
+      # igmp group membership control
+      ip46tables -A INPUT -p igmp -j ACCEPT
+
+      # ping and PMTUD
+      iptables -A INPUT -p icmp --icmp-type 8/0 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 3/4 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 11/0 -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+      # RFC4890 says RFC4380 requires forwarding ipv6 ping requests
+      ip6tables -A FORWARD -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+
+      # Incoming connections
+      # TODO(apenwarr): Whitelist ports here too for added safety.
+      if [ -e /tmp/NFS ]; then
+        # Workaround because netfilter conntracking loaded *after* the NFS
+        # session was established.
+        ip46tables -A INPUT -p tcp --sport 2049 -j ACCEPT
+      fi
+
+      # Outgoing connections
+      # TODO(apenwarr): Add a whitelist on OUTPUT for -o eth1.
+      # In particular we should have one for samba ports.
+
+      # TODO(apenwarr): Remove this when we have real port forwarding controls.
+      if [ -e /tmp/DEBUG ]; then
+        ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT    # ssh
+        ip46tables -A FORWARD -p tcp --dport 22 -j ACCEPT  # ssh for lan clients
+        ip46tables -A INPUT -p tcp --dport 5001 -j ACCEPT  # iperf
+        ip46tables -A INPUT -p udp --dport 5001 -j ACCEPT  # iperf
+        ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
+      fi
+
+      # cwmpd ACS kick
+      ip6tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
+      ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd
+      iptables -t nat -A PREROUTING -p tcp --dport 7547 -j ACCEPT  # cwmpd
+
+      if [ -e /tmp/factory_status ]; then
+        ip46tables -A INPUT -p tcp --dport 8883 -j ACCEPT  # factory web server
+      fi
+
+      # active FTP out
+      ip46tables -A FORWARD -m conntrack --ctstate RELATED \
+          -m helper --helper ftp -o eth1+ -p tcp --dport 1024: -j ACCEPT
+      ip46tables -A FORWARD -m conntrack --ctstate RELATED \
+          -m helper --helper ftp -i eth1+ -p tcp --dport 1024: -j ACCEPT
+
+      # add ACS-configured things
+      ip46tables -t filter -N acsrules-filter-forward
+      ip46tables -t filter -A FORWARD -j acsrules-filter-forward
+
+      iptables -t nat -N acs-captive-portal-nat
+      iptables -t nat -A PREROUTING -j acs-captive-portal-nat
+
+      iptables -t nat -N acsrules-nat-prerouting
+      iptables -t nat -A PREROUTING -j acsrules-nat-prerouting
+
+      iptables -t nat -N acsrules-nat-postrouting
+      iptables -t nat -A POSTROUTING -j acsrules-nat-postrouting
+
+      # these are managed by miniupnpd, if running
+      ip46tables -t filter -N MINIUPNPD
+      ip46tables -t filter -A FORWARD -i eth1+ ! -o eth1+ -j MINIUPNPD
+
+      iptables -t nat -N MINIUPNPD
+      iptables -t nat -A PREROUTING -i eth1+ -j MINIUPNPD
+
+      # nat
+      iptables -t nat -A POSTROUTING -o eth1+ -j MASQUERADE
+
+      # ipv6 addressing
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-solicitation -j ACCEPT
+      # DHCP6 client
+      ip6tables -A INPUT -p udp --sport 547 --dport 546 -j ACCEPT
+
+      # Log packets which weren't explicitly accepted by above rules
+      ip46tables -N log
+      ip46tables -A log -m pkttype -m limit \
+          --pkt-type unicast \
+          --limit 1/second \
+          -j LOG --log-prefix "FW: "
+      ip46tables -A INPUT -i eth1+ -j log
+      ip46tables -A FORWARD -i eth1+ -j log
+
+      # Set the WAN 802.1q pbits
+      iptables -t mangle -A OUTPUT -o wan0.2 -p all -j CLASSIFY --set-class 0:2
+      iptables -t mangle -A OUTPUT -o wan0.2 -p igmp -j CLASSIFY --set-class 0:6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p icmp -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p icmpv6 -j CLASSIFY --set-class 0:6
+      # DHCP and DHCPv6
+      iptables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 68 --dport 67 -j CLASSIFY --set-class 0:6
+      ip6tables -t mangle -A OUTPUT -o wan0.2 -p udp --sport 547 --dport 546 -j CLASSIFY --set-class 0:6
+
+      # Default DROP policy above is safe, but REJECT is friendlier.
+      # But you can't use REJECT as a policy, so add a catchall rule at the
+      # bottom.
+      ip46tables -A INPUT -j REJECT
+      ip46tables -A FORWARD -j REJECT
+
+      # don't add any rules after the REJECTs above
+
+      # parse acs state into acsrules chains
+      update-acs-iptables
+
+      # Use iptables to mark packets to set the VLAN p-bits
+      # Bit(s)  Definitions
+      # 0:4     class/priority of orig [and reply] connection.
+      # 5:7     VLAN P bits for orig [and reply] connection (if bit 15 = 1)
+      #
+      # 8       DSCP control bit
+      # 0:      DSCP values will remain unchanged
+      # 1:      do DSCP marking for orig [and reply] connection
+      #
+      # 9:14    DSCP value: DSCP value for orig [and reply] connection (if bit 8 # = 1)
+      #
+      # 15      if 0, copy VLAN P bits from ingress packet;
+      #         if 1, set VLAN P bits for orig and reply connection
+      #
+      # 16:20   class/priority of reply connection
+      # 21:23   VLAN P bits for reply connection (if bit 15 = 1)
+      #
+      # 24      DSCP control bit
+      #         0:      DSCP values will remain unchanged
+      #         1:      do DSCP marking for reply connection;
+      #
+      # 25:30   DSCP value for reply connection (if bit 24 = 1)
+      # 31      0: use bits 0-15 for reply connection
+      #         1: use bits 16-30 for reply connection
+      iptables -A POSTROUTING -t mangle -o wan0.2 -j CONNMARK --set-mark 0x8040
+    fi
+    ;;
+  stop)
+    if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/eth1 ]; then
+      flush
+      ip46tables -P INPUT ACCEPT
+      ip46tables -P FORWARD ACCEPT
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
