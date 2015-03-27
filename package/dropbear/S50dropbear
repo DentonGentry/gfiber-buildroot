@@ -30,7 +30,7 @@ start() {
 		dropbearkey -t dss -f $K2
 	fi
 
-	babysit 60 dropbear -s -F -E 2>&1 | logos dropbear &
+	babysit 60 dropbear -a -s -F -E 2>&1 | logos dropbear &
 }
 stop() {
 	# we could use pkill dropbear here, but then it would kill running
