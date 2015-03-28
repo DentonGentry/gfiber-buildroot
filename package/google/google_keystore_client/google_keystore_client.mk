@@ -1,5 +1,11 @@
 GOOGLE_KEYSTORE_CLIENT_SITE_METHOD=null
 
+ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME), gfsc100)
+KEYSTORE_CONFIG_ID=SPACECAST
+else
+KEYSTORE_CONFIG_ID=GFIBER_DRM
+endif
+
 LICENSE_STATIC_PATH ?= /usr/local/google/gfiber
 
 define HOST_GOOGLE_KEYSTORE_CLIENT_EXTRACT_CMDS
@@ -54,6 +60,7 @@ define GOOGLE_KEYSTORE_CLIENT_EXECUTE
 			--noshow_progress -- \
 			//isp/fiber/drm:drm_keystore_client \
 			--key_type $(1) \
+			--keystore_config_id=$(KEYSTORE_CONFIG_ID) \
 			--output $(2); \
 	fi; \
 	chmod 0400 $(2)
