@@ -5,7 +5,14 @@
 ################################################################################
 
 PROTOBUF_VERSION = $(call qstrip,$(BR2_PACKAGE_PROTOBUF_VERSION_VALUE))
-PROTOBUF_SITE = https://github.com/google/protobuf/archive
+PROTOBUF_MAJOR_VERSION = $(firstword $(subst ., ,$(PROTOBUF_VERSION)))
+PROTOBUF_SITE = https://github.com/google/protobuf/releases/download/v$(PROTOBUF_VERSION)
+
+ifeq ($(PROTOBUF_MAJOR_VERSION),2)
+PROTOBUF_SOURCE = protobuf-$(PROTOBUF_VERSION).tar.gz
+else
+PROTOBUF_SOURCE = protobuf-cpp-$(PROTOBUF_VERSION).tar.gz
+endif
 PROTOBUF_LICENSE = BSD-3c
 PROTOBUF_LICENSE_FILES = COPYING.txt
 
