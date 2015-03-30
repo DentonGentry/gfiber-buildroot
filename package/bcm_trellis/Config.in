@@ -1,0 +1,4 @@
+config BR2_PACKAGE_BCM_TRELLIS
+	bool "Build Broadcom Trellis (for chromium)"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD
