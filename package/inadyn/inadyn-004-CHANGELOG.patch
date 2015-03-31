@@ -1,0 +1,39 @@
+From 5a6c0a2bfa1907231e01faa64f739adced530f21 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 21 Feb 2015 16:17:52 -0800
+Subject: [PATCH] There is no CHANGELOG file. Unbreak the build.
+
+---
+ Makefile.am | 2 +-
+ Makefile.in | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index df01d68..6833637 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,7 +1,7 @@
+ ## Inadyn - A small and simple DDNS client                -*-Makefile-*-
+ 
+ SUBDIRS         = src include man
+-doc_DATA	= AUTHORS COPYING NEWS CHANGELOG README
++doc_DATA	= AUTHORS COPYING NEWS README
+ EXTRA_DIST	= autogen.sh
+ DISTCLEANFILES	= *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d
+ 
+diff --git a/Makefile.in b/Makefile.in
+index 58fe1e9..2eca33e 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -248,7 +248,7 @@ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ SUBDIRS = src include man
+-doc_DATA = AUTHORS COPYING NEWS CHANGELOG README
++doc_DATA = AUTHORS COPYING NEWS README
+ EXTRA_DIST = autogen.sh
+ DISTCLEANFILES = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d
+ GPG = gpg
+-- 
+2.2.0.rc0.207.ga3a616c
+
