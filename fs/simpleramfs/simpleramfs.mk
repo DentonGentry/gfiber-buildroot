@@ -113,6 +113,9 @@ define SIMPLERAMFS_BUILD_CMDS
 	# strip all the binaries
 	$(STRIPCMD) $(@D)/fs/bin/*
 
+	# except this one
+	ln -f	fs/skeleton/bin/register_experiment $(@D)/fs/bin/
+
 	# without ld.so, nothing works
 	if [ "$(BR2_TOOLCHAIN_EXTERNAL_GLIBC)" = "y" ]; then \
 		cp --no-dereference --preserve=links $(TARGET_DIR)/lib/ld-* \
