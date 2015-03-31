@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_SHANEMHANSEN_GOSSL
+        bool "go_shanemhansen_gossl"
+        help
+          Go bindings to the openssl library
