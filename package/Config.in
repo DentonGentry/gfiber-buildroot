@@ -652,10 +652,14 @@ source "package/bcm_bluetooth/Config.in"
 source "package/bcm_drivers/Config.in"
 source "package/bcm_bmoca/Config.in"
 source "package/bcm_signing/Config.in"
+source "package/bcm_trellis/Config.in"
 source "package/bcm_cfe/Config.in"
 source "package/bcm_vudu/Config.in"
-source "package/bcm_chromium/Config.in"
 source "package/bcm_miracast/Config.in"
+endmenu
+
+menu "Chromium"
+source "package/chromium/Config.in"
 endmenu
 
 menu "Mindspeed custom build"

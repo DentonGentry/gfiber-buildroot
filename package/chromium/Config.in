@@ -1,0 +1,14 @@
+config BR2_PACKAGE_CHROMIUM
+	bool "Build Chromium package"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD
+	select BR2_PACKAGE_BCM_TRELLIS
+	select BR2_PACKAGE_LIBCAP
+
+if BR2_PACKAGE_CHROMIUM
+
+config BR2_PACKAGE_CHROMIUM_DISABLE_CHROMECAST
+	bool "Disable chromecast support in chromium"
+	default y
+
+endif
