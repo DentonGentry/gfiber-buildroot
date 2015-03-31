@@ -1,6 +1,12 @@
 #!/bin/sh
 # SpaceCast init script.
 
+# Set the stack size to 1MB (Default to 8M) to support more concurrent streams.
+# When CGO is enabled, each blocking syscall (Read, Write) will call
+# pthread_create to create a new thread, so stack size for 100 concurrent
+# streams would be 800MB and the memory limit would be hit without this change.
+ulimit -s 1024
+
 BINARY="/app/spacecast/appliance"
 
 FLAGS="-cache_base_dir=/var/media/data/cache \
