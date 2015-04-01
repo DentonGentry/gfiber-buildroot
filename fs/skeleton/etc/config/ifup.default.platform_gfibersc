@@ -3,8 +3,10 @@ iface="$1"
 # Bring up the interface.
 ip link set dev "$iface" up
 
-if [ "$iface" = br0 ]; then
+if [ "$iface" = lan0 ]; then
   # TODO(reddaly): Configure fallback IP for appliance in case DHCP client
   # fails?
-  run-dhclient "$iface"
+  if [ -z "$(ip -o -4 addr show $iface)" ]; then
+    run-dhclient "$iface"
+  fi
 fi

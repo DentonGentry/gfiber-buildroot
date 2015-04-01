@@ -15,7 +15,7 @@ FLAGS="-cache_base_dir=/var/media/data/cache \
        -disable_dir=/var/media/disable \
        -key_dir=/var/media/keys/bandaid/public_keys \
        -api_key_path=/var/media/keys/apiarykey \
-       -if_names=lo,br0 \
+       -if_names=lo,lan0 \
        -port=8080 \
        -logtostderr=true \
        -stderrthreshold=WARNING"
