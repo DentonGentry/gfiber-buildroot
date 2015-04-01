@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_OAUTH2
+        bool "go_oauth2"
+        help
+          Go support for oauth2
