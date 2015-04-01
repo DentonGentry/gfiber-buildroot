@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Returns 0 (true) if Google Cast is supported on this device.
+
+[ -f /usr/local/bin/webkitGl3/VERSION ]
