@@ -53,8 +53,12 @@ case "$1" in
 			>/dev/null 2>&1 || echo "urandom stop: failed."
 		[ "$VERBOSE" != no ] && echo "done."
 		;;
+	restart)
+		stop urandom
+		start urandom
+		;;
 	*)
-		echo "Usage: urandom {start|stop}" >&2
+		echo "Usage: urandom {start|stop|restart}" >&2
 		exit 1
 		;;
 esac

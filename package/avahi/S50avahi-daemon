@@ -12,8 +12,12 @@ case "$1" in
   reload)
     avahi-daemon -c && avahi-daemon -r
     ;;
+  restart)
+    stop avahi-daemon
+    start avahi-daemon
+    ;;
   *)
-    echo "Usage: S50avahi-daemon {start|stop|reload}" >&2
+    echo "Usage: S50avahi-daemon {start|stop|reload|restart}" >&2
     exit 1
     ;;
 esac
