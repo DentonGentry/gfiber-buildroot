@@ -24,7 +24,7 @@ start() {
     echo -n "Starting system message bus: "
 
     dbus-uuidgen --ensure
-    dbus-daemon --system
+    babysit 30 dbus-daemon --system --nofork --nopidfile 2>&1 | logos dbus &
     RETVAL=$?
     echo "done"
     [ $RETVAL -eq 0 ] && touch /var/lock/subsys/dbus-daemon
@@ -33,10 +33,7 @@ start() {
 stop() {
     echo -n "Stopping system message bus: "
 
-    ## we don't want to kill all the per-user $processname, we want
-    ## to use the pid file *only*; because we use the fake nonexistent 
-    ## program name "$servicename" that should be safe-ish
-    killall dbus-daemon
+    pkill dbus-daemon
     RETVAL=$?
     echo "done"
     if [ $RETVAL -eq 0 ]; then
