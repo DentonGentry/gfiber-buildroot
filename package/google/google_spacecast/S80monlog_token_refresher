@@ -1,0 +1,30 @@
+#!/bin/sh
+# Monlog Token Refresher init script.
+
+BINARY="/app/spacecast/monlog_token_refresher"
+
+FLAGS="-monlog_token_file=/var/media/keys/monlog_token_file \
+       -client_cred_file=/var/media/keys/client_creds"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "Monlog token refresher is already running!"
+    else
+      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos monlog_token_refresher &
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
