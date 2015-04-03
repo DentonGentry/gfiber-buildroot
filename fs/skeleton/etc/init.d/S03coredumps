@@ -2,4 +2,29 @@
 
 # Dump kernel core dumps via a helper script that compresses the core
 # file and ensures it's on a writable filesystem and size-limited.
-echo '|/bin/coredump %p %s %e' >/proc/sys/kernel/core_pattern
+
+start()
+{
+  echo '|/bin/coredump %p %s %e' >/proc/sys/kernel/core_pattern
+}
+
+stop()
+{
+  echo '' >/proc/sys/kernel/core_pattern
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

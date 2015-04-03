@@ -3,75 +3,100 @@
 
 MODULE_PATH=/usr/lib/modules
 
-# Do this early because hnvram needs it.
-update-mtd-links
+start()
+{
+  # Do this early because hnvram needs it.
+  update-mtd-links
 
-# Set up NEXUS first since it applies PINMUX.
-echo "Starting nexus"
-[ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko
-if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
-  insmod ${MODULE_PATH}/bcmdriver.ko
-  mknod /dev/brcm0 c 30 0
-fi
+  # Set up NEXUS first since it applies PINMUX.
+  echo "Starting nexus"
+  [ -e ${MODULE_PATH}/nexus.ko ] && insmod ${MODULE_PATH}/nexus.ko
+  if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
+    insmod ${MODULE_PATH}/bcmdriver.ko
+    mknod /dev/brcm0 c 30 0
+  fi
 
-# Set up space for multiprocess NEXUS unix sockets
-mount -t tmpfs none /shared
+  # Set up space for multiprocess NEXUS unix sockets
+  mount -t tmpfs none /shared
 
-# Populate the platform ID
-PLATFORM=$(hnvram -qr PLATFORM_NAME)
-[ -n "$PLATFORM" ] &&
-echo "$PLATFORM" >/etc/platform &&
-chmod 444 /etc/platform
+  # Populate the platform ID
+  PLATFORM=$(hnvram -qr PLATFORM_NAME)
+  [ -n "$PLATFORM" ] &&
+  echo "$PLATFORM" >/etc/platform &&
+  chmod 444 /etc/platform
 
-# Populate the serial number file.
-SERIAL=$(hnvram -br 1st_serial_number)
-[ -n "$SERIAL" ] &&
-echo "$SERIAL" >/etc/serial &&
-chmod 444 /etc/serial
+  # Populate the serial number file.
+  SERIAL=$(hnvram -br 1st_serial_number)
+  [ -n "$SERIAL" ] &&
+  echo "$SERIAL" >/etc/serial &&
+  chmod 444 /etc/serial
 
-GPN=$(hnvram -qr GPN)
-[ -n "$GPN" ] &&
-echo "$GPN" >/tmp/gpn &&
-chmod 444 /tmp/gpn
+  GPN=$(hnvram -qr GPN)
+  [ -n "$GPN" ] &&
+  echo "$GPN" >/tmp/gpn &&
+  chmod 444 /tmp/gpn
 
-# Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
-echo "Starting gpio-mailbox"
-mkdir -p /tmp/gpio/ledcontrol
-leds 4 0  # blink activity while booting
-echo 30 >/tmp/gpio/fanpercent  # low fan at first
-if is-secure-boot; then
-  : >/tmp/gpio/ledcontrol/secure_boot
-else
-  rm -f /tmp/gpio/ledcontrol/secure_boot
-fi
-ulimit -c 49152
-if runnable gpio-mailbox; then
-  reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &
-else
-  # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
-  : >/var/run/gpio-mailbox
-fi
+  # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
+  echo "Starting gpio-mailbox"
+  mkdir -p /tmp/gpio/ledcontrol
+  leds 4 0  # blink activity while booting
+  echo 30 >/tmp/gpio/fanpercent  # low fan at first
+  if is-secure-boot; then
+    : >/tmp/gpio/ledcontrol/secure_boot
+  else
+    rm -f /tmp/gpio/ledcontrol/secure_boot
+  fi
+  ulimit -c 49152
+  if runnable gpio-mailbox; then
+    reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &
+  else
+    # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
+    : >/var/run/gpio-mailbox
+  fi
 
-if is-storage-box; then
-  hostname GFiberStorage
-elif is-tv-box; then
-  hostname GFiberTV
-else
-  hostname GFiberUnknown
-fi
+  if is-storage-box; then
+    hostname GFiberStorage
+  elif is-tv-box; then
+    hostname GFiberTV
+  else
+    hostname GFiberUnknown
+  fi
 
-# Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
-echo -1 >/proc/sys/kernel/sched_rt_runtime_us
+  # Don't let SCHED_FIFO / SCHED_RR realtime threads get preempted
+  echo -1 >/proc/sys/kernel/sched_rt_runtime_us
 
-# populate hdcp key
-echo "Getting hdcp key"
-hnvram -br HDCP_KEY >/tmp/hdcp_key.tmp
-[ -s /tmp/hdcp_key.tmp ] && mv /tmp/hdcp_key.tmp /tmp/hdcp_key
+  # populate hdcp key
+  echo "Getting hdcp key"
+  hnvram -br HDCP_KEY >/tmp/hdcp_key.tmp
+  [ -s /tmp/hdcp_key.tmp ] && mv /tmp/hdcp_key.tmp /tmp/hdcp_key
 
-if startswith "$PLATFORM" GFRG2; then
-  # Mindspeed-based devices can't fall back to GFP_DMA because they
-  # use the GFP_DMA area for CONFIG_COMCERTO_ZONE_DMA_NCNB.  Thus, we
-  # should preserve more space in main memory to ensure memory is
-  # available on short notice for GFP_ATOMIC.
-  echo 32768 >/proc/sys/vm/min_free_kbytes
-fi
+  if startswith "$PLATFORM" GFRG2; then
+    # Mindspeed-based devices can't fall back to GFP_DMA because they
+    # use the GFP_DMA area for CONFIG_COMCERTO_ZONE_DMA_NCNB.  Thus, we
+    # should preserve more space in main memory to ensure memory is
+    # available on short notice for GFP_ATOMIC.
+    echo 32768 >/proc/sys/vm/min_free_kbytes
+  fi
+}
+
+stop()
+{
+  echo "stopping gpio-mailbox forcefully..."
+  pkill -9 -f gpio-mailbox
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
