@@ -1,0 +1,30 @@
+From 753d44fa001ebfa940d3d1273451573af4cb41b1 Mon Sep 17 00:00:00 2001
+From: Daniel Stenberg <daniel@haxx.se>
+Date: Wed, 30 Oct 2013 23:48:08 +0100
+Subject: [PATCH] curl_multi_wait: accept 0 from multi_timeout() as valid
+ timeout
+
+The code rejected 0 as a valid timeout while in fact the function could
+indeed legitimately return that and it should be respected.
+
+Reported-by: Bjorn Stenberg
+---
+ lib/multi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/multi.c b/lib/multi.c
+index f11ba06..e6c2934 100644
+--- a/lib/multi.c
++++ b/lib/multi.c
+@@ -787,9 +787,9 @@ CURLMcode curl_multi_wait(CURLM *multi_handle,
+ 
+   /* If the internally desired timeout is actually shorter than requested from
+      the outside, then use the shorter time! But only if the internal timer
+-     is actually larger than 0! */
++     is actually larger than -1! */
+   (void)multi_timeout(multi, &timeout_internal);
+-  if((timeout_internal > 0) && (timeout_internal < (long)timeout_ms))
++  if((timeout_internal >= 0) && (timeout_internal < (long)timeout_ms))
+     timeout_ms = (int)timeout_internal;
+ 
+   /* Count up how many fds we have from the multi handle */
