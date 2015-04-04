@@ -2,9 +2,12 @@
 
 # Setup DVB network interface
 
+# Load DVB configuration
+[ -f /config/dvb.conf ] && export $(cat /config/dvb.conf)
+
 # getconfig NAME DEFAULT
 getconfig() {
-  VAL=$(hnvram -qr "$1" 2> /dev/null)
+  VAL=$(printenv "$1")
   [ -z "$VAL" ] && VAL="$2"
   echo "$VAL"
 }
@@ -13,7 +16,7 @@ getconfig() {
 DEV_NAME=$(getconfig SPACECAST_NETIF dvb0_0)
 
 # Read PID from config
-PID=$(getconfig SPACECAST_PID 10)
+PID=$(getconfig SPACECAST_PID 100)
 
 # Read IP encapsulation config
 ENCAP=$(getconfig SPACECAST_ENCAP MPE)
@@ -23,7 +26,7 @@ ENCAP=$(getconfig SPACECAST_ENCAP MPE)
 ROUTE=$(getconfig SPACECAST_ROUTE "224.1.1.1")
 
 # TODO(erdi): Tuning should be done by Spacecast App
-IFREQ=$(getconfig SPACECAST_IFREQ 1260000)
+IFREQ=$(getconfig SPACECAST_IFREQ 1110000)
 SYMBOL_RATE=$(getconfig SPACECAST_SRATE 30000)
 POLARIZATION=$(getconfig SPACECAST_POLARIZATRION h)
 
@@ -41,7 +44,7 @@ shutdow_dvbnet() {
 case "$1" in
   start)
     (
-      wait-until-created /dev/dvb/adapter0
+      wait-until-created /dev/dvb/adapter0/frontend0
       setup_dvbnet 2>&1 | logos dvbnet
       babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" 2>&1 | logos dvbtune &
     ) &
