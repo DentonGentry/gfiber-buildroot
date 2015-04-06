@@ -1,4 +1,9 @@
 #!/bin/sh
 
 # Loads sc100 driver.
-modprobe dvb-usb-sc100
+DVB_MAC=$(hnvram -rq MAC_ADDR)
+if [ -n "$DVB_MAC" ]; then
+  modprobe dvb-usb-sc100 mac_addr="$DVB_MAC"
+else
+  modprobe dvb-usb-sc100
+fi
