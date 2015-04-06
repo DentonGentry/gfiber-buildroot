@@ -1,51 +1,66 @@
 #!/usr/bin/python
-
 # GFLT* uses sysvar_cmd to read/write flash instead of hnvram.
 # ginstall wants to call hnvram like:
 # hnvram -w VAR1=val1 -w VAR2=val2 -w VAR3=val3
 #
 # This will translate those into sysvar_cmd calls.
 
+import optparse
+import os
 import subprocess
 import sys
 
-SYSVAR_CMD = '/usr/bin/sysvar_cmd'
-
-
-def Usage():
-  print 'Usage: hnvram -w var1=val1 -w var2=val2 ...'
+SYSVAR_CMD = "/usr/bin/sysvar_cmd"
 
 
 def main():
-  if len(sys.argv) < 3:
-    Usage()
+  parser = optparse.OptionParser(
+      description="hnvram wrapper with sysvar backend.",
+      usage="usage: hnvram [-w var1=val1 -w var2=val2 ... | -r var]")
+  parser.add_option("-w", "--write", action="append", type="string",
+                    dest="write", metavar="KEYVAL",
+                    help="List of variables to write.  "
+                    "Must be formatted as key=val")
+  parser.add_option("-r", "--read", metavar="KEY", action="store",
+                    type="string", dest="read")
+  unimpl_group = optparse.OptionGroup(parser, "Unimplemented Options",
+                                      "These are here so as to maintain "
+                                      "compatibility with any scripts using "
+                                      "this wrapper.  They DO NOT do anything.")
+  unimpl_group.add_option("-q", "--quiet", action="store_true")
+  unimpl_group.add_option("-d", "--dump", action="store_true")
+  unimpl_group.add_option("-b", "--binary", action="store_true")
+  parser.add_option_group(unimpl_group)
+  options, _ = parser.parse_args()
+
+  if options.read and options.write:
+    print >> sys.stderr, "ERROR: Must either read or write.  Not both."
     sys.exit(1)
 
-  vars_to_set = {}
-  idx = 1
-  # iterate through args and collect writes together.
-  while idx < len(sys.argv):
-    arg = sys.argv[idx]
-    if arg == '-w':
-      if idx+1 == len(sys.argv):
-        Usage()
-        sys.exit(1)
-      arg = sys.argv[idx+1]
-      key_val = arg.split('=', 1)
-      if len(key_val) != 2:
-        Usage()
-        sys.exit(1)
-      vars_to_set[key_val[0]] = key_val[1]
-      idx += 2
-    else:
-      print 'Ignoring unknown flag: %s' % (arg,)
-      idx += 1
+  if not options.read and not options.write:
+    print >> sys.stderr, "ERROR: Must either read or write."
+    sys.exit(1)
 
-  # Now we should have a map of key,values
+  cmds = []
+  if options.read:
+    cmds.append([SYSVAR_CMD, "--get", options.read])
+
+  if options.write:
+    for arg in options.write:
+      key_val = arg.split("=", 1)
+      if len(key_val) != 2:
+        print >> sys.stderr, parser.usage
+        print >> sys.stderr, "ERROR: -w option bad format: \"{0}\"".format(arg)
+        sys.exit(1)
+      cmds.append([SYSVAR_CMD, "--set", key_val[0], key_val[1]])
   retval = 0
-  for k, v in vars_to_set.iteritems():
-    retval |= subprocess.call([SYSVAR_CMD, '--set', k, v])
+  with open(os.devnull, "w") as devnull:
+    for cmd in cmds:
+      # Pipes output to /dev/null so errors (i.e. <<ERROR_CODE>>) are not
+      # visible.
+      retval |= subprocess.call(cmd, stderr=devnull)
   sys.exit(retval)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
   main()
