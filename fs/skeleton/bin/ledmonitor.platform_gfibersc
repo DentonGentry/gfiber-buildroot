@@ -41,7 +41,7 @@ NO_TUNER_LOCK_LED_ON="5" # solid purple
 UPDATING_LED_ON="4 0" # blink blue
 RUNNING_LED_ON="4" # solid blue
 
-ifname="br0"
+ifname="lan0"
 
 change_state() {
   # Check if the new state is different from the previous one
