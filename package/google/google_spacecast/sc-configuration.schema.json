@@ -80,10 +80,6 @@
                     ]
                   }
                 }
-              },
-              "_feedId": {
-                "type": "array",
-                "items": {"type": "integer"}
               }
             }
           }

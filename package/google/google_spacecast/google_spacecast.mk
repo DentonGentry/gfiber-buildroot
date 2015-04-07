@@ -74,6 +74,7 @@ GOOGLE_SPACECAST_POST_CONFIGURE_HOOKS += GOOGLE_SPACECAST_MOCKS
 define GOOGLE_SPACECAST_BUILD_CMDS
 	$(GOOGLE_SPACECAST_GOENV) ; \
 	cd $(@D) && go build -tags widevine spacecast/appliance; \
+	cd $(@D) && go build spacecast/appliance/configmanager;  \
 	cd $(@D) && go build spacecast/appliance/statemanager;  \
 	cd $(@D) && go build spacecast/appliance/monlog_token_refresher
 endef
@@ -87,20 +88,27 @@ endef
 define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/appliance \
 		$(TARGET_DIR)/app/spacecast/appliance
+	$(INSTALL) -D -m 0755 $(@D)/configmanager \
+		$(TARGET_DIR)/app/spacecast/configmanager
 	$(INSTALL) -D -m 0755 $(@D)/statemanager \
 		$(TARGET_DIR)/app/spacecast/statemanager
 	$(INSTALL) -D -m 0755 $(@D)/monlog_token_refresher \
 		$(TARGET_DIR)/app/spacecast/monlog_token_refresher
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
+	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/configmanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/statemanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/monlog_token_refresher
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/S90spacecast \
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/S92configmanager \
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/S85statemanager \
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/S80monlog_token_refresher \
 		$(TARGET_DIR)/etc/init.d/
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.ConfigManager.conf \
+		$(TARGET_DIR)/etc/dbus-1/system.d/
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.StateManager.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 
@@ -125,8 +133,10 @@ endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
+	rm -f $(TARGET_DIR)/etc/init.d/S92configmanager
 	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
 	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_token_refresher
+	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.ConfigManager.conf
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf
 endef
 
