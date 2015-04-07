@@ -1,6 +1,11 @@
 #!/bin/sh
 . /etc/utils.sh
 
+if ! is-storage-box; then
+  echo "not configured as storage box"
+  exit 0
+fi
+
 if ! is-html-tv-ui; then
   echo "configured for sage"
   exit 0
