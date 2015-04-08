@@ -4,7 +4,7 @@
 #
 #############################################################
 
-CHROMEOS_VERSION = R42-6798
+CHROMEOS_VERSION = R44-6953
 GOOGLE_BUFFET_SITE = repo://vendor/google/tarballs
 
 ifeq ($(BR2_PACKAGE_GOOGLE_BUFFET_DEMOS),y)
@@ -42,8 +42,17 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/run
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/etc
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/tmp
+	
 	# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
+	# In chromeos version <= R42, it is expected in /etc/ssl/certs. The following
+	# line can probably be removed eventually since it should no longer look for
+	# the cert here, but is being kept here in the interim just in case.
 	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
+	# In chromeos version >= R44, it is expected in
+	# /usr/share/chromeos-ca-certificates. The following lines create this
+	# directory and copy the cert to it.
+	mkdir -p $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates
+	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates/578d5c04.0
 endef
 
 define GOOGLE_BUFFET_CLEAN_CMDS
