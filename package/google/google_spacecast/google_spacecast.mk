@@ -60,6 +60,7 @@ define GOOGLE_SPACECAST_MOCKS
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/buffet,CommandProxy)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusConn)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusObject)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/fsnotify,FsnotifyWatcher)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/signature_validator/signature,Validator)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/common/api/client,Service)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/common/flute,Decoder)
