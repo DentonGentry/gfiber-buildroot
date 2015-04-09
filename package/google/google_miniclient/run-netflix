@@ -1,3 +1,8 @@
+#!/bin/sh
+
+trap "pkillwait -x netflix" TERM CHLD INT HUP EXIT
+
 echo netflix --ui-query-string=source_type=4 $@ > /tmp/runappold.tmp
 mv /tmp/runappold.tmp /tmp/runappold
-/app/client/run-app
+/app/client/run-app &
+wait

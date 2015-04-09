@@ -1,3 +1,7 @@
+#!/bin/sh
+
+trap "pkillwait -x vudu" TERM CHLD INT HUP EXIT
+
 if [ -z "$1" ]; then
   echo vudu > /tmp/runappold.tmp
 else
@@ -5,4 +9,5 @@ else
 fi
 
 mv /tmp/runappold.tmp /tmp/runappold
-/app/client/run-app
+/app/client/run-app &
+wait
