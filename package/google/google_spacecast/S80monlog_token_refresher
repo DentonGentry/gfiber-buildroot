@@ -3,8 +3,8 @@
 
 BINARY="/app/spacecast/monlog_token_refresher"
 
-FLAGS="-monlog_token_file=/var/media/keys/monlog_token_file \
-       -client_cred_file=/var/media/keys/client_creds"
+FLAGS="-monlog_token_file=/etc/monlog/monlog_token_file.json \
+       -client_cred_file=/etc/monlog/oauth2_credentials.json"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
