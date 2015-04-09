@@ -12,3 +12,10 @@ config BR2_PACKAGE_SIMPLERAMFS
 	  Generate the simplest possible initramfs for finding,
 	  verifying, and mounting the squashfs that contains the "real"
 	  root filesystem.
+
+config BR2_PACKAGE_SIMPLERAMFS_LINKED_IN
+	bool "Bake the simpleramfs into the kernel image."
+	default y
+	depends on BR2_PACKAGE_SIMPLERAMFS
+	help
+	  Turn the simpleramfs into the initramfs compiled into the kernel image.
