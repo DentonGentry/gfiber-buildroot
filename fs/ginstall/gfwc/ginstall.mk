@@ -27,6 +27,7 @@ define ROOTFS_GINSTALL_CMD
 	cd $(BINARIES_DIR) && \
 	cp $(value GFWC_LOADER) loader.img && \
 	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
+	rm -rf rootfs.sqsh && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -all-root -pf $(QCA_DIR)/build/devsqsh.txt && \
 	$(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
