@@ -57,6 +57,7 @@ GOOGLE_SPACECAST_POST_CONFIGURE_HOOKS += GOOGLE_SPACECAST_PROTOS
 
 define GOOGLE_SPACECAST_MOCKS
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/adaptor,Cache)
+	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/buffet,CommandProxy)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusConn)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/dbus,DBusObject)
 	$(call GOOGLE_SPACECAST_GEN_MOCK,spacecast/appliance/signature_validator/signature,Validator)
