@@ -10,11 +10,11 @@ register_experiment WifiUseDFS
 case "$1" in
   start)
     if is-network-box; then
-      babysit 60 waveguide --high-power --scan-interval=300 \
-          2>&1 | logos waveguide &
+      babysit 60 alivemonitor /tmp/waveguide/alive 10 10 60 \
+          waveguide --high-power --scan-interval=300 2>&1 | logos waveguide &
     elif has_wifi && runnable iw; then
-      babysit 60 waveguide --no-high-power --scan-interval=300 \
-          2>&1 | logos waveguide &
+      babysit 60 alivemonitor /tmp/waveguide/alive 10 10 60 \
+          waveguide --no-high-power --scan-interval=300 2>&1 | logos waveguide &
     fi
     ;;
   stop)
