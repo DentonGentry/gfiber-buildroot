@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_CRYPTOHOME
+       bool "google_cryptohome"
+       default n
+       help
+         Google's Cryptohome

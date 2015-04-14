@@ -1,0 +1,36 @@
+###############################################################################
+# Google Cryptohome package README
+###############################################################################
+* Full details: go/sc-cryptohome
+
+* Cryptohome is a component in Chrome OS Core (Brillo) operating system, responsible
+for remote attestation using the TPM chip in the devices.
+* For more details about remote attestation on SpaceCast, please read: go/sc-attest
+* Cryptohome source code: https://cs.corp.google.com/#chromeos_public/src/platform2/cryptohome/
+
+
+
+* Procedure to port Cryptohome component from Brillo to SpaceCast platform:
+- Build Cryptohome component and its dependencies using Chrome OS build environment.
+See details here: http://dev.chromium.org/chromium-os/developer-guide
+- Tarball the Cryptohome binaries, their required shared libraries and the TCSD config file under
+  chromeos root dir as below:
+    chromeos
+        |__ bin -> cryptohomed, cryptohome, tpm-manager, tcsd, chapsd, tpmc
+        |__ lib -> libprotobuf, libpthread, libdbus etc
+        |__ usr/lib -> gconv files
+        |__ etc -> tcsd.conf
+
+- Ensure TCSD command can run, running the tpm commands like tpm_version
+- Start chapsd and cryptohomed, run cryptohome client to check tpm status
+- Name the tarball 'google_cryptohome-<ChromeOS version>.tar.gz'
+- Drop the tarball in repo://vendor/google/tarballs
+
+
+* This directory contains all necessary configs to build and setup Buffet in the
+SpaceCast platform
+- google_cryptohome.mk extracts the Cryptohome tarballs and setup the proper rootfs so
+that Cryptohome is under /chroot/chromeos to utilize the ChromeOS environment.
+- S99cryptohome starts TCSD, Chapsd and Cryptohome daemon in init.d.
+- org.chromium.Chaps.conf and Cryptohome.conf are the additional DBus configurations customized to
+run in SpaceCast platform.
