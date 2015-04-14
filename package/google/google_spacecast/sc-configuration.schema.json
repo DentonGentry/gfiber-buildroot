@@ -1,68 +1,109 @@
 {
-  "_scConfiguration": {
-    "_networkConfig": {
+  "_spacecastConfig": {
+    "_spacecastNetworkConfig": {
       "properties": {
-        "_device": { "type": "string" },
-        "_useDhcp": { "type": "boolean" },
-        "_protocol": {
-          "type": "string",
-          "enum": ["UNKNOWN_PROTOCOL", "IPV4", "IPV6"]
-        },
-        "_address": { "type": "string" },
-        "_netmask": { "type": "string" },
-        "_gateway": { "type": "string" }
-      }
-    },
-
-    "_satelliteConfig": {
-      "properties": {
-        "_id": { "type": "string" },
-        "_feedId": { "type": "string" },
-        "_programId": { "type": "integer" },
-        "_encapsulation": {
-          "type": "string",
-          "enum": ["UNKNOWN_ENCAPSULATION", "RAW", "ULE", "MPE", "GSE"]
-        },
-        "_maxPacketSizeBytes": { "type": "integer" },
-        "_deliverySystem": {
-          "type": "string",
-          "enum": ["UNKNOWN_DELIVERY_SYSTEM", "DVB_S", "DVB_S2"]
-        },
-        "_loFrequencyMhz": { "type": "integer" },
-        "_rfBand": {
-          "type": "string",
-          "enum": ["UNKNOWN_RF_BAND", "L_BAND", "S_BAND", "C_BAND", "X_BAND",
-              "KU_BAND", "K_BAND", "KA_BAND"]
-        },
-        "_polarity": {
-          "type": "string",
-          "enum": ["UNKNOWN_POLARITY", "HORIZONTAL", "VERTICAL"]
-        },
-        "_tone": { "type": "boolean" },
-        "_ifFrequencyMhz": { "type": "integer" },
-        "_symbolRateBaud": { "type": "integer" },
-        "_modulation": {
-          "type": "string",
-          "enum": ["UNKNOWN_MODULATION", "QPSK", "QAM_16", "QAM_32",
-              "QAM_64", "QAM_128", "QAM_256", "QAM_AUTO", "VSB_8", "VSB_16",
-              "PSK_8", "APSK_16", "APSK_32", "DQPSK"]
-        },
-        "_fecRate": {
-          "type": "string",
-          "enum": ["UNKNOWN_FEC_RATE", "FEC_NONE", "FEC_1_2", "FEC_2_3",
-              "FEC_3_4", "FEC_4_5", "FEC_5_6", "FEC_6_7", "FEC_7_8", "FEC_8_9",
-              "FEC_AUTO", "FEC_3_5", "FEC_9_10"]
+        "_settings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_device": {"type": "string"},
+              "_useDhcp": {"type": "boolean"},
+              "_protocol": {
+                "type": "string",
+                "enum": [
+                  "UNKNOWN_PROTOCOL", "IPV4", "IPV6"
+                ]
+              },
+              "_address": {"type": "string"},
+              "_netmask": {"type": "string"},
+              "_gateway": {"type": "string"}
+            }
+          }
         }
       }
     },
-
-    "_subscriptionConfig": {
+    "_spacecastSatelliteConfig": {
       "properties": {
-        "_broadcastId": {
-          "type": "string"
-        },
-        "_feedId": {
-          "type": "string"
+        "_broadcast": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_id": {"type": "integer"},
+              "_tunerSettings": {
+                "type": "object",
+                "properties": {
+                  "_programId": {
+                    "type": "array",
+                    "items": {"type": "integer"}
+                  },
+                  "_encapsulation": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNOWN_ENCAPSULATION", "RAW", "ULE", "MPE", "GSE"
+                    ]
+                  },
+                  "_maxPacketSizeBytes": {"type": "integer"},
+                  "_deliverySystem": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNOWN_DELIVERY_SYSTEM", "DVB_S", "DVB_S2"
+                    ]
+                  },
+                  "_loFrequencyMhz": {"type": "integer"},
+                  "_rfBand": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNOWN_RF_BAND", "L_BAND", "S_BAND", "C_BAND", "X_BAND", "KU_BAND", "K_BAND", "KA_BAND"
+                    ]
+                  },
+                  "_polarity": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNOWN_POLARITY", "VERTICAL", "HORIZONTAL"
+                    ]
+                  },
+                  "_tone": {"type": "boolean"},
+                  "_ifFrequencyMhz": {"type": "integer"},
+                  "_symbolRateBaud": {"type": "integer"},
+                  "_modulation": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNOWN_MODULATION", "QPSK", "QAM_16", "QAM_32", "QAM_64", "QAM_128", "QAM_256", "QAM_AUTO", "VSB_8", "VSB_16", "PSK_8", "APSK_16", "APSK_32", "DQPSK"
+                    ]
+                  },
+                  "_fecRate": {
+                    "type": "string",
+                    "enum": [
+                      "UNKNWON_FEC_RATE", "FEC_NONE", "FEC_1_2", "FEC_2_3", "FEC_3_4", "FEC_4_5", "FEC_5_6", "FEC_6_7", "FEC_7_8", "FEC_8_9", "FEC_AUTO", "FEC_3_5", "FEC_9_10"
+                    ]
+                  }
+                }
+              },
+              "_feedId": {
+                "type": "array",
+                "items": {"type": "integer"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "_spacecastSubscriptionConfig": {
+      "properties": {
+        "_subscription": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_broadcastId": {"type": "integer"},
+              "_feedId": {
+                "type": "array",
+                "items": {"type": "integer"}
+              }
+            }
+          }
         }
       }
     }
