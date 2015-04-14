@@ -18,6 +18,12 @@
 # cwmpd's periodic stats say an experiment is active even though we are using
 # the non-experimental behaviour.
 expname="$1"
+if [ ! -d /tmp -o ! -d /config ]; then
+  # if /tmp or /config is nonexistent then just bail out early.
+  echo "$0 exiting: /tmp or /config doesn't exist."
+  exit 0
+fi
+
 mkdir -p /tmp/experiments /config/experiments
 : >"/tmp/experiments/$expname.available"
 if [ -e "/config/experiments/$expname.requested" ]; then
