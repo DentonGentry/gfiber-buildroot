@@ -3,6 +3,9 @@
 
 BINARY="/app/spacecast/statemanager"
 
+FLAGS="-logtostderr=true \
+       -stderrthreshold=WARNING"
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
