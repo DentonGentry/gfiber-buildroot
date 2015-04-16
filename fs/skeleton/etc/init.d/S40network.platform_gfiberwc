@@ -61,7 +61,7 @@ case "$1" in
     #  when choosing the root of the spanning tree.
     #  The default in Linux is 0x8000.
     brctl setbridgeprio br0 0x7980
-    for i in eth0; do
+    for i in eth1; do
       [ -e /sys/class/net/$i/address ] && \
         ip link set br0 address \
         $(cat /sys/class/net/$i/address) && \
@@ -75,7 +75,7 @@ case "$1" in
     # Move any existing network info from primary network interfaces to
     # the bridge.
     for x in \
-        /sys/class/net/eth0 \
+        /sys/class/net/eth1 \
         /sys/class/net/ath[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
@@ -122,14 +122,14 @@ case "$1" in
     echo "Bringing up the WAN port..."
     sysctl net.ipv4.conf.all.forwarding=1
     sysctl net.ipv6.conf.all.forwarding=1
-    sysctl net.ipv6.conf.eth1.accept_ra=2
-    ifup eth1
+    sysctl net.ipv6.conf.eth0.accept_ra=2
+    ifup eth0
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
-      if [ -e /sys/class/net/eth1 ]; then
+      if [ -e /sys/class/net/eth0 ]; then
         echo "Shutting down the WAN port..."
-        ifdown eth1
+        ifdown eth0
       fi
       for x in $(ls /sys/class/net); do
         if [ -n /sys/class/net/$x/bridge ]; then

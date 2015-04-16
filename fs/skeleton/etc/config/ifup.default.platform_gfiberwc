@@ -1,7 +1,7 @@
 iface="$1"
 uplink=0
 
-if [ "$iface" = eth1 ]; then
+if [ "$iface" = eth0 ]; then
   uplink=1
 fi
 
