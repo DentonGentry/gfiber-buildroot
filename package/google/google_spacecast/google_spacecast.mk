@@ -113,9 +113,12 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D package/google/google_spacecast/sc-configuration.schema.json $(TARGET_DIR)/etc/buffet/states
 
 	# Monlog oauth credentials
-	# FIXME TODO(zchen): Modify oauth2_credentials.json to use Spacecast prod credentials instead of staging before release
+	# FIXME TODO(zchen): Modify oauth2_credentials.json to use Spacecast prod credentials
+	# instead of staging before release
 	mkdir -p $(TARGET_DIR)/etc/monlog && \
 	$(INSTALL) -m 0755 -D package/google/google_spacecast/oauth2_credentials.json $(TARGET_DIR)/etc/monlog
+	# FIXME TODO(zchen): monlog_token_file.json should be initialized via the registration process.
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/monlog_token_file.json $(TARGET_DIR)/etc/monlog
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
