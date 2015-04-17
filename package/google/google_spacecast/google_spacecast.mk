@@ -48,7 +48,6 @@ define GOOGLE_SPACECAST_PROTOS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,feeds)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,spacecast_api)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,storage)
-	$(call GOOGLE_SPACECAST_GEN_PROTO,video_corpus)
 
 	find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
 endef
