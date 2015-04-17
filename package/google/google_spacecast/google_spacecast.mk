@@ -17,6 +17,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_net \
 				go_oauth2 \
 				go_protobuf \
+				go_vincenospam_go_dbus \
 				google_widevine_cenc
 
 define GOOGLE_SPACECAST_GOENV
