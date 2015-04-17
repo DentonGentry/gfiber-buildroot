@@ -53,13 +53,18 @@ def main():
         print >> sys.stderr, "ERROR: -w option bad format: \"{0}\"".format(arg)
         sys.exit(1)
       cmds.append([SYSVAR_CMD, "--set", key_val[0], key_val[1]])
-  retval = 0
   with open(os.devnull, "w") as devnull:
     for cmd in cmds:
       # Pipes output to /dev/null so errors (i.e. <<ERROR_CODE>>) are not
       # visible.
-      retval |= subprocess.call(cmd, stderr=devnull)
-  sys.exit(retval)
+      try:
+        out = subprocess.check_output(cmd, stderr=devnull)
+      except Exception:
+        sys.exit(1)
+
+      if options.read:
+        print "{0}={1}".format(options.read, out.strip())
+  sys.exit(0)
 
 
 if __name__ == "__main__":
