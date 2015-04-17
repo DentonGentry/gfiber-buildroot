@@ -23,11 +23,11 @@ def main():
                     "Must be formatted as key=val")
   parser.add_option("-r", "--read", metavar="KEY", action="store",
                     type="string", dest="read")
+  parser.add_option("-q", "--quiet", action="store_true")
   unimpl_group = optparse.OptionGroup(parser, "Unimplemented Options",
                                       "These are here so as to maintain "
                                       "compatibility with any scripts using "
                                       "this wrapper.  They DO NOT do anything.")
-  unimpl_group.add_option("-q", "--quiet", action="store_true")
   unimpl_group.add_option("-d", "--dump", action="store_true")
   unimpl_group.add_option("-b", "--binary", action="store_true")
   parser.add_option_group(unimpl_group)
@@ -63,7 +63,12 @@ def main():
         sys.exit(1)
 
       if options.read:
-        print "{0}={1}".format(options.read, out.strip())
+        key = options.read
+        val = out.strip()
+        if options.quiet:
+          print out.strip()
+        else:
+          print "{0}={1}".format(options.read, out.strip())
   sys.exit(0)
 
 
