@@ -5,13 +5,16 @@ interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
 
+get_random_mac() {
+  echo -n "AA"
+  randomdata 0 5 | hexdump -e '5/1 ":%02X"'
+}
+
 create_secondary_interface() {
   local interface="$1"
   local suffix="$2"
   local phy=$(find_phy_for_interface "$interface")
-  local mac=$(get_mac_addr_for_interface "$interface")
-
-  mac=$(get_locally_administered_mac_addr "$mac")
+  local mac=$(get_random_mac)
   interface="${interface}${suffix}"
   if ! interface_exists $interface; then
     iw phy "$phy" interface add "$interface" type managed
