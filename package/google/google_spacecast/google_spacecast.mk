@@ -13,6 +13,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_gonzojive_mdns \
 				go_google_api \
 				go_guelfey_go_dbus \
+				go_grpc \
 				go_miekg_dns \
 				go_net \
 				go_oauth2 \
