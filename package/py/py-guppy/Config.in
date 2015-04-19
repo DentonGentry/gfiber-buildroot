@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PY_GUPPY
+	bool "py-guppy"
+	depends on BR2_PACKAGE_PYTHON
+	help
+	  Memory profiling tool for Python.
