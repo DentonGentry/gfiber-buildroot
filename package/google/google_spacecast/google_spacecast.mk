@@ -13,13 +13,11 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_godbus_dbus \
 				go_gonzojive_mdns \
 				go_google_api \
-				go_guelfey_go_dbus \
 				go_grpc \
 				go_miekg_dns \
 				go_net \
 				go_oauth2 \
 				go_protobuf \
-				go_vincenospam_go_dbus \
 				google_widevine_cenc
 
 define GOOGLE_SPACECAST_GOENV
