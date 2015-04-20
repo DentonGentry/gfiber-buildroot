@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_GODBUS_DBUS
+        bool "go_godbus_dbus"
+        help
+          Native Go bindings for D-Bus

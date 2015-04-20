@@ -10,6 +10,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				host-go_mock \
 				go_fsnotify \
 				go_glog \
+				go_godbus_dbus \
 				go_gonzojive_mdns \
 				go_google_api \
 				go_guelfey_go_dbus \
