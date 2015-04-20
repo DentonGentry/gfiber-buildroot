@@ -1,0 +1,44 @@
+#!/bin/sh
+
+WAN_DEVICE=eth0
+LAN_DEVICE=eth1
+
+rename_net_device()
+{
+  local OLD_DEV=$1
+  local NEW_DEV=$2
+  if [ -e /sys/class/net/$OLD_DEV ]; then
+    echo "Renaming $OLD_DEV to $NEW_DEV..."
+    ip link set dev $OLD_DEV down
+    ip link set dev $OLD_DEV name $NEW_DEV
+    ip link set dev $NEW_DEV up
+  fi
+}
+
+start()
+{
+  # Renames network devices for compatibility with optimus scripts.
+  rename_net_device $WAN_DEVICE wan0
+  rename_net_device $LAN_DEVICE lan0
+}
+
+stop()
+{
+  :
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
