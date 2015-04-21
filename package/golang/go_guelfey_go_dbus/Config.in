@@ -1,4 +1,0 @@
-config BR2_PACKAGE_GO_GUELFEY_GO_DBUS
-        bool "go_guelfey_go_dbus"
-        help
-          Native Go bindings for D-Bus
