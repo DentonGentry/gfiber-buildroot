@@ -16,6 +16,12 @@ endif
 HOST_GOOGLE_SIGNING_TEST=YES
 SIGNING_DIR=$(BINARIES_DIR)/signing
 
+ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfsc100")
+KEYSTORE_CONFIG_ID=SPACECAST
+else
+KEYSTORE_CONFIG_ID=GFIBER_DRM
+endif
+
 define GOOGLE_SIGNING_BUILD_CMDS
 	HOSTDIR=$(HOST_DIR) CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) $(TARGET_CONFIGURE_OPTS) -C \
 		 $(@D)/signing
@@ -59,6 +65,7 @@ define GOOGLE_CODE_SIGN_TOOL_EXECUTE
 		$(1) \
 		$(2) \
 		--image_type=$(3) \
+		--keystore_config_id=$(KEYSTORE_CONFIG_ID) \
 		--outfile=$(2);)
 endef
 
@@ -68,7 +75,8 @@ ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 define HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN
 	($(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
 			-o $(HOST_DIR) -b $(BINARIES_DIR) -k $(1) && \
-		$(call GOOGLE_CODE_SIGN_TOOL_EXECUTE,sign-image,$(BINARIES_DIR)/$(1),kernel))
+		$(call GOOGLE_CODE_SIGN_TOOL_EXECUTE,sign-image,$(BINARIES_DIR)/$(1),kernel,
+		       $(2)))
 endef
 else
 define HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN
