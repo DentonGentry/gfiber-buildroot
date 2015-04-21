@@ -5,8 +5,7 @@ case "$1" in
     # running at realtime priority, so rtwatcher output would get lost
     # exactly when it's useful.  Thus rtwatcher already formats its output
     # appropriately for direct dumping to /dev/kmsg.
-    #babysit 60 rtwatcher >/dev/kmsg 2>&1 &
-    echo rtwatcher is disabled for crashiness testing
+    babysit 60 rtwatcher >/dev/kmsg 2>&1 &
     ;;
   stop)
     pkillwait -x rtwatcher
