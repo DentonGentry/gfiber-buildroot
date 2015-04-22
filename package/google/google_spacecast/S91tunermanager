@@ -1,0 +1,29 @@
+#!/bin/sh
+# Tuner Manager init script.
+
+BINARY="/app/spacecast/tunermanager"
+
+FLAGS="-logtostderr=true"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "Tuner Manager is already running!"
+    else
+      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos tunermanager &
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
