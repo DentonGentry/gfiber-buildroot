@@ -3,10 +3,9 @@
 # libglib2
 #
 #############################################################
-LIBGLIB2_VERSION_MAJOR = 2.28
-LIBGLIB2_VERSION_MINOR = 8
-LIBGLIB2_VERSION = $(LIBGLIB2_VERSION_MAJOR).$(LIBGLIB2_VERSION_MINOR)
-LIBGLIB2_SOURCE = glib-$(LIBGLIB2_VERSION).tar.bz2
+LIBGLIB2_VERSION_MAJOR = 2.42
+LIBGLIB2_VERSION = $(LIBGLIB2_VERSION_MAJOR).2
+LIBGLIB2_SOURCE = glib-$(LIBGLIB2_VERSION).tar.xz
 LIBGLIB2_SITE = http://ftp.gnome.org/pub/gnome/sources/glib/$(LIBGLIB2_VERSION_MAJOR)
 
 LIBGLIB2_INSTALL_STAGING = YES
@@ -45,12 +44,20 @@ LIBGLIB2_CONF_ENV =	\
 		gt_cv_c_wchar_t=$(if $(BR2_USE_WCHAR),yes,no)
 
 HOST_LIBGLIB2_CONF_OPT = \
+		--disable-man \
+		--disable-dtrace \
+		--disable-systemtap \
+		--disable-coverage \
 		--disable-gtk-doc \
-		--enable-debug=no \
+		--enable-debug=no
 
-LIBGLIB2_DEPENDENCIES = host-pkg-config host-libglib2 zlib $(if $(BR2_NEEDS_GETTEXT),gettext libintl)
+LIBGLIB2_CONF_OPT = \
+		--disable-man \
+		--disable-gtk-doc
 
-HOST_LIBGLIB2_DEPENDENCIES = host-pkg-config host-zlib
+LIBGLIB2_DEPENDENCIES = host-pkg-config host-libglib2 python libffi zlib $(if $(BR2_NEEDS_GETTEXT),gettext libintl)
+
+HOST_LIBGLIB2_DEPENDENCIES = host-pkg-config host-python host-libffi host-zlib
 
 ifneq ($(BR2_ENABLE_LOCALE),y)
 LIBGLIB2_DEPENDENCIES+=libiconv
