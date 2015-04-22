@@ -1,7 +1,7 @@
 iface="$1"
 uplink=0
 
-if [ "$iface" = eth0 ]; then
+if [ "$iface" = wan0 ] || [ "$iface" = wan0.2 ]; then
   uplink=1
 fi
 

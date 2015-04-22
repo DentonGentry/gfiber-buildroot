@@ -61,7 +61,7 @@ case "$1" in
     #  when choosing the root of the spanning tree.
     #  The default in Linux is 0x8000.
     brctl setbridgeprio br0 0x7980
-    for i in eth1; do
+    for i in lan0; do
       [ -e /sys/class/net/$i/address ] && \
         ip link set br0 address \
         $(cat /sys/class/net/$i/address) && \
@@ -75,7 +75,7 @@ case "$1" in
     # Move any existing network info from primary network interfaces to
     # the bridge.
     for x in \
-        /sys/class/net/eth1 \
+        /sys/class/net/lan0 \
         /sys/class/net/ath[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
@@ -119,17 +119,23 @@ case "$1" in
     ip link set br0 up  # kernel 3.16 behavior, sometimes br0 does not come up.
     ifup br0
 
-    echo "Bringing up the WAN port..."
-    sysctl net.ipv4.conf.all.forwarding=1
-    sysctl net.ipv6.conf.all.forwarding=1
-    sysctl net.ipv6.conf.eth0.accept_ra=2
-    ifup eth0
+    if [ -e /sys/class/net/wan0 ]; then
+      echo "Bringing up the WAN port..."
+      ip link set dev wan0 up
+      ip link add link wan0 name wan0.2 type vlan id 2
+      sysctl net.ipv4.conf.all.forwarding=1
+      sysctl net.ipv6.conf.all.forwarding=1
+      sysctl net.ipv6.conf.wan0.accept_ra=2
+      sysctl net.ipv6.conf.wan0/2.accept_ra=2
+      ifup wan0
+      ifup wan0.2
+    fi
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
-      if [ -e /sys/class/net/eth0 ]; then
+      if [ -e /sys/class/net/wan0 ]; then
         echo "Shutting down the WAN port..."
-        ifdown eth0
+        ifdown wan0
       fi
       for x in $(ls /sys/class/net); do
         if [ -n /sys/class/net/$x/bridge ]; then

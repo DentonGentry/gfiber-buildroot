@@ -19,7 +19,7 @@ flush()
 
 case "$1" in
   start|restart|reload)
-    if [ -e /sys/class/net/eth0 ]; then
+    if [ -e /sys/class/net/wan0 ]; then
       flush
 
       # Do these first to reduce race conditions
@@ -101,9 +101,9 @@ case "$1" in
 
       # active FTP out
       ip46tables -A FORWARD -m conntrack --ctstate RELATED \
-          -m helper --helper ftp -o eth0+ -p tcp --dport 1024: -j ACCEPT
+          -m helper --helper ftp -o wan0+ -p tcp --dport 1024: -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate RELATED \
-          -m helper --helper ftp -i eth0+ -p tcp --dport 1024: -j ACCEPT
+          -m helper --helper ftp -i wan0+ -p tcp --dport 1024: -j ACCEPT
 
       # add ACS-configured things
       ip46tables -t filter -N acsrules-filter-forward
@@ -120,13 +120,13 @@ case "$1" in
 
       # these are managed by miniupnpd, if running
       ip46tables -t filter -N MINIUPNPD
-      ip46tables -t filter -A FORWARD -i eth0+ ! -o eth0+ -j MINIUPNPD
+      ip46tables -t filter -A FORWARD -i wan0+ ! -o wan0+ -j MINIUPNPD
 
       iptables -t nat -N MINIUPNPD
-      iptables -t nat -A PREROUTING -i eth0+ -j MINIUPNPD
+      iptables -t nat -A PREROUTING -i wan0+ -j MINIUPNPD
 
       # nat
-      iptables -t nat -A POSTROUTING -o eth0+ -j MASQUERADE
+      iptables -t nat -A POSTROUTING -o wan0+ -j MASQUERADE
 
       # ipv6 addressing
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
@@ -142,8 +142,8 @@ case "$1" in
           --pkt-type unicast \
           --limit 1/second \
           -j LOG --log-prefix "FW: "
-      ip46tables -A INPUT -i eth0+ -j log
-      ip46tables -A FORWARD -i eth0+ -j log
+      ip46tables -A INPUT -i wan0+ -j log
+      ip46tables -A FORWARD -i wan0+ -j log
 
       # Set the WAN 802.1q pbits
       iptables -t mangle -A OUTPUT -o wan0.2 -p all -j CLASSIFY --set-class 0:2
@@ -193,7 +193,7 @@ case "$1" in
     fi
     ;;
   stop)
-    if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/eth0 ]; then
+    if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/wan0 ]; then
       flush
       ip46tables -P INPUT ACCEPT
       ip46tables -P FORWARD ACCEPT
