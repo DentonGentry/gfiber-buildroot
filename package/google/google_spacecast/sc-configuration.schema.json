@@ -51,7 +51,7 @@
                       "UNKNOWN_DELIVERY_SYSTEM", "DVB_S", "DVB_S2"
                     ]
                   },
-                  "_loFrequencyMhz": {"type": "integer"},
+                  "_loFrequencyKhz": {"type": "integer"},
                   "_rfBand": {
                     "type": "string",
                     "enum": [
@@ -65,8 +65,9 @@
                     ]
                   },
                   "_tone": {"type": "boolean"},
-                  "_ifFrequencyMhz": {"type": "integer"},
-                  "_symbolRateBaud": {"type": "integer"},
+                  "_ifFrequencyKhz": {"type": "integer"},
+                  "_multicastRoute": {"type": "string"},
+                  "_symbolRateKbaud": {"type": "integer"},
                   "_modulation": {
                     "type": "string",
                     "enum": [
@@ -76,7 +77,7 @@
                   "_fecRate": {
                     "type": "string",
                     "enum": [
-                      "UNKNWON_FEC_RATE", "FEC_NONE", "FEC_1_2", "FEC_2_3", "FEC_3_4", "FEC_4_5", "FEC_5_6", "FEC_6_7", "FEC_7_8", "FEC_8_9", "FEC_AUTO", "FEC_3_5", "FEC_9_10"
+                      "UNKNOWN_FEC_RATE", "FEC_NONE", "FEC_1_2", "FEC_2_3", "FEC_3_4", "FEC_4_5", "FEC_5_6", "FEC_6_7", "FEC_7_8", "FEC_8_9", "FEC_AUTO", "FEC_3_5", "FEC_9_10"
                     ]
                   }
                 }
@@ -105,3 +106,4 @@
     }
   }
 }
+
