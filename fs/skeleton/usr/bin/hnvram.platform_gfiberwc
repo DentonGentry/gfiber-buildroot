@@ -1,76 +1,122 @@
-#!/usr/bin/python
-# GFLT* uses sysvar_cmd to read/write flash instead of hnvram.
+#!/bin/sh
+# GFMN* uses sysvar_cmd to read/write flash instead of hnvram.
 # ginstall wants to call hnvram like:
 # hnvram -w VAR1=val1 -w VAR2=val2 -w VAR3=val3
 #
 # This will translate those into sysvar_cmd calls.
 
-import optparse
-import os
-import subprocess
-import sys
+SYSVAR_CMD="sysvar_cmd"
+QUIET_MODE=""
 
-SYSVAR_CMD = "/usr/bin/sysvar_cmd"
+err_log() {
+  echo "$@" >&2
+}
 
+print_usage() {
+  local PROGNAME="$(basename "$0")"
+  err_log "Usage: $PROGNAME [-w key1=val1 key2=val2 ... | -r key]"
+  err_log
+  err_log "hnvram wrapper with $SYSVAR_CMD backend"
+  err_log
+  err_log "Options:"
+  err_log "-h          Print this message and exit."
+  err_log "-w KEY=VAL"
+  err_log "            Variable to write to sysvar.  Must be formatted as KEY=VAL."
+  err_log "            Can be declared multiple times."
+  err_log "-r KEY"
+  err_log "            Attempt to read the key from sysvar (must declare once)."
+  exit 1
+}
 
-def main():
-  parser = optparse.OptionParser(
-      description="hnvram wrapper with sysvar backend.",
-      usage="usage: hnvram [-w var1=val1 -w var2=val2 ... | -r var]")
-  parser.add_option("-w", "--write", action="append", type="string",
-                    dest="write", metavar="KEYVAL",
-                    help="List of variables to write.  "
-                    "Must be formatted as key=val")
-  parser.add_option("-r", "--read", metavar="KEY", action="store",
-                    type="string", dest="read")
-  parser.add_option("-q", "--quiet", action="store_true")
-  unimpl_group = optparse.OptionGroup(parser, "Unimplemented Options",
-                                      "These are here so as to maintain "
-                                      "compatibility with any scripts using "
-                                      "this wrapper.  They DO NOT do anything.")
-  unimpl_group.add_option("-d", "--dump", action="store_true")
-  unimpl_group.add_option("-b", "--binary", action="store_true")
-  parser.add_option_group(unimpl_group)
-  options, _ = parser.parse_args()
+sysvar_read() {
+  local OUTPUT="$("$SYSVAR_CMD" --get "$1" 2>/dev/null)"
+  if [ $? -ne 0 ] || [ -z "$OUTPUT" ]; then
+    err_log "ERROR: sysvar read failed: '$1'"
+    exit 1
+  fi
 
-  if options.read and options.write:
-    print >> sys.stderr, "ERROR: Must either read or write.  Not both."
-    sys.exit(1)
+  if [ -n "$QUIET_MODE" ]; then
+    echo "$OUTPUT"
+  else
+    echo "$1=$OUTPUT"
+  fi
+}
 
-  if not options.read and not options.write:
-    print >> sys.stderr, "ERROR: Must either read or write."
-    sys.exit(1)
+sysvar_write() {
+  # Since the '<<<' is not a supported operator in all shells, echo the write
+  # argument into a sub shell so that IFS can be set and 'read' can split the
+  # "KEY=VAL" string straight from stdin.
+  echo "$1" | {
+    IFS="="
+    read KEY VAL
+    if [ -z "$KEY" ] || [ -z "$VAL" ]; then
+      err_log "ERROR: Malformed key/value pair: $1"
+      exit 1
+    fi
+    "$SYSVAR_CMD" --set "$KEY" "$VAL" 2>/dev/null
+    if [ $? -ne 0 ]; then
+      err_log "ERROR: sysvar failed to write: $1"
+      exit 1
+    fi
+  }
+}
 
-  cmds = []
-  if options.read:
-    cmds.append([SYSVAR_CMD, "--get", options.read])
+main() {
+  local WRITE_ARR=""
+  local READ_KEY=""
+  while getopts ":w:qr:dbh" OPT; do
+    case "$OPT" in
+      w)
+        if [ -n "$WRITE_ARR" ]; then
+          WRITE_ARR="$WRITE_ARR $OPTARG"
+        else
+          WRITE_ARR="$OPTARG"
+        fi
+        ;;
+      r)
+        if [ ! -z $READ_KEY ]; then
+          print_usage
+        fi
+        READ_KEY="$OPTARG"
+        ;;
+      q)
+        QUIET_MODE="true"
+        ;;
+      d|b)
+        :
+        ;;
+      h)
+        print_usage
+        ;;
+      :)
+        print_usage
+        ;;
+      \?)
+        print_usage
+        ;;
+      *)
+        print_usage
+        ;;
+    esac
+  done
 
-  if options.write:
-    for arg in options.write:
-      key_val = arg.split("=", 1)
-      if len(key_val) != 2:
-        print >> sys.stderr, parser.usage
-        print >> sys.stderr, "ERROR: -w option bad format: \"{0}\"".format(arg)
-        sys.exit(1)
-      cmds.append([SYSVAR_CMD, "--set", key_val[0], key_val[1]])
-  with open(os.devnull, "w") as devnull:
-    for cmd in cmds:
-      # Pipes output to /dev/null so errors (i.e. <<ERROR_CODE>>) are not
-      # visible.
-      try:
-        out = subprocess.check_output(cmd, stderr=devnull)
-      except Exception:
-        sys.exit(1)
+  if [ -z "$READ_KEY" ] && [ -z "$WRITE_ARR" ]; then
+    err_log "ERROR: Must either write or read something."
+    print_usage
+  fi
 
-      if options.read:
-        key = options.read
-        val = out.strip()
-        if options.quiet:
-          print out.strip()
-        else:
-          print "{0}={1}".format(options.read, out.strip())
-  sys.exit(0)
+  if [ -n "$READ_KEY" ] && [ -n "$WRITE_ARR" ]; then
+    err_log "ERROR: Can either read or write.  Not both."
+    print_usage
+  fi
 
+  if [ -z "$READ_KEY" ]; then
+    for KEYVAL in "$WRITE_ARR"; do
+      sysvar_write "$KEYVAL"
+    done
+  else
+    sysvar_read "$READ_KEY"
+  fi
+}
 
-if __name__ == "__main__":
-  main()
+main "$@"
