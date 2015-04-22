@@ -9,7 +9,6 @@ hostapd_running() {
   pgrep -f '^hostapd .* /tmp/hostapd.conf.wlan.*'
 }
 
-
 WVSTART "wifi basics"
 
 WVPASS runnable wifi
@@ -108,6 +107,38 @@ else
   # Anything else has only a single radio
   WVPASSEQ 1 $(hostapd_running | wc -l)
 fi
+
+WVSTART "edge case SSIDs/PSKs"
+pathological="a @#$\(^.-)/;?[:_%]\"{'}=|!~\`"
+WIFI_PSK="$pathological" WVPASS wifi set -b5 --ssid "$pathological"
+WVPASS hostapd_running
+WVPASS grep -F "ssid=$pathological" /tmp/hostapd.conf.*
+WVPASS grep -F "wpa_passphrase=$pathological" /tmp/hostapd.conf.*
+
+newline_null=$(printf "foo\n\0bar78")
+WIFI_PSK="$newline_null" WVPASS wifi set -b5 --ssid "$newline_null"
+WVPASS hostapd_running
+WVPASS grep -F "ssid=foobar78" /tmp/hostapd.conf.*
+WVPASS grep -F "wpa_passphrase=foobar78" /tmp/hostapd.conf.*
+
+WVPASS wifi set -b5 --ssid '123'
+WVPASS hostapd_running
+WVPASS grep -F "ssid=123" /tmp/hostapd.conf.*
+
+WVPASS wifi set -b5 --ssid 'foo bar'
+WVPASS hostapd_running
+WVPASS grep -F "ssid=foo bar" /tmp/hostapd.conf.*
+# b/20460495
+shown_ssid=$(wifi show | grep -F "SSID: foo bar")
+WVPASS [ -n "$shown_ssid" ]
+
+unicode="נְקֻדּוֹת"
+WIFI_PSK="$unicode" WVPASS wifi set -b5 --ssid "$unicode" -P
+WVPASS wifi off
+WVPASS wifi restore
+WVPASS hostapd_running
+WVPASS grep -F "ssid=$unicode" /tmp/hostapd.conf.*
+WVPASS grep -F "wpa_passphrase=$unicode" /tmp/hostapd.conf.*
 
 
 # We can't really test client mode in a unit test because there is nothing to
