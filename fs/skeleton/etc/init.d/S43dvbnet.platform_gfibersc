@@ -29,6 +29,11 @@ ROUTE=$(getconfig SPACECAST_ROUTE "224.1.1.1")
 IFREQ=$(getconfig SPACECAST_IFREQ 1110000)
 SYMBOL_RATE=$(getconfig SPACECAST_SRATE 30000)
 POLARIZATION=$(getconfig SPACECAST_POLARIZATRION h)
+MOD=$(getconfig SPACECAST_MOD psk8)
+FEC=$(getconfig SPACECAST_FEC auto)
+DVB=$(getconfig SPACECAST_DVB dvbs2)
+TONE=$(getconfig SPACECAST_TONE false)
+[ "$TONE" = true ] && TONEON=-t
 
 setup_dvbnet() {
   dvbnet -p "$PID" "$ULE"
@@ -46,7 +51,8 @@ case "$1" in
     (
       wait-until-created /dev/dvb/adapter0/frontend0
       setup_dvbnet 2>&1 | logos dvbnet
-      babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" 2>&1 | logos dvbtune &
+      babysit 60 dvbtune -i "$IFREQ" -r "$SYMBOL_RATE" -p "$POLARIZATION" \
+        -s "$DVB" -m "$MOD" -c "$FEC" $TONEON 2>&1 | logos dvbtune &
     ) &
   ;;
 
