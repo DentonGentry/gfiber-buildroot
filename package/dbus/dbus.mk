@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-DBUS_VERSION = 1.6.18
+DBUS_VERSION = 1.8.16
 DBUS_SOURCE = dbus-$(DBUS_VERSION).tar.gz
 DBUS_SITE = http://dbus.freedesktop.org/releases/dbus/
 DBUS_INSTALL_STAGING = YES
@@ -13,7 +13,7 @@ define DBUS_PERMISSIONS
 /usr/libexec/dbus-daemon-launch-helper f 4755 0 0 - - - - -
 endef
 
-DBUS_DEPENDENCIES = host-pkg-config
+DBUS_DEPENDENCIES = host-pkg-config expat
 
 DBUS_CONF_ENV = ac_cv_have_abstract_sockets=yes
 DBUS_CONF_OPT = --with-dbus-user=dbus \
@@ -24,21 +24,13 @@ DBUS_CONF_OPT = --with-dbus-user=dbus \
 		--disable-xml-docs \
 		--disable-doxygen-docs \
 		--disable-static \
-		--disable-dnotify \
+		--disable-systemd \
 		--localstatedir=/var \
 		--with-system-socket=/var/run/dbus/system_bus_socket \
 		--with-system-pid-file=/var/run/messagebus.pid
 
 ifeq ($(BR2_PREFER_STATIC_LIB),y)
 DBUS_CONF_OPT += LIBS='-lpthread'
-endif
-
-ifeq ($(BR2_DBUS_EXPAT),y)
-DBUS_CONF_OPT += --with-xml=expat
-DBUS_DEPENDENCIES += expat
-else
-DBUS_CONF_OPT += --with-xml=libxml
-DBUS_DEPENDENCIES += libxml2
 endif
 
 ifeq ($(BR2_PACKAGE_XLIB_LIBX11),y)
@@ -80,9 +72,7 @@ HOST_DBUS_CONF_OPT = \
 		--disable-xml-docs \
 		--disable-doxygen-docs \
 		--disable-static \
-		--enable-dnotify \
-		--without-x \
-		--with-xml=expat
+		--without-x
 
 # dbus for the host
 DBUS_HOST_INTROSPECT=$(HOST_DBUS_DIR)/introspect.xml
