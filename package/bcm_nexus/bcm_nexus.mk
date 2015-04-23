@@ -5,6 +5,24 @@ BCM_NEXUS_INSTALL_TARGET=YES
 
 BCM_NEXUS_STAGING_PATH=usr/lib/nexus
 
+ifdef BR2_mipsel
+BCM_ARCH=mips
+else
+BCM_ARCH=arm
+endif
+
+PLAT_NOQUOTES=$(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM) | sed -e s/\"//g)
+ifeq ($(findstring $(PLAT_NOQUOTES), 97425 97428), $(PLAT_NOQUOTES))
+BCM_CMNDRM_DIR=Zeus20
+endif
+ifeq ($(findstring $(PLAT_NOQUOTES), 97250), $(PLAT_NOQUOTES))
+BCM_CMNDRM_DIR=Zeus4x
+endif
+
+ifeq ($(BCM_CMNDRM_DIR),,)
+$(error The chip $(BR2_PACKAGE_BCM_COMMON_PLATFORM) is not supported here.)
+endif
+
 define BCM_NEXUS_CONFIGURE_CMDS
 	ln -sf $(@D) $(BUILD_DIR)/nexus
 	mkdir -p $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)
@@ -17,6 +35,7 @@ define BCM_NEXUS_CONFIGURE_CMDS
 endef
 
 define BCM_NEXUS_BUILD_CMDS
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build nexus_headers
@@ -31,11 +50,11 @@ define BCM_NEXUS_BUILD_CMDS
 endef
 
 define BCM_NEXUS_INSTALL_LIBS
-	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/linuxuser/libdrmrootfs.so $1/usr/lib/libdrmrootfs.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/$(BCM_ARCH)/linuxuser/libdrmrootfs.so $1/usr/lib/libdrmrootfs.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $1/usr/lib/libnexusMgr.so
-	$(INSTALL) -D $(@D)/../BSEAV/lib/security/bcrypt/lib/libbcrypt.so $1/usr/lib/libbcrypt.so
-	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/40nm/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
+	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/bcrypt/libbcrypt.so $1/usr/lib/libbcrypt.so
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
 	$(INSTALL) -D $(@D)/bin/libnexus_client.so $1/usr/lib/libnexus_client.so
