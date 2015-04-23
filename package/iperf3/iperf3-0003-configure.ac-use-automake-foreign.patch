@@ -1,0 +1,25 @@
+From 187752949987a945c900e3610ef8c7af7d0c32d4 Mon Sep 17 00:00:00 2001
+From: Will Angley <willangley@google.com>
+Date: Wed, 22 Apr 2015 14:09:55 -0400
+Subject: [PATCH 3/3] configure.ac: use automake foreign
+
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index de0f8ab..449339f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -32,7 +32,7 @@ AC_CONFIG_AUX_DIR(config)
+ 
+ 
+ # Initialize the automake system
+-AM_INIT_AUTOMAKE
++AM_INIT_AUTOMAKE([foreign])
+ 
+ AM_MAINTAINER_MODE
+ AM_CONFIG_HEADER(src/config.h)
+-- 
+2.2.0.rc0.207.ga3a616c
+

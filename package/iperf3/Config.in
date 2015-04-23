@@ -22,7 +22,7 @@ config BR2_PACKAGE_IPERF3
 
 	  Note that iperf3.x is not backwards compatible with iperf2.x
 
-	  https://code.google.com/p/iperf/
+	  https://github.com/esnet/iperf
 
 comment "iperf3 requires a toolchain with C++ support enabled"
 	depends on !BR2_INSTALL_LIBSTDCPP
