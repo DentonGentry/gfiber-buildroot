@@ -24,7 +24,6 @@ WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 IP_FILE="$BASE_PATH/ipconnected"
 TPM_FILE="$CONTROL_PATH/tpm_enroll"
-GCD_UP_FILE="$CONTROL_PATH/gcd_access"
 GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
 PARAMS_FILE="$CONTROL_PATH/has_params"
 NOT_AUTHORIZED_FILE="$CONTROL_PATH/app_not_authorized"
@@ -88,8 +87,7 @@ while read f; do
     rm -f "$IP_FILE"
   fi
 
-  # FIXME TODO(efirst): Note secure boot check disabled for testing, need to remove this before production.
-  if 0 && [ ! -f "$SECUREBOOT_FILE" ]; then
+  if [ ! -e /tmp/DEBUG ] && [ ! -f "$SECUREBOOT_FILE" ]; then
     change_state UNSECUREBOOT "$HW_FAIL_LED_ON"
   elif [ -f "$HALT_FILE" ]; then
     change_state HALT "$HW_FAIL_LED_ON"
@@ -113,8 +111,6 @@ while read f; do
     change_state NOIP "$NO_IP_LED_ON"
   elif [ ! -f "$TPM_FILE" ]; then
     change_state TPM_NOTENROLLED "$SW_FAIL_LED_ON"
-  elif [ ! -f "$GCD_UP_FILE" ]; then
-    change_state GCD_UNREACHABLE "$SW_FAIL_LED_ON"
   elif [ ! -f "$GCD_REG_FILE" ]; then
     change_state GCD_UNREGISTERED "$SW_FAIL_LED_ON"
   elif [ ! -f "$PARAMS_FILE" ]; then
