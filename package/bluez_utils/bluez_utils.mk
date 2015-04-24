@@ -20,6 +20,10 @@ BLUEZ_UTILS_CONF_OPT = \
 	--disable-systemd
 BLUEZ_UTILS_AUTORECONF = YES
 
+ifeq ($(BR2_PACKAGE_PYTHON),y)
+BLUEZ_UTILS_DEPENDENCIES += python
+endif
+
 # BlueZ 3.x compatibility
 ifeq ($(BR2_PACKAGE_BLUEZ_UTILS_COMPAT),y)
 BLUEZ_UTILS_CONF_OPT +=	\

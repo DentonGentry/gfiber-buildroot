@@ -53,10 +53,6 @@ HOST_PYTHON_DEPENDENCIES = host-expat host-zlib host-bzip2
 
 PYTHON_INSTALL_STAGING = YES
 
-ifeq ($(BR2_PACKAGE_BLUEZ_UTILS),y)
-PYTHON_DEPENDENCIES += bluez_utils
-endif
-
 ifeq ($(BR2_PACKAGE_PYTHON_READLINE),y)
 PYTHON_DEPENDENCIES += readline
 endif
