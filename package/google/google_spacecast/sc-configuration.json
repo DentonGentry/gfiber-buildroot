@@ -109,7 +109,13 @@
       },
       "results": {
       }
+    },
+    "_configureMonlogCredentials": {
+      "parameters": {
+        "_authorizationCode": {"type": "string"}
+      },
+      "results": {
+      }
     }
   }
 }
-
