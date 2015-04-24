@@ -103,7 +103,11 @@
           }
         }
       }
+    },
+    "_monlogCredentialsConfig": {
+      "properties": {
+        "_authorizationCode": {"type": "string"}
+      }
     }
   }
 }
-
