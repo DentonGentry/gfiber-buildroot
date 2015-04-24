@@ -133,12 +133,13 @@ shown_ssid=$(wifi show | grep -F "SSID: foo bar")
 WVPASS [ -n "$shown_ssid" ]
 
 unicode="נְקֻדּוֹת"
-WIFI_PSK="$unicode" WVPASS wifi set -b5 --ssid "$unicode" -P
+# PSKs must be ASCII or hex.
+WIFI_PSK="$unicode" WVFAIL wifi set -b5 --ssid "$unicode"
+WIFI_PSK="abcdefgh" WVPASS wifi set -b5 --ssid "$unicode" -P
 WVPASS wifi off
 WVPASS wifi restore
 WVPASS hostapd_running
 WVPASS grep -F "ssid=$unicode" /tmp/hostapd.conf.*
-WVPASS grep -F "wpa_passphrase=$unicode" /tmp/hostapd.conf.*
 
 
 # We can't really test client mode in a unit test because there is nothing to
