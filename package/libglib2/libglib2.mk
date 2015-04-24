@@ -55,7 +55,7 @@ LIBGLIB2_CONF_OPT = \
 		--disable-man \
 		--disable-gtk-doc
 
-LIBGLIB2_DEPENDENCIES = host-pkg-config host-libglib2 python libffi zlib $(if $(BR2_NEEDS_GETTEXT),gettext libintl)
+LIBGLIB2_DEPENDENCIES = host-pkg-config host-libglib2 libffi zlib $(if $(BR2_NEEDS_GETTEXT),gettext libintl)
 
 HOST_LIBGLIB2_DEPENDENCIES = host-pkg-config host-python host-libffi host-zlib
 
