@@ -20,7 +20,6 @@
 expname="$1"
 if [ ! -d /tmp -o ! -d /config ]; then
   # if /tmp or /config is nonexistent then just bail out early.
-  echo "$0 exiting: /tmp or /config doesn't exist."
   exit 0
 fi
 
