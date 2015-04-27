@@ -30,6 +30,11 @@ try_install()
       any=1
       dev=$(basename $(dirname $path))
       log "Checking $dev for installable images."
+      for i in $(seq 6); do
+        partpaths=$(findall /sys/block/$dev/*/partition)
+        [ -n "$partpaths" ] && break
+        msleep 500
+      done
       for partpath in $(findall /sys/block/$dev/*/partition); do
         part=$(basename $(dirname $partpath))
         log "Trying $part:"
