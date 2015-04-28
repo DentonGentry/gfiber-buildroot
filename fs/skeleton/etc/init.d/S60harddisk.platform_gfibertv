@@ -18,7 +18,7 @@ hddserial() {
 
 check_pairing() {
   attachedSerial=$(hddserial)
-  pairedSerial=$(hnvram -rq PAIRED_DISK)
+  pairedSerial=$(hnvram -qr PAIRED_DISK)
   echo "Attached HDD Serial:$attachedSerial, Paired HDD Serial:$pairedSerial"
   if [ "$attachedSerial" = "$pairedSerial" ]; then
     echo "   MATCH!"

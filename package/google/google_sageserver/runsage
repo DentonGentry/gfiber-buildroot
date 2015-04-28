@@ -65,7 +65,7 @@ SIEGEOPT=
 [ -e /tmp/disablejit ] && SIEGEOPT="$SIEGEOPT -Xint"
 
 mkdir -p /rw/sage
-hnvram -rq 1ST_SERIAL_NUMBER >/tmp/serial
+hnvram -qr 1ST_SERIAL_NUMBER >/tmp/serial
 
 # Fix permissions for running SageTV as non-root
 chown video.video /rw/sage

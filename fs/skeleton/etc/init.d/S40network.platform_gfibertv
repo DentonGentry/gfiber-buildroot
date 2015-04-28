@@ -104,9 +104,9 @@ case "$1" in
       mocaifc=eth1
     fi
 
-    WIFI_MAC=$(hnvram -rq MAC_ADDR_WIFI)
+    WIFI_MAC=$(hnvram -qr MAC_ADDR_WIFI)
     if [ -z "$WIFI_MAC" ]; then
-      MAC=$(hnvram -rq MAC_ADDR)
+      MAC=$(hnvram -qr MAC_ADDR)
       if [ -z "${MAC}" ]; then
         echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
       else
