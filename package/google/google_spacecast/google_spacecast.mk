@@ -100,39 +100,39 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/statemanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/tunermanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/monlog_token_refresher
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/S90spacecast \
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S90spacecast \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/S92configmanager \
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92configmanager \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/S85statemanager \
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S85statemanager \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/S91tunermanager \
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S91tunermanager \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/S80monlog_token_refresher \
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_token_refresher \
 		$(TARGET_DIR)/etc/init.d/
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
-	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.ConfigManager.conf \
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.ConfigManager.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
-	$(INSTALL) -D -m 0644 package/google/google_spacecast/com.google.spacecast.StateManager.conf \
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 
 	# Buffet command and state definitions
 	# FIXME TODO(efirst): Modify buffet.conf to use prod GCD instead of staging and prod credentials before release.
 	mkdir -p $(TARGET_DIR)/etc/buffet && \
-	$(INSTALL) -m 0755 -D package/google/google_spacecast/buffet.conf $(TARGET_DIR)/etc/buffet
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/etc/buffet/buffet.conf $(TARGET_DIR)/etc/buffet
 	# FIXME TODO(efirst): Replace JSON files with array versions once supported by Buffet (https://code.google.com/p/brillo/issues/detail?id=107).
 	mkdir -p $(TARGET_DIR)/etc/buffet/commands && \
-	$(INSTALL) -m 0755 -D package/google/google_spacecast/sc-configuration.json $(TARGET_DIR)/etc/buffet/commands
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/etc/buffet/commands/sc-configuration.json $(TARGET_DIR)/etc/buffet/commands
 	mkdir -p $(TARGET_DIR)/etc/buffet/states && \
-	$(INSTALL) -m 0755 -D package/google/google_spacecast/sc-configuration.schema.json $(TARGET_DIR)/etc/buffet/states
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/etc/buffet/states/sc-configuration.schema.json $(TARGET_DIR)/etc/buffet/states
 
 	# Monlog oauth credentials
 	# FIXME TODO(zchen): Modify oauth2_credentials.json to use Spacecast prod credentials
 	# instead of staging before release
 	mkdir -p $(TARGET_DIR)/etc/monlog && \
-	$(INSTALL) -m 0755 -D package/google/google_spacecast/oauth2_credentials.json $(TARGET_DIR)/etc/monlog
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/etc/monlog/oauth2_credentials.json $(TARGET_DIR)/etc/monlog
 	# FIXME TODO(zchen): monlog_token_file.json should be initialized via the registration process.
-	$(INSTALL) -m 0755 -D package/google/google_spacecast/monlog_token_file.json $(TARGET_DIR)/etc/monlog
+	$(INSTALL) -m 0755 -D package/google/google_spacecast/etc/monlog/monlog_token_file.json $(TARGET_DIR)/etc/monlog
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
