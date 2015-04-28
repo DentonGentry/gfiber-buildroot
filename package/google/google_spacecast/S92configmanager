@@ -3,6 +3,8 @@
 
 BINARY="/app/spacecast/configmanager"
 
+FLAGS="-logtostderr=true"
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }

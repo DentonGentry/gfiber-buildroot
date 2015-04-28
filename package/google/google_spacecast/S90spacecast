@@ -9,8 +9,7 @@ ulimit -s 1024
 
 BINARY="/app/spacecast/appliance"
 
-FLAGS="-logtostderr=true \
-       -stderrthreshold=WARNING"
+FLAGS="-logtostderr=true"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
