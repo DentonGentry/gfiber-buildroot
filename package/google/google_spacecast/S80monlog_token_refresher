@@ -5,8 +5,7 @@ BINARY="/app/spacecast/monlog_token_refresher"
 
 FLAGS="-monlog_token_file=/etc/monlog/monlog_token_file.json \
        -client_cred_file=/etc/monlog/oauth2_credentials.json \
-       -logtostderr=true \
-       -stderrthreshold=WARNING"
+       -logtostderr=true"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
