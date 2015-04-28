@@ -8,7 +8,7 @@ BCM_DIRECTFB_INSTALL_STAGING = YES
 BCM_DIRECTFB_INSTALL_TARGET = YES
 BCM_DIRECTFB_DEPENDENCIES = \
 	bcm_common bcm_nexus bcm_rockford \
-	bcm_magnum bcm_bseav
+	bcm_magnum bcm_bseav freetype jpeg libpng tiff zlib
 
 define BCM_DIRECTFB_REMOVE_CONFIG
 	rm -f $(TARGET_DIR)/usr/local/bin/directfb/$(DIRECTFB_VERSION_MAJOR)/directfb-config
