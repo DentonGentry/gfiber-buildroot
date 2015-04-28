@@ -1,6 +1,5 @@
 #!/bin/sh
 RETRY_TIMEOUT=$1
-TMP_LOG=/tmp/babysit_errors
 
 if [ -e /proc/$$/oom_score_adj ] ; then
   OOM_FILE=oom_score_adj
@@ -42,6 +41,7 @@ error() {
 
 # Run until the program manages to exit successfully.
 name=$(progname "$@")
+TMP_LOG=/tmp/babysit_errors_$(basename "$name")
 until run "$@"; do
   RV=$?
   if [ "$RV" = 143 ]; then
