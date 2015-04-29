@@ -7,3 +7,16 @@ config BR2_PACKAGE_SUDO
 	  but still allow people to get their work done.
 
 	  http://www.sudo.ws/sudo/
+
+if BR2_PACKAGE_SUDO
+config BR2_PACKAGE_SUDO_ROOT_ONLY
+	bool "Only the root user can run the sudo command"
+	default n
+	help
+	  Restrict the use of the sudo command to the root user.
+	  Especially on embedded systems it can be desirable to not
+	  allow unprivileged users to acquire root access. Still sudo can
+	  be useful on such systems to allow the root user to launch
+	  daemons/programs with a different uid. The restriction is
+	  enforced through file system permissions.
+endif
