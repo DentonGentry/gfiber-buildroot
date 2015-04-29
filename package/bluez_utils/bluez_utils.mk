@@ -12,12 +12,16 @@ BLUEZ_UTILS_CONF_OPT = \
 	--libexecdir=/usr/bin \
 	--localstatedir=/user/bluez \
 	--sysconfdir=/tmp/bluez/etc \
-	--enable-test \
+	--enable-tools \
 	--enable-library \
-	--disable-udev \
 	--disable-cups \
 	--disable-obex \
+	--disable-client \
+	--disable-experimental \
+	--enable-test \
+	--disable-udev \
 	--disable-systemd
+
 BLUEZ_UTILS_AUTORECONF = YES
 
 ifeq ($(BR2_PACKAGE_PYTHON),y)
