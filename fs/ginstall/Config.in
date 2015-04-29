@@ -22,6 +22,13 @@ config BR2_TARGET_ROOTFS_GINSTALL_V4
 
 endchoice
 
+config BR2_TARGET_ROOTFS_GINSTALL_MINIMUM_VERSION
+	string "Minimum image version to upgrade from"
+	default "gfiber-39.1"
+	depends on !(BR2_TARGET_ROOTFS_GINSTALL_V2 || BR2_TARGET_ROOTFS_GINSTALL_V3)
+	help
+	  The minimum version for the software to upgrade from.
+
 config BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR
 	string "Directory to obtain bootloader from"
 	depends on BR2_TARGET_ROOTFS_GINSTALL
