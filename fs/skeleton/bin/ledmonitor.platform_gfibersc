@@ -26,8 +26,8 @@ IP_FILE="$BASE_PATH/ipconnected"
 TPM_FILE="$CONTROL_PATH/tpm_enroll"
 GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
 PARAMS_FILE="$CONTROL_PATH/has_params"
-NOT_AUTHORIZED_FILE="$CONTROL_PATH/app_not_authorized"
-NO_TUNER_LOCK_FILE="$CONTROL_PATH/app_no_tuner_lock"
+AUTHORIZATION_FILE="$CONTROL_PATH/app_authorized"
+TUNER_LOCK_FILE="$CONTROL_PATH/app_tuner_lock"
 UPDATING_FILE="CONTROL_PATH/updating"
 
 # Bit sequences.
@@ -115,9 +115,9 @@ while read f; do
     change_state GCD_UNREGISTERED "$SW_FAIL_LED_ON"
   elif [ ! -f "$PARAMS_FILE" ]; then
     change_state NOPARAMS "$SW_FAIL_LED_ON"
-  elif [ -f "$NOT_AUTHORIZED_FILE" ]; then
+  elif [ ! -f "$AUTHORIZATION_FILE" ]; then
     change_state APP_NOTAUTHORIZED "$SW_FAIL_LED_ON"
-  elif [ -f "$NO_TUNER_LOCK_FILE" ]; then
+  elif [ ! -f "$TUNER_LOCK_FILE" ]; then
     change_state APP_NOTUNERLOCK "$NO_TUNER_LOCK_LED_ON"
   elif [ -f "$UPDATING_FILE" ]; then
     change_state UPDATING "$UPDATING_LED_ON"
