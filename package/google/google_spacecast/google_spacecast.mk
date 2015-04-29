@@ -35,6 +35,16 @@ define GOOGLE_SPACECAST_GEN_PROTO
 		-I$(@D)/go/src
 endef
 
+# Build rule for OnePlatform protos.
+define GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO
+	mkdir -p $(@D)/proto/src/google3/google/internal/spacecast/v1beta2/$(1)_proto
+	export PATH=$(TARGET_PATH) ; \
+	protoc --go_out=plugins=grpc:$(@D)/proto/src/google3/google/internal/spacecast/v1beta2/$(1)_proto \
+		$(@D)/go/src/google3/google/internal/spacecast/v1beta2/$(1).proto \
+		--proto_path=$(@D)/go/src/google3/google/internal/spacecast/v1beta2 \
+		--proto_path=$(@D)/go/src
+endef
+
 define GOOGLE_SPACECAST_GEN_MOCK
 	mkdir -p $(@D)/gomock/src/$(dir $(1))/mock_$(notdir $(1))
 	$(GOOGLE_SPACECAST_GOENV) ; \
@@ -49,6 +59,7 @@ define GOOGLE_SPACECAST_PROTOS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,feeds)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,spacecast_api)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,storage)
+	$(call GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO,widevine_proxy)
 
 	find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
 endef
