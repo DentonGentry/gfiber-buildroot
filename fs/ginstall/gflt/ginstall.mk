@@ -13,18 +13,25 @@
 ROOTFS_GINSTALL_DEPENDENCIES = linux rootfs-initramfs
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
-GFLT_LOADER := u-boot-spi.bin
+
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+GFLT_LOADER := $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/u-boot-spi-prod.bin
+else
+GFLT_LOADER := $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/u-boot-spi-dev.bin
+endif
+
 
 define ROOTFS_GINSTALL_CMD
 	set -e; \
 	set -x; \
+	cp -f $(value GFLT_LOADER) $(BINARIES_DIR) && \
+	cp -f $(value GFLT_LOADER) $(BINARIES_DIR)/loader.img && \
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
 	echo 'image_type: unlocked' >>$(BINARIES_DIR)/manifest && \
 	echo 'platforms: [GFLT110]' >>$(BINARIES_DIR)/manifest && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
 	cd $(BINARIES_DIR) && \
-	cp $(value GFLT_LOADER) loader.img && \
 	gzip -c <rootfs.cpio >rootfs.cpio.gz && \
 	$(HOST_DIR)/usr/bin/mkimage \
         -A $(BR2_ARCH) -O linux -T kernel -C none \
