@@ -4,7 +4,7 @@
 # This applies only to the network box
 is-network-box || exit 0
 # If the MAC address is already in HNVRAM, we are done
-hnvram -rq MAC_ADDR >/dev/null && exit 0
+hnvram -qr MAC_ADDR >/dev/null && exit 0
 # The bootloader passes the MAC address from the env partition on the
 # kernel command line
 macaddr=$(kernopt mac_addr)
