@@ -87,6 +87,7 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	cd $(@D) && go build spacecast/appliance/configmanager;  \
 	cd $(@D) && go build spacecast/appliance/statemanager;  \
 	cd $(@D) && go build spacecast/appliance/tunermanager;  \
+	cd $(@D) && go build -o updatebroker spacecast/appliance/updatebroker/main;  \
 	cd $(@D) && go build spacecast/appliance/monlog_token_refresher
 endef
 
@@ -105,6 +106,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/spacecast/statemanager
 	$(INSTALL) -D -m 0755 $(@D)/tunermanager \
 		$(TARGET_DIR)/app/spacecast/tunermanager
+	$(INSTALL) -D -m 0755 $(@D)/updatebroker \
+		$(TARGET_DIR)/app/spacecast/updatebroker
 	$(INSTALL) -D -m 0755 $(@D)/monlog_token_refresher \
 		$(TARGET_DIR)/app/spacecast/monlog_token_refresher
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
@@ -120,12 +123,16 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S91tunermanager \
 		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S87updatebroker \
+		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_token_refresher \
 		$(TARGET_DIR)/etc/init.d/
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.ConfigManager.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf \
+		$(TARGET_DIR)/etc/dbus-1/system.d/
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.UpdateBroker.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 
 	# Buffet command and state definitions
