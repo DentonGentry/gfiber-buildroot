@@ -21,8 +21,13 @@ define SUDO_INSTALL_TARGET_CMDS
 	install -m 0440 -D $(@D)/sudoers $(TARGET_DIR)/etc/sudoers
 endef
 
+ifeq ($(BR2_PACKAGE_SUDO_ROOT_ONLY),y)
+SUDO_PERMS = /usr/bin/sudo f 4500 0 0 - - - - -
+endif
+
 define SUDO_PERMISSIONS
 	/etc/sudoers f 0440 0 0 - - - - -
+	$(SUDO_PERMS)
 endef
 
 $(eval $(call AUTOTARGETS))
