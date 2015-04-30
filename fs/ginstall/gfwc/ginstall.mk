@@ -13,7 +13,7 @@
 ROOTFS_GINSTALL_DEPENDENCIES = linux host-squashfs
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
-GFWC_LOADER := u-boot.bin
+GFWC_LOADER := u-boot.bin.built
 QCA_DIR = $(shell echo $(BINARIES_DIR)/../build/qca95xx-HEAD/qca95xx)
 
 define ROOTFS_GINSTALL_CMD
