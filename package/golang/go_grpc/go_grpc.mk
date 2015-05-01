@@ -9,8 +9,8 @@ GO_GRPC_SITE_METHOD = git
 GO_GRPC_DEPENDENCIES = host-golang
 
 define GO_GRPC_FIX_PATH
-	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/grpc"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/grpc/grpcgo"
+	mkdir -p "$(BUILD_DIR)/go_pkgs/src/google.golang.org/"
+	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/google.golang.org/grpc"
 endef
 
 GO_GRPC_POST_PATCH_HOOKS += GO_GRPC_FIX_PATH
