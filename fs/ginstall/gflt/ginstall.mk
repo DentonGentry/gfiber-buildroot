@@ -20,12 +20,16 @@ else
 GFLT_LOADER := $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/u-boot-spi-dev.bin
 endif
 
+GFLT_SIG := $(patsubst %.bin,%.sig,$(GFLT_LOADER))
+
 
 define ROOTFS_GINSTALL_CMD
 	set -e; \
 	set -x; \
 	cp -f $(value GFLT_LOADER) $(BINARIES_DIR) && \
+	cp -f $(value GFLT_SIG) $(BINARIES_DIR) && \
 	cp -f $(value GFLT_LOADER) $(BINARIES_DIR)/loader.img && \
+	cp -f $(value GFLT_SIG) $(BINARIES_DIR)/loader.sig && \
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
 	echo 'image_type: unlocked' >>$(BINARIES_DIR)/manifest && \
@@ -41,7 +45,7 @@ define ROOTFS_GINSTALL_CMD
 	(echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
 	 echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40;) >>manifest && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
-		manifest version loader.img kernel.img
+		manifest version loader.img loader.sig kernel.img
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))
