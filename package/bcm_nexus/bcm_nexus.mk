@@ -52,7 +52,6 @@ endef
 define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/$(BCM_ARCH)/linuxuser/libdrmrootfs.so $1/usr/lib/libdrmrootfs.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
-	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libnexusMgr.so $1/usr/lib/libnexusMgr.so
 	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/bcrypt/libbcrypt.so $1/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/lib/libb_os.so
