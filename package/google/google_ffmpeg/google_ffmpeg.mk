@@ -9,6 +9,14 @@ else
 GOOGLE_FFMPEG_CONF_OPT += --disable-zlib
 endif
 
+GOOGLE_FFMPEG_EXTRA_CFLAGS = -fPIC -DEM8622
+ifeq ($(BR2_arm),y)
+# The compiler version from Broadcom defaults to Thumb2, and hits a compiler
+# but in this package, so we are compiling straight arm for now, it's a bit
+# slow but at least compiles.
+GOOGLE_FFMPEG_EXTRA_CFLAGS += -marm
+endif
+
 # We only install the program for usage by the server side
 define GOOGLE_FFMPEG_INSTALL_TARGET_CMDS
         mkdir -p $(TARGET_DIR)/app/sage/
@@ -27,7 +35,7 @@ define GOOGLE_FFMPEG_CONFIGURE_CMDS
                 --host-cc="$(HOSTCC)" \
                 --arch=$(BR2_ARCH) \
                 --target-os=linux \
-                --extra-cflags='-fPIC -DEM8622' \
+                --extra-cflags='$(GOOGLE_FFMPEG_EXTRA_CFLAGS)' \
                 --disable-mmx \
                 --disable-mmx2 \
                 --disable-muxers \
