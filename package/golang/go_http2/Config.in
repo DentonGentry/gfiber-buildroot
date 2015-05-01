@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_HTTP2
+	bool "go_http2"
+	help
+		Go support for HTTP/2
