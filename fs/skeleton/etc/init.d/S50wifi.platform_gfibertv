@@ -36,6 +36,8 @@ case "$1" in
       read wifimac </sys/class/net/eth2/address
       wl ap 1
       wl radio off
+      # Q2 == US with no DFS channels
+      wl country Q2
       wl bssid "$wifimac"
     fi
     wifi restore
