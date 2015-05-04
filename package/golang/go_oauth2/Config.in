@@ -1,4 +1,5 @@
 config BR2_PACKAGE_GO_OAUTH2
         bool "go_oauth2"
+        select BR2_PACKAGE_GO_CLOUD
         help
           Go support for oauth2

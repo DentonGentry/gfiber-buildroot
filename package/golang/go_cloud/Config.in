@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_CLOUD
+  bool "go_cloud"
+  help
+    Cloud library
