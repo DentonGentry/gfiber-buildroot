@@ -12,10 +12,9 @@ case "$1" in
       rmdir /var/media/videos/Samples 2>/dev/null
       rm -f /var/media/.mfgmedia
     fi
-    if [ -w /var/media ] && [ ! -e /var/media/ManufacturingBurnin.mov ]; then
-      cp /usr/sv/Google_Loading_Loop_HiRes2.ts /var/media/manufacturing.new
-      chown video.video /var/media/manufacturing.new
-      mv /var/media/manufacturing.new /var/media/ManufacturingBurnin.mov
+    if [ -e /var/media/ManufacturingBurnin.mov ]; then
+      # remove detritus from manufacturing
+      rm -f /var/media/ManufacturingBurnin.mov
     fi
     if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
       mkdir -p /var/media/pictures/Landscapes
