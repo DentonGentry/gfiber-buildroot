@@ -1,0 +1,182 @@
+#!/bin/sh
+
+# Default time to wait between temp checks in seconds.
+DEFAULT_WAIT_TIME=60
+
+TEMP_FILE="/tmp/gpio/cpu_temperature"
+AP_STATUS_DIR="/tmp/temp-monitor/"
+AP_ENABLED="ENABLED"
+AP_DISABLED="DISABLED"
+AP_STATUS_FILE="${AP_STATUS_DIR}ap_status"
+AP_STATUS="$AP_ENABLED"
+LAN_IFACE="lan0"
+WIFI_IFACE="ath0"
+IFUP="ifup"
+IFDOWN="ifdown"
+
+LED_OVERTEMP_FILE="/tmp/gpio/ledcontrol/overtemperature"
+
+err_log() {
+  echo "$@" >&2
+}
+
+sigterm_handler() {
+  err_log "INFO: Caught sigterm.  Exiting. . ."
+  exit 0
+}
+
+trap sigterm_handler TERM
+
+usage() {
+  local progname="$(basename "$0")"
+  cat << EOF >&2
+Usage: $progname -l LOWER_BOUND -u UPPER_BOUND [ -n SECONDS ] [ -h ]
+
+Temperature monitoring program.  When upper bound is reached, disables wifi
+until lower bound is then reached, at which wifi is then reactivated.
+
+Note: Behavior is undefined for non-integer arguments.
+
+Options:
+
+  -h                      Prints this message and exits.
+  -l LOWER_BOUND          The lower bound, at which it is safe to reactivate
+                          wifi.
+  -u UPPER_BOUND          The upper bound, at which it is no longer safe to have
+                          wifi active.
+  -i SECONDS              The check interval in seconds.
+                          Defaults to $DEFAULT_WAIT_TIME.
+EOF
+exit 1
+}
+
+# Prints an error if a command isn't runnable.
+runnable_elog() {
+  for cmd in "$@"; do
+    if ! runnable "$cmd"; then
+      err_log "ERROR: Cannot run $cmd. Quitting."
+      return 1
+    fi
+  done
+}
+
+init() {
+  mkdir -p "$AP_STATUS_DIR"
+  touch "$AP_STATUS_FILE"
+  runnable_elog "$IFUP" "$IFDOWN"
+  return $?
+}
+
+check_integer() {
+  for num in "$@"; do
+    case "$num" in
+      ''|*[!0-9]*)
+        err_log "ERROR: $num is not an integer."
+        return 1
+        ;;
+      *)
+        ;;
+    esac
+  done
+  return 0
+}
+
+get_temp() {
+  cat "$TEMP_FILE" | {
+    IFS="."
+    # We only care about the main integer and not the decimal.
+    read num decimal
+    echo -n "$num"
+  }
+}
+
+temp_check() {
+  if [ ! -f "$TEMP_FILE" ]; then
+    err_log "ERROR: $TEMP_FILE not found. Quitting."
+    return 1
+  fi
+  local lower="$1"
+  local upper="$2"
+  local current_state="$(cat "$AP_STATUS_FILE")"
+  local new_state=""
+  local status_msg=""
+  local temp="$(get_temp)"
+  if [ -z "$current_state" ]; then
+    current_state="$AP_ENABLED"
+  fi
+
+  if [ "$temp" -ge "$upper" ]; then
+    new_state="$AP_DISABLED"
+    status_msg="WARNING: Temp $temp exceeds upper limit ($upper) Disabling AP"
+  elif [ "$temp" -lt "$lower" ]; then
+    new_state="$AP_ENABLED"
+    status_msg="Temp $temp is back in safe range.  Enabling AP"
+  else # $lower <= $temp < $upper
+    new_state="$current_state"
+  fi
+
+  # Only log when the status has changed.
+  if [ "$new_state" = "$current_state" ]; then
+    return 0
+  fi
+
+  err_log "$status_msg"
+  case $new_state in
+    "$AP_ENABLED")
+      "$IFUP" "$WIFI_IFACE"
+      "$IFUP" "$LAN_IFACE"
+      echo -n "$AP_ENABLED" > "$AP_STATUS_FILE"
+      rm -f "$LED_OVERTEMP_FILE"
+      ;;
+    "$AP_DISABLED")
+      "$IFDOWN" "$WIFI_IFACE"
+      "$IFDOWN" "$LAN_IFACE"
+      echo -n "$AP_DISABLED" > "$AP_STATUS_FILE"
+      touch "$LED_OVERTEMP_FILE"
+      ;;
+    *)
+      ;;
+  esac
+  err_log "temperature: $temp ap_status: $current_state"
+  return 0
+}
+
+main() {
+  local lower
+  local upper
+  local interval="$DEFAULT_WAIT_TIME"
+  while getopts ":l:u:hi:" opt; do
+    case "$opt" in
+      l)
+        lower="$OPTARG"
+        ;;
+      u)
+        upper="$OPTARG"
+        ;;
+      i)
+        interval="$OPTARG"
+        ;;
+      h|\?|:|*)
+        usage
+        ;;
+    esac
+  done
+  if [ -z "$lower" ] || [ -z "$upper" ]; then
+    err_log "ERROR: Must provide lower and upper bounds."
+    usage
+  fi
+  check_integer "$lower" "$upper" "$interval" || usage
+  if [ "$lower" -gt "$upper" ]; then
+    err_log "ERROR: Lower bound must be less than or equal to upper bound."
+    usage
+  fi
+
+  #-------- Main Loop ---------
+  (init && err_log "Temp monitor initialized") || exit 1
+  while true; do
+    temp_check "$lower" "$upper" || exit 1
+    sleep "$interval"
+  done
+}
+
+main "$@"

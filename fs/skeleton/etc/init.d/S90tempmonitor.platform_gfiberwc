@@ -1,0 +1,24 @@
+#!/bin/sh
+LOWER_BOUND=41
+UPPER_BOUND=70
+CHECK_INTERVAL=60
+case "$1" in
+  start)
+    if runnable temp-monitor; then
+      babysit 60 \
+        temp-monitor \
+          -l "$LOWER_BOUND" \
+          -u "$UPPER_BOUND" \
+          -i "$CHECK_INTERVAL" 2>&1 | logos temp-monitor &
+    fi
+    ;;
+  stop)
+    pkillwait -f "temp-monitor"
+    ;;
+  restart|reload)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
