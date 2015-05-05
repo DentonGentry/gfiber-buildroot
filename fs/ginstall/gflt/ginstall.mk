@@ -33,7 +33,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -f $(BINARIES_DIR)/manifest && \
 	echo 'installer_version: 3' >>$(BINARIES_DIR)/manifest && \
 	echo 'image_type: unlocked' >>$(BINARIES_DIR)/manifest && \
-	echo 'platforms: [GFLT110]' >>$(BINARIES_DIR)/manifest && \
+	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/manifest && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/manifest && \
 	cd $(BINARIES_DIR) && \
 	gzip -c <rootfs.cpio >rootfs.cpio.gz && \

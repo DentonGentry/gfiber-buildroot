@@ -18,18 +18,18 @@ if ! runnable glaser; then
   cp -f /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
     /tmp/xml_params/tpm_xml_cfg_file.xml
 
+  platform=$(cat /etc/platform)
   version=$(cat /etc/version)
   # Strip off the leading gfltxxx- (leaves the part after the dash)
   # and limit the length of version to 14 characters.
   version=${version#*-}
   version=$(echo "$version" | cut -c 1-14)
-  if [ -n "$version" ]; then
-    cat /etc/xml_params/omci_xml_cfg_file.tmpl.xml | sed -e "s/TR69CONTROL/$version/" \
-      >/tmp/xml_params/omci_xml_cfg_file.xml
-  else
-    cp -f /etc/xml_params/omci_xml_cfg_file.tmpl.xml \
-      /tmp/xml_params/omci_xml_cfg_file.xml
+  if [ -z "$version" ]; then
+    version=TR69CONTROL
   fi
+  tmpl=/etc/xml_params/omci_xml_cfg_file.tmpl.xml
+  cfg=/tmp/xml_params/omci_xml_cfg_file.xml
+  sed -e "s/TR69CONTROL/$version/" -e "s/PLATFORM/$platform/" $tmpl > $cfg
 fi
 
 case "$1" in
