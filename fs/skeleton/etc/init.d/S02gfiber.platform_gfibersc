@@ -37,3 +37,6 @@ else
   # gpio-mailbox unavailable, but pretend it is so apps won't wait for it
   : >/var/run/gpio-mailbox
 fi
+
+# Move USB interrupt to core 2.
+echo 2 >/proc/irq/54/smp_affinity
