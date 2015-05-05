@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device's platform string starts
+# with GFMN and 1 (false) otherwise.
+#
+read plat </etc/platform
+if [ "$plat" != "${plat#GFMN}" ]; then
+  exit 0
+else
+  exit 1
+fi
