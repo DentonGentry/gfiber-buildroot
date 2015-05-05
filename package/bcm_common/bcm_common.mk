@@ -8,7 +8,7 @@ BCM_COMMON_SITE=repo://vendor/broadcom/common
 
 # BCHP_VER is used by cairo
 BCHP_VER=${BR2_PACKAGE_BCM_COMMON_PLATFORM_REV}
-ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"7250")
+ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"97250")
 PLAY_READY_VER=2.5
 else
 PLAY_READY_VER=2.0
@@ -81,7 +81,7 @@ BCM_COMMON_BUILD_TYPE=debug
 BCM_MAKEFLAGS=
 BCM_MAKEFLAGS += CROSS_COMPILE="${TARGET_CROSS}"
 BCM_MAKEFLAGS += TOOLCHAIN_DIR="${HOST_DIR}/usr/bin"
-ifeq ($(BR2_mips),y)
+ifeq ($(BR2_mipsel),y)
 BCM_MAKEFLAGS += B_REFSW_ARCH=mipsel-linux
 else
 BCM_MAKEFLAGS += B_REFSW_ARCH=arm-linux
@@ -93,7 +93,7 @@ BCM_MAKEFLAGS += APPLIBS_TOP=${BCM_APPS_DIR}
 
 NETFLIX_MAKEFLAGS=
 NETFLIX_MAKEFLAGS += TOOLCHAIN_DIR="${HOST_DIR}/usr/bin"
-ifeq ($(BR2_mips),y)
+ifeq ($(BR2_mipsel),y)
 NETFLIX_MAKEFLAGS += B_REFSW_ARCH=mipsel-linux
 else
 NETFLIX_MAKEFLAGS += B_REFSW_ARCH=arm-linux
@@ -119,7 +119,7 @@ define BCM_COMMON_USE_BUILD_SYSTEM
        ln -sf $(BCM_COMMON_DIR)/opensource/common $1/opensource/common
 endef
 
-ifeq ($(BR2_mips),y)
+ifeq ($(BR2_mipsel),y)
 define BCM_COMMON_BUILD_EXTRACT_TARBALL
        rm -f $(@D)/target/${BR2_PACKAGE_BCM_COMMON_PLATFORM}*.mipsel-linux*$(BCM_COMMON_BUILD_TYPE).*tgz
        $(BCM_MAKE_ENV) $(MAKE1) $(BCM_MAKEFLAGS) APPLIBS_TOP=$(@D) -C $(@D)/common bundle
