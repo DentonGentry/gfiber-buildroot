@@ -6,6 +6,7 @@
 NINJA_VERSION:=1.5.3
 NINJA_SOURCE:=v$(NINJA_VERSION).tar.gz
 NINJA_SITE:=https://github.com/martine/ninja/archive/
+NINJA_DEPENDENCIES = host-python
 
 define HOST_NINJA_BUILD_CMDS
 	cd $(@D) && $(HOST_DIR)/usr/bin/python ./configure.py --bootstrap
