@@ -1,6 +1,13 @@
 #!/bin/sh
 case "$1" in
   start)
+    PLATFORM=$(sysvar_cmd -g PLATFORM_NAME)
+    if [ -z "$PLATFORM" ]; then
+      PLATFORM=$(cat /proc/board_type)
+    fi
+    echo "$PLATFORM" > /etc/platform
+    chmod 444 /etc/platform
+
     babysit 60 gpio-mailbox 2>&1 | logos gpio-mailbox &
     ;;
   stop)

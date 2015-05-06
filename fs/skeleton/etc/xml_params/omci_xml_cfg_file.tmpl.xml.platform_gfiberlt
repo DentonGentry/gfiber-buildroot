@@ -112,7 +112,7 @@
         <me name="ONU-G" instance="0">
             <attrib enabled="false"  name="vendorId" value="IAMB" />
             <!-- "version" here shows in ALU as 'version-number and 'eqpt-ver-num' -->
-            <attrib enabled="true"  name="version" value="GFLT110" />
+            <attrib enabled="true"  name="version" value="PLATFORM" />
             <attrib enabled="false"  name="trafficOption" value="1" />
             <attrib enabled="false" name="onuSurvivalTime"  value="210" />
         </me>
@@ -120,7 +120,7 @@
         <me name="ONU2-G" instance="0">
             <!--equipmentId: 20 characters wide, printable characters. See G.988    -->
             <!-- ALU equip-id -->
-            <attrib enabled="true" name="equipmentId" value="GFLT110" />
+            <attrib enabled="true" name="equipmentId" value="PLATFORM" />
 
             <!--omccVersion: 1 byte wide, entered in hex format. For valid values see G.988  -->
             <attrib enabled="false" name="omccVersion" value="23" />
