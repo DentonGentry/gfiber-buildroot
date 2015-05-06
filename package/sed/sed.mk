@@ -6,7 +6,6 @@
 SED_VERSION = 4.2.1
 SED_SOURCE = sed-$(SED_VERSION).tar.gz
 SED_SITE = $(BR2_GNU_MIRROR)/sed
-SED_DEPENDENCIES = acl
 
 SED_CONF_OPT = --bindir=/usr/bin \
 		--libdir=/lib \
@@ -16,7 +15,8 @@ SED_CONF_OPT = --bindir=/usr/bin \
 		--localstatedir=/var \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		--include=$(STAGING_DIR)/usr/include
+		--include=$(STAGING_DIR)/usr/include \
+		--disable-acl
 
 define SED_MOVE_BINARY
 	mv $(TARGET_DIR)/usr/bin/sed $(TARGET_DIR)/bin/
