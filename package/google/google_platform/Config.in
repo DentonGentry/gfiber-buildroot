@@ -17,7 +17,6 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_ACL
 	select BR2_PACKAGE_CURL
 	select BR2_PACKAGE_SED
-	select BR2_PACKAGE_PROTOBUF
 	select BR2_PACKAGE_TLSDATE
 	select BR2_PACKAGE_CLOCKSPEED
 	help
@@ -117,17 +116,20 @@ config BR2_PACKAGE_GOOGLE_FIBER_JACK
 	bool "Device can act as Google Fiber Jack"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_PROTOBUF
 	select BR2_PACKAGE_PROTOBUF_ONLY_LITE
 
 config BR2_PACKAGE_GOOGLE_NETWORK_BOX
 	bool "Device can act as Google Fiber Network Box"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_PROTOBUF
 
 config BR2_PACKAGE_GOOGLE_SPACECAST
 	bool "Device can act as Google SpaceCast Box"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_PROTOBUF
 
 config BR2_PACKAGE_GOOGLE_WINDCHARGER
 	bool "Device can act as Google WindCharger Box"
@@ -156,6 +158,7 @@ config BR2_PACKAGE_GOOGLE_STORAGE_BOX
 	select BR2_PACKAGE_SAMBA
 	select BR2_PACKAGE_SAMBA_NMBLOOKUP
 	select BR2_PACKAGE_AVAHI_COMPAT_LIBDNS_SD
+	select BR2_PACKAGE_PROTOBUF
 
 config BR2_PACKAGE_GOOGLE_TV_BOX
 	bool "Device can act as Google Fiber TV Box"
@@ -195,3 +198,4 @@ config BR2_PACKAGE_GOOGLE_TV_BOX
 	select BR2_PACKAGE_AVAHI
 	select BR2_PACKAGE_AVAHI_DAEMON
 	select BR2_PACKAGE_AVAHI_COMPAT_LIBDNS_SD
+	select BR2_PACKAGE_PROTOBUF

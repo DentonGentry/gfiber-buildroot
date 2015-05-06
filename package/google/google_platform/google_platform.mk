@@ -16,7 +16,6 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	python \
 	python-setuptools \
 	host-python-setuptools \
-	protobuf \
 	libcurl \
 
 HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest host-libcurl
@@ -25,7 +24,6 @@ ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM),y)
 GOOGLE_PLATFORM_DEPENDENCIES += humax_misc
 HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-humax_misc
 endif
-
 
 ifeq ($(BR2_PACKAGE_AVAHI),y)
 ifeq ($(BR2_PACKAGE_DBUS),y)
@@ -39,6 +37,11 @@ ifeq ($(BR2_PACKAGE_UTIL_LINUX),y)
 BUILD_IBEACON=y
 GOOGLE_PLATFORM_DEPENDENCIES += bluez_utils util-linux
 endif
+endif
+
+ifeq ($(BR2_PACKAGE_PROTOBUF),y)
+BUILD_STATUTILS=y
+GOOGLE_PLATFORM_DEPENDENCIES += protobuf
 endif
 
 ifeq      ($(BR2_arm),y)
@@ -119,6 +122,7 @@ GPLAT_MAKE = \
 	BUILD_WAVEGUIDE=$(BUILD_WAVEGUIDE) \
 	BUILD_DVBUTILS=$(BUILD_DVBUTILS) \
 	BUILD_SYSMGR=$(BUILD_SYSMGR) \
+	BUILD_STATUTILS=$(BUILD_STATUTILS) \
 	BR2_TARGET_GOOGLE_PLATFORM=$(BR2_TARGET_GOOGLE_PLATFORM) \
 	$(MAKE)
 
