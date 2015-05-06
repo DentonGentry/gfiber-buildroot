@@ -10,7 +10,7 @@ CHROMIUM_DEPENDENCIES=\
 	google_miniclient \
 	libpng jpeg zlib freetype openssl expat \
 	libcurl libxml2 libxslt fontconfig boost \
-	cairo avahi libcap libnss
+	cairo avahi libcap libnss host-ninja
 
 # This will result in defining a meaningful APPLIBS_TOP
 BCM_APPS_DIR=$(abspath $(@D))
