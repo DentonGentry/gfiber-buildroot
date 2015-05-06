@@ -20,8 +20,9 @@ start()
   # Renames network devices for compatibility with optimus scripts.
   rename_net_device $WAN_DEVICE wan0
   rename_net_device $LAN_DEVICE lan0
-
-  mkdir /tmp/tr69 && ln -s /tmp/tr69 /config/tr69
+  local tr69dir="/tmp/tr69"
+  (mkdir -p "$tr69dir" && ln -sf "$tr69dir" /config/) \
+    || echo "Failed to link /config/tr69 to tmpfs"
 }
 
 stop()
