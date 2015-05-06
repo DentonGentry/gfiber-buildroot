@@ -5,6 +5,9 @@ BINARY="/app/spacecast/configmanager"
 
 FLAGS="-logtostderr=true"
 
+# Make sure we have a directory to store configs for SpaceCast.
+mkdir -p /config/spacecast
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
