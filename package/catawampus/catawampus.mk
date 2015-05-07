@@ -42,15 +42,10 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 		rm -f $$i; \
 	done
 
-	#TODO(abf): remove catawampus's tests to reduce windcharger image size
-	if [ "$(BR2_TARGET_GENERIC_PLATFORM_NAME)" = "gfmn100" ]; then \
-		rm -rf $(TARGET_DIR)/usr/catawampus/platform/gfonu; \
-		rm -rf $(TARGET_DIR)/usr/catawampus/platform/fakecpe; \
-		find $(TARGET_DIR)/usr/catawampus/ -type f -name *_test.pyc | \
-		while read i; do \
-			rm -f $$i; \
-		done; \
-	fi
+	find $(TARGET_DIR)/usr/catawampus/ -type f -name *_test.pyc | \
+	while read i; do \
+		rm -f $$i; \
+	done;
 
 	$(INSTALL) -m 0755 -D package/catawampus/S85catawampus \
 		$(TARGET_DIR)/etc/init.d/S85catawampus
