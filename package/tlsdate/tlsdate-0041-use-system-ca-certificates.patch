@@ -1,0 +1,43 @@
+From cc5ebdca1e402c1b5e2894827bb54b8de30a9797 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Wed, 6 May 2015 17:14:12 -0700
+Subject: [PATCH] Use system CA certificates.
+
+There are two reasons for this:
+1. We ensure the system CA list is kept up to date, while
+   the one buried in tlsdate is likely to be forgotten. We
+   could wake up one morning to discover that all devices have
+   lost the ability to set their time, which would render them
+   unable to communicate via SSL.
+2. The CA list is long and does not compress well. Removing it
+   reduces the image size.
+---
+ Makefile.am | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index b98b4ea..7dd8174 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -66,7 +66,8 @@ maintainer-clean-local:
+ 	@find ./ | $(GREP) \~$$ | xargs rm -f
+ 
+ certdir =  @TLSDATE_CA_ROOTS@
+-cert_DATA = ca-roots/tlsdate-ca-roots.conf
++cert_DATA =
++#cert_DATA = ca-roots/tlsdate-ca-roots.conf
+ EXTRA_DIST+= $(cert_DATA)
+ 
+ confdir = @TLSDATE_CONF_DIR@
+@@ -135,7 +136,7 @@ src/configmake.h: ${top_srcdir}/Makefile.in
+ 	@rm -f $@-t $@
+ 	@{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  echo '#define TLSDATE_CONFIG "$(sysconfdir)/ca-roots/"'; \
+-	  echo '#define TLSDATE_CERTFILE "$(sysconfdir)/tlsdate/ca-roots/tlsdate-ca-roots.conf"'; \
++	  echo '#define TLSDATE_CERTFILE "/etc/ssl/certs/ca-certificates.crt"'; \
+ 	  echo '#define TLSDATE_CONF_DIR "$(sysconfdir)/tlsdate/"'; \
+ 	  echo '#define TLSDATE_HELPER "$(bindir)/tlsdate-helper"'; \
+ 	  echo '#define TLSDATE "$(bindir)/tlsdate"'; \
+-- 
+2.2.0.rc0.207.ga3a616c
+
