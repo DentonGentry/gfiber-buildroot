@@ -6,11 +6,3 @@ config BR2_PACKAGE_CHROMIUM
 	select BR2_PACKAGE_LIBCAP
 	select BR2_PACKAGE_LIBNSS
 	select BR2_PACKAGE_NINJA
-
-if BR2_PACKAGE_CHROMIUM
-
-config BR2_PACKAGE_CHROMIUM_DISABLE_CHROMECAST
-	bool "Disable chromecast support in chromium"
-	default y
-
-endif
