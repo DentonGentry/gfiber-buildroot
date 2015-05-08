@@ -21,11 +21,11 @@ WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 # Bit sequences.
 ALL_LEDS_OFF="0"
 HW_FAIL_LED_ON="1" # solid red
-ACS_LED_ON="4" # solid blue
-IP_LED_ON="4 0 4 0 4 0" # fast blue
-IMAGE_UPGRADE="x3 5 0" # slow red+blue blink
+ACS_LED_ON="2" # solid blue
+IP_LED_ON="2 0 2 0 2 0" # fast blue
+IMAGE_UPGRADE="x3 3 0" # slow red+blue blink
 LINK_DOWN_LED_ON="1 0 " # slow red blink
-ANYTHING_ELSE="x2 4 0" # slow blink blue
+ANYTHING_ELSE="x2 2 0" # slow blink blue
 
 is_upgrading() {
   [ "$(echo $TR69_CONFIG_PATH/tr69_dnld*)" != "$TR69_CONFIG_PATH/tr69_dnld*" ]
