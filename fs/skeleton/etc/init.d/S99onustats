@@ -1,0 +1,26 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    if runnable statpitcher && is-fiberjack && ! runnable glaser; then
+      babysit 60 statpitcher -i pon0 -s "$(serial)" \
+        -a /tmp/cwmp/acscontact 2>&1 | logos statpitcher &
+    fi
+
+    if runnable statcatcher && is-network-box; then
+      mkdir -p /tmp/cwmp/monitoring/onu
+      babysit 60 statcatcher -i wan0 -f /tmp/cwmp/monitoring/onu/onustats.json \
+        2>&1 | logos statcatcher &
+    fi
+    ;;
+  stop)
+    pkillwait statpitcher
+    pkillwait statcatcher
+    ;;
+  restart|reload)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

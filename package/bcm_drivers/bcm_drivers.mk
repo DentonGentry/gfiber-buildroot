@@ -5,6 +5,7 @@ BCM_DRIVERS_DEPENDENCIES=linux google_platform libusb-compat
 
 # TODO(apenwarr): Remove the old moca1 stuff after we fully move to moca2.
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA),y)
+INSTALL_MOCA_UTILS=y
 define BCM_DRIVERS_BUILD_MOCA
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CROSS=$(TARGET_CROSS) \
@@ -43,6 +44,7 @@ endef
 endif  # MOCA1
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_MOCA2),y)
+INSTALL_MOCA_UTILS=y
 define BCM_DRIVERS_BUILD_MOCA
 	$(TARGET_MAKE_ENV) $(MAKE1) \
 		CROSS=$(TARGET_CROSS) \
@@ -126,6 +128,12 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 	    $(TARGET_DIR)/bin/
 endef
 endif  # MOCA2
+
+ifeq ($(INSTALL_MOCA_UTILS),y)
+define BCM_DRIVERS_INSTALL_TARGET_MOCA_COMMON
+    $(INSTALL) -m 0755 package/bcm_drivers/moca_utils/* $(TARGET_DIR)/bin/
+endef
+endif
 
 ifeq ($(BR2_PACKAGE_BCM_DRIVER_WIFI),y)
 
@@ -213,6 +221,7 @@ endef
 define BCM_DRIVERS_INSTALL_TARGET_CMDS
 	$(BCM_DRIVERS_INSTALL_TARGET_MOCA)
 	$(BCM_DRIVERS_INSTALL_TARGET_WIFI)
+	$(BCM_DRIVERS_INSTALL_TARGET_MOCA_COMMON)
 endef
 
 define BCM_DRIVERS_TEST_CMDS
