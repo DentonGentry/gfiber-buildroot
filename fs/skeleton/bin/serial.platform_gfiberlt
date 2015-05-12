@@ -1,9 +1,0 @@
-#!/bin/sh
-# A shortcut to print the serial number of this device.
-serial=$(sysvar_cmd --get SERIAL_NO)
-if [ -n "$serial" ]; then
-  echo "$serial"
-  exit 0
-else
-  exit 1
-fi
