@@ -35,15 +35,6 @@ define BCM_TRELLIS_BUILD_CMDS
 		BUILDING_REFSW=1 BUILDING_DTCP_IP=0
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
-		-C $(@D)/thirdparty/youtube/mediasource/build \
-		BME_PROCESS_MODEL=single \
-		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
-		-C $(@D)/thirdparty/youtube/mediasource/build \
-		install
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
 		-C $(@D)/broadcom/services/media \
 		RPM_BUILD_CMD=echo \
 		APPLIBS_PROCESS_MODEL=single \
