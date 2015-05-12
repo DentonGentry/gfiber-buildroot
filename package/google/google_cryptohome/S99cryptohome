@@ -1,0 +1,134 @@
+#!/bin/sh
+#
+# Cryptohome service is a system daemon responsible for remote attestation
+# and interacting with the device's TPM Chip.
+#
+# This script starts the following daemons:
+#   - TrouSerS daemon: TPM interaction.
+#   - CHAPS daemon: opencryptoki alternative.
+#   - Cryptohome Daemon: Remote Attestation + TPM Ussage.
+#
+# Cryptohome daemon depends on TrouSerS and CHAPS daemons.
+# This script will also run the tpm-manager program before starting Cryptohome
+# daemon, this is because tpm-manager is used to take ownership of the tpm
+# and create the attestation enrollment credentials for the first time.
+#
+# Note: Cryptohome is ported from ChromeOS as a binary so it expects the ChromeOS
+# environment. Therefore, chroot is needed to execute cryptohome.
+#
+
+# Sanity check
+[ -x /chroot/chromeos/bin/cryptohomed ] || exit 1
+[ -x /chroot/chromeos/bin/tcsd ] || exit 1
+[ -x /chroot/chromeos/bin/chapsd ] || exit 1
+[ -x /chroot/chromeos/bin/tpm-manager ] || exit 1
+
+
+# mount_once is used to only mount a given mountpoint once.
+# If the given folder is already mounted, this won't do anything,
+# even if the underlying filesystem is different.
+# The first parameter is the filesystem to mount, the second parameter is the mountpoint.
+#
+# example: mount_once "/dev" "/chroot/chromeos/dev"
+mount_once() {
+  if ! mount | grep -q "\ $2\ " ; then
+	mount -o bind $1 $2
+  fi
+}
+
+# kill_if_running is used to kill an application only if it is running.
+# using a pkill alone would return an error if the program couldn't be found.
+# The first parameter is the binary name of the program to kill.
+#
+# example: kill_if_running "cryptohomed"
+kill_if_running() {
+  echo "Stopping $1..."
+
+  if pgrep -x $1 > /dev/null; then
+    pkill -x $1
+    [ $? -ne 0 ] && echo "Failed to Stop $1..." && exit 1
+  fi
+}
+
+
+# Bind chroot directories to tmpfs, as chroot may exist in a read-only
+# filesystem. These directories are used for the DBus socket and Cryptohome
+# libraries.
+
+# We need the preserve folder, but also tpm uses /mnt/stateful_partition/.tpm_owned
+mkdir -p "/config/cryptohome/stateful_partition/unencrypted/preserve"
+mount_once "/config/cryptohome/stateful_partition" "/chroot/chromeos/mnt/stateful_partition"
+
+# Home folder, for storing /home/.shadow/cryptohome.key
+mkdir -p "/config/cryptohome/home"
+mount_once "/config/cryptohome/home" "/chroot/chromeos/home"
+
+# Root home folder, for storing trousers information
+mkdir -p "/config/cryptohome/root"
+mount_once "/config/cryptohome/root" "/chroot/chromeos/root"
+
+# /var/lib stores the old .tpm_owned and opencryptoki files. Also /var/lib/tpm folder is required for trousers.
+mkdir -p "/config/cryptohome/lib/tpm"
+mount_once "/config/cryptohome/lib" "/chroot/chromeos/var/lib"
+
+# /etc is needed because we need to access users and groups and /etc/tcsd.conf
+# trousers needs to check that it is running with user and group tss:tss
+mount_once "/etc" "/chroot/chromeos/etc"
+
+# /dev is needed for access to /dev/tpm0, /dev/urandom, /dev/log and /dev/null
+mount_once "/dev" "/chroot/chromeos/dev"
+
+# /sys is required to easily interact with the tpm via /sys/class/misc/tpm0
+mount_once "/sys" "/chroot/chromeos/sys"
+
+mount_once "/tmp/run" "/chroot/chromeos/var/run"
+mount_once "/tmp" "/chroot/chromeos/tmp"
+
+# Sanity check.. DBus socket has to be present.
+wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
+
+start() {
+  echo "Starting cryptohome services..."
+
+  echo "starting TCSD..."
+  babysit 10 chroot /chroot/chromeos /bin/tcsd 2>&1 | logos tcsd &
+
+  echo "starting CHAPSD..."
+  babysit 10 chroot /chroot/chromeos /bin/chapsd 2>&1 | logos chapsd &
+
+  chroot /chroot/chromeos /bin/tpm-manager 2>&1
+  [ $? -ne 0 ] && echo "Failed to run tpm-manager..." && stop && exit 1
+  echo "tpm-manager ran successfully"
+
+  echo "starting Cryptohomed..."
+  babysit 10 chroot /chroot/chromeos /bin/cryptohomed 2>&1 | logos cryptohomed &
+}
+
+stop() {
+  echo "Stopping cryptohome services"
+  kill_if_running "cryptohomed"
+  kill_if_running "chapsd"
+  kill_if_running "tcsd"
+  echo "Cryptohome Services stopped successfully"
+}
+
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    restart
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+

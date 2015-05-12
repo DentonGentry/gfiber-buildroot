@@ -26,3 +26,4 @@ netdev:x:113:
 video:x:200:video
 sc:x:500:sc-core,sc-svc
 nfsnobody:x:65534:
+tss:x:107:
