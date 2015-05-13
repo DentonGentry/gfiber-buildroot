@@ -1,0 +1,12 @@
+diff -u a/Makefile.pre.in b/Makefile.pre.in
+--- a/Makefile.pre.in	2015-05-13 09:10:57.124156862 -0700
++++ b/Makefile.pre.in	2015-05-13 09:12:15.437414217 -0700
+@@ -1029,7 +1029,7 @@
+ LIBPC=		$(LIBDIR)/pkgconfig
+ 
+ libainstall:	all python-config
+-	@for i in $(LIBDIR) $(LIBP) $(LIBPL) $(LIBPC); \
++	@for i in $(LIBDIR) $(LIBP) $(LIBPL) $(LIBPC) $(CONFINCLUDEPY) $(BINDIR); \
+ 	do \
+ 		if test ! -d $(DESTDIR)$$i; then \
+ 			echo "Creating directory $$i"; \
