@@ -9,7 +9,8 @@
 # QUOTES.  Use only single quotes in all shell commands in this file, or
 # you'll get very weird, hard-to-find errors.
 
-ROOTFS_GINSTALL_DEPENDENCIES = linux host-squashfs host-lzma
+#Note(allanzhang), please don't use host-lzma, mismatch with qca uboot.
+ROOTFS_GINSTALL_DEPENDENCIES = linux host-squashfs
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 GFWC_LOADER := u-boot.bin.built
@@ -29,7 +30,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -rf rootfs.sqsh && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh \
 	    -all-root -pf $(QCA_DIR)/build/devsqsh.txt -comp lzma && \
-	$(HOST_DIR)/usr/bin/lzma -k -f -8 vmlinux.bin && \
+	$(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
         -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 \
 				-e `$(CROSS_COMPILE)readelf \
