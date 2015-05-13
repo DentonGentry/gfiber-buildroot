@@ -4,7 +4,7 @@
 #
 #############################################################
 
-CRYPTOHOME_CHROMEOS_VERSION = R44-6953
+CRYPTOHOME_CHROMEOS_VERSION = R44-7077
 GOOGLE_CRYPTOHOME_SITE = repo://vendor/google/tarballs
 
 define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
