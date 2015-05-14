@@ -1,0 +1,34 @@
+#!/bin/sh
+
+start()
+{
+  babysit 60 ifplugd -i pon0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+}
+
+stop()
+{
+  ifplugd -k -W -i pon0
+  pkill ifplugd.action
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  sleep)
+    sleep 60
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0
