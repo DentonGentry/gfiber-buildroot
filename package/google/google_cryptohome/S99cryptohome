@@ -68,8 +68,9 @@ mkdir -p "/config/cryptohome/root"
 mount_once "/config/cryptohome/root" "/chroot/chromeos/root"
 
 # /var/lib stores the old .tpm_owned and opencryptoki files. Also /var/lib/tpm folder is required for trousers.
-mkdir -p "/config/cryptohome/lib/tpm"
-mount_once "/config/cryptohome/lib" "/chroot/chromeos/var/lib"
+mkdir -p "/config/shared/lib/tpm"
+[ -e "/config/cryptohome/lib" ] || ln -s "/config/shared/lib" "/config/cryptohome/lib"
+mount_once "/config/shared/lib" "/chroot/chromeos/var/lib"
 
 # /etc is needed because we need to access users and groups and /etc/tcsd.conf
 # trousers needs to check that it is running with user and group tss:tss
