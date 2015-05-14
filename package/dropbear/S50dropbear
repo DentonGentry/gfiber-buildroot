@@ -19,23 +19,36 @@ start() {
 	umask 077
 	K1=/etc/dropbear/dropbear_rsa_host_key
 	K2=/etc/dropbear/dropbear_dss_host_key
-	if ! dropbearkey -y -f $K1 >/dev/null 2>&1; then
-		[ -e "$K1" ] && echo "BUG: $K1 existed, but invalid!"
-		rm -f $K1
-		dropbearkey -t rsa -f $K1
-	fi
-	if ! dropbearkey -y -f $K2 >/dev/null 2>&1; then
-		[ -e "$K2" ] && echo "BUG: $K2 existed, but invalid!"
-		rm -f $K2
-		dropbearkey -t dss -f $K2
-	fi
 
-	babysit 60 dropbear -a -s -F -E 2>&1 | logos dropbear &
+	# make keys in background, in parallel
+	(
+		if ! dropbearkey -y -f $K1 >/dev/null 2>&1; then
+			[ -e "$K1" ] && echo "BUG: $K1 existed, but invalid!"
+			rm -f $K1
+			dropbearkey -t rsa -f $K1 &
+			newkey=1
+		fi
+		if ! dropbearkey -y -f $K2 >/dev/null 2>&1; then
+			[ -e "$K2" ] && echo "BUG: $K2 existed, but invalid!"
+			rm -f $K2
+			dropbearkey -t dss -f $K2 &
+			newkey=1
+		fi
+		wait
+		if [ -n "$newkey" ]; then
+			echo "$0: restarting dropbear to load new keys"
+			start-stop-daemon -K -q -p /var/run/dropbear.pid
+		fi
+	) &
+
+	# dropbear will restart until keys are available
+	babysit 10 dropbear -a -s -F -E 2>&1 | logos dropbear &
 }
 stop() {
 	# we could use pkill dropbear here, but then it would kill running
 	# ssh sessions, which is not what we want.  So use the pidfile
 	# instead.  But we do want to make sure the babysitter stays dead.
+	pkill -f dropbearkey
 	pkillwait -f 'babysit [0-9]+ dropbear'
 	start-stop-daemon -K -q -p /var/run/dropbear.pid
 }
