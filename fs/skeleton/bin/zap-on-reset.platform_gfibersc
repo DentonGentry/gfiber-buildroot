@@ -14,10 +14,10 @@ while :; do
   log "reset button pressed!  waiting for button release."
   if reset-button-held 2000; then
     log "reset button activated."
-    leds 0 1 0 1 0 0  # blinky red light to indicate initial reset mode
+    leds 2 0 2 0 2 0  # fast blinky blue light to indicate initial reset mode
     if reset-button-held 10000; then
       log "factory reset requested."
-      leds 0 15 0 15 0 15  # noisy leds to indicate full on factory reset
+      leds 2 0  # blinky blue light (wait led, same as booting/updating) to indicate full on factory reset
       zap --i-really-mean-it --erase-backups
       log "factory reset: rebooting in 10 seconds..."
       sleep 10
