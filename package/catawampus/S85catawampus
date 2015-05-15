@@ -58,13 +58,8 @@ case "$1" in
     fi
     ;;
   stop)
-    if is-windcharger; then
-        pkillwait -f '^python /usr/catawampus/cwmpd'
-        pkillwait -f '^alivemonitor.*cwmpd'
-    else
-        pkillwait -x cwmpd
-        pkillwait -f 'alivemonitor.*cwmpd'
-    fi
+    pkillwait -f '^python /usr/catawampus/cwmpd'
+    pkillwait -f '^alivemonitor.*cwmpd'
     pkillwait -x cwmp_monitor
     pkillwait -x isostream
     pkillwait -x poll_hostnames
