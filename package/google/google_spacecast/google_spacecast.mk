@@ -54,6 +54,8 @@ endef
 
 define GOOGLE_SPACECAST_PROTOS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,auth)
+	$(call GOOGLE_SPACECAST_GEN_PROTO,attestation)
+	$(call GOOGLE_SPACECAST_GEN_PROTO,corpus_description)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,device)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,crypto)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,feeds)
