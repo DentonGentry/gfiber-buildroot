@@ -32,17 +32,19 @@ mount_once "/etc" "/chroot/chromeos/etc"
 mount_once "/tmp" "/chroot/chromeos/tmp"
 
 # Sanity check
-[ -x /chroot/chromeos/bin/buffet ] || exit 0
-[ -d /chroot/chromeos/etc/buffet ] || exit 0
-[ -e /chroot/chromeos/var/run/dbus/system_bus_socket ] || exit 0
+[ -x /chroot/chromeos/bin/buffet ] || exit 1
+[ -d /chroot/chromeos/etc/buffet ] || exit 1
 
 # Create necessary directories and dependencies to run Buffet.
 mkdir -p /chroot/chromeos/var/run/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
 
+# Sanity check: DBus socket has to be present.
+wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
+
 start() {
   echo "Starting buffet service..."
-  chroot /chroot/chromeos /bin/buffet 2>&1 | logos buffet &
+  babysit 10 chroot /chroot/chromeos /bin/buffet 2>&1 | logos buffet &
   [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
   echo "Buffet started successfully"
 }
