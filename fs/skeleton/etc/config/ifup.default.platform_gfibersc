@@ -6,6 +6,8 @@ ip link set dev "$iface" up
 if [ "$iface" = lan0 ]; then
   # TODO(reddaly): Configure fallback IP for appliance in case DHCP client
   # fails?
+  echo "set $iface link up again"
+  ip link set dev "$iface" up
   if [ -z "$(ip -o -4 addr show $iface)" ]; then
     run-dhclient "$iface"
   fi
