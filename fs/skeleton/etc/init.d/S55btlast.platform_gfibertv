@@ -1,0 +1,37 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+if ! experiment BluetoothLast; then
+  exit 0
+fi
+
+run()
+{
+  cmd=$1
+  shift
+  delay=0
+  for n in $*; do
+    sleep $delay
+    delay=4
+    echo "$0: running $cmd $n..."
+    $cmd $n
+  done
+}
+
+case $1 in
+  start)
+    run start drivers bluez
+    ;;
+  stop)
+    run stop bluez drivers
+    ;;
+  restart)
+    run stop bluez drivers
+    run start drivers bluez
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

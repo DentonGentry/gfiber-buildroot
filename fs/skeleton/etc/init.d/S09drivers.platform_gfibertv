@@ -5,8 +5,15 @@ MODULE_PATH=/usr/lib/modules
 start()
 {
   register_experiment SkipBluetoothWifi
+  register_experiment BluetoothLast
 
   if experiment SkipBluetoothWifi; then
+    exit 0
+  fi
+  done=/tmp/btlast_$(basename $0).done
+  if experiment BluetoothLast && [ ! -f "$done" ]; then
+    : > "$done"
+    echo "$0: skipping start due to BluetoothLast experiment."
     exit 0
   fi
 

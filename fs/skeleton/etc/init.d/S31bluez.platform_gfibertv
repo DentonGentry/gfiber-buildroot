@@ -31,6 +31,13 @@ hci_active=${hci_ifaces##* }
 
 case "$1" in
   start)
+    done=/tmp/btlast_$(basename $0).done
+    if experiment BluetoothLast && [ ! -f "$done" ]; then
+      : > "$done"
+      echo "$0: skipping start due to BluetoothLast experiment."
+      exit 0
+    fi
+
     BT_MAC=$(cat "${BT_MAC_FILE}")
     BLUEZ_ADAP_DIR="${BLUEZ_STOR_DIR}/${BT_MAC}"
     BLUEZ_DEVC_DIR="${BLUEZ_ADAP_DIR}/cache"
