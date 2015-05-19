@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_TPM
+        bool "go_tpm"
+        help
+          Go-TPM is a Go library that communicates directly with a TPM on Linux.
