@@ -1,0 +1,36 @@
+#!/bin/sh
+# UpdateEngine init script.
+
+BINARY="/app/spacecast/updateengine"
+BASE_DIR="/var/media/updateengine"
+UPDATES_DIR="${BASE_DIR}/updates"
+
+FLAGS="-logtostderr=true"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "UpdateEngine is already running!"
+    else
+      if [ ! -d "$UPDATES_DIR" ]; then
+        mkdir -p "$UPDATES_DIR"
+        chmod 755 "$UPDATES_DIR"
+      fi
+
+      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos updateengine &
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

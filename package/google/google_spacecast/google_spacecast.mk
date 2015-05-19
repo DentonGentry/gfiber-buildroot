@@ -106,6 +106,7 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	cd $(@D) && go build spacecast/appliance/statemanager;  \
 	cd $(@D) && go build spacecast/appliance/tunermanager;  \
 	cd $(@D) && go build -o updatebroker spacecast/appliance/updatebroker/main;  \
+	cd $(@D) && go build -o updateengine spacecast/appliance/updateengine/main;  \
 	cd $(@D) && go build spacecast/appliance/monlog_token_refresher ; \
 	cd $(@D) && go build go/src/tools/tpmverify.go
 endef
@@ -127,6 +128,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/spacecast/tunermanager
 	$(INSTALL) -D -m 0755 $(@D)/updatebroker \
 		$(TARGET_DIR)/app/spacecast/updatebroker
+	$(INSTALL) -D -m 0755 $(@D)/updateengine \
+		$(TARGET_DIR)/app/spacecast/updateengine
 	$(INSTALL) -D -m 0755 $(@D)/monlog_token_refresher \
 		$(TARGET_DIR)/app/spacecast/monlog_token_refresher
 	$(INSTALL) -D -m 0755 $(@D)/tpmverify \
@@ -147,6 +150,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S87updatebroker \
 		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S89updateengine \
+		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_token_refresher \
 		$(TARGET_DIR)/etc/init.d/
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
@@ -156,6 +161,7 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.UpdateBroker.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.UpdateEngine.conf \
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.Authorizer.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 
