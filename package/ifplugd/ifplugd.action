@@ -1,0 +1,23 @@
+#! /bin/sh
+
+# called from ifplugd
+
+iface="$1"
+action="$2"
+
+if [ "$iface" != pon0 ]; then
+  exit 0
+fi
+
+case "$action" in
+  up)
+    ethtool -r eth0
+    ;;
+  down)
+    ethtool -r eth0
+    ;;
+  *)
+    echo "$0: unknown action '$action'"
+    exit 1
+esac
+exit 0

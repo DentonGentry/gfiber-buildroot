@@ -1,0 +1,32 @@
+From 3600de26c13e1b0323dab03ef52db1c389b8cd09 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Fri, 26 Dec 2014 13:34:56 -0800
+Subject: [PATCH] Silence is golden.
+
+ifplugd wants to read stdout/stderr of its child
+processes, in order to log it. If a child exited
+without producing any output, ifplugd would wait
+forever.
+
+If the child exits, stop waiting for output.
+---
+ src/ifplugd.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/ifplugd.c b/src/ifplugd.c
+index 76d4d1a..1a7bb5b 100644
+--- a/src/ifplugd.c
++++ b/src/ifplugd.c
+@@ -221,6 +221,9 @@ int action(interface_status_t status) {
+             if (sig != SIGCHLD) {
+                 daemon_log(LOG_WARNING, "Killing child.");
+                 kill(pid, SIGTERM);
++            } else {
++                /* child exited, we don't need to keep waiting for output. */
++                break;
+             }
+         }
+         
+-- 
+2.2.0.rc0.207.ga3a616c
+
