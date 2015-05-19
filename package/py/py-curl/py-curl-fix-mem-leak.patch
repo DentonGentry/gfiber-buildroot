@@ -1,0 +1,44 @@
+diff --git a/src/pycurl.c b/src/pycurl.c
+index a17a23b..a07cb51 100644
+--- a/src/pycurl.c
++++ b/src/pycurl.c
+@@ -845,6 +845,7 @@ util_curl_xdecref(CurlObject *self, int flags, CURL *handle)
+         ZAP(self->pro_cb);
+         ZAP(self->debug_cb);
+         ZAP(self->ioctl_cb);
++        ZAP(self->opensocket_cb);
+     }
+ 
+     if (flags & 8) {
+@@ -2284,6 +2285,13 @@ util_multi_close(CurlMultiObject *self)
+     }
+ }
+ 
++static void
++util_multi_xdecref(CurlMultiObject *self)
++{
++    ZAP(self->dict);
++    ZAP(self->t_cb);
++    ZAP(self->s_cb);
++}
+ 
+ static void
+ do_multi_dealloc(CurlMultiObject *self)
+@@ -2291,7 +2299,7 @@ do_multi_dealloc(CurlMultiObject *self)
+     PyObject_GC_UnTrack(self);
+     Py_TRASHCAN_SAFE_BEGIN(self)
+ 
+-    ZAP(self->dict);
++    util_multi_xdecref(self);
+     util_multi_close(self);
+ 
+     PyObject_GC_Del(self);
+@@ -2317,7 +2325,7 @@ do_multi_close(CurlMultiObject *self)
+ static int
+ do_multi_clear(CurlMultiObject *self)
+ {
+-    ZAP(self->dict);
++    util_multi_xdecref(self);
+     return 0;
+ }
+ 
