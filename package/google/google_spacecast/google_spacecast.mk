@@ -36,12 +36,14 @@ define GOOGLE_SPACECAST_GEN_PROTO
 endef
 
 # Build rule for OnePlatform protos.
+# The first argument is the name of the subapi (or just leave it empty if no subapi)
+# The second argument is the name of the proto, without the extension.
 define GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO
-	mkdir -p $(@D)/proto/src/google3/google/internal/spacecast/v1beta2/$(1)_proto
+	mkdir -p $(@D)/proto/src/google3/google/internal/spacecast/$(1)/v1beta2/$(2)_proto
 	export PATH=$(TARGET_PATH) ; \
-	protoc --go_out=plugins=grpc:$(@D)/proto/src/google3/google/internal/spacecast/v1beta2/$(1)_proto \
-		$(@D)/go/src/google3/google/internal/spacecast/v1beta2/$(1).proto \
-		--proto_path=$(@D)/go/src/google3/google/internal/spacecast/v1beta2 \
+	protoc --go_out=plugins=grpc:$(@D)/proto/src/google3/google/internal/spacecast/$(1)/v1beta2/$(2)_proto \
+		$(@D)/go/src/google3/google/internal/spacecast/$(1)/v1beta2/$(2).proto \
+		--proto_path=$(@D)/go/src/google3/google/internal/spacecast/$(1)/v1beta2 \
 		--proto_path=$(@D)/go/src
 endef
 
@@ -56,13 +58,16 @@ define GOOGLE_SPACECAST_PROTOS
 	$(call GOOGLE_SPACECAST_GEN_PROTO,auth)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,attestation)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,corpus_description)
+	$(call GOOGLE_SPACECAST_GEN_PROTO,database)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,device)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,corpus_description)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,crypto)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,feeds)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,spacecast_api)
 	$(call GOOGLE_SPACECAST_GEN_PROTO,storage)
-	$(call GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO,widevine_proxy)
+	$(call GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO,,widevine_proxy)
+	$(call GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO,authentication,auth)
+	$(call GOOGLE_SPACECAST_GEN_ONEPLATFORM_PROTO,authentication,device_authentication)
 
 	find $(@D)/proto/src/spacecast/proto -name "*.pb.go" | xargs sed -i s/\.pb/_proto/
 endef
