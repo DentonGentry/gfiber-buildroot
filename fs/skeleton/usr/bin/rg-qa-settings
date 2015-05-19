@@ -3,9 +3,7 @@
 # Restores the same settings which used to be hard-coded on GFRG2x0.
 
 # LAN IP address
-cwmp add Device.IP.Interface.256.IPv4Address
-cwmp set Device.IP.Interface.256.IPv4Address.1.IPAddress 192.168.42.1
-cwmp set Device.IP.Interface.256.IPv4Address.1.SubnetMask 255.255.255.0
+ip addr add 192.168.42.1/24 dev br0
 
 # DHCP server
 cwmp add Device.DHCPv4.Server.Pool
