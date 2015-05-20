@@ -1,0 +1,6 @@
+#!/bin/sh
+
+while true; do
+  echo "Python noop time: $(time -p python -c "pass" 2>&1 | grep real | sed "s/real //") seconds"
+  sleep 600
+done
