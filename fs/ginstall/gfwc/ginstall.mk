@@ -42,8 +42,12 @@ define ROOTFS_GINSTALL_CMD
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh \
 	    -all-root -pf $(QCA_DIR)/build/devsqsh.txt -comp lzma && \
 	$(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
-	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage \
-        -A $(BR2_ARCH) -O linux -T kernel -C lzma -a 80002000 \
+	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage   \
+        -A $(BR2_ARCH) -O linux -T kernel -C lzma           \
+				-a 0x`$(CROSS_COMPILE)readelf \
+							-S $(BINARIES_DIR)/../build/linux-HEAD/vmlinux | \
+							grep -F '[ 1] .text'	| \
+							grep -o '8.*' |cut -d' ' -f1`  \
 				-e `$(CROSS_COMPILE)readelf \
 							-h $(BINARIES_DIR)/../build/linux-HEAD/vmlinux | \
 							grep 'Entry point address' | \
