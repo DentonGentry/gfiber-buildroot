@@ -11,8 +11,7 @@ define QCA95XX_BUILD_CMDS
 		MAKEARCH=make TOPDIR=$(@D)/qca95xx KERNELPATH=$(@D)/../linux-HEAD \
 		INSTALL_ROOT=$(@D)/../../target \
 		KERNELVER=$(shell cat $(@D)/../linux-HEAD/include/config/kernel.release) \
-		BOARD_TYPE=ap143 BUILD_TYPE=jffs2 -f Makefile.board953x \
-		enet_build art_mod driver_build cgi athr-hostapd acfg_build lzma_build
+		BOARD_TYPE=ap143 BUILD_TYPE=jffs2 -f Makefile.board953x lzma_build
 endef
 
 define QCA95XX_INSTALL_TARGET_CMDS

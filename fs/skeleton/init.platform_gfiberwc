@@ -3,11 +3,7 @@
 mount -rw -t proc none /proc
 mount -rw -t tmpfs none /tmp
 mount -rw -t sysfs none /sys
-mount -rw -t devpts none /dev/pts
-
-export PATH=$PATH:/etc/ath
-
-insmod /lib/modules/`uname -r`/net/athrs_gmac.ko
+mkdir /dev/pts && mount -rw -t devpts none /dev/pts
 
 ##
 ## Put the names of the interfaces in the environmental variables
@@ -19,12 +15,6 @@ export LAN_IF=eth1
 
 ifconfig $LAN_IF up
 ifconfig $WAN_IF up
-
-. /etc/ath/apcfg
-
-/usr/sbin/telnetd
-/usr/sbin/httpd -h /usr/www/
-/bin/factoryreset /dev/freset
 
 # start the page cache/kmem cache cleanup timer in the kernel
 echo 1 > /proc/sys/vm/drop_caches
