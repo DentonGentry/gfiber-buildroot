@@ -146,6 +146,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/dbus-1/system.d/
 	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.UpdateBroker.conf \
 		$(TARGET_DIR)/etc/dbus-1/system.d/
+	$(INSTALL) -D -m 0644 package/google/google_spacecast/etc/dbus-1/system.d/com.google.spacecast.Authorizer.conf \
+		$(TARGET_DIR)/etc/dbus-1/system.d/
 
 	# Buffet command and state definitions
 	# FIXME TODO(efirst): Modify buffet.conf to use prod GCD instead of staging and prod credentials before release.
@@ -174,6 +176,7 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_token_refresher
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.ConfigManager.conf
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf
+	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.Authorizer.conf
 endef
 
 $(eval $(call GENTARGETS))
