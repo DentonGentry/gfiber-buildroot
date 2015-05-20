@@ -176,6 +176,7 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_token_refresher
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.ConfigManager.conf
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.StateManager.conf
+	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.UpdateBroker.conf
 	rm -f $(TARGET_DIR)/etc/dbus-1/system.d/com.google.spacecast.Authorizer.conf
 endef
 
