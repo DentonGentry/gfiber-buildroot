@@ -19,7 +19,7 @@ mount_jffs2()
   local device=/dev/mtdblock$mtd_no
   local dir="$2"
 
-  mount -t jffs2 -o defaults,noatime $device $dir \
+  mount -t jffs2 $device $dir \
     || { echo "error mounting jffs2 on '$device' as '$dir'"; return 1; }
 }
 

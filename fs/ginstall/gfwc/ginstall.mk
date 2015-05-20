@@ -40,7 +40,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
 	cd $(BINARIES_DIR) && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh \
-	    -all-root -pf $(QCA_DIR)/build/devsqsh.txt -comp lzma && \
+	    -all-root -pf $(QCA_DIR)/build/devsqsh.txt -comp xz -noappend && \
 	$(QCA_DIR)/apps/lzma457/CPP/7zip/Compress/LZMA_Alone/lzma e vmlinux.bin vmlinux.bin.lzma && \
 	$(BINARIES_DIR)/../build/uboot-HEAD/tools/mkimage   \
         -A $(BR2_ARCH) -O linux -T kernel -C lzma           \
