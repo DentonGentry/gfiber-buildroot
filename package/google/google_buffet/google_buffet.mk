@@ -4,7 +4,7 @@
 #
 #############################################################
 
-CHROMEOS_VERSION = R44-6953
+BUFFET_CHROMEOS_VERSION = R44-6953
 GOOGLE_BUFFET_SITE = repo://vendor/google/tarballs
 
 ifeq ($(BR2_PACKAGE_GOOGLE_BUFFET_DEMOS),y)
@@ -23,7 +23,7 @@ endif
 define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	# Untar and place the chromeos rootdir under /chroot
 	mkdir -p $(TARGET_DIR)/chroot && \
-	tar -zxvf $(@D)/google_buffet-$(CHROMEOS_VERSION).tar.gz -C $(TARGET_DIR)/chroot
+	tar -zxvf $(@D)/google_buffet-$(BUFFET_CHROMEOS_VERSION).tar.gz -C $(TARGET_DIR)/chroot
 	# Copy global configs to /etc/buffet
 	mkdir -p $(TARGET_DIR)/etc/buffet && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/base_state.schema.json $(TARGET_DIR)/etc/buffet && \
