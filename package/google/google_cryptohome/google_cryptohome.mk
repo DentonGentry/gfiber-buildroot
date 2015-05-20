@@ -4,13 +4,13 @@
 #
 #############################################################
 
-CHROMEOS_VERSION = R44-6953
+CRYPTOHOME_CHROMEOS_VERSION = R44-6953
 GOOGLE_CRYPTOHOME_SITE = repo://vendor/google/tarballs
 
 define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	# Untar and place the chromeos rootdir under /chroot
 	mkdir -p $(TARGET_DIR)/chroot
-	tar -zxvf $(@D)/google_cryptohome-$(CHROMEOS_VERSION).tar.gz -C $(TARGET_DIR)/chroot
+	tar -zxvf $(@D)/google_cryptohome-$(CRYPTOHOME_CHROMEOS_VERSION).tar.gz -C $(TARGET_DIR)/chroot
 	# Copy configuration file
 	$(INSTALL) -m 0644 -D package/google/google_cryptohome/tcsd.conf $(TARGET_DIR)/etc
 	# Copy Hardware-ID
