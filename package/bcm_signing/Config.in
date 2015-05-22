@@ -1,6 +1,7 @@
 config BR2_PACKAGE_BCM_SIGNING
 	bool "Enable Broadcom Signing"
 	depends on BR2_PACKAGE_GOOGLE_PROD
+	depends on BR2_TARGET_GENERIC_PLATFORM_NAME != "gfsc100"
 	default y
 	help
 	  Broadcom signing tool.
