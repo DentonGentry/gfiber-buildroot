@@ -1,22 +1,25 @@
 #!/bin/sh
 . /etc/utils.sh
 
+set_mac_from_hnvram()
+{
+  local DEV="$1"
+  local VAR_NAME="$2"
+  if [ -f /sys/class/net/$DEV ]; then
+    local addr="$(hnvram -qr "$VAR_NAME")"
+    if [ -n "$addr" ]; then
+      echo "Setting $DEV mac address to $addr"
+      ip link set dev $DEV down
+      ip link set dev $DEV address "$addr"
+      ip link set dev $DEV up
+    else
+      echo "$DEV: sysvar $VAR_NAME not found"
+    fi
+  fi
+}
 
 case "$1" in
   start)
-    WIFI_MAC=$(hnvram -qr MAC_ADDR_WIFI)
-    if [ -z "$WIFI_MAC" ]; then
-      MAC=$(hnvram -qr MAC_ADDR)
-      if [ -z "${MAC}" ]; then
-        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
-      else
-        WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
-      fi
-    fi
-    if [ -n "$WIFI_MAC" ]; then
-      mwifi_param="wifi_addr=$WIFI_MAC"
-    fi
-
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -44,13 +47,9 @@ case "$1" in
     # configure loopback
     ifup lo
 
-    # Set the wifi mac address from values in hnvram.
-    if [ -e /sys/class/net/ath0 ]; then
-      a=$(hnvram -qr MAC_ADDR_WIFI)
-      if [ -n "$a" ]; then
-        ip link set ath0 address "$a"
-      fi
-    fi
+    set_mac_from_hnvram wan0 MAC_ADDR1
+    set_mac_from_hnvram lan0 MAC_ADDR2
+    set_mac_from_hnvram ath0 MAC_ADDR_WIFI
 
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
