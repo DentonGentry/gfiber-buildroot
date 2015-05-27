@@ -76,7 +76,7 @@ endif
 
 endif #arm
 
-ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
+ifeq ($(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 else
 ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
@@ -119,7 +119,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
 	fi && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
+	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
 		if [ -e '$(BAREBOX)' ]; then \
 			cp $(BAREBOX) $(BINARIES_DIR)/loader.img && \
 			cp $(BAREBOX_SIG) $(BINARIES_DIR)/loader.sig; \
@@ -132,7 +132,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	cd $(BINARIES_DIR) && \
 	ln -f rootfs.squashfs rootfs.img && \
 	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
+	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T multi -C none \
 			-a 0x04008000 -e 0x04008000 -n Linux \
