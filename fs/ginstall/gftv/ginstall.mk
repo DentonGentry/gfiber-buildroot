@@ -135,7 +135,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T multi -C none \
-			-a 0x03008000 -e 0x03008000 -n Linux \
+			-a 0x04008000 -e 0x04008000 -n Linux \
 			-d zImage:simpleramfs.cpio.gz \
 			uImage && \
 		chmod a+r uImage && \
