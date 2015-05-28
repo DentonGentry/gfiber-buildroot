@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GOOGLE_CAST
+	bool "Build Google Cast package"
+	select BR2_PACKAGE_BCM_COMMON
+	select BR2_PACKAGE_BCM_ROCKFORD
+	select BR2_PACKAGE_LIBCAP
+	select BR2_PACKAGE_LIBNSS
+	select BR2_PACKAGE_NINJA
