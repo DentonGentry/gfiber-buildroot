@@ -19,7 +19,7 @@ PROTOBUF_LICENSE_FILES = COPYING.txt
 # N.B. Need to use host protoc during cross compilation.
 PROTOBUF_DEPENDENCIES = host-protobuf
 HOST_PROTOBUF_DEPENDENCIES = host-automake
-PROTOBUF_CONF_OPT = --with-protoc=$(HOST_DIR)/usr/bin/protoc --enable-static
+PROTOBUF_CONF_OPT = --with-protoc=$(HOST_DIR)/usr/bin/protoc --enable-static --with-pic
 
 PROTOBUF_INSTALL_STAGING = YES
 
