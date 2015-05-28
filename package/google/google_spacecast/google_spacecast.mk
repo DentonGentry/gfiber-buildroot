@@ -19,6 +19,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_oauth2 \
 				go_protobuf \
 				go_shanemhansen_gossl \
+				go_tpm \
 				google_widevine_cenc
 
 define GOOGLE_SPACECAST_GOENV
@@ -101,7 +102,8 @@ define GOOGLE_SPACECAST_BUILD_CMDS
 	cd $(@D) && go build spacecast/appliance/statemanager;  \
 	cd $(@D) && go build spacecast/appliance/tunermanager;  \
 	cd $(@D) && go build -o updatebroker spacecast/appliance/updatebroker/main;  \
-	cd $(@D) && go build spacecast/appliance/monlog_token_refresher
+	cd $(@D) && go build spacecast/appliance/monlog_token_refresher ; \
+	cd $(@D) && go build go/src/tools/tpmverify.go
 endef
 
 define GOOGLE_SPACECAST_TEST_CMDS
@@ -123,11 +125,14 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/app/spacecast/updatebroker
 	$(INSTALL) -D -m 0755 $(@D)/monlog_token_refresher \
 		$(TARGET_DIR)/app/spacecast/monlog_token_refresher
+	$(INSTALL) -D -m 0755 $(@D)/tpmverify \
+		$(TARGET_DIR)/app/spacecast/tpmverify
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/configmanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/statemanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/tunermanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/monlog_token_refresher
+	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/tpmverify
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S90spacecast \
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92configmanager \
