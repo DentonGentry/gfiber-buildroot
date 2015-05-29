@@ -1,0 +1,118 @@
+From fe4bab82bbd2e6972899d6ada13235a330cba008 Mon Sep 17 00:00:00 2001
+From: Erdi Chen <erdi@google.com>
+Date: Thu, 28 May 2015 13:53:20 -0700
+Subject: [PATCH] Add support for NV read.
+
+The internal nvRead function supports optional owner authorization.
+If nvLocked is true, owner authorization is required. If authorization
+is supplied, it must be correct even when nvLocked is false.
+
+The public NVRead function will fail if nvLocked is true. A version
+with owner authorization is not implemented yet.
+---
+ tpm/commands.go  | 21 +++++++++++++++++++++
+ tpm/constants.go | 18 ++++++++++++++++++
+ tpm/tpm.go       | 21 +++++++++++++++++++++
+ 3 files changed, 60 insertions(+)
+
+diff --git a/tpm/commands.go b/tpm/commands.go
+index e4c028c..5931268 100644
+--- a/tpm/commands.go
++++ b/tpm/commands.go
+@@ -320,3 +320,24 @@ func takeOwnership(f *os.File, encOwnerAuth []byte, encSRKAuth []byte, srk *key,
+ 
+ 	return &k, &ra, ret, nil
+ }
++
++// nvRead reads data from the NV store. If nvLocked is true, owner
++// authorization is required. If authorization is supplied, it must
++// be correct even when nvLocked is false.
++func nvRead(f *os.File, nvIndex uint32, offset uint32, data []byte, ca *commandAuth) (*responseAuth, uint32, error) {
++	in := []interface{}{nvIndex, offset, uint32(len(data))}
++	cmd := tagRQUCommand
++	var ra responseAuth
++	out := []interface{}{&data}
++	if ca != nil {
++		cmd = tagRQUAuth1Command
++		in = append(in, ca)
++		out = append(out, &ra)
++	}
++	ret, err := submitTPMRequest(f, cmd, ordNVReadValue, in, out)
++	if err != nil {
++		return nil, 0, err
++	}
++
++	return &ra, ret, nil
++}
+diff --git a/tpm/constants.go b/tpm/constants.go
+index df94e1e..f50a926 100644
+--- a/tpm/constants.go
++++ b/tpm/constants.go
+@@ -14,6 +14,20 @@
+ 
+ package tpm
+ 
++type NVIndex uint32
++
++const (
++	NVIndex0    uint32 = 0x00000000
++	NVIndexDir  uint32 = 0x10000001
++	NVIndexLock uint32 = 0xffffffff
++
++	NVIndexEKCert NVIndex = 0x1000f000
++	NVIndexTPMCC          = iota
++	NVIndexPlatformCert
++	NVIndexPlatformCC
++	NVIndexTrial
++)
++
+ // Supported TPM commands.
+ const (
+ 	tagPCRInfoLong     uint16 = 0x06
+@@ -44,6 +58,7 @@ const (
+ 	ordReadPubEK            uint32 = 0x0000007C
+ 	ordOwnerReadInternalPub uint32 = 0x00000081
+ 	ordFlushSpecific        uint32 = 0x000000BA
++	ordNVReadValue          uint32 = 0x000000CF
+ )
+ 
+ // Entity types. The LSB gives the entity type, and the MSB (currently fixed to
+@@ -154,3 +169,6 @@ const quoteVersion uint32 = 0x01010000
+ 
+ // oaepLabel is the label used for OEAP encryption in esRSAEsOAEPSHA1MGF1
+ var oaepLabel = []byte{byte('T'), byte('C'), byte('P'), byte('A')}
++
++// blockSize is the maximum NV write/read size.
++const blockSize = 80
+diff --git a/tpm/tpm.go b/tpm/tpm.go
+index 055d129..c1bd3b2 100644
+--- a/tpm/tpm.go
++++ b/tpm/tpm.go
+@@ -809,3 +809,24 @@ func TakeOwnership(f *os.File, newOwnerAuth digest, newSRKAuth digest, pubEK []b
+ 	raIn := []interface{}{ret, ordTakeOwnership, k}
+ 	return ra.verify(ca.NonceOdd, newOwnerAuth[:], raIn)
+ }
++
++func min(a, b int) int {
++	if a < b {
++		return a
++	}
++	return b
++}
++
++// NVRead reads data from the NV store. This function will fail if nvLocked
++// is true.
++func NVRead(f *os.File, nvIndex NVIndex, offset uint32, data []byte) error {
++	for off := int(offset); off < len(data); {
++		end := min(int(off+blockSize), len(data))
++		_, _, err := nvRead(f, uint32(nvIndex), uint32(off), data[off:end], nil)
++		if err != nil {
++			return err
++		}
++		off = end
++	}
++	return nil
++}
+-- 
+2.2.0.rc0.207.ga3a616c
+
