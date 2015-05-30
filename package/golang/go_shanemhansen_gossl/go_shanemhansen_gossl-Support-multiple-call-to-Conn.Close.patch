@@ -1,0 +1,31 @@
+From e69fe400d642612fa8f8fba979fe43ac291ad142 Mon Sep 17 00:00:00 2001
+From: Erdi Chen <erdi@google.com>
+Date: Tue, 5 May 2015 21:17:19 -0700
+Subject: [PATCH] Support multiple call to Conn.Close().
+
+---
+ conn.go | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/conn.go b/conn.go
+index 18e88d0..1a49fe8 100644
+--- a/conn.go
++++ b/conn.go
+@@ -57,8 +57,12 @@ func NewClientConn(ctx *Context, conn net.Conn) (*Conn, error) {
+ 	return sslConn, nil
+ }
+ func (self *Conn) Close() error {
+-	return self.ssl.Shutdown()
+-
++	if self.ssl != nil {
++		err := self.ssl.Shutdown()
++		self.ssl = nil
++		return err
++	}
++	return nil
+ }
+ func (self *Conn) LocalAddr() net.Addr {
+ 	return self.conn.LocalAddr()
+-- 
+2.2.0.rc0.207.ga3a616c
+

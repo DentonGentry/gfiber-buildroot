@@ -12,5 +12,6 @@ source "package/golang/go_mock/Config.in"
 source "package/golang/go_net/Config.in"
 source "package/golang/go_oauth2/Config.in"
 source "package/golang/go_protobuf/Config.in"
+source "package/golang/go_shanemhansen_gossl/Config.in"
 source "package/golang/go_tpm/Config.in"
 endmenu

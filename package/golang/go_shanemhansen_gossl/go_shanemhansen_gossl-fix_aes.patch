@@ -1,0 +1,60 @@
+From 67704ea586f90fa98a4fc0c049c6f8eed12b9a78 Mon Sep 17 00:00:00 2001
+From: pzm <pzm@google.com>
+Date: Tue, 31 Mar 2015 17:11:11 -0700
+Subject: [PATCH] fix aes
+
+---
+ aes/aes.go | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/aes/aes.go b/aes/aes.go
+index b8f89c8..1d8980c 100644
+--- a/aes/aes.go
++++ b/aes/aes.go
+@@ -1,4 +1,4 @@
+-// Package aes implements AES128 ECB hashing
++// Package aes implements AES hashing
+ package aes
+ 
+ /*
+@@ -87,13 +87,13 @@ func (self *aesKey) Encrypt(dst, src []byte) {
+ 
+ 	dst_p := pointerFromBytes(dst)
+ 	src_p := pointerFromBytes(src)
+-	C.AES_ecb_encrypt(src_p, dst_p, &self._aes_encrypt_key, C.AES_ENCRYPT)
++	C.AES_encrypt(src_p, dst_p, &self._aes_encrypt_key)
+ 
+ 	// for safe measure
+-	err := sslerr.Error()
+-	if err != nil {
+-		panic(err.Error())
+-	}
++	// err := sslerr.Error()
++	// if err != nil {
++	//	panic(err.Error())
++	// }
+ }
+ func (self *aesKey) Decrypt(dst, src []byte) {
+ 	if goCompatible {
+@@ -108,13 +108,13 @@ func (self *aesKey) Decrypt(dst, src []byte) {
+ 
+ 	dst_p := pointerFromBytes(dst)
+ 	src_p := pointerFromBytes(src)
+-	C.AES_ecb_encrypt(src_p, dst_p, &self._aes_decrypt_key, C.AES_DECRYPT)
++	C.AES_decrypt(src_p, dst_p, &self._aes_decrypt_key)
+ 
+ 	// for safe measure
+-	err := sslerr.Error()
+-	if err != nil {
+-		panic(err.Error())
+-	}
++	// err := sslerr.Error()
++	// if err != nil {
++	//	panic(err.Error())
++	// }
+ }
+ 
+ // Here for compatibility with 'crypto/aes'
+-- 
+2.2.0.rc0.207.ga3a616c
+
