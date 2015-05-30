@@ -1,0 +1,164 @@
+From d942737f8a3b15a79d2d1252e107edeb2e51d7e5 Mon Sep 17 00:00:00 2001
+From: Adam Langley <agl@golang.org>
+Date: Sun, 26 Apr 2015 15:18:41 -0700
+Subject: [PATCH] crypto/x509: allow parsing of certificates with unknown critical extensions.
+
+Previously, unknown critical extensions were a parse error. However, for
+some cases one wishes to parse and use a certificate that may contain
+these extensions. For example, when using a certificate in a TLS server:
+it's the client's concern whether it understands the critical extensions
+but the server still wishes to parse SNI values out of the certificate
+etc.
+
+This change moves the rejection of unknown critical extensions from
+ParseCertificate to Certificate.Verify. The former will now record the
+OIDs of unknown critical extensions in the Certificate and the latter
+will fail to verify certificates with them. If a user of this package
+wishes to handle any unknown critical extensions themselves, they can
+extract the extensions from Certificate.Extensions, process them and
+remove known OIDs from Certificate.UnknownCriticalExtensions.
+
+See discussion at
+https://groups.google.com/forum/#!msg/golang-nuts/IrzoZlwalTQ/qdK1k-ogeHIJ
+and in the linked bug.
+
+Fixes #10459
+
+Change-Id: I762521a44c01160fa0901f990ba2f5d4977d7977
+Reviewed-on: https://go-review.googlesource.com/9390
+Reviewed-by: Brad Fitzpatrick <bradfitz@golang.org>
+---
+
+diff --git a/src/crypto/x509/verify.go b/src/crypto/x509/verify.go
+index 7226d0a..21b870c 100644
+--- a/src/crypto/x509/verify.go
++++ b/src/crypto/x509/verify.go
+@@ -215,6 +215,10 @@
+ 		return c.systemVerify(&opts)
+ 	}
+ 
++	if len(c.UnhandledCriticalExtensions) > 0 {
++		return nil, UnhandledCriticalExtension{}
++	}
++
+ 	if opts.Roots == nil {
+ 		opts.Roots = systemRootsPool()
+ 		if opts.Roots == nil {
+diff --git a/src/crypto/x509/x509.go b/src/crypto/x509/x509.go
+index 71b0804..987e28a 100644
+--- a/src/crypto/x509/x509.go
++++ b/src/crypto/x509/x509.go
+@@ -488,6 +488,16 @@
+ 	// field is not populated when parsing certificates, see Extensions.
+ 	ExtraExtensions []pkix.Extension
+ 
++	// UnhandledCriticalExtensions contains a list of extension IDs that
++	// were not (fully) processed when parsing. Verify will fail if this
++	// slice is non-empty, unless verification is delegated to an OS
++	// library which understands all the critical extensions.
++	//
++	// Users can access these extensions using Extensions and can remove
++	// elements from this slice if they believe that they have been
++	// handled.
++	UnhandledCriticalExtensions []asn1.ObjectIdentifier
++
+ 	ExtKeyUsage        []ExtKeyUsage           // Sequence of extended key usages.
+ 	UnknownExtKeyUsage []asn1.ObjectIdentifier // Encountered extended key usages unknown to this package.
+ 
+@@ -897,7 +907,7 @@
+ 
+ 	for _, e := range in.TBSCertificate.Extensions {
+ 		out.Extensions = append(out.Extensions, e)
+-		failIfCritical := false
++		unhandled := false
+ 
+ 		if len(e.Id) == 4 && e.Id[0] == 2 && e.Id[1] == 5 && e.Id[2] == 29 {
+ 			switch e.Id[3] {
+@@ -936,7 +946,7 @@
+ 
+ 				if len(out.DNSNames) == 0 && len(out.EmailAddresses) == 0 && len(out.IPAddresses) == 0 {
+ 					// If we didn't parse anything then we do the critical check, below.
+-					failIfCritical = true
++					unhandled = true
+ 				}
+ 
+ 			case 30:
+@@ -1054,8 +1064,8 @@
+ 				}
+ 
+ 			default:
+-				// Unknown extensions cause an error if marked as critical.
+-				failIfCritical = true
++				// Unknown extensions are recorded if critical.
++				unhandled = true
+ 			}
+ 		} else if e.Id.Equal(oidExtensionAuthorityInfoAccess) {
+ 			// RFC 5280 4.2.2.1: Authority Information Access
+@@ -1076,12 +1086,12 @@
+ 				}
+ 			}
+ 		} else {
+-			// Unknown extensions cause an error if marked as critical.
+-			failIfCritical = true
++			// Unknown extensions are recorded if critical.
++			unhandled = true
+ 		}
+ 
+-		if e.Critical && failIfCritical {
+-			return out, UnhandledCriticalExtension{}
++		if e.Critical && unhandled {
++			out.UnhandledCriticalExtensions = append(out.UnhandledCriticalExtensions, e.Id)
+ 		}
+ 	}
+ 
+diff --git a/src/crypto/x509/x509_test.go b/src/crypto/x509/x509_test.go
+index 95efaf3..86a8b16 100644
+--- a/src/crypto/x509/x509_test.go
++++ b/src/crypto/x509/x509_test.go
+@@ -509,7 +509,13 @@
+ 				CommonName: "foo",
+ 			},
+ 			NotBefore: time.Unix(1000, 0),
+-			NotAfter:  time.Unix(100000, 0),
++			NotAfter:  time.Now().AddDate(1, 0, 0),
++
++			BasicConstraintsValid: true,
++			IsCA: true,
++
++			KeyUsage:    KeyUsageCertSign,
++			ExtKeyUsage: []ExtKeyUsage{ExtKeyUsageServerAuth},
+ 
+ 			ExtraExtensions: []pkix.Extension{
+ 				{
+@@ -525,13 +531,29 @@
+ 			t.Fatalf("failed to create certificate: %s", err)
+ 		}
+ 
+-		_, err = ParseCertificate(derBytes)
++		cert, err := ParseCertificate(derBytes)
++		if err != nil {
++			t.Fatalf("Certificate with unknown critical extension was not parsed: %s", err)
++		}
++
++		roots := NewCertPool()
++		roots.AddCert(cert)
++
++		// Setting Roots ensures that Verify won't delegate to the OS
++		// library and thus the correct error should always be
++		// returned.
++		_, err = cert.Verify(VerifyOptions{Roots: roots})
+ 		if err == nil {
+-			t.Fatalf("Certificate with critical extension was parsed without error.")
++			t.Fatal("Certificate with unknown critical extension was verified without error")
+ 		}
+ 		if _, ok := err.(UnhandledCriticalExtension); !ok {
+ 			t.Fatalf("Error was %#v, but wanted one of type UnhandledCriticalExtension", err)
+ 		}
++
++		cert.UnhandledCriticalExtensions = nil
++		if _, err = cert.Verify(VerifyOptions{Roots: roots}); err != nil {
++			t.Errorf("Certificate failed to verify after unhandled critical extensions were cleared: %s", err)
++		}
+ 	}
+ }
+ 
