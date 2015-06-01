@@ -121,6 +121,7 @@ start_adsmgr() {
   VIDEO_GID=$(id -g video)
   # Start up native ads manager
   babysit 60 \
+  alivemonitor /tmp/adsmgralive 80 10 120 \
   /app/sage/adsmgr -U $VIDEO_UID -G $VIDEO_GID 2>&1 | logos ads 0 20000000 &
 }
 
@@ -128,6 +129,7 @@ start_adsmgr() {
 stop_adsmgr() {
   pkillwait -f '(babysit.*)(adsmgr)'
   pkillwait -x 'adsmgr'
+  pkillwait -f '(alivemonitor.*)(adsmgr)'
 }
 
 
