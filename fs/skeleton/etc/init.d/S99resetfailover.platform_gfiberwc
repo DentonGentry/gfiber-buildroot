@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Reset the failover counter by setting SPARE_STKY_REG to 0
+
+SPARE_STKY_REG=0x180600b8
+devmem $SPARE_STKY_REG 32 0
