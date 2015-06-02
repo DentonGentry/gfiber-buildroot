@@ -1,0 +1,8 @@
+config BR2_PACKAGE_ART2
+	bool "art2"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Enable this option if you want to build the Qualcomm Atheros Radio Test
+	  kernel module
+
+# TODO(awdavies) Add in extra ART2 tool options if the kernel mod is active.
