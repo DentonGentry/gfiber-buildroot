@@ -2,6 +2,29 @@
 MODULE_PATH=/usr/lib/modules
 . /etc/utils.sh
 
+# RwFirmware mount /rw/firmware over /lib/firmware
+# allows developers to test new mrvl firmware
+check_rwfw_experiment()
+{
+  register_experiment RwFirmware
+
+  if experiment RwFirmware; then
+    local src=/lib/firmware
+    local dst=/rw/firmware
+    if [ ! -d "$dst" ]; then
+      echo "RwFirmware: copying $src to $dst"
+      mkdir -p "$dst"
+      tar cf - -C "$src" . | tar xf - -C "$dst"
+    fi
+    if ! touch "$src/this_is_rw" 2>/dev/null; then
+      echo "RwFirmware: mounting writable $dst on $src"
+      mount -o bind "$dst" "$src"
+    fi
+  fi
+}
+
+check_rwfw_experiment
+
 start()
 {
   register_experiment SkipBluetoothWifi
