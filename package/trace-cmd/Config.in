@@ -1,0 +1,6 @@
+config BR2_PACKAGE_TRACE_CMD
+	bool "trace-cmd"
+	help
+	  trace-cmd is a command-line tool that works with Ftrace.
+
+	  http://git.kernel.org/cgit/linux/kernel/git/rostedt/trace-cmd.git
