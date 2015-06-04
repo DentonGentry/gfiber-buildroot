@@ -486,9 +486,9 @@
                     <chain id="4" type="5" num="6" />
                     <chain id="5" type="6" num="170" />
                     <chain id="6" type="7" num="4096" />
-                    <chain id="7" type="8" num="16" />
+                    <chain id="7" type="8" num="64" />
                     <chain id="8" type="9" num="64" />
-                    <chain id="9" type="10" num="16" />
+                    <chain id="9" type="10" num="64" />
             </chain_parameters>
             <udp_checksum_use_init>0</udp_checksum_use_init>
             <udp_checksum_calc>0</udp_checksum_calc>
