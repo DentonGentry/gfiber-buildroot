@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_FROBNICAST
+        bool "google_frobnicast"
+        depends on BR2_PACKAGE_GOOGLE_MCASTCAPTURE
+        help
+          Builds the Frobnicast client to provide TV outside of the Fiber network
