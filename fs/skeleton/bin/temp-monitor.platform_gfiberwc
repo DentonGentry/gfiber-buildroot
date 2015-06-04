@@ -20,12 +20,23 @@ err_log() {
   echo "$@" >&2
 }
 
+cleanup() {
+  rm -f "$AP_STATUS_FILE"
+  exit $?
+}
+
 sigterm_handler() {
   err_log "INFO: Caught sigterm.  Exiting. . ."
-  exit 0
+  cleanup
+}
+
+sigint_handler() {
+  err_log "INFO: Caught sigint.  Exiting. . ."
+  cleanup
 }
 
 trap sigterm_handler TERM
+trap sigint_handler INT
 
 usage() {
   local progname="$(basename "$0")"
@@ -137,7 +148,7 @@ temp_check() {
     *)
       ;;
   esac
-  err_log "temperature: $temp ap_status: $current_state"
+  err_log "temperature: $temp ap_status: $new_state"
   return 0
 }
 
