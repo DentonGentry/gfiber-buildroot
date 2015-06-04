@@ -50,11 +50,11 @@ define SIMPLERAMFS_BUILD_CMDS
 
 	# the initramfs /init script, executed by the kernel by default
 	ln -f \
-		fs/simpleramfs/init \
-		fs/simpleramfs/recover \
-		fs/simpleramfs/mounts-sys \
-		fs/simpleramfs/mounts-root \
-		fs/simpleramfs/helpers.sh \
+		package/simpleramfs/init \
+		package/simpleramfs/recover \
+		package/simpleramfs/mounts-sys \
+		package/simpleramfs/mounts-root \
+		package/simpleramfs/helpers.sh \
 		$(@D)/fs/
 	ln -s lib $(@D)/fs/lib64
 
