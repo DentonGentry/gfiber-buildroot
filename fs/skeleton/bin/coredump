@@ -14,7 +14,7 @@ hdd_media_dir="/var/media"
 hdd_cores_dir="${hdd_media_dir}/cores"
 flash_cores_dir="/user"
 flash_cores_last_core_link="${flash_cores_dir}/last-core"
-if [ is-storage-box -a -w "$hdd_media_dir" ]; then
+if { is-storage-box || is-spacecast; } && [ -w /var/media ]; then
   mkdir -p "$hdd_cores_dir"
   outdir="$hdd_cores_dir"
   out="${hdd_cores_dir}/core-${pid}-${exe}.gz"
