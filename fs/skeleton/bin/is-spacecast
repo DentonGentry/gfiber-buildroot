@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device's platform string indicates it
+# is a SpaceCast appliance, and 1 (false) otherwise. A GFSC
+# has a hard drive and a satellite tuner.
+#
+# This might be extended later to include other model numbers.
+#
+. /etc/utils.sh
+read plat </etc/platform
+
+if startswith "$plat" 'GFSC'; then
+  exit 0
+else
+  exit 1
+fi
