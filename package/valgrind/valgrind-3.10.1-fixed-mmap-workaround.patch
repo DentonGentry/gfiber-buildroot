@@ -1,0 +1,27 @@
+--- valgrind-3.10.1.ori/coregrind/m_syswrap/syswrap-generic.c	2014-11-25 14:41:20.000000000 -0500
++++ valgrind-3.10.1/coregrind/m_syswrap/syswrap-generic.c	2015-06-05 16:13:23.209961017 -0400
+@@ -2194,6 +2194,12 @@
+                                     arg4 | VKI_MAP_FIXED,
+                                     arg5, arg6);
+ 
++   /* If fixed mapping fails and wasn't specified try without it */
++   if(sr_isError(sres)) {
++      sres = VG_(am_do_mmap_NO_NOTIFY)(advised, arg2, arg3,
++                                       arg4, arg5, arg6);
++   }
++
+    /* A refinement: it may be that the kernel refused aspacem's choice
+       of address.  If we were originally asked for a hinted mapping,
+       there is still a last chance: try again at any address.
+@@ -2211,6 +2217,11 @@
+       sres = VG_(am_do_mmap_NO_NOTIFY)(advised, arg2, arg3,
+                                        arg4 | VKI_MAP_FIXED,
+                                        arg5, arg6);
++      /* If fixed mapping fails and wasn't specified try without it */
++      if(sr_isError(sres)) {
++         sres = VG_(am_do_mmap_NO_NOTIFY)(advised, arg2, arg3,
++                                          arg4, arg5, arg6);
++      }
+    }
+ 
+    if (!sr_isError(sres)) {
