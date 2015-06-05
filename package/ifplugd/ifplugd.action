@@ -12,6 +12,7 @@ fi
 case "$action" in
   up)
     ethtool -r eth0
+    ifup man
     ;;
   down)
     ethtool -r eth0
