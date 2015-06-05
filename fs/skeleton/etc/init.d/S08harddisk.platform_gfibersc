@@ -34,7 +34,10 @@ check_pairing() {
   fi
 }
 
-FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200,pin_block_bitmaps
+FLAGS=noatime,barrier=1,data=writeback,noexec,nosuid,nodev,nohide_stale_gid=200
+if is-storage-box; then
+  FLAGS="${FLAGS},pin_block_bitmaps"
+fi
 
 case "$1" in
   start)
