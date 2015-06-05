@@ -1,17 +1,12 @@
 #!/bin/sh
 #
-# Returns 0 (true) if this device's platform string starts
-# with GFRG and 1 (false) otherwise.
+# Returns true if this device's platform is operating as
+# a network box.
 #
+. /etc/utils.sh
+
 read plat </etc/platform
-if [ "$plat" != "${plat#GFRG}" ]; then
-  exit 0
+
 # FIXME(kedong): Since we use optimus for spacecast now, treat it as the
 # network box until we remove the Qualcom switch on the real board.
-elif [ "$plat" != "${plat#GFSC}" ]; then
-  exit 0
-elif [ "$plat" != "${plat#GFMN}" ]; then
-  exit 0
-else
-  exit 1
-fi
+startswith "$plat", "GFRG" || startswith "$plat", "GFSC" || startswith "$plat", "GFMN"
