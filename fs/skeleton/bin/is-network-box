@@ -10,6 +10,8 @@ if [ "$plat" != "${plat#GFRG}" ]; then
 # network box until we remove the Qualcom switch on the real board.
 elif [ "$plat" != "${plat#GFSC}" ]; then
   exit 0
+elif [ "$plat" != "${plat#GFMN}" ]; then
+  exit 0
 else
   exit 1
 fi
