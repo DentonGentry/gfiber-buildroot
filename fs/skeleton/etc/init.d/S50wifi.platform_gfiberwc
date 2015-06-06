@@ -1,0 +1,46 @@
+#!/bin/sh
+. /etc/utils.sh
+
+interface_exists() {
+  [ -e "/sys/class/net/$1" ]
+}
+
+get_random_mac() {
+  echo -n "AA"
+  randomdata 0 5 | hexdump -e '5/1 ":%02X"'
+}
+
+create_secondary_interface() {
+  local interface="$1"
+  local suffix="$2"
+  local phy=$(find_phy_for_interface "$interface")
+  local mac=$(get_random_mac)
+  interface="${interface}${suffix}"
+  if ! interface_exists $interface; then
+    iw "$phy" interface add "$interface" type managed
+    ip link set dev "$interface" address "$mac"
+  fi
+}
+
+case "$1" in
+  start)
+    mkdir -p /tmp/wifi/fingerprints
+    if is-network-box; then
+      for interface in wlan0 wlan1; do
+        if interface_exists $interface; then
+          create_secondary_interface $interface _portal
+        fi
+      done
+    fi
+    wifi restore
+    ;;
+  stop)
+    wifi stop
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
