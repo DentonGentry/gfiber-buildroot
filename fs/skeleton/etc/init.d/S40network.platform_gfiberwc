@@ -20,6 +20,15 @@ set_mac_from_hnvram()
 
 case "$1" in
   start)
+    if [ "$(kernopt wifical)" != "1" ]; then
+      modprobe -a ath9k 2>/dev/null
+
+      # Enable wifi beacon and fatal debug logging.
+      if [ -e /sys/module/ath9k/parameters/debug ]; then
+        echo 0x00004400 >/sys/module/ath9k/parameters/debug
+      fi
+    fi
+
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -49,7 +58,7 @@ case "$1" in
 
     set_mac_from_hnvram wan0 MAC_ADDR1
     set_mac_from_hnvram lan0 MAC_ADDR2
-    set_mac_from_hnvram ath0 MAC_ADDR_WIFI
+    set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
 
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
@@ -74,7 +83,7 @@ case "$1" in
     # the bridge.
     for x in \
         /sys/class/net/lan0 \
-        /sys/class/net/ath[0-9]; do
+        /sys/class/net/wlan[0-9]; do
       x=${x#/sys/class/net/}
       echo "Adding interface $x..."
       ip link set $x up &&
