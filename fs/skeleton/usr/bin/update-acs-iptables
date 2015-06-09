@@ -1,4 +1,4 @@
-#! /usr/bin/zsh
+#!/bin/sh
 
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
@@ -46,110 +46,53 @@ iptables -t nat -F acsrules-nat-postrouting
 
 # ipv4 port mapping rules
 file=/tmp/cwmp_iptables
-min=0
-max=0
-if [ -f $file ]; then
-  declare -A cwmp
-  line=0
-  while IFS="=" read -r key value; do
-    line=$(($line + 1))
-    if [ -z "$key" ]; then
-      echo "$0: $file:$line: ignoring empty key" 1>&2
-      continue
-    fi
-    cwmp[$key]="$value"
-    id=${key##CWMP_}
-    id=${id%%_*}
-    if [ "$id" -lt "$min" ] || [ "$min" = 0 ]; then
-      min="$id"
-    fi
-    if [ "$id" -gt "$max" ] || [ "$max" = 0 ]; then
-      max="$id"
-    fi
-  done < $file
-
-  for rule in $(seq $min $max); do
-    tag="CWMP_${rule}_"
-
-    comment=${cwmp[${tag}COMMENT]}
-    protocol=${cwmp[${tag}PROTOCOL]}
-    source=${cwmp[${tag}SOURCE]}
-    gateway=${cwmp[${tag}GATEWAY]}
-    dest=${cwmp[${tag}DEST]}
-    sport=${cwmp[${tag}SPORT]}
-    dport=${cwmp[${tag}DPORT]}
-    enabled=${cwmp[${tag}ENABLE]}
-
+if [ -f "$file" ]; then
+  while IFS="," read -r comment protocol dest sport dport enabled src gateway;
+  do
     if [ "$enabled" != 1 ]; then
       continue
     fi
 
-    isrange=$((echo "$sport" | grep -q ":") && echo 1)
+    isrange=$( (echo "$sport" | grep -q ":") && echo 1 )
     if [ ! "$isrange" ]; then
       dportnat=":$dport"
     else
       if [ "$sport" != "$dport" ]; then
-        echo "$0: $tag: source port range ($sport) does not match dest port range ($dport)" 1>&2
+        echo "$0: $comment: source port range ($sport) does not match dest port range ($dport)" 1>&2
         continue
       fi
       dportnat=
     fi
 
-    iptables -t nat -A acsrules-nat-prerouting -i "$wans" -p "$protocol" -s "$source" -d "$gateway" --dport "$sport" \
+    iptables -t nat -A acsrules-nat-prerouting -i "$wans" -p "$protocol" -s "$src" -d "$gateway" --dport "$sport" \
       -j DNAT --to "$dest$dportnat" -m comment --comment "$comment"
-    iptables -t nat -A acsrules-nat-postrouting -p "$protocol" -s "$lanipv4mask" -d "$dest" --dport "$dport" \
-      -j SNAT --to "$lanipv4" -m comment --comment "$comment"
+    if [ -n "$lanipv4" ]; then
+      iptables -t nat -A acsrules-nat-postrouting -p "$protocol" -s "$lanipv4mask" -d "$dest" --dport "$dport" \
+        -j SNAT --to "$lanipv4" -m comment --comment "$comment"
+    else
+      echo "$0: $comment: No IPv4 LAN address assigned." 1>&2
+    fi
     iptables -A acsrules-filter-forward -p "$protocol" -d "$dest" --dport "$dport" -j ACCEPT \
       -m comment --comment "$comment"
     # this adds a lan rule so internal hosts can use the wan router ip to get the same mapping
-    if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ "$source" = 0/0 ]; then
+    if ( [ "$gateway" = "$wanipv4" ] || [ "$gateway" = 0/0 ] ) && [ "$src" = 0/0 ]; then
       iptables -t nat -A acsrules-nat-prerouting -i br0 -p "$protocol" -d "$wanipv4" --dport "$sport" \
         -j DNAT --to "$dest$dportnat" -m comment --comment "$comment"
     fi
-  done
+  done <$file
 fi
 
 # ipv6 port mapping rules
 file=/tmp/cwmp_ip6tables
-min=0
-max=0
-if [ -f $file ]; then
-  declare -A cwmp6
-  line=0
-  while IFS="=" read -r key value; do
-    line=$(($line + 1))
-    if [ -z "$key" ]; then
-      echo "$0: $file:$line: ignoring empty key" 1>&2
-      continue
-    fi
-    cwmp6[$key]="$value"
-    id=${key##CWMP_}
-    id=${id%%_*}
-    if [ "$id" -lt "$min" ] || [ "$min" = 0 ]; then
-      min="$id"
-    fi
-    if [ "$id" -gt "$max" ] || [ "$max" = 0 ]; then
-      max="$id"
-    fi
-  done < $file
-
-  for rule in $(seq $min $max); do
-    tag="CWMP_${rule}_"
-
-    comment=${cwmp6[${tag}COMMENT]}
-    protocol=${cwmp6[${tag}PROTOCOL]}
-    source=${cwmp6[${tag}SOURCE]}
-    dest=${cwmp6[${tag}DEST]}
-    sport=${cwmp6[${tag}SPORT]}
-    dport=${cwmp6[${tag}DPORT]}
-    enabled=${cwmp6[${tag}ENABLE]}
-
+if [ -f "$file" ]; then
+  while IFS="," read -r comment protocol dest sport dport enabled src gateway;
+  do
     if [ "$enabled" != 1 ]; then
       continue
     fi
 
-    ip6tables -A acsrules-filter-forward -p "$protocol" -s "$source" -d "$dest" --sport "$sport" --dport "$dport" -j ACCEPT -m comment --comment "$comment"
-  done
+    ip6tables -A acsrules-filter-forward -p "$protocol" -s "$src" -d "$dest" --sport "$sport" --dport "$dport" -j ACCEPT -m comment --comment "$comment"
+  done <$file
 fi
 
 # upnp IGD (firewall pinholes)
@@ -199,7 +142,7 @@ if [ -f $acs/dmzhostv4 ]; then
   # after catawampus if fixed to append a newline to the end of the file.
   echo "$file_contents" | while read dmz_lanv4 dmz_wanv4; do
     if [ -z "$dmz_wanv4" ]; then
-      # Legacy case, map everything from the wan's ip to the lan_ip
+      # Legacy case, map everything from the wans ip to the lan_ip
       dmz_wanv4="$wanipv4"
     fi
     # Map external dmz_wanv4 to internal dmz_lanv4.
