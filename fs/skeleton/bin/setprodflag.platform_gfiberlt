@@ -1,13 +1,12 @@
 #!/bin/sh
 
 sleep 300
+rm -f /tmp/ADMINMODE_*
 sysvar_cmd -s PRODUCTION_UNIT 1
 
-# kill inetd and telnet
-pkill -x inetd
-pkill -x telnetd
-
-# Don't stop dropbear if /tmp/DEBUG is still set.
+# Don't stop if /tmp/DEBUG is still set.
 if [ ! -f /tmp/DEBUG ]; then
-  /etc/init.d/S50dropbear stop
+  stop dropbear
+  stop telnetd
+  stop adminip
 fi
