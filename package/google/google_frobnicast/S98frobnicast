@@ -1,0 +1,32 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    umask 022
+    me=$(basename "$0")
+    if [ ! -f /tmp/frobnicast_key ]; then
+      echo "$me: /tmp/frobnicast_key not found"
+      exit 1
+    fi
+    if [ ! -f /tmp/frobnicast_address ]; then
+      echo "$me: /tmp/frobnicast_address not found"
+      exit 2
+    fi
+    if [ ! -f /tmp/tv_buffer_key2 ]; then
+      echo "$me: /tmp/tv_buffer_key not found"
+      exit 3
+    fi
+    babysit 60 frobclient 2>&1 | logos frobclient &
+    ;;
+  stop)
+    pkillwait -f '(babysit.*)(frobclient)'
+    pkillwait frobclient
+    pkillwait -f 'dhclient.*frob0'
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
