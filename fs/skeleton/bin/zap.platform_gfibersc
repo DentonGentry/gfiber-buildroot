@@ -7,6 +7,8 @@ if [ $? != 0 ]; then
 fi
 eval set -- "$OPT"
 
+. /etc/utils.sh
+
 ireallymeanit=0
 erasebackups=0
 while true; do
@@ -22,7 +24,7 @@ done
 if [ $ireallymeanit -eq 0 ]; then
   echo
   echo "                       *    *    *"
-  echo "THIS PROGRAM WILL WIPE ALL DATA IN THE FLASH PARTITIONS!"
+  echo "THIS PROGRAM WILL WIPE ALL DATA PARTITIONS ON HARD DISK!"
   echo "                       *    *    *"
   echo
   echo -n "Are you sure (y/n)? "
@@ -32,53 +34,93 @@ if [ $ireallymeanit -eq 0 ]; then
   ireallymeanit=1
 fi
 
-# copied from S08volcheck
-check_mmc()
+# partition is kernel or rootfs
+is_os_part()
 {
-  sgdisk -p /dev/mmcblk0 |
+  ans=$(sgdisk -p $1 2>/dev/null |
   while read number start end size unit code name; do
-    if [ "$name" = "$1" ]; then
-      echo $number
+    if [ "$number" = "$2" ]; then
+      case $name in
+        kernel*)
+          echo yes
+          ;;
+        rootfs*)
+          echo yes
+          ;;
+      esac
     fi
-  done
+  done)
+  [ a"$ans" = ayes ]
 }
+
+sata_dev=$(find_sata_blkdev)
+if [ ! -b$sata_dev ] ; then
+  echo not sata device: $sata_dev
+  exit 1
+fi
+
+# /var/media is partition 1
+media_dev=${sata_dev}1
+if is_os_part $sata_dev 1 ; then
+  echo cannot format software partition: $media_dev
+  exit 1
+fi
+
+# /config is partition 20
+config_dev=${sata_dev}20
+if is_os_part $sata_dev 20 ; then
+  echo cannot format software partition: $config_dev
+  exit 1
+fi
 
 leds 0 15 0 15 0 15  # noisy leds as we wipe things
 
-# try to umount what we can
-pkill -9 -f miniclient
-pkill -9 -f siege
-pkill -9 -f dir-monitor
-pkill -9 -f app_gtv
-pkill -9 -f apptvg
-pkill -9 -f bsa
-sleep 5
-(
-lsof | grep /user
-lsof | grep /config
-) | sed -e 's/^/BUSY: /'
-umount -f /config
-umount -f /user
-
-for mtdname in "data+ubi"; do
-  mtd=$(whichmtd "$mtdname")
-  if [ -n "$mtd" ]; then
-    echo "Wiping $mtdname ($mtd)..."
-    ubiformat --force -y "$mtd"
-  fi
+for f in /etc/init.d/S[89]* ; do
+	$f stop
 done
 
-for mtdname in "data+ext4"; do
-  mtd=$(check_mmc "$mtdname")
-  if [ -n "$mtd" ]; then
-    echo "Wiping $mtdname ($mtd)..."
-    dd if=/dev/zero of=/dev/mmcblk0p$mtd bs=65536 count=200
-  fi
+# force kill chroot binaries, just in case.
+pkill -9 -f buffet
+pkill -9 -f cryptohomed
+pkill -9 -f chapsd
+pkill -9 -f tcsd
+
+# force kill SpaceCast binaries, just in case.
+for f in /app/spacecast/* ; do
+  pkill -9 -f ${f#/app/spacecast/}
 done
 
-if [ $erasebackups -ne 0 ]; then
-  echo "Erasing backup files..."
-  rm -f /var/media/Wiz.bak /var/media/ManufacturingBurnin.mov
+# assert TPM physical presence
+chroot /chroot/chromeos /bin/tpmc ppon
+# clear TPM ownership
+chroot /chroot/chromeos /bin/tpmc clear
+# enable TPM
+chroot /chroot/chromeos /bin/tpmc enable
+# activate TPM
+chroot /chroot/chromeos /bin/tpmc activate
+
+# try to unmount up to 20 times
+for i in $(seq 20) ; do
+  umount -f $config_dev
+  mount | grep -q $config_dev || break
+done
+
+# try to unmount up to 20 times
+for i in $(seq 20) ; do
+  umount -f $media_dev
+  mount | grep -q $media_dev || break
+done
+
+# format config partition
+if ! mkfs.ext4 $config_dev ; then
+  # if we fail at this point, just try to delete everything
+  rm -rf /config/*
+fi
+
+# format media partition
+if ! mkfs.ext4 -m 0 -E lazy_itable_init=1 $media_dev ; then
+  # if we fail at this point, just try to delete everything
+  rm -rf /var/media/*
 fi
 
 leds 0  # done
