@@ -550,7 +550,7 @@
                 <!--  TPM_PNC_IGMP -->
                 <range num="10" type="0" size="06"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MC_DS -->
-                <range num="11" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="11" type="1" size="24"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_MAIN -->
                 <range num="12" type="1" size="64"  cntr_grp="3"  lu_mask="0" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV4_TCP_FLAG -->
@@ -566,7 +566,7 @@
                 <!--  TPM_PNC_IPV6_NH -->
                 <range num="18" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4_MC_DS -->
-                <range num="19" type="1" size="16"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="19" type="1" size="24"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_TCP_FLAG -->
                 <range num="20" type="1" size="02"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IPV6_L4 -->
