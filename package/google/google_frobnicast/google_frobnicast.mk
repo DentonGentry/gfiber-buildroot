@@ -16,7 +16,7 @@ define GOOGLE_FROBNICAST_INSTALL_TARGET_CMDS
 	DESTDIR=$(TARGET_DIR) \
 	$(MAKE) -C $(@D) install
 	$(INSTALL) -m 0755 -D package/google/google_frobnicast/S98frobnicast \
-		$(TARGET_DIR)/etc/init.d/S95frobnicast
+		$(TARGET_DIR)/etc/init.d/S98frobnicast
 endef
 
 define GOOGLE_FROBNICAST_TEST_CMDS
