@@ -5,4 +5,13 @@ config BR2_PACKAGE_ART2
 	  Enable this option if you want to build the Qualcomm Atheros Radio Test
 	  kernel module
 
-# TODO(awdavies) Add in extra ART2 tool options if the kernel mod is active.
+if BR2_PACKAGE_ART2
+
+config BR2_PACKAGE_ART2_NART
+	bool "Install nart utilities"
+	default y
+	help
+	  Installs client tools for art driver.
+
+endif
+

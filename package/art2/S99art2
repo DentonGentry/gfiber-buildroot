@@ -1,0 +1,75 @@
+#!/bin/sh
+ART_PARTITION=/dev/mtd9
+CALDATA_LINK=/dev/caldata
+
+load_kmod() {
+  # Calibration cannot run with any atheros drivers (ath9k, etc).
+  for mod in $(lsmod | grep ath); do
+    case "$mod" in
+      ath9k | ath10k) rmmod "$mod";;
+    esac
+  done
+  [ -d /sys/module/art ] || modprobe art
+}
+
+unload_kmod() {
+  [ -d /sys/module/art ] && rmmod art
+}
+
+create_devices() {
+  [ -c /dev/dk0 ] || mknod /dev/dk0 c 63 0
+  [ -c /dev/dk1 ] || mknod /dev/dk1 c 63 1
+  [ -L "$CALDATA_LINK" ] || ln -s "$ART_PARTITION" "$CALDATA_LINK"
+}
+
+cleanup() {
+  pkillwait -f nart.out
+  unload_kmod
+  [ -c /dev/dk0 ] && rm -f /dev/dk0
+  [ -c /dev/dk1 ] && rm -f /dev/dk1
+  [ -L "$CALDATA_LINK" ] && rm -f "$CALDATA_LINK"
+}
+trap cleanup TERM
+trap cleanup INT
+
+nart_out_start() {
+  # This may need to be edited to load a different instance depending on how
+  # nart was compiled.
+  babysit 60 nart.out -instance 0 -console 2>&1 | logos nart &
+}
+
+
+art_start() {
+  if runnable nart.out; then
+    create_devices
+    load_kmod
+    nart_out_start
+  fi
+}
+
+art_stop() {
+  cleanup
+}
+
+main() {
+  if [ "$(kernopt wifical)" != 0 ]; then
+    echo "WiFi Calibration Enabled.  Starting ART2. . ." 1>&2
+    case "$1" in
+      start)
+        art_start
+        ;;
+      stop)
+        art_stop
+        ;;
+      restart|reload)
+        art_stop; art_start
+        ;;
+      *)
+        echo "Usage: $0 {start|stop|restart}"
+    esac
+  else
+    echo "WiFi Calibration Disabled Skipping. . ." 1>&2
+  fi
+}
+
+main "$@"
