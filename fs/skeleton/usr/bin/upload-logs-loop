@@ -11,11 +11,18 @@ case "$PLATFORM" in
     ;;
 esac
 
-# On 3.16 or higher kernels we use the new uploader.
+# On 3.3 or higher kernels we use the new uploader.
+
+# /usr/bin/upload-crash-log2 uses the /dev/kmsg interface which was added in
+# kernel 3.5. The kernel version check below is deliberately too low because
+# the only device using a pre-3.5 kernel (windcharger) has backported the
+# /dev/kmsg interface and is therefore compatible. When windcharger is
+# upgraded past 3.5 we should change this version check back to "if >= 3.5"
+
 KERNEL_MAJOR=$(uname -r | cut -d . -f 1)
 KERNEL_MINOR=$(uname -r | cut -d . -f 2)
 if [ "$KERNEL_MAJOR" -gt 3 ] || \
-   [ "$KERNEL_MAJOR" -eq 3 -a "$KERNEL_MINOR" -ge 16 ]; then
+   [ "$KERNEL_MAJOR" -eq 3 -a "$KERNEL_MINOR" -ge 3 ]; then
   while :; do
     # The /tmp/logs-uploaded file is handled within upload-crash-logs2.
     alivemonitor /tmp/loguploadcounter 75 10 180 upload-crash-log2 --logtype=$LOGTYPE
