@@ -40,7 +40,8 @@ NO_TUNER_LOCK_LED_ON="5" # solid purple
 UPDATING_LED_ON="4 0" # blink blue
 RUNNING_LED_ON="4" # solid blue
 
-ifname="lan0"
+IFNAME="lan0"
+USB_ETH_IFNAME="eth0"
 
 change_state() {
   # Check if the new state is different from the previous one
@@ -69,16 +70,18 @@ has_ip_address() {
 is_link_up() {
   # FIXME TODO(efirst): Check whether a network cable is connected instead of whether the interface is up once
   # CL from Denton is complete that integrates ifplugd, which can take action when links go up or down.
-  is_interface_up "$ifname"
+  is_interface_up "$1"
 }
 
 watch-dir $CONTROL_PATH |
 while read f; do
 
-  if is_link_up; then
+  if is_link_up $USB_ETH_IFNAME || is_link_up $IFNAME; then
     test ! -e "$LINK_DOWN_FILE" || rm -f "$LINK_DOWN_FILE"
-    if has_ip_address $ifname; then
-      echo "IP address acquired on $ifname" >"$IP_FILE"
+    if has_ip_address $USB_ETH_IFNAME; then
+      echo "IP address acquired on $USB_ETH_IFNAME" >"$IP_FILE"
+    elif has_ip_address $IFNAME; then
+      echo "IP address acquired on $IFNAME" >"$IP_FILE"
     else
       rm -f "$IP_FILE"
     fi
