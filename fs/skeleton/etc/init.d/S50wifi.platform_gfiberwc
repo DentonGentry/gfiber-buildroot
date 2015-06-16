@@ -32,10 +32,10 @@ case "$1" in
         fi
       done
     fi
-    wifi restore
+    wifi -b 2.4 restore
     ;;
   stop)
-    wifi stop
+    wifi -b 2.4 stop
     ;;
   restart)
     $0 stop; $0 start
