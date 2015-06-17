@@ -7,6 +7,7 @@ GOOGLE_MINICLIENT_DEPENDENCIES=\
 GOOGLE_MINICLIENT_INSTALL_STAGING=YES
 
 define GOOGLE_MINICLIENT_BUILD_CMDS
+        HOSTDIR=$(HOST_DIR) \
         PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425 all
 endef
@@ -15,7 +16,7 @@ define GOOGLE_MINICLIENT_INSTALL_STAGING_CMDS
         $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_djitter_monitoring.h $(STAGING_DIR)/usr/include/tr135_djitter_monitoring.h
         $(INSTALL) -D -m 0644 $(@D)/BRCM/tr135_tcp_monitoring.h $(STAGING_DIR)/usr/include/tr135_tcp_monitoring.h
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425 \
-		DESTDIR=$(STAGING_DIR) install
+		DESTDIR=$(STAGING_DIR) install install_headers
 endef
 
 define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
