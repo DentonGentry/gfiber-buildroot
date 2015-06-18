@@ -16,9 +16,9 @@ define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	# Copy Hardware-ID
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/proc/device-tree/firmware/chromeos/
 	$(INSTALL) -m 0644 -D package/google/google_cryptohome/hardware-id $(TARGET_DIR)/chroot/chromeos/proc/device-tree/firmware/chromeos/
-	# Install /etc/init.d/S99cryptohome script
+	# Install /etc/init.d/S79cryptohome script
 	mkdir -p $(TARGET_DIR)/etc/init.d
-	$(INSTALL) -m 0755 -D package/google/google_cryptohome/S99cryptohome $(TARGET_DIR)/etc/init.d/S99cryptohome
+	$(INSTALL) -m 0755 -D package/google/google_cryptohome/S79cryptohome $(TARGET_DIR)/etc/init.d/S79cryptohome
 	# Install customized dbus config to run in chroot.
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
 	$(INSTALL) -m 0644 -D package/google/google_cryptohome/org.chromium.Chaps.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Chaps.conf
@@ -41,7 +41,7 @@ endef
 define GOOGLE_CRYPTOHOME_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Chaps.conf
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/Cryptohome.conf
-	rm -rf $(TARGET_DIR)/etc/init.d/S99cryptohome
+	rm -rf $(TARGET_DIR)/etc/init.d/S79cryptohome
 	rm -rf $(TARGET_DIR)/chroot/chromeos
 endef
 

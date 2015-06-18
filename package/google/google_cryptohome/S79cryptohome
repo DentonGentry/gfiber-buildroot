@@ -32,7 +32,7 @@
 # example: mount_once "/dev" "/chroot/chromeos/dev"
 mount_once() {
   if ! mount | grep -q "\ $2\ " ; then
-	mount -o bind $1 $2
+    mount -o bind $1 $2
   fi
 }
 
