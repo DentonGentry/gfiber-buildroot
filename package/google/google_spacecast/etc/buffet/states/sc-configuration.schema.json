@@ -104,6 +104,28 @@
         }
       }
     },
+    "_spacecastSoftwareUpdateConfig": {
+      "properties": {
+        "_minimumVersion": {
+          "type": "object",
+          "properties": {
+            "_omahaVersion": {"type": "string"},
+            "_spacecastVersion": {"type": "string"},
+            "_sha256": {"type": "string"}
+          }
+        },
+        "_preferredVersion": {
+          "type": "object",
+          "properties": {
+            "_omahaVersion": {"type": "string"},
+            "_spacecastVersion": {"type": "string"},
+            "_sha256": {"type": "string"}
+          }
+        },
+        "_omahaBaseUrl": {"type": "string"},
+        "_omahaChannel": {"type": "string"}
+      }
+    },
     "_monlogCredentialsConfig": {
       "properties": {
         "_authorizationCode": {"type": "string"}
