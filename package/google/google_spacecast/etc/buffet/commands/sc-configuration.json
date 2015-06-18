@@ -110,6 +110,30 @@
       "results": {
       }
     },
+    "_configureSpacecastSoftwareUpdate": {
+      "parameters": {
+        "_minimumVersion": {
+          "type": "object",
+          "properties": {
+            "_omahaVersion": {"type": "string"},
+            "_spacecastVersion": {"type": "string"},
+            "_sha256": {"type": "string"}
+          }
+        },
+        "_preferredVersion": {
+          "type": "object",
+          "properties": {
+            "_omahaVersion": {"type": "string"},
+            "_spacecastVersion": {"type": "string"},
+            "_sha256": {"type": "string"}
+          }
+        },
+        "_omahaBaseUrl": {"type": "string"},
+        "_omahaChannel": {"type": "string"}
+      },
+      "results": {
+      }
+    },
     "_configureMonlogCredentials": {
       "parameters": {
         "_authorizationCode": {"type": "string"}
