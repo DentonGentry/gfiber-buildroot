@@ -1,0 +1,7 @@
+#!/bin/sh
+
+stop prodticker
+touch /tmp/ADMINMODE_TELNETD
+start telnetd
+
+echo "telnetd enabled"

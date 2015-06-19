@@ -10,14 +10,11 @@ case "$1" in
     if runnable glaser; then
       exit 0
     fi
-    prod_unit=$(sysvar_cmd -g PRODUCTION_UNIT)
-    if [ "$prod_unit" != "1" ]; then
-      ip addr add 192.168.10.11/24 dev eth0
+    if [ -e /tmp/DEBUG ] || [ -e /tmp/ADMINMODE_TELNETD ]; then
       /usr/sbin/inetd 2>&1 | logos inetd
     fi
     ;;
   stop)
-    ip addr del 192.168.10.11/24 dev eth0
     pkill -9 -x inetd
     pkill -9 -x telnetd
     ;;

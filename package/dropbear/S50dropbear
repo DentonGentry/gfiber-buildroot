@@ -4,9 +4,13 @@
 #
 
 # Make sure this load is used for test
-[ -f /tmp/DEBUG ] || exit 0
 
 start() {
+	# only run dropbear if /tmp/DEBUG or gflt110 reset (for RMA)
+	if [ ! -e /tmp/DEBUG ] && [ ! -e /tmp/ADMINMODE_SSHD ]; then
+		exit 0
+	fi
+
 	# Make sure dropbear directory exists.
 	#  /etc/dropbear links to /tmp/dropbear, which we can write to.
 	if mkdir -p /config/dropbear; then
@@ -50,6 +54,7 @@ stop() {
 	# instead.  But we do want to make sure the babysitter stays dead.
 	pkill -f dropbearkey
 	pkillwait -f 'babysit [0-9]+ dropbear'
+	pkill -f 'logos dropbear'
 	start-stop-daemon -K -q -p /var/run/dropbear.pid
 }
 restart() {

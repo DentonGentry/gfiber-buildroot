@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# For manufacture/RMA we offer a mechanism of starting up ssh.
+#
+
+case "$1" in
+  start)
+    if runnable glaser; then
+      exit 0
+    fi
+    prod=$(sysvar_cmd -g PRODUCTION_UNIT)
+    if [ "$prod" = 0 ] || [ "$prod" = "" ]; then
+      touch /tmp/ADMINMODE_SSHD
+    fi
+    if [ -e /tmp/DEBUG ] || [ -e /tmp/ADMINMODE_SSHD ]; then
+      ip addr add 192.168.10.11/24 dev eth0
+    fi
+    ;;
+  stop)
+    ip addr del 192.168.10.11/24 dev eth0
+    rm -f /tmp/ADMINMODE_SSHD
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
