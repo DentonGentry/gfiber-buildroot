@@ -48,6 +48,8 @@ endef
 define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/appliance \
 		$(TARGET_DIR)/app/spacecast/appliance
+	$(INSTALL) -D -m 0755 $(@D)/daemon \
+		$(TARGET_DIR)/app/spacecast/daemon
 	$(INSTALL) -D -m 0755 $(@D)/configmanager \
 		$(TARGET_DIR)/app/spacecast/configmanager
 	$(INSTALL) -D -m 0755 $(@D)/statemanager \
@@ -63,12 +65,15 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/tpmverify \
 		$(TARGET_DIR)/app/spacecast/tpmverify
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/appliance
+	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/daemon
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/configmanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/statemanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/tunermanager
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/monlog_token_refresher
 	$(STRIPCMD) $(TARGET_DIR)/app/spacecast/tpmverify
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S90spacecast \
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S88scdaemon \
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92configmanager \
 		$(TARGET_DIR)/etc/init.d/
@@ -115,6 +120,7 @@ endef
 define GOOGLE_SPACECAST_CLEAN_CMDS
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk clean
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
+	rm -f $(TARGET_DIR)/etc/init.d/S88scdaemon
 	rm -f $(TARGET_DIR)/etc/init.d/S92configmanager
 	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
 	rm -f $(TARGET_DIR)/etc/init.d/S91tunermanager
