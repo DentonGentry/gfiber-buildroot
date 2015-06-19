@@ -21,7 +21,8 @@ case "$1" in
   stop)
     pkillwait -f '(babysit.*)(frobclient)'
     pkillwait frobclient
-    pkillwait -f 'dhclient.*frob0'
+    pkillwait -f 'dhclient.*frob'
+    pkillwait ccopy
     ;;
   restart)
     $0 stop; $0 start
