@@ -5,6 +5,12 @@
 echo "GFMN100" >/etc/platform &&
 chmod 444 /etc/platform
 
+# Populate the serial number file.
+SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
+[ -n "$SERIAL" ] &&
+echo "$SERIAL" >/etc/serial &&
+chmod 444 /etc/serial
+
 hostname WindCharger
 
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
