@@ -125,8 +125,6 @@ while [ -z "$led_state" ] || read event; do
       set_led_state "$BLINK_MODE" "$BLUE_LED" "NETCONNECTED" "$LEDS_BRIGHTNESS_10P"
     elif [ ! -e $ACS_FILE ] ; then
       set_led_state "$FAST_MODE" "$BLUE_LED" "IPV6ACQUIRED" "$LEDS_BRIGHTNESS_10P"
-    elif is_upgrading ; then
-      set_led_state "$BLINK_MODE" "$BLUE_LED" "UPGRADING" "$LEDS_BRIGHTNESS_10P"
     else
       set_led_state "$SOLID_MODE" "$BLUE_LED" "ACSCONTACT" "$LEDS_BRIGHTNESS_10P"
     fi
