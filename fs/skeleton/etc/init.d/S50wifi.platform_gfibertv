@@ -24,6 +24,7 @@ create_secondary_interface() {
 
 case "$1" in
   start)
+    babysit 30 /usr/wifi/wifi_files.py 2>&1 | logos wifistatus &
     mkdir -p /tmp/wifi/fingerprints
     if is-network-box; then
       for interface in wlan0 wlan1; do
@@ -44,6 +45,8 @@ case "$1" in
     ;;
   stop)
     wifi stop
+    pkillwait -f /usr/wifi/wifi_files.py
+    rm -rf /tmp/stations
     ;;
   restart)
     $0 stop; $0 start
