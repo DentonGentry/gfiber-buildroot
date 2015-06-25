@@ -18,6 +18,7 @@ upload-crash-log [options...]
 --
 s,server=          The server URL (default: whatever upload-logs uses)
 a,all              Upload the entire log, not just the most recent part
+l,logtype=         The logtype to send to the server
 stdout             Print to stdout instead of calling upload-logs
 """
 
@@ -137,6 +138,8 @@ def main():
   model = ModelName()
   if model:
     keys += model
+  if opt.logtype:
+    keys.append('logtype=' + opt.logtype)
   keys = set(keys + NvramData())
   os.environ['PATH'] += ':.'  # make sure PWD is searched for upload-logs
 
