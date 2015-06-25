@@ -10,15 +10,21 @@ case "$1" in
     fi
     prod=$(sysvar_cmd -g PRODUCTION_UNIT)
     if [ "$prod" = 0 ] || [ "$prod" = "" ]; then
+      touch /tmp/ADMINMODE_IP
       touch /tmp/ADMINMODE_SSHD
     fi
-    if [ -e /tmp/DEBUG ] || [ -e /tmp/ADMINMODE_SSHD ]; then
+    if [ "$prod" = 0 ]; then
+      touch /tmp/ADMINMODE_TELNETD
+    fi
+    if [ -e /tmp/DEBUG ] || [ -e /tmp/ADMINMODE_IP ]; then
       ip addr add 192.168.10.11/24 dev eth0
     fi
     ;;
   stop)
     ip addr del 192.168.10.11/24 dev eth0
+    rm -f /tmp/ADMINMODE_IP
     rm -f /tmp/ADMINMODE_SSHD
+    rm -f /tmp/ADMINMODE_TELNETD
     ;;
   restart)
     $0 stop; $0 start
