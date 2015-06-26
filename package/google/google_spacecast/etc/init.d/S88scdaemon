@@ -6,6 +6,9 @@ BINARY="/app/spacecast/daemon"
 
 FLAGS="-logtostderr=true"
 
+# Make sure we have a directory to store Monlog credentials.
+mkdir -p /config/monlog
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
