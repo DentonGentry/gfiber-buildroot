@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_GLFW_NEXUS
+        bool "google_glfw_nexus"
+	select BR2_PACKAGE_BCM_ROCKFORD
+	help
+          Builds the GLFW with Nexus backend
