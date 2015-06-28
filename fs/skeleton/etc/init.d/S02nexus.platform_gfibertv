@@ -58,6 +58,8 @@ start()
     hostname GFiberStorage
   elif is-tv-box; then
     hostname GFiberTV
+  elif is-network-box; then
+    hostname GFiberRouter
   else
     hostname GFiberUnknown
   fi
