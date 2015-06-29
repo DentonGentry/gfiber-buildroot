@@ -2,8 +2,8 @@
 # On 3.16 or higher kernels we use the new uploader.
 KERNEL_MAJOR=$(uname -r | cut -d . -f 1)
 KERNEL_MINOR=$(uname -r | cut -d . -f 2)
-if [ "$KERNEL_MAJOR" -gt 3 ] || [ "$KERNEL_MAJOR" -eq 3 ] && \
-  [ "$KERNEL_MINOR" -ge 16 ]; then
+if [ "$KERNEL_MAJOR" -gt 3 ] || \
+   [ "$KERNEL_MAJOR" -eq 3 -a "$KERNEL_MINOR" -ge 16 ]; then
   while :; do
     # The /tmp/logs-uploaded file is handled within upload-crash-logs2.
     alivemonitor /tmp/loguploadcounter 30 30 180 upload-crash-log2

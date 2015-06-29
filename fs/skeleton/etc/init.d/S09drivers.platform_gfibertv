@@ -76,7 +76,12 @@ start()
     modprobe -a bluetooth hidp hid-gfrm uhid
     modprobe btmrvl bdaddr_base="$BT_MAC"
     modprobe btmrvl_sdio
-    modprobe btusb bdaddr_base="$BT_MAC"
+    if [ -e "/lib/modules/$(uname -r)/kernel/drivers/bluetooth/btbcm.ko" ]; then
+      modprobe btbcm bdaddr_base="$BT_MAC"
+      modprobe btusb
+    else
+      modprobe btusb bdaddr_base="$BT_MAC"
+    fi
   fi
 }
 

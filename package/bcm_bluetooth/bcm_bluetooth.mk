@@ -52,6 +52,7 @@ ifeq ($(BR2_PACKAGE_BCM_BLUETOOTH_FW),y)
 define BCM_BLUETOOTH_FW_INSTALL_TARGET
 	$(INSTALL) -D -m 0400 $(@D)/fw/BCM20702.hcd $(TARGET_DIR)/lib/firmware/brcm/BCM20702.hcd
 	ln -sf BCM20702.hcd $(TARGET_DIR)/lib/firmware/brcm/BCM20702A0-0a5c-22be.hcd
+	ln -sf BCM20702.hcd $(TARGET_DIR)/lib/firmware/brcm/BCM20702A1-0a5c-22be.hcd
 	$(INSTALL) -D -m 0400 $(@D)/fw/BCM20705.hcd $(TARGET_DIR)/lib/firmware/brcm/BCM20705.hcd
 endef
 else
