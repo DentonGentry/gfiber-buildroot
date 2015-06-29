@@ -43,3 +43,11 @@ cp "$TARGET_DIR/etc/version" "$BINARIES_DIR/version"
 
 # Installer support for VFAT platforms (and harmless elsewhere)
 mkdir -p $TARGET_DIR/install
+
+# SpaceCast production build
+if [ "$PLATFORM_PREFIX" = "gfsc100" -a "$PROD" = "y" ]; then
+  # Disable root password login.
+  sed -i 's/^root:[^:]*:/root:!:/' $TARGET_DIR/etc/passwd
+  # Disable serial console.
+  sed -i '/rungetty/d' $TARGET_DIR/etc/inittab
+fi

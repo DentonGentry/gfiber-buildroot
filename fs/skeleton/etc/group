@@ -19,11 +19,6 @@ nobody::98:
 nogroup::99:
 users::100:
 dbus:x:105:
-buffet:x:106:
-sc-core:x:107:
-sc-svc:x:108:
 netdev:x:113:
 video:x:200:video
-sc:x:500:sc-core,sc-svc
 nfsnobody:x:65534:
-tss:x:107:
