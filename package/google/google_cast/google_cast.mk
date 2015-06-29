@@ -4,13 +4,18 @@
 #
 #############################################################
 
+# TODO(nbegley): Investigate which of these definitions are no longer necessary.
+
+GOOGLE_CAST_SITE = repo://google_cast
+
 GOOGLE_CAST_DEPENDENCIES=\
 	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient libpng jpeg zlib freetype expat \
 	libcurl libxml2 libxslt fontconfig boost cairo \
 	avahi libcap libnss host-ninja
 
-# This will result in defining a meaningful APPLIBS_TOP
+# This will result in defining a meaningful APPLIBS_TOP (which is required by
+# the local build).
 BCM_APPS_DIR=$(abspath $(@D))
 
 GOOGLE_CAST_INSTALL_STAGING=NO
@@ -26,7 +31,7 @@ else
     GOOGLE_CAST_CCACHE="WEBKITGL_CCACHE=n"
 endif
 
-define GOOGLE_CAST_BUILD_CMDS
+define GOOGLE_CAST_LOCAL_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
@@ -34,6 +39,9 @@ define GOOGLE_CAST_BUILD_CMDS
 		$(GOOGLE_CAST_CCACHE) \
 		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
 		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR)
+endef
+
+define GOOGLE_CAST_BUILD_CMDS
 endef
 
 define GOOGLE_CAST_BUILD_TEST_CMDS
@@ -48,17 +56,19 @@ define GOOGLE_CAST_BUILD_TEST_CMDS
 endef
 
 define GOOGLE_CAST_INSTALL_TARGET_CMDS
-	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
-	if [ -e "$(TARGET_DIR)/usr/local/bin/webkitGl3/chrome-sandbox" ] ; \
-		then \
-			chmod 4755 "$(TARGET_DIR)/usr/local/bin/webkitGl3/chrome-sandbox"; \
-		fi
-endef
+	mkdir -p $(TARGET_DIR)/chrome/lib/
 
-# Since chromium needs dlna, etc. to be rebuilt and reinstalled to its
-# lib directory. We need to remove the stamp to force the reinstall.
-define GOOGLE_CAST_DIRCLEAN_CMDS
-	$(RM) $(@D)/common/*.stamp
+	# $(INSTALL) -m 755 -D $(@D)/buildroot/cast_shell $(TARGET_DIR)/chrome/cast_shell
+	# $(INSTALL) -m 4755 -D $(@D)/buildroot/chrome_sandbox $(TARGET_DIR)/chrome/chrome_sandbox
+	# $(INSTALL) -m 755 -D $(@D)/buildroot/process_manager $(TARGET_DIR)/chrome/process_manager
+	# $(INSTALL) -m 644 -D $(@D)/buildroot/process.json $(TARGET_DIR)/chrome/process.json
+
+	# TOOD(nbegley): Install this to $(TARGET_DIR)/etc/init.d/ instead of /chrome once
+	# we're ready to make it an init script.
+	# $(INSTALL) -m 755 -D $(@D)/buildroot/S99cast.process_manager $(TARGET_DIR)/chrome/S99cast.process_manager
+
+	# cp -afr $(@D)/buildroot/bin/* $(TARGET_DIR)/chrome/
+	# cp -afr $(@D)/buildroot/lib/* $(TARGET_DIR)/chrome/lib/
 endef
 
 $(eval $(call GENTARGETS))

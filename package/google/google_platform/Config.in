@@ -164,6 +164,7 @@ config BR2_PACKAGE_GOOGLE_TV_BOX
 	bool "Device can act as Google Fiber TV Box"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_GOOGLE_CAST if BR2_mipsel
 	select BR2_PACKAGE_GOOGLE_DIAL if BR2_mipsel
 	select BR2_PACKAGE_GOOGLE_DVBCAPTURE
 	select BR2_PACKAGE_GOOGLE_FFMPEG
