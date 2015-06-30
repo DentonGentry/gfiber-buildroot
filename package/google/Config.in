@@ -42,5 +42,4 @@ source "package/google/google_spacecast/Config.in"
 source "package/google/google_buffet/Config.in"
 source "package/google/google_widevine_cenc/Config.in"
 source "package/google/google_cryptohome/Config.in"
-source "package/google/google_fiber_cast_controller/Config.in"
 endmenu

@@ -1,5 +1,0 @@
-config BR2_PACKAGE_GOOGLE_FIBER_CAST_CONTROLLER
-	bool "Google Fiber Cast Controller"
-	default n
-	help
-	  Build the Fiber Cast Controller for Google Fiber devices.
