@@ -1,10 +1,6 @@
 #!/bin/sh
 . /etc/utils.sh
 
-interface_exists() {
-  [ -e "/sys/class/net/$1" ]
-}
-
 get_random_mac() {
   echo -n "AA"
   randomdata 0 5 | hexdump -e '5/1 ":%02X"'

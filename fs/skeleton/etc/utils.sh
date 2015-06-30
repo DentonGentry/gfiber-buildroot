@@ -220,3 +220,7 @@ find_sata_blkdev()
 
   [ -n "$result" ] && echo "$result"
 }
+
+interface_exists() {
+  [ -e "/sys/class/net/$1" ]
+}
