@@ -1,6 +1,9 @@
 #!/bin/sh
 case "$1" in
   start)
+    # Allow apps to specify when they are in waitpower mode
+    chgrp video /tmp/gpio/ledcontrol
+    chmod 775 /tmp/gpio/ledcontrol
     mkdir -p /tmp/gpio/ledcontrol
     setsid babysit 60 linkmonitor /tmp/gpio/ledcontrol/ip.changed 2>&1 |
       logos linkmonitor &

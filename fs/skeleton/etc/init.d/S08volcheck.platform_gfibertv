@@ -11,6 +11,11 @@ sata_blkdev=$(find_sata_blkdev)
 DATA_MTD_NAME='"data+ubi"'
 DATA_MTD_NO=
 
+DRM0_MTD_NAME='"drmregion0"'
+DRM0_MTD_NO=
+DRM1_MTD_NAME='"drmregion1"'
+DRM1_MTD_NO=
+
 # 'rootfs' on /dev/ubi0
 # 'data+ubi' on /dev/ubi1
 DATA_UBI_NO=1
@@ -198,6 +203,8 @@ case "$1" in
 
     # Get MTD partition number
     DATA_MTD_NO=$(check_mtd ${DATA_MTD_NAME})
+    DRM0_MTD_NO=$(check_mtd ${DRM0_MTD_NAME})
+    DRM1_MTD_NO=$(check_mtd ${DRM1_MTD_NAME})
 
     # Log bbinfo at boot
     BBT=""
@@ -218,6 +225,16 @@ case "$1" in
       fi
     fi
 
+    # Fix access permissions on drm partitions
+    if [ ! -z "${DRM0_MTD_NO}" ]; then
+      chown appclient:appclient /dev/mtd${DRM0_MTD_NO}
+      chown appclient:appclient /dev/mtdblock${DRM0_MTD_NO}
+    fi
+    if [ ! -z "${DRM1_MTD_NO}" ]; then
+      chown appclient:appclient /dev/mtd${DRM1_MTD_NO}
+      chown appclient:appclient /dev/mtdblock${DRM1_MTD_NO}
+    fi
+
     [ ! -d /user/rw ] && mkdir -p /user/rw
     [ ! -d /user/bsa ] && mkdir -p /user/bsa
     [ ! -d /user/netflix ] && mkdir -p /user/netflix
@@ -233,6 +250,14 @@ case "$1" in
     # /config must be writeable by non-root
     chown bin.sys /config
     chmod 775 /config
+
+    # Application data must be owned by appclient
+    chown -R appclient.appclient /user/netflix
+    chown -R appclient.appclient /user/vudu
+    chown -R appclient.appclient /user/drm
+    chown -R appclient.appclient /user/widevine
+    chown -R appclient.appclient /user/ytlb
+    chown -R appclient.appclient /tmp/vudu
 
     if [ -e "$sata_blkdev" ]; then
       (
