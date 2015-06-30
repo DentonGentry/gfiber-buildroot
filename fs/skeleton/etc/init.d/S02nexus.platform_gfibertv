@@ -14,6 +14,7 @@ start()
   if [ -e ${MODULE_PATH}/bcmdriver.ko ]; then
     insmod ${MODULE_PATH}/bcmdriver.ko
     mknod /dev/brcm0 c 30 0
+    chmod 666 /dev/brcm0
   fi
 
   # Set up space for multiprocess NEXUS unix sockets
