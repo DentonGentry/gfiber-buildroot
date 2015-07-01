@@ -21,10 +21,16 @@ case "$1" in
       echo "SpaceCast is already running!"
     else
       babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos spacecast &
+      echo "SpaceCast started."
     fi
     ;;
   stop)
     pkill -f "$BINARY"
+    while running; do
+      echo "SpaceCast is in lameduck mode. Please wait..."
+      sleep 10
+    done
+    echo "SpaceCast stopped."
     ;;
   restart|reload)
     $0 stop;$0 start
