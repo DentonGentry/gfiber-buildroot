@@ -9,6 +9,10 @@ FLAGS="-logtostderr=true"
 # Make sure we have a directory to store Monlog credentials.
 mkdir -p /config/monlog
 
+# Make sure we have directories to store bootstrap parameters.
+mkdir -p /tmp/buffet
+mkdir -p /tmp/monlog
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
