@@ -35,6 +35,12 @@ mount_once "/tmp" "/chroot/chromeos/tmp"
 [ -x /chroot/chromeos/bin/buffet ] || exit 1
 [ -d /chroot/chromeos/etc/buffet ] || exit 1
 
+# Bootstrap
+mkdir -p "/tmp/buffet"
+cp -Rp "/etc/buffet" "/tmp"
+mount_once "/tmp/buffet" "/chroot/chromeos/etc/buffet"
+wait-until-created /chroot/chromeos/etc/buffet/buffet.conf
+
 # Create necessary directories and dependencies to run Buffet.
 mkdir -p /chroot/chromeos/var/run/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
