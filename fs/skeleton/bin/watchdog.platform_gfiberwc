@@ -13,6 +13,12 @@ wait-until-created /dev/watchdog
 # ioclt uses strtol to convert ioctlnr, so negative numbers must be used when
 # MSB is set.
 WDIOC_SETTIMEOUT=-1073457402	# 0xc0045706
+WDIOC_GETBOOTSTATUS=0x40045702
+
+if ! ioctl -l 4 -- /dev/watchdog $WDIOC_GETBOOTSTATUS | \
+		grep "return buf: 00 00 00 00"; then
+	echo "*** Warning *** watchdog reboot detected"
+fi
 
 # Max timeout for QCA9533 is 171s
 ioctl -l 4 -- /dev/watchdog $WDIOC_SETTIMEOUT 70
