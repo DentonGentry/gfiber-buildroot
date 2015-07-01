@@ -34,6 +34,8 @@ define ROOTFS_GINSTALL_CMD
 	cp -f $(value GFWC_LOADER) $(BINARIES_DIR)/loader.img && \
 	cp -f $(value GFWC_LOADER_SIG) $(BINARIES_DIR)/loader.sig && \
 	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
+	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99readallfiles && \
+	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99python_benchmark && \
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
 	cd $(BINARIES_DIR) && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh \
