@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# These changes are initially in /init provided by QCA.
+# The reason for the move is to leave the triggering to
+# the end of system booting (/init to qca, and this script to windcharger).
+# Some tunings are made:
+#   1. inode/dentry reclaiming is more aggresive.
+#   2. dirty pages (jffs2 for /config) writing back is more aggresive.
+
+# Dentry/inode uses a lot memory, give them pressure.
+echo 1000 > /proc/sys/vm/vfs_cache_pressure
+
+# start the page cache/kmem cache cleanup timer in the kernel
+echo 3 > /proc/sys/vm/drop_caches
+
+# when processes uses page-cache more than 20% of system memory,
+# lets force them to write
+echo 20 > /proc/sys/vm/dirty_ratio
+
+# when the dirty pages cross more than 5% of sys memory
+# kick in the pdflush
+echo 5 > /proc/sys/vm/dirty_background_ratio
