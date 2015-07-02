@@ -21,4 +21,5 @@ users::100:
 dbus:x:105:
 netdev:x:113:
 video:x:200:video
+appclient:x:201:appclient
 nfsnobody:x:65534:
