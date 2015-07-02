@@ -33,8 +33,7 @@ update_server()
 }
 
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
-export SERIALNUMBER=$(hnvram -qr 1ST_SERIAL_NUMBER)
-[ -z "$SERIALNUMBER" ] && SERIALNUMBER=$(hnvram -qr SERIAL_NO)
+export SERIALNUMBER=$(cat /etc/serial)
 
 ulimit -c 49152
 
