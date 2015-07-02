@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo \
+"This is a temporary dummy script, to allow Cast-on-CPE developers to mount \
+over it for local development.
+Please direct any questions/complaints to smcgruer@"
+
+exit 1

@@ -58,6 +58,8 @@ endef
 define GOOGLE_CAST_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chrome/lib/
 
+	$(INSTALL) -m 755 -D package/google/google_cast/logwrapper $(TARGET_DIR)/bin/logwrapper
+
 	# $(INSTALL) -m 755 -D $(@D)/buildroot/cast_shell $(TARGET_DIR)/chrome/cast_shell
 	# $(INSTALL) -m 4755 -D $(@D)/buildroot/chrome_sandbox $(TARGET_DIR)/chrome/chrome_sandbox
 	# $(INSTALL) -m 755 -D $(@D)/buildroot/process_manager $(TARGET_DIR)/chrome/process_manager
