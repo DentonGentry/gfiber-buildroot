@@ -14,7 +14,7 @@ case "$1" in
     (
       wait-until-created /tmp/startupvideo.done
       rc_pipe_init
-      /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
+      setuid appclient:video /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
     ) &
     ;;
   stop)

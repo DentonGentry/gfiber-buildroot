@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+runoregano="/app/oregano/runoregano"
+
 if ! is-html-tv-ui; then
   echo "configured for sage"
   exit 0
@@ -12,7 +14,14 @@ case "$1" in
       wait-until-created /tmp/startupvideo.done
       wait-until-created /tmp/time.synced
       if is-tv-box; then
-        /app/oregano/runoregano 2>&1 | logos oregano 0 20000000 &
+        (
+          if [ "$(id -u)" != "0" ]; then
+            # We are already not running as root, keep current user
+            $runoregano
+          else
+            setuid appclient:video $runoregano
+          fi
+        ) 2>&1 | logos oregano 0 20000000 &
       fi
     ) &
     ;;
