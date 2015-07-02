@@ -44,9 +44,6 @@ echo "res='$res'"
 export hdsd_mode
 export DFBARGS="linux-input-ir-only,no-sighandler,mode=1280x720,res=$res"
 
-# Install DFB /dev/input/event nodes
-/usr/local/bin/directfb/1.4/rundfb.sh install
-
 # Verify if we need to clear any activation data
 [ -e /rw/sage/deactivate_netflix ] && /app/client/clear-app netflix
 [ -e /rw/sage/deactivate_vudu ] && /app/client/clear-app vudu
