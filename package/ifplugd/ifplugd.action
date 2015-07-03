@@ -1,21 +1,31 @@
 #! /bin/sh
 
+. /etc/utils.sh
+
 # called from ifplugd
 
 iface="$1"
 action="$2"
 
-if [ "$iface" != pon0 ]; then
-  exit 0
-fi
-
 case "$action" in
   up)
-    ethtool -r eth0
-    ifup man
+    if [ "$iface" = pon0 ]; then
+      # Fiber Jack
+      ethtool -r eth0
+      ifup man
+    fi
+    if [ "$iface" = wan0 ]; then
+      # Network Box
+      run-dhclient "$iface"
+      if interface_exists wan0.2; then
+        run-dhclient wan0.2
+      fi
+    fi
     ;;
   down)
-    ethtool -r eth0
+    if [ "$iface" = pon0 ]; then
+      ethtool -r eth0
+    fi
     ;;
   *)
     echo "$0: unknown action '$action'"

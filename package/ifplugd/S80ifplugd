@@ -2,12 +2,18 @@
 
 start()
 {
-  babysit 60 ifplugd -i pon0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+  if is-fiberjack; then
+    babysit 60 ifplugd -i pon0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+  fi
+  if is-network-box; then
+    babysit 60 ifplugd --api-mode=iff -i wan0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+  fi
 }
 
 stop()
 {
   ifplugd -k -W -i pon0
+  ifplugd -k -W -i wan0
   pkill ifplugd.action
 }
 
