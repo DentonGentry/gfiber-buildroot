@@ -5,7 +5,7 @@ set_mac_from_hnvram()
 {
   local DEV="$1"
   local VAR_NAME="$2"
-  if [ -f /sys/class/net/$DEV ]; then
+  if [ -h /sys/class/net/$DEV ]; then
     local addr="$(hnvram -qr "$VAR_NAME")"
     if [ -n "$addr" ]; then
       echo "Setting $DEV mac address to $addr"
