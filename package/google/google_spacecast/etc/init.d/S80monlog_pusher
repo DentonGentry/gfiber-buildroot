@@ -1,5 +1,5 @@
 #!/bin/sh
-# Monlog Token Pusher init script.
+# Monlog Pusher init script.
 
 BINARY="/app/spacecast/monlog_pusher"
 
@@ -9,12 +9,21 @@ running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
 
+# Bootstrap
+mkdir -p "/tmp/monlog"
+mount_once "/tmp/monlog" "/etc/monlog"
+
 case "$1" in
   start)
     if running; then
       echo "Monlog pusher is already running!"
     else
-      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos monlog_pusher &
+      (
+        # Bootstrap
+        wait-until-created /etc/monlog/oauth2_config.json
+        
+        babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos monlog_pusher &
+      ) &
     fi
     ;;
   stop)
