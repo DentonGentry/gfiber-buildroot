@@ -23,6 +23,8 @@ case "$SUBSYSTEM-$ACTION" in
     if [ -c "/dev/$DEVNAME" ]; then
       echo "hotplug: setting autorepeat on $DEVNAME"
       input-repeat -f /dev/$DEVNAME -d 600
+      # Allow user to access input device
+      chmod 666 /dev/$DEVNAME
     fi
     ;;
 
