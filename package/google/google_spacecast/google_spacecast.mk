@@ -64,8 +64,6 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S89updateengine \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_token_refresher \
-         		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_pusher\
 		$(TARGET_DIR)/etc/init.d/
 endef
@@ -79,7 +77,6 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S92configmanager
 	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
 	rm -f $(TARGET_DIR)/etc/init.d/S91tunermanager
-	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_token_refresher
 	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_pusher
 endef
 
