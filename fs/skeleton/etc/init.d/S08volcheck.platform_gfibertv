@@ -259,6 +259,9 @@ case "$1" in
     chown -R appclient.appclient /user/ytlb
     chown -R appclient.appclient /tmp/vudu
 
+    # Application user must be able to write kmsg with logos
+    chmod 622 /dev/kmsg
+
     if [ -e "$sata_blkdev" ]; then
       (
         smartctl -A "$sata_blkdev"
