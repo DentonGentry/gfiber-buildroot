@@ -1,6 +1,9 @@
 #!/bin/sh
 . /etc/utils.sh
 
+# mcnmp_server is needed only on TV Box
+! is-tv-box && exit 0
+
 case "$1" in
   start)
     (
