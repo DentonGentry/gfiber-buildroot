@@ -22,7 +22,7 @@ define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	# Install customized dbus config to run in chroot.
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d
 	$(INSTALL) -m 0644 -D package/google/google_cryptohome/org.chromium.Chaps.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Chaps.conf
-	$(INSTALL) -m 0644 -D package/google/google_cryptohome/Cryptohome.conf $(TARGET_DIR)/etc/dbus-1/system.d/Cryptohome.conf
+	$(INSTALL) -m 0644 -D package/google/google_cryptohome/org.chromium.Cryptohome.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Cryptohome.conf
 	# Create chroot binding point for dbus
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/var/run
 	# Create chroot binding points for cryptohome
@@ -40,7 +40,7 @@ endef
 
 define GOOGLE_CRYPTOHOME_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Chaps.conf
-	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/Cryptohome.conf
+	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Cryptohome.conf
 	rm -rf $(TARGET_DIR)/etc/init.d/S79cryptohome
 	rm -rf $(TARGET_DIR)/chroot/chromeos
 endef
