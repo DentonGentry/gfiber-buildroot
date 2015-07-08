@@ -20,6 +20,34 @@ err_log() {
   echo "$@" >&2
 }
 
+disable_iface() {
+  local iface="$1"
+  case "$iface" in
+    "$LAN_IFACE")
+      "$IFDOWN" "$LAN_IFACE"
+      ;;
+    "$WIFI_IFACE")
+      stop wifi
+      ;;
+    *)
+      ;;
+  esac
+}
+
+enable_iface() {
+  local iface="$1"
+  case "$iface" in
+    "$LAN_IFACE")
+      "$IFUP" "$LAN_IFACE"
+      ;;
+    "$WIFI_IFACE")
+      start wifi
+      ;;
+    *)
+      ;;
+  esac
+}
+
 cleanup() {
   rm -f "$AP_STATUS_FILE"
   exit $?
@@ -134,14 +162,14 @@ temp_check() {
   err_log "$status_msg"
   case $new_state in
     "$AP_ENABLED")
-      "$IFUP" "$WIFI_IFACE"
-      "$IFUP" "$LAN_IFACE"
+      enable_iface "$WIFI_IFACE"
+      enable_iface "$LAN_IFACE"
       echo -n "$AP_ENABLED" > "$AP_STATUS_FILE"
       rm -f "$LED_OVERTEMP_FILE"
       ;;
     "$AP_DISABLED")
-      "$IFDOWN" "$WIFI_IFACE"
-      "$IFDOWN" "$LAN_IFACE"
+      disable_iface "$WIFI_IFACE"
+      disable_iface "$LAN_IFACE"
       echo -n "$AP_DISABLED" > "$AP_STATUS_FILE"
       touch "$LED_OVERTEMP_FILE"
       ;;
