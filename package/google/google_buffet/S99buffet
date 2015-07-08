@@ -7,18 +7,6 @@
 # environment. Therefore, chroot is needed to execute buffet.
 #
 
-# mount_once is used to only mount a given mountpoint once.
-# If the given folder is already mounted, this won't do anything,
-# even if the underlying filesystem is different.
-# The first parameter is the filesystem to mount, the second parameter is the mountpoint.
-#
-# example: mount_once "/dev" "/chroot/chromeos/dev"
-mount_once() {
-  if ! mount | grep -q "\ $2\ " ; then
-    mount -o bind $1 $2
-  fi
-}
-
 # Bind chroot directories to tmpfs, as chroot may exist in a read-only
 # filesystem. These directories are used for the DBus socket and Buffet
 # libraries.
