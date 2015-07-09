@@ -1,4 +1,16 @@
 #!/bin/sh
+
+PLATFORM=$(cat /etc/platform)
+case "$PLATFORM" in
+  GFSC100)
+    # Update this when GFSC has it's own logtype.
+    LOGTYPE=tmp-spacecast_log
+    ;;
+  *)
+    LOGTYPE=default
+    ;;
+esac
+
 # On 3.16 or higher kernels we use the new uploader.
 KERNEL_MAJOR=$(uname -r | cut -d . -f 1)
 KERNEL_MINOR=$(uname -r | cut -d . -f 2)
@@ -6,7 +18,7 @@ if [ "$KERNEL_MAJOR" -gt 3 ] || \
    [ "$KERNEL_MAJOR" -eq 3 -a "$KERNEL_MINOR" -ge 16 ]; then
   while :; do
     # The /tmp/logs-uploaded file is handled within upload-crash-logs2.
-    alivemonitor /tmp/loguploadcounter 30 30 180 upload-crash-log2
+    alivemonitor /tmp/loguploadcounter 30 30 180 upload-crash-log2 --logtype=$LOGTYPE
 
     # If the above program terminates we want to induce the delay here so
     # it gets started again after waiting.
@@ -17,7 +29,7 @@ else
     # If this file doesn't exist, you know a log upload is already in progress.
     rm -f /tmp/logs-uploaded
 
-    upload-crash-log
+    upload-crash-log --logtype="$LOGTYPE"
 
     # This tells anyone waiting for us that the logs have finished uploading.
     # It isn't strictly true, since if upload-crash-log fails repeatedly,
