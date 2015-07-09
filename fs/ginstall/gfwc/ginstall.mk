@@ -38,7 +38,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99python_benchmark && \
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
 	cd $(BINARIES_DIR) && \
-	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh \
+	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -b 32768 \
 	    -all-root -pf $(TOPDIR)/fs/ginstall/gfwc/devsqsh.txt -comp xz -noappend && \
 	$(HOST_DIR)/usr/bin/lzma -f -k -9 vmlinux.bin && \
 	$(HOST_DIR)/usr/bin/mkimage -A $(BR2_ARCH) -O linux -T kernel -C lzma           \
