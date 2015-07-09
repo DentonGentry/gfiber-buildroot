@@ -116,6 +116,7 @@ config BR2_PACKAGE_GOOGLE_FIBER_JACK
 	bool "Device can act as Google Fiber Jack"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_IFPLUGD
 	select BR2_PACKAGE_PROTOBUF
 	select BR2_PACKAGE_PROTOBUF_ONLY_LITE
 
@@ -123,6 +124,7 @@ config BR2_PACKAGE_GOOGLE_NETWORK_BOX
 	bool "Device can act as Google Fiber Network Box"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_IFPLUGD
 	select BR2_PACKAGE_PROTOBUF
 
 config BR2_PACKAGE_GOOGLE_SPACECAST
@@ -135,6 +137,7 @@ config BR2_PACKAGE_GOOGLE_WINDCHARGER
 	bool "Device can act as Google WindCharger Box"
 	default n
 	depends on !BR2_PACKAGE_GOOGLE_PLATFORM_ONLY
+	select BR2_PACKAGE_IFPLUGD
 
 config BR2_PACKAGE_GOOGLE_STORAGE_BOX
 	bool "Device can act as Google Fiber Storage Box"
