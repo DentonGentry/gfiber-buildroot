@@ -7,6 +7,12 @@
 # environment. Therefore, chroot is needed to execute buffet.
 #
 
+BINARY="/bin/buffet"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
 # Bind chroot directories to tmpfs, as chroot may exist in a read-only
 # filesystem. These directories are used for the DBus socket and Buffet
 # libraries.
@@ -27,20 +33,27 @@ mount_once "/tmp" "/chroot/chromeos/tmp"
 mkdir -p "/tmp/buffet"
 cp -Rp "/etc/buffet" "/tmp"
 mount_once "/tmp/buffet" "/chroot/chromeos/etc/buffet"
-wait-until-created /chroot/chromeos/etc/buffet/buffet.conf
 
 # Create necessary directories and dependencies to run Buffet.
 mkdir -p /chroot/chromeos/var/run/buffet
 mkdir -p /chroot/chromeos/etc/ssl/certs
 
-# Sanity check: DBus socket has to be present.
-wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
-
 start() {
-  echo "Starting buffet service..."
-  babysit 10 chroot /chroot/chromeos /bin/buffet 2>&1 | logos buffet &
-  [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
-  echo "Buffet started successfully"
+  if running; then
+    echo "Buffet is already running!"
+  else
+    echo "Starting buffet service..."
+    (
+      # Bootstrap
+      wait-until-created /chroot/chromeos/etc/buffet/buffet.conf
+      # Sanity check: DBus socket has to be present.
+      wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
+
+      babysit 10 chroot /chroot/chromeos ${BINARY} 2>&1 | logos buffet &
+      [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
+      echo "Buffet started successfully"
+    ) &
+  fi
 }
 
 stop() {
