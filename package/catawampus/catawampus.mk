@@ -49,6 +49,8 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 
 	$(INSTALL) -m 0755 -D package/catawampus/S85catawampus \
 		$(TARGET_DIR)/etc/init.d/S85catawampus
+	$(INSTALL) -m 0755 -D package/catawampus/captive_portal \
+		$(TARGET_DIR)/bin/captive_portal
 endef
 
 define CATAWAMPUS_TEST_CMDS
