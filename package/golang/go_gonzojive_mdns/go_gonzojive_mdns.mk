@@ -3,7 +3,7 @@
 # go_gonzojive_mdns
 #
 #############################################################
-GO_GONZOJIVE_MDNS_VERSION = 137dbca2e45fd488fe17c6498374823aac888aa7
+GO_GONZOJIVE_MDNS_VERSION = 1810874fc7df1cbfe78c9b8e393d9cb4de4c6744
 GO_GONZOJIVE_MDNS_SITE = https://github.com/gonzojive/mdns
 GO_GONZOJIVE_MDNS_SITE_METHOD = git
 GO_GONZOJIVE_MDNS_DEPENDENCIES = host-golang
