@@ -53,7 +53,7 @@ else
   kill -15 "$pid" 2>/dev/null
   for d in $(seq 20); do
     kill -0 "$pid" 2>/dev/null || break
-    msleep 100
+    sleep 0.1
   done
   kill -9 "$pid" 2>/dev/null
 
