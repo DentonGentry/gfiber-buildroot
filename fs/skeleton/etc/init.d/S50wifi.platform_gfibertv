@@ -43,6 +43,7 @@ case "$1" in
     wifi stop
     pkillwait -f /usr/wifi/wifi_files.py
     rm -rf /tmp/stations
+    rm /tmp/wifisignal
     ;;
   restart)
     $0 stop; $0 start
