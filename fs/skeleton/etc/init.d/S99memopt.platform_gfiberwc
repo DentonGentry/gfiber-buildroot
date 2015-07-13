@@ -20,3 +20,10 @@ echo 20 > /proc/sys/vm/dirty_ratio
 # when the dirty pages cross more than 5% of sys memory
 # kick in the pdflush
 echo 5 > /proc/sys/vm/dirty_background_ratio
+
+# Reduce block read ahead from 2**3=8 to 2**0=1.
+# This number control # of blocks to read for each page fault, it's 3 by default
+# in 3.3.8, and set it to read only page faulted page. One reason is to reduce
+# footprint, another reason is that most our rootfs files are small. It may
+# sacrifice performace some how by reducing memory usage.
+echo 0 > /proc/sys/vm/page-cluster
