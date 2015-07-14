@@ -11,23 +11,4 @@ fi
 if is-html-tv-ui; then
   UITYPE="oregano"
 fi
-{
-  UDN=$SERIALNUMBER
-  if is-google-cast-enabled; then
-    count=1
-    while [ ! -f /tmp/ssdp_udn ] && [ $count -le 15 ]; do
-      sleep 1
-      count=$((count + 1))
-    done
-    if [ -f /tmp/ssdp_udn ]; then
-      CAST_UUID=$(head -n 1 /tmp/ssdp_udn)
-    fi
-    if [ ! -z "$CAST_UUID" ]; then
-      UDN=$CAST_UUID
-      echo "Starting DIAL server with Google Cast UDN." | logos dialserver
-    else
-      echo "Google Cast is supported but unable to retreive Google Cast UDN." | logos dialserver
-    fi
-  fi
-  /app/client/dialserver -M "$PLATFORM" -U "$UDN" -F "$FRIENDLYNAME" -I "$UITYPE" 2>&1 | logos dialserver &
-} &
+/app/client/dialserver -M $PLATFORM -U $SERIALNUMBER -F "$FRIENDLYNAME" -I $UITYPE 2>&1 | logos dialserver &
