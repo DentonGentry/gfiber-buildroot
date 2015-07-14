@@ -1,4 +1,4 @@
-GRPC_VERSION=release-0_9_0
+GRPC_VERSION=release-0_10_0
 GRPC_SITE=https://github.com/grpc/grpc/archive/
 GRPC_SOURCE=grpc-$(GRPC_VERSION).tar.gz
 GRPC_INSTALL_STAGING = YES
@@ -31,8 +31,8 @@ define GRPC_BUILD_CMDS
 endef
 
 define GRPC_INSTALL_TARGET_CMDS
-  # Should be install-static and install-shared, but grpc is currently missing
-  # the install-shared target (bug in release-0_9_0?).
+  # Could be install-static and install-shared, but grpc is currently missing
+  # the install-shared target.
 	$(MAKE) $(GRPC_MAKE_OPT) -C $(@D) install-static install-shared_c install-shared_cxx
 endef
 
