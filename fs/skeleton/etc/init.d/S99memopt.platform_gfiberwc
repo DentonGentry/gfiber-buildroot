@@ -10,9 +10,6 @@
 # Dentry/inode uses a lot memory, give them pressure.
 echo 1000 > /proc/sys/vm/vfs_cache_pressure
 
-# start the page cache/kmem cache cleanup timer in the kernel
-echo 3 > /proc/sys/vm/drop_caches
-
 # when processes uses page-cache more than 20% of system memory,
 # lets force them to write
 echo 20 > /proc/sys/vm/dirty_ratio
@@ -27,3 +24,18 @@ echo 5 > /proc/sys/vm/dirty_background_ratio
 # footprint, another reason is that most our rootfs files are small. It may
 # sacrifice performace some how by reducing memory usage.
 echo 0 > /proc/sys/vm/page-cluster
+
+case "$1" in
+  start)
+    babysit 60 memopt | logos memopt &
+    ;;
+  stop)
+    pkillwait -f memopt
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

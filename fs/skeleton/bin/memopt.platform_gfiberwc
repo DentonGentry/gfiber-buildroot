@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+
+sigterm()
+{
+  exit 0
+}
+
+trap sigterm TERM
+
+while true; do
+  echo 3 > /proc/sys/vm/drop_caches
+  sleep 60
+done
