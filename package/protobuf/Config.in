@@ -21,4 +21,4 @@ config BR2_PACKAGE_PROTOBUF_ONLY_LITE
 
 config BR2_PACKAGE_PROTOBUF_VERSION_VALUE
 	string "Protobuf library version"
-	default "3.0.0-alpha-2"
+	default "3.0.0-alpha-3"
