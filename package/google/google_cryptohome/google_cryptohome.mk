@@ -45,4 +45,9 @@ define GOOGLE_CRYPTOHOME_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/chroot/chromeos
 endef
 
+define GOOGLE_CRYPTOHOME_PERMISSIONS
+	/etc/tcsd.conf f 0600 104 107 - - - - -
+	$(SUDO_PERMS)
+endef
+
 $(eval $(call GENTARGETS))
