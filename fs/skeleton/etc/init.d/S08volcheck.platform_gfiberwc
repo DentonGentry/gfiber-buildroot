@@ -43,7 +43,7 @@ case "$1" in
     mount_jffs2 $CONFIG_MTD_NO /config \
       || recover_jffs2 $CONFIG_MTD_NO /config
 
-    // TODO(allanzhang): once DVT is gone, clear the hack below.
+    # TODO(allanzhang): once DVT is gone, clear the hack below.
     if [ -h /config/tr69 ]; then
       echo "Upgrade from DVT image, potential corrupted jffs2, recover"
       umount /config
