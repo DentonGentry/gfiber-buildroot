@@ -20,17 +20,6 @@ start()
   # Renames network devices for compatibility with optimus scripts.
   rename_net_device $WAN_DEVICE wan0
   rename_net_device $LAN_DEVICE lan0
-
-  # TODO(abf): This check is only needed for DVT boards that may still be booting
-  # from kernel 2.6 to kernel 3.3. Kernel 2.6 used a symlink from /config/tr69 ->
-  # /tmp/tr69 to workaround possible jffs2 corruption. We need to make sure that
-  # symlink is removed when a DVT board first boots kernel 3.3.
-  #
-  # Remove this check once kernel 2.6 is completely gone.
-  if [ -h /config/tr69 ]; then
-    echo "Removing /config/tr69 link"
-    rm -f /config/tr69
-  fi
 }
 
 stop()
