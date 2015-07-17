@@ -22,8 +22,8 @@ repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
 #  Right now it only uses buildroot.  I have a plan for this
 #  involving git submodules, just don't want to change too much
 #  in this code all at once.  This should work for now.
-tagname=$(git describe 2>/dev/null)
-tagabbrev=$(git describe --abbrev=0 2>/dev/null)
+tagname=$(git describe)
+tagabbrev=$(git describe --abbrev=0)
 tree_state=$(git rev-list "$tagabbrev"..HEAD)
 if [ -n "$tree_state" ]; then
   # Tree has commits since last tag, rebuild the image name
