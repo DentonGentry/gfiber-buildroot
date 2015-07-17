@@ -44,4 +44,6 @@ source "package/google/google_widevine_cenc/Config.in"
 source "package/google/google_cryptohome/Config.in"
 source "package/google/google_cast/Config.in"
 source "package/google/google_glfw_nexus/Config.in"
+source "package/google/google_glfw_dart/Config.in"
+source "package/google/google_gl_dart/Config.in"
 endmenu

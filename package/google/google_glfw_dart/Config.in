@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GOOGLE_GLFW_DART
+        bool "google_glfw_dart"
+  depends on BR2_PACKAGE_BCM_COMMON
+  depends on BR2_PACKAGE_GOOGLE_GLFW_NEXUS
+  depends on BR2_PACKAGE_GOOGLE_DART_VM
+	help
+          Builds the Dart GLFW bindings
