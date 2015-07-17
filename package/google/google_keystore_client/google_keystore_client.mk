@@ -30,8 +30,9 @@ endef
 
 define HOST_GOOGLE_KEYSTORE_CLIENT_CONFIGURE_CMDS
 	if [ -n "$(GOOGLE_KEYSTORE_CLIENT_MISSING_KEYS)" ]; then \
-		echo Using P4 CL$(GOOGLE_KEYSTORE_CLIENT_CL); \
-		rm -f $(@D)/depot; \
+		prodcertstatus && \
+		echo Using P4 CL$(GOOGLE_KEYSTORE_CLIENT_CL) && \
+		rm -f $(@D)/depot && \
 		ln -sf /google/src/files/$(GOOGLE_KEYSTORE_CLIENT_CL)/depot \
 			$(@D)/depot; \
 	else \
@@ -42,7 +43,8 @@ endef
 
 define HOST_GOOGLE_KEYSTORE_CLIENT_BUILD_CMDS
 	if [ -n "$(GOOGLE_KEYSTORE_CLIENT_MISSING_KEYS)" ]; then \
-		cd $(@D)/depot/google3; \
+		prodcertstatus && \
+		cd $(@D)/depot/google3 && \
 		blaze --batch --blazerc=/dev/null build \
 			--noshow_progress \
 			--forge -- \
@@ -55,7 +57,8 @@ define GOOGLE_KEYSTORE_CLIENT_EXECUTE
 	if [ -r "$(LICENSE_STATIC_PATH)/$(1)" ]; then \
 		cp "$(LICENSE_STATIC_PATH)/$(1)" $(2); \
 	else \
-		cd $(HOST_GOOGLE_KEYSTORE_CLIENT_DIR)/depot/google3; \
+		prodcertstatus && \
+		cd $(HOST_GOOGLE_KEYSTORE_CLIENT_DIR)/depot/google3 && \
 		blaze --batch --blazerc=/dev/null run \
 			--noshow_progress -- \
 			//isp/fiber/drm:drm_keystore_client \
