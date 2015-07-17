@@ -21,11 +21,11 @@ if ! ioctl -l 4 -- /dev/watchdog $WDIOC_GETBOOTSTATUS | \
 fi
 
 # Max timeout for QCA9533 is 171s
-ioctl -l 4 -- /dev/watchdog $WDIOC_SETTIMEOUT 70
+ioctl -l 4 -- /dev/watchdog $WDIOC_SETTIMEOUT 170
 exec 3<> /dev/watchdog
 trap sigterm TERM
 
 while true ; do
 	echo >&3
-	sleep 5
+	sleep 30
 done
