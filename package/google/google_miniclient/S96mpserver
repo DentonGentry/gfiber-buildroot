@@ -9,10 +9,13 @@ case "$1" in
     (
       wait-until-created /tmp/startupvideo.done
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
+      sleep 1
+      babysit 60 irmon 2>&1 | logos irmon &
     ) &
     ;;
   stop)
     pkillwait -x startupvideo  # if it's running, prevents miniclient from starting up
+    pkillwait -x irmon
     pkillwait -x mcnmp_server
     ;;
   restart)
