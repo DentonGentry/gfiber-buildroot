@@ -57,6 +57,7 @@ def HttpDo(method, url, post_data=None, content_type=None):
   for resolver in [pycurl.IPRESOLVE_V6, pycurl.IPRESOLVE_V4]:
     curl = pycurl.Curl()
     curl.setopt(pycurl.IPRESOLVE, resolver)
+    curl.setopt(pycurl.CONNECTTIMEOUT, 5)
     curl.setopt(pycurl.WRITEFUNCTION, outdata.write)
     curl.setopt(pycurl.FOLLOWLOCATION, 0)
     curl.setopt(pycurl.SSL_VERIFYPEER, 1)
