@@ -11,5 +11,5 @@ trap sigterm TERM
 while true; do
   echo 3 > /proc/sys/vm/drop_caches
   echo 1 > /proc/sys/vm/compact_memory
-  sleep 60
+  sleep 20
 done
