@@ -164,6 +164,11 @@ if [ -n "$NFSROOT" ]; then
     false
   done || die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
+elif [ -e /rootfs.img ]; then
+  cat /rootfs.img > /dev/ram0
+  mount -t squashfs -o ro /dev/ram0 /rootfs ||
+    die "root='/dev/ram0' mount failed"
+  log "Mounted root='/dev/ram0'"
 elif [ -n "$ROOTDEV" ]; then
   if startswith "$ROOTDEV" /dev; then
     mount -o ro -t squashfs "$ROOTDEV" /rootfs ||
