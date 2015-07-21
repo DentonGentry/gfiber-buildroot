@@ -25,6 +25,9 @@ mount_once "/config/shared/lib" "/chroot/chromeos/var/lib"
 mount_once "/etc" "/chroot/chromeos/etc"
 mount_once "/tmp" "/chroot/chromeos/tmp"
 
+# Create file for firmware version.
+echo "CHROMEOS_RELEASE_VERSION=$(cat /etc/version)" > /tmp/lsb-release
+
 # Sanity check
 [ -x /chroot/chromeos/bin/buffet ] || exit 1
 [ -d /chroot/chromeos/etc/buffet ] || exit 1
