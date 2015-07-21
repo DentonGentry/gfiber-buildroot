@@ -15,7 +15,7 @@ PLAT_NOQUOTES=$(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM) | sed -e s/\"//g)
 ifeq ($(findstring $(PLAT_NOQUOTES), 97425 97428), $(PLAT_NOQUOTES))
 BCM_CMNDRM_DIR=Zeus20
 endif
-ifeq ($(findstring $(PLAT_NOQUOTES), 97250), $(PLAT_NOQUOTES))
+ifeq ($(findstring $(PLAT_NOQUOTES), 97252), $(PLAT_NOQUOTES))
 BCM_CMNDRM_DIR=Zeus4x
 endif
 

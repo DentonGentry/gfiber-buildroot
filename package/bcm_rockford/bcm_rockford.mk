@@ -5,9 +5,9 @@ BCM_ROCKFORD_INSTALL_STAGING=YES
 BCM_ROCKFORD_DEBUG=B_REFSW_DEBUG=n
 
 
-ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"97250")
+ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"97252")
 
-# 97250 and ?? chips
+# 97252 and ?? chips
 define BCM_ROCKFORD_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/driver -f V3DDriver.mk
 	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/platform/nexus -f platform_nexus.mk
