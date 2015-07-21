@@ -1,8 +1,25 @@
 GOOGLE_OREGANO_SITE=repo://vendor/google/oregano
 GOOGLE_OREGANO_DEPENDENCIES=google_dart_vm google_mcastcapture
 
+ifeq      ($(BR2_arm),y)
+GOOGLE_PLATFORM_ARCH   := arm
+else ifeq ($(BR2_mips),y)
+GOOGLE_PLATFORM_ARCH   := mips
+else ifeq ($(BR2_mipsel),y)
+GOOGLE_PLATFORM_ARCH   := mips
+else ifeq ($(BR2_i386),y)
+GOOGLE_PLATFORM_ARCH   := i386
+endif
+
 define GOOGLE_OREGANO_BUILD_CMDS
-	TARGET=$(TARGET_CROSS) CFLAGS="$(TARGET_CFLAGS)" CXXFLAGS="$(TARGET_CXXFLAGS) -D__STDC_FORMAT_MACROS" INCLUDES="-I$(STAGING_DIR)/usr/local/include -I$(STAGING_DIR)/usr/local" LIBDIRS=-L$(STAGING_DIR)/app/sage/lib $(MAKE) -C $(@D)
+	TARGET=$(TARGET_CROSS) \
+	CFLAGS="$(TARGET_CFLAGS)" \
+	CXXFLAGS="$(TARGET_CXXFLAGS) \
+	-D__STDC_FORMAT_MACROS" \
+	INCLUDES="-I$(STAGING_DIR)/usr/local/include -I$(STAGING_DIR)/usr/local" \
+	LIBDIRS=-L$(STAGING_DIR)/app/sage/lib \
+	ARCH=$(GOOGLE_PLATFORM_ARCH) \
+	$(MAKE) -C $(@D)
 endef
 
 define GOOGLE_OREGANO_INSTALL_TARGET_CMDS
