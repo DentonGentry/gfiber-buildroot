@@ -1,0 +1,32 @@
+#!/bin/sh
+# ADB init script. Android application should use localhost:8000/ to
+# access the server. Setting HOME to tmp allows the Android device
+# to be properly authenticated.
+
+BINARY="/usr/bin/adb"
+export LOCAL_PORT="8000"
+export REMOTE_PORT="8000"
+export HOME="/tmp"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "ADB is already running!"
+    else
+      babysit 10 ${BINARY} 2>&1 | logos adb &
+    fi
+    ;;
+  stop)
+    pkill -f ${BINARY}
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
