@@ -12,7 +12,7 @@ fi
 case "$1" in
   start)
     (
-      wait-until-created /tmp/startupvideo.done
+      wait-until-created /tmp/nexus_multiprocess
       rc_pipe_init
       setuid appclient:video /app/client/runminiclient 2>&1 | logos miniclient 0 20000000 &
     ) &

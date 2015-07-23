@@ -11,7 +11,7 @@ fi
 case "$1" in
   start)
     (
-      wait-until-created /tmp/startupvideo.done
+      wait-until-created /tmp/nexus_multiprocess
       wait-until-created /tmp/time.synced
       if is-tv-box; then
         (
