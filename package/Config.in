@@ -679,6 +679,10 @@ menu "Marvell custom build"
 source "package/mv_app/Config.in"
 endmenu
 
+menu "Quantenna custom build"
+source "package/quantenna_drivers/Config.in"
+endmenu
+
 menu "Drivers"
 source "package/backports/Config.in"
 source "package/backports-custom/Config.in"
