@@ -90,6 +90,9 @@ case $appname in
   waitpower)
     echo 1 > /tmp/poweroff
     ;;
+  idlesleep)
+    /app/client/idlesleep 2>&1 | logos idlesleep
+    ;;
   *)
     echo "Unknown application." >&2
     exit 1
