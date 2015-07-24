@@ -18,4 +18,6 @@ ifconfig $WAN_IF up
 
 echo DEBUG >/tmp/DEBUG
 
+touch /tmp/disable_pings
+
 exec /sbin/init --init </dev/console >/dev/console 2>&1
