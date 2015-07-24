@@ -11,5 +11,12 @@ trap sigterm TERM
 while true; do
   echo 3 > /proc/sys/vm/drop_caches
   echo 1 > /proc/sys/vm/compact_memory
+  free -m | grep cache: | {
+     read a b c d
+     # hardcoded 8M.
+     if [ -n "$d" ] && [ "$d" -le 8 ]; then
+       restart catawampus
+     fi
+  }
   sleep 20
 done
