@@ -1,0 +1,7 @@
+config BR2_TARGET_ROOTFS_RECOVERYFS
+       bool "Recovery Image"
+       depends on BR2_PACKAGE_SIMPLERAMFS
+       depends on BR2_TARGET_ROOTFS_SQUASHFS
+       depends on !BR2_PACKAGE_GOOGLE_PROD
+       help
+	 Build recovery image.
