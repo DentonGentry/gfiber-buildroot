@@ -9,6 +9,8 @@
 
 BINARY="/bin/buffet"
 
+FLAGS="-log_to_stderr=true"
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
@@ -52,7 +54,7 @@ start() {
       # Sanity check: DBus socket has to be present.
       wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
 
-      babysit 10 chroot /chroot/chromeos ${BINARY} 2>&1 | logos buffet &
+      babysit 10 chroot /chroot/chromeos ${BINARY} ${FLAGS} 2>&1 | logos buffet &
       [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
       echo "Buffet started successfully"
     ) &
