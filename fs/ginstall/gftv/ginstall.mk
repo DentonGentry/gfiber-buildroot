@@ -10,6 +10,10 @@
 ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
 				host-dmverity host-google_signing
 
+ifeq ($(BR2_TARGET_ROOTFS_RECOVERYFS),y)
+ROOTFS_GINSTALL_DEPENDENCIES += rootfs-recoveryfs
+endif
+
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
@@ -131,12 +135,16 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	fi && \
 	cd $(BINARIES_DIR) && \
 	ln -f rootfs.squashfs rootfs.img && \
-	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
+	if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
+		gzip -c <simpleramfs.cpio >initramfs.cpio.gz; \
+	else \
+		gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
+	fi && \
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T multi -C none \
 			-a 0x04008000 -e 0x04008000 -n Linux \
-			-d zImage:simpleramfs.cpio.gz \
+			-d zImage:initramfs.cpio.gz \
 			uImage && \
 		chmod a+r uImage && \
 		( \
