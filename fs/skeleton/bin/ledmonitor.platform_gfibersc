@@ -21,6 +21,7 @@ HDMOUNT_FILE="$CONTROL_PATH/hdd_mount_err"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
 TUNER_FILE="$CONTROL_PATH/tuner_err"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+BOOTED_FILE="$CONTROL_PATH/booted"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 IP_FILE="$BASE_PATH/ipconnected"
 TPM_FILE="$CONTROL_PATH/tpm_enroll"
@@ -28,6 +29,7 @@ GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
 MONLOG_CREDS_FILE="$CONTROL_PATH/monlog_creds"
 PARAMS_FILE="$CONTROL_PATH/has_params"
 AUTHORIZATION_FILE="$CONTROL_PATH/app_authorized"
+APP_RUNNING_FILE="$CONTROL_PATH/app_running"
 TUNER_LOCK_FILE="$CONTROL_PATH/app_tuner_lock"
 UPDATING_FILE="CONTROL_PATH/updating"
 
@@ -35,11 +37,11 @@ UPDATING_FILE="CONTROL_PATH/updating"
 ALL_LEDS_OFF="0"
 HW_FAIL_LED_ON="1" # solid red
 SW_FAIL_LED_ON="1 0" # blink red
-LINK_DOWN_LED_ON="x2 5 0" # slow blink purple
-NO_IP_LED_ON="5 0 5 0 5 0" # fast blink purple
-NO_TUNER_LOCK_LED_ON="5" # solid purple
-UPDATING_LED_ON="4 0" # blink blue
-RUNNING_LED_ON="4" # solid blue
+LINK_DOWN_LED_ON="x2 3 0" # slow blink purple
+NO_IP_LED_ON="3 0 3 0 3 0" # fast blink purple
+NO_TUNER_LOCK_LED_ON="3" # solid purple
+UPDATING_LED_ON="2 0" # blink blue
+RUNNING_LED_ON="2" # solid blue
 
 IFNAME="lan0"
 USB_ETH_IFNAME="eth0"
@@ -109,6 +111,9 @@ while read f; do
     change_state TUNER_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
     change_state POWEROFF "$ALL_LEDS_OFF"
+  elif [ ! -f "$BOOTED_FILE" ]; then
+    # Don't continue checking for states until system is booted.
+    continue
   elif [ -f "$LINK_DOWN_FILE" ]; then
     change_state LINKDOWN "$LINK_DOWN_LED_ON"
   elif [ ! -f "$IP_FILE" ]; then
@@ -123,6 +128,8 @@ while read f; do
     change_state NOPARAMS "$SW_FAIL_LED_ON"
   elif [ ! -f "$AUTHORIZATION_FILE" ]; then
     change_state APP_NOTAUTHORIZED "$SW_FAIL_LED_ON"
+  elif [ ! -f "$APP_RUNNING_FILE" ]; then
+    change_state APP_ERROR "$SW_FAIL_LED_ON"
   elif [ ! -f "$TUNER_LOCK_FILE" ]; then
     change_state APP_NOTUNERLOCK "$NO_TUNER_LOCK_LED_ON"
   elif [ -f "$UPDATING_FILE" ]; then
