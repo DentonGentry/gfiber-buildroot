@@ -48,17 +48,15 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 	done;
 
 	$(INSTALL) -m 0755 -D package/catawampus/S85catawampus \
-		$(TARGET_DIR)/etc/init.d/S85catawampus
-	$(INSTALL) -m 0755 -D package/catawampus/captive_portal \
-		$(TARGET_DIR)/bin/captive_portal
-	$(INSTALL) -m 0755 -D package/catawampus/cwmpd $(TARGET_DIR)/bin/cwmpd
-	$(INSTALL) -m 0755 -D package/catawampus/cwmp $(TARGET_DIR)/bin/cwmp
-	$(INSTALL) -m 0755 -D package/catawampus/cwmp_monitor \
-		$(TARGET_DIR)/bin/cwmp_monitor
-	$(INSTALL) -m 0755 -D package/catawampus/tr69_ipconfig \
-		$(TARGET_DIR)/bin/tr69_ipconfig
-	$(INSTALL) -m 0755 -D package/catawampus/tr69_reboot \
-		$(TARGET_DIR)/bin/tr69_reboot
+		$(TARGET_DIR)/etc/init.d
+	$(INSTALL) -m 0755 -D package/catawampus/captive_portal $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/cwmpd $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/cwmp $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/cwmp_monitor $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/tr69_ipconfig $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/tr69_reboot $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/http_bouncer $(TARGET_DIR)/bin
+	$(INSTALL) -m 0755 -D package/catawampus/poll_hostnames $(TARGET_DIR)/bin
 endef
 
 define CATAWAMPUS_TEST_CMDS
