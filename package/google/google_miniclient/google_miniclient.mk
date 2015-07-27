@@ -31,6 +31,7 @@ define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 package/google/google_miniclient/run-netflix $(TARGET_DIR)/app/client/run-netflix
         $(INSTALL) -D -m 0755 package/google/google_miniclient/run-vudu $(TARGET_DIR)/app/client/run-vudu
         $(INSTALL) -D -m 0755 package/google/google_miniclient/runminiclient $(TARGET_DIR)/app/client/runminiclient
+        $(INSTALL) -D -m 0755 package/google/google_miniclient/idlesleep $(TARGET_DIR)/app/client/idlesleep
 endef
 
 $(eval $(call GENTARGETS))

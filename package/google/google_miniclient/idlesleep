@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "Starting IDLE sleep."
+start_time=`date +%s`
+
+while true; do
+   sleep 300
+   echo "$(( `date +%s` - $start_time )) seconds of IDLE sleep so far."
+done
+
