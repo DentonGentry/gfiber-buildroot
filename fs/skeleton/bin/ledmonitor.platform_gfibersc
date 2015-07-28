@@ -40,7 +40,7 @@ SW_FAIL_LED_ON="1 0" # blink red
 LINK_DOWN_LED_ON="x2 3 0" # slow blink purple
 NO_IP_LED_ON="3 0 3 0 3 0" # fast blink purple
 NO_TUNER_LOCK_LED_ON="3" # solid purple
-UPDATING_LED_ON="2 0" # blink blue
+WAITING_LED_ON="2 0" # blink blue
 RUNNING_LED_ON="2" # solid blue
 
 IFNAME="lan0"
@@ -112,8 +112,7 @@ while read f; do
   elif [ -f "$WAITPOWER_FILE" ]; then
     change_state POWEROFF "$ALL_LEDS_OFF"
   elif [ ! -f "$BOOTED_FILE" ]; then
-    # Don't continue checking for states until system is booted.
-    continue
+    change_state BOOTING "$WAITING_LED_ON"
   elif [ -f "$LINK_DOWN_FILE" ]; then
     change_state LINKDOWN "$LINK_DOWN_LED_ON"
   elif [ ! -f "$IP_FILE" ]; then
@@ -133,7 +132,7 @@ while read f; do
   elif [ ! -f "$TUNER_LOCK_FILE" ]; then
     change_state APP_NOTUNERLOCK "$NO_TUNER_LOCK_LED_ON"
   elif [ -f "$UPDATING_FILE" ]; then
-    change_state UPDATING "$UPDATING_LED_ON"
+    change_state UPDATING "$WAITING_LED_ON"
   else
     change_state RUNNING "$RUNNING_LED_ON"
   fi
