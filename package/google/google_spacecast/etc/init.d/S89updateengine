@@ -20,8 +20,11 @@ case "$1" in
         mkdir -p "$UPDATES_DIR"
         chmod 755 "$UPDATES_DIR"
       fi
-
-      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos updateengine &
+      (
+        # Bootstrap
+        wait-until-created /tmp/gpio/bootstrap
+        babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos updateengine &
+      ) &
     fi
     ;;
   stop)
