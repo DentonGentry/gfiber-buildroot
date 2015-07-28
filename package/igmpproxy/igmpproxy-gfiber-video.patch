@@ -1,0 +1,33 @@
+diff -ru igmpproxy-0.1.orig/src/rttable.c igmpproxy-0.1/src/rttable.c
+--- igmpproxy-0.1.orig/src/rttable.c	2009-05-13 12:43:18.000000000 -0700
++++ igmpproxy-0.1/src/rttable.c	2015-07-28 07:52:36.726697304 -0700
+@@ -198,6 +198,16 @@
+     return NULL;
+ }
+ 
++#define GF_MASK		0xFF000000
++#define GF_VALUE	0xE1000000	/* 225.x.x.x */
++
++/**
++ * Check if multicast group is 225.x.x.x
++ */
++static int gfiberVideo(uint32_t group) {
++	return	(group & GF_MASK) == GF_VALUE;
++}
++
+ /**
+ *   Adds a specified route to the routingtable.
+ *   If the route already exists, the existing route 
+@@ -214,6 +224,12 @@
+             inetFmt(group, s1));
+         return 0;
+     }
++
++    if( ! gfiberVideo( ntohl(group) )) {
++        my_log(LOG_WARNING, 0, "The group address %s is not a gfiber video channel. Table insert failed.",
++            inetFmt(group, s1));
++        return 0;
++    }
+ 
+     // Santiycheck the VIF index...
+     //if(ifx < 0 || ifx >= MAX_MC_VIFS) {
