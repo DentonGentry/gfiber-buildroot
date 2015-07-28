@@ -148,7 +148,11 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			uImage && \
 		chmod a+r uImage && \
 		( \
-			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+			if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
+				export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+			else \
+				export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN,uImage); \
+			fi \
 		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
