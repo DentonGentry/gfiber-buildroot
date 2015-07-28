@@ -1,15 +1,21 @@
 #!/bin/sh
 
+do_chown()
+{
+  if is-tv-box || is-storage-box; then
+    chown $1 $2
+  fi
+}
+
 get_if_nonblank()
 {
   nvram=$1
   filename=$2
   perm=$3
-  # TODO(allanzhang): need impl.
   v=$(hnvram -qr "$nvram")
   [ -n "$v" ] && \
     echo "$v" >"$filename" && \
-    chown root.video "$filename" && \
+    do_chown root.video "$filename" && \
     chmod $perm "$filename"
 }
 
@@ -18,7 +24,7 @@ mkdir_video()
   dirname=$1
   perm=$2
   mkdir -p "$dirname" && \
-    chown root.video "$dirname" && \
+    do_chown root.video "$dirname" && \
     chmod $perm "$dirname" || \
     exit 1
 }
