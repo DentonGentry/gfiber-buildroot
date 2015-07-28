@@ -21,7 +21,7 @@ case "$1" in
       (
         # Bootstrap
         wait-until-created /etc/monlog/oauth2_config.json
-        
+
         babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos monlog_pusher &
       ) &
     fi

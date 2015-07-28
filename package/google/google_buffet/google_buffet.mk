@@ -31,9 +31,9 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D package/google/google_buffet/gcd.json $(TARGET_DIR)/etc/buffet
 	# Install Buffet demos
 	$(HOST_GOOGLE_BUFFET_DEMOS)
-	# Install /etc/init.d/S99buffet script
+	# Install /etc/init.d file
 	mkdir -p $(TARGET_DIR)/etc/init.d && \
-	$(INSTALL) -m 0755 -D package/google/google_buffet/S99buffet $(TARGET_DIR)/etc/init.d/S99buffet
+	$(INSTALL) -m 0755 -D package/google/google_buffet/S86buffet $(TARGET_DIR)/etc/init.d/
 	# Install customized dbus config to run in chroot.
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/org.chromium.Buffet.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Buffet.conf
@@ -57,7 +57,7 @@ endef
 
 define GOOGLE_BUFFET_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Buffet.conf
-	rm -rf $(TARGET_DIR)/etc/init.d/S99buffet
+	rm -rf $(TARGET_DIR)/etc/init.d/S86buffet
 	rm -rf $(TARGET_DIR)/chroot/chromeos
 endef
 
