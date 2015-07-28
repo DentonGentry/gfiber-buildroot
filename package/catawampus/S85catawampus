@@ -41,6 +41,7 @@ case "$1" in
 
     if is-network-box; then
       DIAGUI="--diagui"
+      TECHUI="--techui"
     fi
     if [ -e /tmp/factory_status ]; then
       FACTORY="--factory"
@@ -51,7 +52,7 @@ case "$1" in
     umask 022
     babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
-      nice cwmpd $DIAGUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
+      nice cwmpd $DIAGUI $TECHUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
 
     if is-network-box || is-storage-box; then
       poll_hostnames | logos hostnames &
