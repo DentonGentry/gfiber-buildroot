@@ -31,6 +31,12 @@ define GOOGLE_MCASTCAPTURE_INSTALL_TARGET_CMDS
 	$(MAKE) -C $(@D) install_target
 endef
 
+define GOOGLE_MCASTCAPTURE_COVERAGE_CMDS
+	TARGET=$(TARGET_CROSS) \
+	HOSTDIR=$(HOST_DIR) \
+	$(MAKE) -C $(@D) cross-coverage
+endef
+
 define HOST_GOOGLE_MCASTCAPTURE_TEST_CMDS
 	TARGET=unittest; \
 	if [ "$(TSAN)" ]; then TARGET=ThreadSanitizer; \
@@ -45,7 +51,7 @@ define HOST_GOOGLE_MCASTCAPTURE_COVERAGE_CMDS
 	LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib:$(HOST_DIR)/lib:$(LD_LIBRARY_PATH) \
 	HOSTDIR=$(HOST_DIR) \
 	$(HOST_MAKE_ENV) \
-	$(MAKE) -C $(@D) coverage
+	$(MAKE) -C $(@D) host-coverage
 endef
 
 $(eval $(call GENTARGETS))

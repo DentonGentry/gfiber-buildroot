@@ -810,7 +810,7 @@ $$($(2)_TARGET_INSTALL_STAGING):	$$($(2)_TARGET_BUILD)
 $$($(2)_TARGET_INSTALL_IMAGES):		$$($(2)_TARGET_BUILD)
 $$($(2)_TARGET_INSTALL_HOST):		$$($(2)_TARGET_BUILD)
 $$($(2)_TARGET_TEST):			$$($(2)_TARGET_BUILD)
-$$($(2)_TARGET_COVERAGE):		$$($(2)_TARGET_BUILD)
+$$($(2)_TARGET_COVERAGE):		$$($(2)_TARGET_CONFIGURE)
 
 ifeq ($$($(2)_INSTALL_TARGET),YES)
 $(1)-install-target:	$$($(2)_TARGET_INSTALL_TARGET)
@@ -858,11 +858,6 @@ $(1)-coverage:		$$($(2)_TARGET_COVERAGE)
 # Run host tests as part of test if configured.
 ifneq ($$(HOST_$(2)_TEST_CMDS),)
 $(1)-test:	host-$(1)-test
-endif
-
-# Run host coverage as part of coverage if configured.
-ifneq ($$(HOST_$(2)_COVERAGE_CMDS),)
-$(1)-coverage:	host-$(1)-coverage
 endif
 
 $(2)_DEPENDS_STAMPS =	$$(patsubst %,$(STAMP_DIR)/%,$$(filter-out $(1),$$($(2)_DEPENDENCIES) $(PRE_DEPENDS)))
