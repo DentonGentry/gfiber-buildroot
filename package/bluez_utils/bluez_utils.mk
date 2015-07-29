@@ -17,7 +17,8 @@ BLUEZ_UTILS_CONF_OPT = \
 	--disable-cups \
 	--disable-obex \
 	--disable-client \
-	--disable-experimental \
+	--enable-experimental \
+	--enable-attrib \
 	--enable-test \
 	--disable-udev \
 	--disable-systemd

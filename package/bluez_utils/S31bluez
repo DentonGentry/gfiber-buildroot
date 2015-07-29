@@ -84,11 +84,11 @@ case "$1" in
       sleep 1
 
       echo "$0: Starting bluetoothd"
-      babysit 30 bluetoothd -n -d 2>&1 | logos bluez &
+      babysit 30 bluetoothd -n -d -E 2>&1 | logos bluez &
       sleep 3
 
       echo "$0: Starting gfiber-agent"
-      babysit 30 gfiber-agent 2>&1 | logos bluez-agent &
+      babysit 30 gfiber-agent "${BLUEZ_ADAP_DIR}" 2>&1 | logos bluez-agent &
 
       echo >/tmp/S31bluez_done
     ) &
