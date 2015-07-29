@@ -57,10 +57,7 @@ start()
     echo "$BT_MAC" >/tmp/btmacaddress
   fi
 
-  if ! is-bluez-platform; then
-    [ -e "$MODULE_PATH/btusb.ko" ] && insmod "$MODULE_PATH/btusb.ko"
-    [ -e "$MODULE_PATH/bthid.ko" ] && insmod "$MODULE_PATH/bthid.ko"
-  elif [ "$(kernopt wifical)" = "1" ]; then
+  if [ "$(kernopt wifical)" = "1" ]; then
     # If we're trying to calibrate Wifi/BT, loading
     # the production driver disrupts the process, and we need the "primary
     # kernel" bluetooth core.
@@ -87,10 +84,8 @@ start()
 
 stop()
 {
-  if is-bluez-platform; then
-    rmmod btusb btmrvl_sdio btmrvl bluetooth hidp hid-gfrm uhid
-    rmmod compat
-  fi
+  rmmod btusb btbcm btmrvl_sdio btmrvl bluetooth hidp hid-gfrm uhid
+  rmmod compat
   [ -e "$MODULE_PATH/wl.ko" ] && rmmod wl
 }
 

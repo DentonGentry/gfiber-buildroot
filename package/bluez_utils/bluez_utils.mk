@@ -65,6 +65,8 @@ define BLUEZ_UTILS_TARGET_TWEAKS
 	mv $(TARGET_DIR)/usr/lib/bluez/test/* $(TARGET_DIR)/usr/bin/bluetooth/
 	rm -rf $(TARGET_DIR)/usr/lib/bluez/
 	rm -rf $(TARGET_DIR)/user/bluez/
+	$(INSTALL) -m 0755 -D package/bluez_utils/S31bluez $(TARGET_DIR)/etc/init.d
+	$(INSTALL) -m 0755 -D package/bluez_utils/S55btlast $(TARGET_DIR)/etc/init.d
 endef
 
 BLUEZ_UTILS_POST_INSTALL_TARGET_HOOKS += BLUEZ_UTILS_TARGET_TWEAKS
