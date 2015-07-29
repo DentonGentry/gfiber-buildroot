@@ -88,6 +88,13 @@ define HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN
 endef
 endif
 
+define HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN
+	($(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+			-o $(HOST_DIR) -b $(BINARIES_DIR) -k $(1) && \
+		$(call GOOGLE_CODE_SIGN_TOOL_EXECUTE,sign-image,$(BINARIES_DIR)/$(1),recovery,
+		       $(2)))
+endef
+
 define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
 	$(MAKE) HOSTDIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
 		INSTALL=$(INSTALL) -C $(@D)/signing install
