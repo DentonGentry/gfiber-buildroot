@@ -73,10 +73,8 @@ if is_os_part $sata_dev 20 ; then
   exit 1
 fi
 
-leds 0 15 0 15 0 15  # noisy leds as we wipe things
-
 for f in /etc/init.d/S[89]* ; do
-	$f stop
+  $f stop
 done
 
 # force kill chroot binaries, just in case.
@@ -122,9 +120,3 @@ if ! mkfs.ext4 -m 0 -E lazy_itable_init=1 $media_dev ; then
   # if we fail at this point, just try to delete everything
   rm -rf /var/media/*
 fi
-
-leds 0  # done
-
-echo "Rebooting in 10 seconds..."
-sleep 10
-reboot
