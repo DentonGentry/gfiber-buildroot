@@ -50,21 +50,21 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		INSTALL="$(INSTALL)" \
 		TARGET_DIR="$(TARGET_DIR)" \
 		STRIPCMD="$(STRIPCMD)"
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80statemanager \
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S82scdaemon \
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S84configmanager \
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S88updateengine \
+		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S90spacecast \
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S88scdaemon \
-		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92configmanager \
-		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S85statemanager \
-		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S89updateengine \
-		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80monlog_pusher\
-		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S99androidserver\
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92monlogpusher\
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S95adb\
+		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S99androidserver\
 		$(TARGET_DIR)/etc/init.d/
 endef
 
@@ -72,14 +72,14 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk clean \
 		TARGET_DIR="$(TARGET_DIR)"
 
+	rm -f $(TARGET_DIR)/etc/init.d/S80statemanager
+	rm -f $(TARGET_DIR)/etc/init.d/S82scdaemon
+	rm -f $(TARGET_DIR)/etc/init.d/S84configmanager
+	rm -f $(TARGET_DIR)/etc/init.d/S88updateengine
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
-	rm -f $(TARGET_DIR)/etc/init.d/S88scdaemon
-	rm -f $(TARGET_DIR)/etc/init.d/S92configmanager
-	rm -f $(TARGET_DIR)/etc/init.d/S85statemanager
-	rm -f $(TARGET_DIR)/etc/init.d/S89updateengine
-	rm -f $(TARGET_DIR)/etc/init.d/S80monlog_pusher
-	rm -f $(TARGET_DIR)/etc/init.d/S99androidserver
+	rm -f $(TARGET_DIR)/etc/init.d/S92monlogpusher
 	rm -f $(TARGET_DIR)/etc/init.d/S95adb
+	rm -f $(TARGET_DIR)/etc/init.d/S99androidserver
 endef
 
 $(eval $(call GENTARGETS))
