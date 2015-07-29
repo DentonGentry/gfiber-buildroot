@@ -1,19 +1,30 @@
 #!/bin/sh
 
+IFNAME=
+APIMODE=
+
+if is-fiberjack; then
+  IFNAME=pon0
+elif is-spacecast; then
+  IFNAME=lan0
+# Spacecast is also a network box.
+elif is-network-box; then
+  IFNAME=wan0
+  APIMODE="--api-mode=iff"
+fi
+
 start()
 {
-  if is-fiberjack; then
-    babysit 60 ifplugd -i pon0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
-  fi
-  if is-network-box; then
-    babysit 60 ifplugd --api-mode=iff -i wan0 -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+  if [ -n "$IFNAME" ] ; then
+    babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -q -d0 2>&1 | logos ifplugd &
   fi
 }
 
 stop()
 {
-  ifplugd -k -W -i pon0
-  ifplugd -k -W -i wan0
+  if [ -n "$IFNAME" ] ; then
+    ifplugd -k -W -i $IFNAME
+  fi
   pkill ifplugd.action
 }
 
