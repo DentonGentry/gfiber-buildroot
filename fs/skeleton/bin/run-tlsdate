@@ -137,6 +137,14 @@ while :; do
 done
 
 
+# Now let dbus services know that time is sane.
+tlsdate-dbus-announce
+# Status code 1 means error and 2 means no dbus support.
+if [ $? == 1 ]; then
+  echo "tlsdate-dbus-announce failed." >&2
+fi
+
+
 # Now the clock is as close as it can get with one-off syncs.  We have
 # to start fine tuning the clock rate.
 mkdir -p /tmp/clockspeed/etc
