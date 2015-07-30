@@ -9,7 +9,7 @@
 # QUOTES.  Use only single quotes in all shell commands in this file, or
 # you'll get very weird, hard-to-find errors.
 
-ROOTFS_GINSTALL_DEPENDENCIES = linux host-lzma host-squashfs host-uboot-tools
+ROOTFS_GINSTALL_DEPENDENCIES = linux host-xz host-squashfs host-uboot-tools
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 

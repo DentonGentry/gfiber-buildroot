@@ -56,7 +56,7 @@ $(BINARIES_DIR)/rootfs.%.gz: $(BINARIES_DIR)/rootfs.%
 $(BINARIES_DIR)/rootfs.%.bz2: $(BINARIES_DIR)/rootfs.%
 	bzip2 -9 -c $< >$@
 
-$(BINARIES_DIR)/rootfs.%.lzma: $(BINARIES_DIR)/rootfs.% host-lzma
+$(BINARIES_DIR)/rootfs.%.lzma: $(BINARIES_DIR)/rootfs.% host-xz
 	$(LZMA) -9 -c $< >$@
 
 
