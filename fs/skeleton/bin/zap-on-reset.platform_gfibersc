@@ -21,15 +21,12 @@ while :; do
       log "factory reset requested."
       leds 2 0 2 0 2 0  # fast blinky blue light to indicate full on factory reset
       zap --i-really-mean-it --erase-backups
-      log "factory reset complete: power cycle needed..."
-      while :; do
-        sleep 5
-        leds 0
-      done
+      log "factory reset complete: rebooting in 10 seconds..."
+      sleep 10
     else
       log "reset button: rebooting..."
-      leds 0
-      reboot
     fi
+    leds 0
+    reboot
   fi
 done
