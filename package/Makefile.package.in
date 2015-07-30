@@ -192,6 +192,12 @@ define DOWNLOAD_REPO
 		) \
 	fi
 endef
+define SOURCE_CHECK_REPO
+	echo "unimplemented"
+endef
+define SHOW_EXTERNAL_DEPS_REPO
+	echo $($(PKG)_SITE)
+endef
 
 define DOWNLOAD_RREPO
 	${DOWNLOAD_REPO} ;\
@@ -219,6 +225,12 @@ define DOWNLOAD_RREPO
 			) ; \
 		fi ; \
 	done
+endef
+define SOURCE_CHECK_RREPO
+	echo "unimplemented"
+endef
+define SHOW_EXTERNAL_DEPS_RREPO
+	echo $($(PKG)_SITE)
 endef
 
 define DOWNLOAD_GIT
