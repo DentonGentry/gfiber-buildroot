@@ -14,6 +14,10 @@ case "$action" in
       ethtool -r eth0
       ifup man
     fi
+    if is-spacecast && [ "$iface" = lan0 ]; then
+      # Spacecast Box
+      run-dhclient "$iface"
+    fi
     if [ "$iface" = wan0 ]; then
       # Network Box
       run-dhclient "$iface"
