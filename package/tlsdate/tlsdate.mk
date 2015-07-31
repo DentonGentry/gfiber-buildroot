@@ -6,6 +6,16 @@ TLSDATE_DEPENDENCIES = host-pkg-config openssl
 TLSDATE_PRE_CONFIGURE_HOOKS += TLSDATE_AUTOGEN
 TLSDATE_CONF_OPT = --disable-hardened-checks
 
+ifeq ($(BR2_PACKAGE_DBUS),y)
+TLSDATE_DEPENDENCIES += dbus
+TLSDATE_CONF_OPT += --enable-dbus
+
+define TLSDATE_INSTALL_DBUS_CONF
+	$(INSTALL) -m 0644 package/tlsdate/org.torproject.tlsdate.conf $(TARGET_DIR)/etc/dbus-1/system.d
+endef
+TLSDATE_POST_INSTALL_TARGET_HOOKS += TLSDATE_INSTALL_DBUS_CONF
+endif
+
 define TLSDATE_INSTALL_DAEMON_INITSCRIPT
 	$(INSTALL) -m 0755 package/tlsdate/S75tlsdate $(TARGET_DIR)/etc/init.d/
 endef
