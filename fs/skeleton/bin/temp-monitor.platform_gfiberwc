@@ -27,7 +27,9 @@ disable_iface() {
       "$IFDOWN" "$LAN_IFACE"
       ;;
     "$WIFI_IFACE")
-      stop wifi
+      if pidof hostapd > /dev/null; then
+        stop wifi
+      fi
       ;;
     *)
       ;;
@@ -155,11 +157,18 @@ temp_check() {
   fi
 
   # Only log when the status has changed.
-  if [ "$new_state" = "$current_state" ]; then
+  #TODO(abf): cwmpd brings up wifi when it starts, even if we're currently
+  # overtemp. So we continuously kill wifi during overtemp condition (but only
+  # if we explicitly see hostapd running, because we don't have the spare
+  # memory to run /bin/wifi once a minute).
+  if [ "$new_state" = "$current_state" -a "$new_state" = "$AP_ENABLED" ]; then
     return 0
   fi
 
-  err_log "$status_msg"
+  if [ "$new_state" != "$current_state" ]; then
+    err_log "$status_msg"
+  fi
+
   case $new_state in
     "$AP_ENABLED")
       enable_iface "$WIFI_IFACE"
