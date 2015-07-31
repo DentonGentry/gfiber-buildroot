@@ -1,5 +1,4 @@
 #!/bin/sh
-#
 
 sigterm()
 {
@@ -8,15 +7,29 @@ sigterm()
 
 trap sigterm TERM
 
+start_time=$(date +%s)
 while true; do
   echo 3 > /proc/sys/vm/drop_caches
   echo 1 > /proc/sys/vm/compact_memory
-  free -m | grep cache: | {
-     read a b c d
-     # hardcoded 8M.
-     if [ -n "$d" ] && [ "$d" -le 8 ]; then
-       restart catawampus
-     fi
-  }
+  end_time=$(date +%s)
+  elapsed_time=$(($end_time -$start_time))
+  if [ "$elapsed_time" -ge 35 ]; then
+    # 5 sec for slow scheduling tolerance.
+    # 35 sec = 20 sec sleep interval + 3 * 5.
+    echo "******Slow response, thrashing, recover******"
+    stop catawampus
+    sleep 5
+    start catawampus
+  else
+    free -m | grep cache: | {
+       read a b c d
+       # hardcoded 8M.
+       if [ -n "$d" ] && [ "$d" -le 8 ]; then
+         echo "******Low mem, restart cwmp******"
+         restart catawampus
+       fi
+    }
+  fi
+  start_time=$(date +%s)
   sleep 20
 done
