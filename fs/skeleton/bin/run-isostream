@@ -22,37 +22,39 @@ xport_is_open() {
 
 
 (
-  remote=$1
-  shift
+  (
+    remote=$1
+    shift
 
-  if [ "$remote" = "--use-storage-box" ]; then
-    echo "$0: use-storage-box: trying to find a server." >&2
-    remote=
-    while [ -z "$remote" ]; do
-      remote=$(find-servers | firstword)
-      if [ -z "$remote" ]; then
-        echo "$0: find-servers returned no answers.  Waiting..." >&2
-        sleep 1
-      fi
-    done
-    echo "$0: use-storage-box: found a server: $remote" >&2
-  fi
-
-  pid=
-  while :; do
-    if xport_is_open; then
-      if [ -n "$pid" ]; then
-        echo "pausing test because port $ISOSTREAM_DISABLE_IF_PORT open" >&2
-        kill -15 "$pid"
-        pid=
-      fi
-    else
-      if [ -z "$pid" ]; then
-        echo "Starting: isostream $* '$remote'" >&2
-        isostream "$@" "$remote" &
-        pid=$!
-      fi
+    if [ "$remote" = "--use-storage-box" ]; then
+      echo "$0: use-storage-box: trying to find a server." >&2
+      remote=
+      while [ -z "$remote" ]; do
+        remote=$(find-servers | firstword)
+        if [ -z "$remote" ]; then
+          echo "$0: find-servers returned no answers.  Waiting..." >&2
+          sleep 1
+        fi
+      done
+      echo "$0: use-storage-box: found a server: $remote" >&2
     fi
-    sleep 1
-  done
-) 2>&1 | logos isostream
+
+    pid=
+    while :; do
+      if xport_is_open; then
+        if [ -n "$pid" ]; then
+          echo "pausing test because port $ISOSTREAM_DISABLE_IF_PORT open" >&2
+          kill -15 "$pid"
+          pid=
+        fi
+      else
+        if [ -z "$pid" ]; then
+          echo "Starting: isostream $* '$remote'" >&2
+          isostream "$@" "$remote" &
+          pid=$!
+        fi
+      fi
+      sleep 1
+    done
+  ) 2>&1  | tee /proc/self/fd/5 | logos isostream  # Send output to isostream, and also fd #5 so it ends up back on stdout
+) 5>&1  # make fd #5 a copy of the original stdout
