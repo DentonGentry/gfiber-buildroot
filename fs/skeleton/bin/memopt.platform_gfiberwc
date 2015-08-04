@@ -2,7 +2,8 @@
 
 sigterm()
 {
-  exit 0
+  echo "******memopt is killed, I want back******"
+  exit 1
 }
 
 trap sigterm TERM
