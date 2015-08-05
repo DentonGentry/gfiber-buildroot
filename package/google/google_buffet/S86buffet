@@ -6,10 +6,11 @@
 #   Note: Buffet is ported from ChromeOS as a binary so it expects the ChromeOS
 # environment. Therefore, chroot is needed to execute buffet.
 #
+. /etc/utils.sh
 
+APP="buffet"
 BINARY="/bin/buffet"
-
-FLAGS="-log_to_stderr=true"
+FLAGS="-log_to_stderr"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
@@ -53,8 +54,7 @@ start() {
       wait-until-created /chroot/chromeos/etc/buffet/buffet.conf
       # Sanity check: DBus socket has to be present.
       wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
-
-      babysit 10 chroot /chroot/chromeos ${BINARY} ${FLAGS} 2>&1 | logos buffet &
+      babysit_start 10 "$APP" "chroot /chroot/chromeos $BINARY" "$FLAGS"
       [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
       echo "Buffet started successfully"
     ) &

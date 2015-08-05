@@ -1,10 +1,10 @@
 #!/bin/sh
-#
 # Spacecast daemon init script.
+. /etc/utils.sh
 
+APP="scdaemon"
 BINARY="/app/spacecast/daemon"
-
-FLAGS="-logtostderr=true"
+FLAGS="-logtostderr"
 
 # Make sure we have a directory to store Monlog credentials.
 mkdir -p /config/monlog
@@ -22,7 +22,7 @@ case "$1" in
     if running; then
       echo "SpaceCast daemon is already running!"
     else
-      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos scdaemon &
+      babysit_start 10 "$APP" "$BINARY" "$FLAGS"
     fi
     ;;
   stop)

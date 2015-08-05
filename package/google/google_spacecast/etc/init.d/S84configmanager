@@ -1,9 +1,10 @@
 #!/bin/sh
 # Config Manager init script.
+. /etc/utils.sh
 
+APP="configmanager"
 BINARY="/app/spacecast/configmanager"
-
-FLAGS="-logtostderr=true"
+FLAGS="-logtostderr"
 
 # Make sure we have a directory to store configs for SpaceCast.
 mkdir -p /config/spacecast
@@ -17,7 +18,7 @@ case "$1" in
     if running; then
       echo "Config Manager is already running!"
     else
-      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos configmanager &
+      babysit_start 10 "$APP" "$BINARY" "$FLAGS"
     fi
     ;;
   stop)

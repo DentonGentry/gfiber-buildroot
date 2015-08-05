@@ -1,5 +1,6 @@
 #!/bin/sh
 # SpaceCast init script.
+. /etc/utils.sh
 
 # Set the stack size to 1MB (Default to 8M) to support more concurrent streams.
 # When CGO is enabled, each blocking syscall (Read, Write) will call
@@ -7,9 +8,9 @@
 # streams would be 800MB and the memory limit would be hit without this change.
 ulimit -s 1024
 
+APP="spacecast"
 BINARY="/app/spacecast/appliance"
-
-FLAGS="-logtostderr=true"
+FLAGS="-logtostderr"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
@@ -23,7 +24,7 @@ case "$1" in
       (
         # Bootstrap
         wait-until-created /tmp/gpio/bootstrap
-        babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos spacecast &
+        babysit_start 10 "$APP" "$BINARY" "$FLAGS"
       ) &
       echo "SpaceCast started."
     fi

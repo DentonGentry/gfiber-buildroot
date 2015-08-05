@@ -1,9 +1,10 @@
 #!/bin/sh
 # Monlog Pusher init script.
+. /etc/utils.sh
 
+APP="monlog_pusher"
 BINARY="/app/spacecast/monlog_pusher"
-
-FLAGS="-logtostderr=true"
+FLAGS="-logtostderr"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
@@ -21,8 +22,7 @@ case "$1" in
       (
         # Bootstrap
         wait-until-created /etc/monlog/oauth2_config.json
-
-        babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos monlog_pusher &
+        babysit_start 10 "$APP" "$BINARY" "$FLAGS"
       ) &
     fi
     ;;
