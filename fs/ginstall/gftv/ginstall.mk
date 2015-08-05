@@ -7,11 +7,22 @@
 # QUOTES.  Use only single quotes in all shell commands in this file, or
 # you'll get very weird, hard-to-find errors.
 
-ROOTFS_GINSTALL_DEPENDENCIES = simpleramfs rootfs-squashfs host-mtd \
-				host-dmverity host-google_signing
+ROOTFS_GINSTALL_DEPENDENCIES = host-mtd
 
 ifeq ($(BR2_TARGET_ROOTFS_RECOVERYFS),y)
 ROOTFS_GINSTALL_DEPENDENCIES += rootfs-recoveryfs
+endif
+
+ifeq ($(BR2_PACKAGE_SIMPLERAMFS),y)
+ROOTFS_GINSTALL_DEPENDENCIES += simpleramfs
+endif
+
+ifeq ($(BR2_TARGET_ROOTFS_INITRAMFS),y)
+ROOTFS_GINSTALL_DEPENDENCIES += rootfs-initramfs
+endif
+
+ifeq ($(BR2_TARGET_ROOTFS_SQUASHFS),y)
+ROOTFS_GINSTALL_DEPENDENCIES += rootfs-squashfs host-dmverity host-google_signing
 endif
 
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
@@ -86,6 +97,28 @@ else
 ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 endif
 
+MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
+MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
+MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz
+MKIMAGE_IMAGE_TYPE=multi
+MKIMAGE_COMPRESSION_TYPE=none
+MKIMAGE_EXTRA_FLAGS=
+
+ifeq ($(ARCH),arc)
+# This is really for compressing the kernel image rather than the rootfs, but
+# it is a convenient way to specify the dependency.
+ROOTFS_GINSTALL_DEPENDENCIES += host-lzma
+
+ROOTFS_GINSTALL_KERNEL_FILE=Image
+MKIMAGE_KERNEL_LOAD_ADDRESS = 0x84904000
+MKIMAGE_KERNEL_ENTRY_POINT = 0x84904000
+MKIMAGE_DATA_FILE = $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma
+MKIMAGE_IMAGE_TYPE = kernel
+MKIMAGE_COMPRESSION_TYPE = lzma
+MKIMAGE_EXTRA_FLAGS = -Q 0x1
+endif #arc
+
+
 # v3 and v4 image formats contain a manifest file, which describes the image
 # and supported platforms.
 #
@@ -110,6 +143,10 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	if [ $(BR2_ARCH) = 'arc' ]; then \
+		rm -rf $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma && \
+		$(LZMA) -k --best $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE); \
+	fi && \
 	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
@@ -134,39 +171,46 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		fi; \
 	fi && \
 	cd $(BINARIES_DIR) && \
-	ln -f rootfs.squashfs rootfs.img && \
-	if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
-		gzip -c <simpleramfs.cpio >initramfs.cpio.gz; \
-	else \
-		gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
+	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
+		ln -f rootfs.squashfs rootfs.img && \
+		if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
+			gzip -c <simpleramfs.cpio >initramfs.cpio.gz; \
+		else \
+			gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
+		fi; \
 	fi && \
 	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
-			-A $(BR2_ARCH) -O linux -T multi -C none \
-			-a 0x04008000 -e 0x04008000 -n Linux \
-			-d zImage:initramfs.cpio.gz \
-			uImage && \
+			-A $(BR2_ARCH) -O linux -T $(MKIMAGE_IMAGE_TYPE) -C $(MKIMAGE_COMPRESSION_TYPE) \
+			-a $(MKIMAGE_KERNEL_LOAD_ADDRESS) -e $(MKIMAGE_KERNEL_ENTRY_POINT) -n Linux \
+			-d $(MKIMAGE_DATA_FILE) \
+			$(MKIMAGE_EXTRA_FLAGS) \
+			uImage; \
 		chmod a+r uImage && \
 		( \
-			if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
-				export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
-			else \
-				export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN,uImage); \
+			if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
+				if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
+					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+				else \
+					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN,uImage); \
+				fi \
 			fi \
 		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
-	(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
-	 echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
-	 if [ -e '$(BRUNO_LOADER)' ]; then \
-	   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
-	   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
-	 fi ) >>$(ROOTFS_GINSTALL_MANIFEST) && \
-	tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
-		$(ROOTFS_GINSTALL_MANIFEST) \
-		$(BRUNO_LOADERS_V3_V4) \
-		kernel.img \
-		rootfs.img
+	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
+		(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
+		 echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
+		 if [ -e '$(BRUNO_LOADER)' ]; then \
+		   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
+		   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
+		 fi ) >>$(ROOTFS_GINSTALL_MANIFEST) && \
+		tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
+			$(ROOTFS_GINSTALL_MANIFEST) \
+			$(BRUNO_LOADERS_V3_V4) \
+			kernel.img \
+			rootfs.img; \
+	fi
 endef
 
 # v2 image format was used at launch of GFiber TV devices.
