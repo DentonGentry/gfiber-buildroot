@@ -6,15 +6,19 @@ case "$1" in
     if interface_exists wan0; then
       babysit 60 netusage -i wan0 2>&1 | logos netusage &
     fi
+    if is-network-box && runnable dhcp-rogue && interface_exists br0; then
+      babysit 60 sh -c "while [ 1 ]; do dhcp-rogue -i br0; sleep 900; done" | logos dhcprogue &
+    fi
     ;;
   stop)
     pkill netusage
+    pkill dhcp-rogue
     ;;
   restart)
     $0 stop; $0 start
     ;;
   *)
-    echo "Usage: netusage {start|stop|restart}" >&2
+    echo "Usage: netmon {start|stop|restart}" >&2
     exit 1
     ;;
 esac
