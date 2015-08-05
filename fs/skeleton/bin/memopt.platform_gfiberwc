@@ -17,19 +17,10 @@ while true; do
   if [ "$elapsed_time" -ge 35 ]; then
     # 5 sec for slow scheduling tolerance.
     # 35 sec = 20 sec sleep interval + 3 * 5.
-    echo "******Slow response, thrashing, recover******"
+    echo "Slow response, thrashing? recover..."
     stop catawampus
     sleep 5
     start catawampus
-  else
-    free -m | grep cache: | {
-       read a b c d
-       # hardcoded 8M.
-       if [ -n "$d" ] && [ "$d" -le 8 ]; then
-         echo "******Low mem, restart cwmp******"
-         restart catawampus
-       fi
-    }
   fi
   start_time=$(date +%s)
   sleep 20
