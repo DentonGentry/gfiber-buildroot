@@ -13,9 +13,6 @@ BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
 
-# Start BlueZ stack only on select platforms
-! is-bluez-platform && exit 0
-
 # implemented in Blue/Z for GFRM100.
 register_experiment BluezUnplugNoKeypress
 
