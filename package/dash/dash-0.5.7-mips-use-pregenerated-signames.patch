@@ -1,0 +1,13 @@
+--- dash-0.5.7/src/Makefile.in	2015-08-04 12:46:44.714708632 -0700
++++ dash-0.5.7/src/Makefile.in	2015-08-04 12:46:31.418563183 -0700
+@@ -626,8 +626,10 @@
+ syntax.c syntax.h: mksyntax
+ 	./$^
+ 
++ifeq (,$(findstring mips,$(host_alias)))
+ signames.c: mksignames
+ 	./$^
++endif
+ 
+ mksyntax: token.h
+ 

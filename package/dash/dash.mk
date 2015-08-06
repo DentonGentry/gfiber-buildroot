@@ -12,6 +12,14 @@ DASH_PATCH = dash_$(DASH_VERSION)-2.diff.gz
 
 $(call BUILD_AFTER_BUSYBOX,dash)
 
+ifneq (,$(findstring mips,$(ARCH)))
+DASH_POST_PATCH_HOOKS += DASH_COPY_MIPS_SIGNAMES_C
+endif
+
+define DASH_COPY_MIPS_SIGNAMES_C
+	cp $(DASH_DIR_PREFIX)/$(RAWNAME)/mips_signames.c $(@D)/src/signames.c
+endef
+
 define DASH_INSTALL_TARGET_CMDS
 	cp -a $(@D)/src/dash $(TARGET_DIR)/bin/dash
 endef
