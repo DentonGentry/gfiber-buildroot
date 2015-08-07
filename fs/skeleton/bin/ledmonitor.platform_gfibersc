@@ -21,6 +21,7 @@ HDMOUNT_FILE="$CONTROL_PATH/hdd_mount_err"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
 TUNER_FILE="$CONTROL_PATH/tuner_err"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
+REGPOLL_FILE="$CONTROL_PATH/regpoll"
 BOOTED_FILE="$CONTROL_PATH/booted"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 IP_FILE="$BASE_PATH/ipconnected"
@@ -41,6 +42,7 @@ SW_FAIL_LED_ON="1 0" # blink red
 LINK_DOWN_LED_ON="x2 3 0" # slow blink purple
 NO_IP_LED_ON="3 0 3 0 3 0" # fast blink purple
 NO_SATELLITE_LED_ON="3" # solid purple
+FASTWAIT_LED_ON="2 0 2 0 2 0" # fast blink blue
 WAITING_LED_ON="2 0" # blink blue
 RUNNING_LED_ON="2" # solid blue
 
@@ -109,6 +111,8 @@ while read f; do
     change_state TUNER_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
     change_state POWEROFF "$ALL_LEDS_OFF"
+  elif [ -f "$REGPOLL_FILE" ]; then
+    change_state REG_POLL "$FASTWAIT_LED_ON"
   elif [ ! -f "$BOOTED_FILE" ]; then
     change_state BOOTING "$WAITING_LED_ON"
   elif [ -f "$LINK_DOWN_FILE" ]; then
