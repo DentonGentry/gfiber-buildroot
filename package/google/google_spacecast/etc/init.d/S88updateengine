@@ -1,11 +1,13 @@
 #!/bin/sh
 # UpdateEngine init script.
+. /etc/utils.sh
 
+APP="updateengine"
 BINARY="/app/spacecast/updateengine"
+FLAGS="-logtostderr"
+
 BASE_DIR="/var/media/updateengine"
 UPDATES_DIR="${BASE_DIR}/updates"
-
-FLAGS="-logtostderr=true"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
@@ -23,7 +25,7 @@ case "$1" in
       (
         # Bootstrap
         wait-until-created /tmp/gpio/bootstrap
-        babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos updateengine &
+        babysit_start 10 "$APP" "$BINARY" "$FLAGS"
       ) &
     fi
     ;;

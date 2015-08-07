@@ -224,3 +224,20 @@ find_sata_blkdev()
 interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
+
+# Used by GFSC100. Starts an app with babysit (specified delay) and also logs.
+babysit_start() {
+  local delay="$1"
+  local app="$2"
+  local binary="$3"
+  local flags="$4"
+  if [ -e /tmp/DEBUG ]; then
+    # Developer devices save application logs.
+    mkdir -p /var/media/applog
+    echo "=== $app started ===" >> /var/media/applog/$app
+    FLAGS="$FLAGS -v=2"
+    babysit $delay $binary $flags 2>&1 | tee -a /var/media/applog/$app | logos $app &
+  else
+    babysit $delay $binary $flags 2>&1 | logos $app &
+  fi
+}

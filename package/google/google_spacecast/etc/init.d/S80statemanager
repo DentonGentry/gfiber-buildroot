@@ -1,9 +1,10 @@
 #!/bin/sh
 # State Manager init script.
+. /etc/utils.sh
 
+APP="statemanager"
 BINARY="/app/spacecast/statemanager"
-
-FLAGS="-logtostderr=true"
+FLAGS="-logtostderr"
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
@@ -14,7 +15,7 @@ case "$1" in
     if running; then
       echo "State Manager is already running!"
     else
-      babysit 10 ${BINARY} ${FLAGS} 2>&1 | logos statemanager &
+      babysit_start 10 "$APP" "$BINARY" "$FLAGS"
     fi
     ;;
   stop)
