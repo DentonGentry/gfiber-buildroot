@@ -92,7 +92,13 @@ LINUX_DEPENDENCIES+=host-uboot-tools
 else ifeq ($(BR2_LINUX_KERNEL_BZIMAGE),y)
 LINUX_IMAGE_NAME=bzImage
 else ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
+ifeq ($(KERNEL_ARCH),arc)
+# The Skids kernel has no zImage target, so we just make Image and then compress
+# it in ginstall.
+LINUX_IMAGE_NAME=Image
+else
 LINUX_IMAGE_NAME=zImage
+endif  # arc
 else ifeq ($(BR2_LINUX_KERNEL_APPENDED_ZIMAGE),y)
 LINUX_IMAGE_NAME = zImage
 else ifeq ($(BR2_LINUX_KERNEL_VMLINUX_BIN),y)
