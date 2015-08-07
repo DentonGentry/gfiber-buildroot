@@ -235,7 +235,7 @@ babysit_start() {
     # Developer devices save application logs.
     mkdir -p /var/media/applog
     echo "=== $app started ===" >> /var/media/applog/$app
-    FLAGS="$FLAGS -v=2"
+    flags="$flags -v=2"
     babysit $delay $binary $flags 2>&1 | tee -a /var/media/applog/$app | logos $app &
   else
     babysit $delay $binary $flags 2>&1 | logos $app &
