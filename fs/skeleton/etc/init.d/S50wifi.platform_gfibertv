@@ -22,6 +22,7 @@ case "$1" in
   start)
     babysit 30 /usr/wifi/wifi_files.py 2>&1 | logos wifistatus &
     mkdir -p /tmp/wifi/fingerprints
+    mkdir -p /tmp/wifi/wifiblaster
     if is-network-box; then
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then
