@@ -24,6 +24,7 @@
 [ -x /chroot/chromeos/bin/tpm-manager ] || exit 1
 
 
+CONFIG_PATH=/var/config
 
 # kill_if_running is used to kill an application only if it is running.
 # using a pkill alone would return an error if the program couldn't be found.
@@ -45,21 +46,22 @@ kill_if_running() {
 # libraries.
 
 # We need the preserve folder, but also tpm uses /mnt/stateful_partition/.tpm_owned
-mkdir -p "/config/cryptohome/stateful_partition/unencrypted/preserve"
-mount_once "/config/cryptohome/stateful_partition" "/chroot/chromeos/mnt/stateful_partition"
+mkdir -p "$CONFIG_PATH/cryptohome/stateful_partition/unencrypted/preserve"
+mount_once "$CONFIG_PATH/cryptohome/stateful_partition" "/chroot/chromeos/mnt/stateful_partition"
 
 # Home folder, for storing /home/.shadow/cryptohome.key
-mkdir -p "/config/cryptohome/home"
-mount_once "/config/cryptohome/home" "/chroot/chromeos/home"
+mkdir -p "$CONFIG_PATH/cryptohome/home"
+mount_once "$CONFIG_PATH/cryptohome/home" "/chroot/chromeos/home"
 
 # Root home folder, for storing trousers information
-mkdir -p "/config/cryptohome/root"
-mount_once "/config/cryptohome/root" "/chroot/chromeos/root"
+mkdir -p "$CONFIG_PATH/cryptohome/root"
+mount_once "$CONFIG_PATH/cryptohome/root" "/chroot/chromeos/root"
 
 # /var/lib stores the old .tpm_owned and opencryptoki files. Also /var/lib/tpm folder is required for trousers.
-mkdir -p "/config/shared/lib/tpm"
-[ -e "/config/cryptohome/lib" ] || ln -s "/config/shared/lib" "/config/cryptohome/lib"
-mount_once "/config/shared/lib" "/chroot/chromeos/var/lib"
+mkdir -p "$CONFIG_PATH/shared/lib/tpm"
+mkdir -p "$CONFIG_PATH/shared/lib/metrics"
+[ -e "$CONFIG_PATH/cryptohome/lib" ] || ln -sf "$CONFIG_PATH/shared/lib" "$CONFIG_PATH/cryptohome/lib"
+mount_once "$CONFIG_PATH/shared/lib" "/chroot/chromeos/var/lib"
 
 # /etc is needed because we need to access users and groups and /etc/tcsd.conf
 # trousers needs to check that it is running with user and group tss:tss
@@ -77,11 +79,44 @@ mount_once "/tmp" "/chroot/chromeos/tmp"
 # Sanity check.. DBus socket has to be present.
 wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
 
+mount_config() {
+  IMG_PATH=$CONFIG_PATH/config.img
+  IMG_DEVICE=/dev/mapper/config
+
+  echo "Mounting encrypted config partition..."
+
+  # Stop if /config is already mounted.
+  if mount | grep -q "on /config" ; then
+    return 0
+  fi
+
+  if [ ! -f $IMG_PATH ] ; then
+    rm -f ${IMG_PATH}.key
+    dd if=/dev/zero of=$IMG_PATH bs=1024 seek=40959 count=1 || return 1
+  fi
+
+  cryptdev config $IMG_PATH || return 1
+
+  wait-until-created $IMG_DEVICE
+
+  if ! mount -t ext4 $IMG_DEVICE /config ; then
+    echo "Formatting encrypted config partition..."
+    mkfs.ext4 -q $IMG_DEVICE || return 1
+    mount -t ext4 $IMG_DEVICE /config || return 1
+  fi
+
+  # Make /config writable to non-root.
+  chown bin.sys /config
+  chmod 775 /config
+
+  return 0
+}
+
 start() {
   echo "Starting cryptohome services..."
 
   echo "starting TCSD..."
-  babysit 10 chroot /chroot/chromeos /bin/tcsd 2>&1 | logos tcsd &
+  chroot /chroot/chromeos /bin/tcsd 2>&1 | logos tcsd
 
   echo "starting CHAPSD..."
   babysit 10 chroot /chroot/chromeos /bin/chapsd 2>&1 | logos chapsd &
@@ -92,6 +127,11 @@ start() {
 
   echo "starting Cryptohomed..."
   babysit 10 chroot /chroot/chromeos /bin/cryptohomed 2>&1 | logos cryptohomed &
+
+  # Encrypted partition depends on cryptohome for encryption key.
+  if ! mount_config 2>&1 | logos configfs ; then
+    echo "Failed to mount encrypted config partition..."
+  fi
 }
 
 stop() {
