@@ -42,12 +42,29 @@ case $1 in
       ip link del man
     fi
     ifdown "$wan_port"
+    pkill -f rdiscloop
+    pkill -f sycl
+    pkill rstp
+    pkill misc
+    pkill upgrade
+    pkill igmp
+    pkill voip
+    pkill apm
+    pkill midware
+    pkill omci
+    ;;
+  powerdown)
+    $0 stop
+    # disable pon phy
+    devmem 0xf10184f4 32 0
+    # disable laser
+    i2cset -y 0 0x51 110 0x40
     ;;
   restart|reload)
     $0 stop
     $0 start
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart|powerdown}"
     exit 1
 esac

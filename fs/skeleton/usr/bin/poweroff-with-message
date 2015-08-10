@@ -40,5 +40,7 @@ echo "Waiting for LEDs and logs to sync."
 ) &
 wait
 
+QUIET=1 powerdown harddisk wan
+
 echo "Powering off."
 poweroff

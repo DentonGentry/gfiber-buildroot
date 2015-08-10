@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# A handy command to start/stop/restart daemons using scripts in /etc/init.d.
+# A handy command to start/stop/restart/powerdown daemons using scripts in /etc/init.d.
 #
 mode=$(basename "$0")
 
@@ -9,7 +9,7 @@ log() {
 }
 
 usage() {
-  log "Usage: start|stop|restart <programs...>"
+  log "Usage: start|stop|restart|powerdown <programs...>"
   exit 99
 }
 
@@ -28,7 +28,7 @@ suggestions() {
 
 
 case "$mode" in
-  start|stop|restart) ;;
+  start|stop|restart|powerdown) ;;
   *) usage ;;
 esac
 

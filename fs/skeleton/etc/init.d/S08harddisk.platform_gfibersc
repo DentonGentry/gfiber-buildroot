@@ -98,11 +98,17 @@ case "$1" in
     umount /var/media >/dev/null 2>&1
     umount "$CONFIG_PATH" >/dev/null 2>&1
     ;;
+  powerdown)
+    # Shutting off the drive reduces power and heat by another watt or so.
+    if [ -n "$sata_blkdev" ]; then
+      hdparm -S 5 -Y "$sata_blkdev"
+    fi
+    ;;
   restart|reload)
     $0 stop
     $0 start
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart|powerdown}"
     exit 1
 esac
