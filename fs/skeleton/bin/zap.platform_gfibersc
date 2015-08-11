@@ -99,6 +99,16 @@ chroot /chroot/chromeos /bin/tpmc activate
 
 # try to unmount up to 20 times
 for i in $(seq 20) ; do
+  umount -f /config
+  mount | grep -q "on /config" || break
+done
+
+dmsetup remove config
+# TODO(erdi): modify cryptdev to find the correct device to remove.
+losetup -d /dev/loop0
+
+# try to unmount up to 20 times
+for i in $(seq 20) ; do
   umount -f $config_dev
   mount | grep -q $config_dev || break
 done
@@ -110,13 +120,13 @@ for i in $(seq 20) ; do
 done
 
 # format config partition
-if ! mkfs.ext4 $config_dev ; then
+if ! mkfs.ext4 -q $config_dev ; then
   # if we fail at this point, just try to delete everything
-  rm -rf /config/*
+  rm -rf /config/* /var/config/*
 fi
 
 # format media partition
-if ! mkfs.ext4 -m 0 -E lazy_itable_init=1 $media_dev ; then
+if ! mkfs.ext4 -q -m 0 -E lazy_itable_init=1 $media_dev ; then
   # if we fail at this point, just try to delete everything
   rm -rf /var/media/*
 fi

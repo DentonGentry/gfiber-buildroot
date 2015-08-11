@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+CONFIG_PATH=/var/config
+
 sata_blkdev=$(find_sata_blkdev)
 
 trim() {
@@ -68,7 +70,7 @@ case "$1" in
         mount -o "$FLAGS" -t ext4 "$sata_blkdev"1 /var/media
         failure_media=$?
         if [ -e "$sata_blkdev"20 ]; then
-          mount -o "$FLAGS" -t ext4 "$sata_blkdev"20 /config
+          mount -o "$FLAGS" -t ext4 "$sata_blkdev"20 "$CONFIG_PATH"
           failure_config=$?
         fi
       fi
@@ -81,11 +83,11 @@ case "$1" in
       exit 0
     fi
     # /config must be writeable by non-root
-    chown bin.sys /config
-    chmod 775 /config
+    chown bin.sys "$CONFIG_PATH"
+    chmod 775 "$CONFIG_PATH"
 
-    if [ -e /config/DEBUG ]; then
-      echo "Enabling DEBUG mode because /config/DEBUG is set." >&2
+    if [ -e "$CONFIG_PATH/DEBUG" ]; then
+      echo "Enabling DEBUG mode because $CONFIG_PATH/DEBUG is set." >&2
       echo >/tmp/DEBUG
     fi
 
@@ -94,7 +96,7 @@ case "$1" in
     # Unmount SATA device
     echo "Unmounting SATA device"
     umount /var/media >/dev/null 2>&1
-    umount /config >/dev/null 2>&1
+    umount "$CONFIG_PATH" >/dev/null 2>&1
     ;;
   restart|reload)
     $0 stop
