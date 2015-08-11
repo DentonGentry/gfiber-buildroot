@@ -8,10 +8,3 @@ config BR2_PACKAGE_LIBCAP
 
 	 http://sites.google.com/site/fullycapable/
 
-config BR2_PACKAGE_LIBCAP_SETCAP
-	bool "setcap"
-	select BR2_PACKAGE_LIBCAP
-	select BR2_PACKAGE_ATTR
-	default n
-	help
-	  setcap - set file capabilities
