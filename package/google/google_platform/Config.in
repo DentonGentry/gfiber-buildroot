@@ -29,6 +29,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_DVBUTILS
 	help
 	  DVB utility tools.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_CRYPTDEV
+	bool "include cryptdev"
+	default n
+	help
+	  dm-crypt setup tool.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM
 	bool "include hnvram access tools"
 	default n
