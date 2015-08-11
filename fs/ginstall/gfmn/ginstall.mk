@@ -14,14 +14,14 @@ ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
-GFWC_LOADER_NAME = u-boot-prod
+GFMN_LOADER_NAME = u-boot-prod
 else
-GFWC_LOADER_NAME = u-boot-dev
+GFMN_LOADER_NAME = u-boot-dev
 endif
 
-GFWC_LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
-GFWC_LOADER := $(wildcard $(GFWC_LOADER_DIR)/$(GFWC_LOADER_NAME).bin)
-GFWC_LOADER_SIG := $(wildcard $(GFWC_LOADER_DIR)/$(GFWC_LOADER_NAME).sig)
+GFMN_LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+GFMN_LOADER := $(wildcard $(GFMN_LOADER_DIR)/$(GFMN_LOADER_NAME).bin)
+GFMN_LOADER_SIG := $(wildcard $(GFMN_LOADER_DIR)/$(GFMN_LOADER_NAME).sig)
 
 define ROOTFS_GINSTALL_CMD
 	set -e; \
@@ -31,8 +31,8 @@ define ROOTFS_GINSTALL_CMD
 	echo 'image_type: unlocked' >>$(BINARIES_DIR)/MANIFEST && \
 	echo 'platforms: [GFMN100]' >>$(BINARIES_DIR)/MANIFEST && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/MANIFEST && \
-	cp -f $(value GFWC_LOADER) $(BINARIES_DIR)/loader.img && \
-	cp -f $(value GFWC_LOADER_SIG) $(BINARIES_DIR)/loader.sig && \
+	cp -f $(value GFMN_LOADER) $(BINARIES_DIR)/loader.img && \
+	cp -f $(value GFMN_LOADER_SIG) $(BINARIES_DIR)/loader.sig && \
 	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
 	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99readallfiles && \
 	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99python_benchmark && \
@@ -40,7 +40,7 @@ define ROOTFS_GINSTALL_CMD
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
 	cd $(BINARIES_DIR) && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -b 32768 \
-	    -all-root -pf $(TOPDIR)/fs/ginstall/gfwc/devsqsh.txt -comp xz -noappend && \
+	    -all-root -pf $(TOPDIR)/fs/ginstall/gfmn/devsqsh.txt -comp xz -noappend && \
 	$(HOST_DIR)/usr/bin/lzma -f -k -9 vmlinux.bin && \
 	$(HOST_DIR)/usr/bin/mkimage -A $(BR2_ARCH) -O linux -T kernel -C lzma           \
 				-a 0x`$(CROSS_COMPILE)readelf \
