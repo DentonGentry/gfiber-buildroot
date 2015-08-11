@@ -59,13 +59,6 @@ if [ ! -b$sata_dev ] ; then
   exit 1
 fi
 
-# /var/media is partition 1
-media_dev=${sata_dev}1
-if is_os_part $sata_dev 1 ; then
-  echo cannot format software partition: $media_dev
-  exit 1
-fi
-
 # /config is partition 20
 config_dev=${sata_dev}20
 if is_os_part $sata_dev 20 ; then
@@ -113,20 +106,13 @@ for i in $(seq 20) ; do
   mount | grep -q $config_dev || break
 done
 
-# try to unmount up to 20 times
-for i in $(seq 20) ; do
-  umount -f $media_dev
-  mount | grep -q $media_dev || break
-done
-
 # format config partition
 if ! mkfs.ext4 -q $config_dev ; then
   # if we fail at this point, just try to delete everything
   rm -rf /config/* /var/config/*
 fi
 
-# format media partition
-if ! mkfs.ext4 -q -m 0 -E lazy_itable_init=1 $media_dev ; then
-  # if we fail at this point, just try to delete everything
-  rm -rf /var/media/*
-fi
+# clear /var/media other than /var/media/data
+mv /var/media/data /var/media/.data
+rm -rf /var/media/*
+mv /var/media/.data /var/media/data
