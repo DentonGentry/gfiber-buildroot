@@ -13,7 +13,7 @@ create_secondary_interface() {
   local mac=$(get_random_mac)
   interface="${interface}${suffix}"
   if ! interface_exists $interface; then
-    iw "$phy" interface add "$interface" type managed
+    iw phy "$phy" interface add "$interface" type managed
     ip link set dev "$interface" address "$mac"
   fi
 }
@@ -21,6 +21,7 @@ create_secondary_interface() {
 case "$1" in
   start)
     mkdir -p /tmp/wifi/fingerprints
+    mkdir -p /tmp/wifi/wifiblaster
     if is-network-box; then
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then
