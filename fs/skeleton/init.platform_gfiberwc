@@ -20,4 +20,6 @@ echo DEBUG >/tmp/DEBUG
 
 touch /tmp/disable_pings
 
+ulimit -m 20480
+
 exec /sbin/init --init </dev/console >/dev/console 2>&1
