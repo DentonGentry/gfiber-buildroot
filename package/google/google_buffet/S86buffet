@@ -19,12 +19,9 @@ running() {
 # Bind chroot directories to tmpfs, as chroot may exist in a read-only
 # filesystem. These directories are used for the DBus socket and Buffet
 # libraries.
-mkdir -p "/config/buffet"
-mkdir -p "/config/shared/lib/buffet"
-[ -e "/config/buffet/lib" ] || ln -s "/config/shared/lib/buffet" "/config/buffet/lib"
-
+mkdir -p "/config/buffet" # in encrypted partition
+mount_once "/config/buffet" "/chroot/chromeos/var/lib/buffet"
 mount_once "/tmp/run" "/chroot/chromeos/var/run"
-mount_once "/config/shared/lib" "/chroot/chromeos/var/lib"
 mount_once "/etc" "/chroot/chromeos/etc"
 mount_once "/tmp" "/chroot/chromeos/tmp"
 

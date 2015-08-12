@@ -60,6 +60,7 @@ mount_once "$CONFIG_PATH/cryptohome/root" "/chroot/chromeos/root"
 # /var/lib stores the old .tpm_owned and opencryptoki files. Also /var/lib/tpm folder is required for trousers.
 mkdir -p "$CONFIG_PATH/shared/lib/tpm"
 mkdir -p "$CONFIG_PATH/shared/lib/metrics"
+mkdir -p "$CONFIG_PATH/shared/lib/buffet" # for mount point
 [ -e "$CONFIG_PATH/cryptohome/lib" ] || ln -sf "$CONFIG_PATH/shared/lib" "$CONFIG_PATH/cryptohome/lib"
 mount_once "$CONFIG_PATH/shared/lib" "/chroot/chromeos/var/lib"
 
