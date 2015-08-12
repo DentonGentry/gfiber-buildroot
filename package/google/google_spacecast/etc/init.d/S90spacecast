@@ -11,6 +11,9 @@ ulimit -s 1024
 APP="spacecast"
 BINARY="/app/spacecast/appliance"
 FLAGS="-logtostderr"
+if [ -e /tmp/DEBUG ]; then
+  FLAGS="$FLAGS -debug=true"
+fi
 
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
