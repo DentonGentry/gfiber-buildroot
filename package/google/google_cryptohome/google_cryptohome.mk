@@ -36,7 +36,7 @@ define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/sys
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/root
 	# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
-	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
+	cp -fp $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
 endef
 
 define GOOGLE_CRYPTOHOME_CLEAN_CMDS

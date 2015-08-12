@@ -47,12 +47,12 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	# In chromeos version <= R42, it is expected in /etc/ssl/certs. The following
 	# line can probably be removed eventually since it should no longer look for
 	# the cert here, but is being kept here in the interim just in case.
-	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
+	cp -fp $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
 	# In chromeos version >= R44, it is expected in
 	# /usr/share/chromeos-ca-certificates. The following lines create this
 	# directory and copy the cert to it.
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates
-	cp -p $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates/578d5c04.0
+	cp -fp $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates/578d5c04.0
 endef
 
 define GOOGLE_BUFFET_CLEAN_CMDS
