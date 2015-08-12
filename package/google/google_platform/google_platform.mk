@@ -18,7 +18,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-python-setuptools \
 	libcurl \
 
-HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest host-libcurl
+HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-gtest host-libcurl host-libcares
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_HNVRAM),y)
 GOOGLE_PLATFORM_DEPENDENCIES += humax_misc
