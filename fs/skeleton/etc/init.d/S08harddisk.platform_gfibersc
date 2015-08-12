@@ -70,7 +70,7 @@ case "$1" in
         mount -o "$FLAGS" -t ext4 "$sata_blkdev"1 /var/media
         failure_media=$?
         if [ -e "$sata_blkdev"20 ]; then
-          mount -o "$FLAGS" -t ext4 "$sata_blkdev"20 "$CONFIG_PATH"
+          mount -o "$FLAGS,sync" -t ext4 "$sata_blkdev"20 "$CONFIG_PATH"
           failure_config=$?
         fi
       fi
