@@ -92,8 +92,8 @@ chroot /chroot/chromeos /bin/tpmc activate
 
 # try to unmount up to 20 times
 for i in $(seq 20) ; do
-  umount -f /config
-  mount | grep -q "on /config" || break
+  umount -f /dev/mapper/config
+  mount | grep -q "/dev/mapper/config on" || break
 done
 
 dmsetup remove config
