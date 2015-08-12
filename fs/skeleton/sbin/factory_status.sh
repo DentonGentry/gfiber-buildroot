@@ -87,4 +87,10 @@ for path in /sys/block/sd*/device; do
   done
 done
 
+if runnable /chroot/chromeos/bin/cryptohome ; then
+	chroot /chroot/chromeos cryptohome --action=status
+	chroot /chroot/chromeos cryptohome --action=tpm_status
+	chroot /chroot/chromeos cryptohome --action=tpm_more_status
+fi
+
 echo
