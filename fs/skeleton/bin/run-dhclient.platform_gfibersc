@@ -28,14 +28,10 @@ run_dhclient() {
 
 run_dhclient "" ""
 
-if is-network-box; then
-  # -N -P means to request a delegated prefix AND get a address.
-  # -S means runs stateless config, requests only the extra information.
-  # On the network box we only run the stateful version, running both
-  # interfere with each other.
-  run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900"
-else
-  run_dhclient "6" "-S -6 --never-gonna-give-you-up 900"
-fi
+# -N -P means to request a delegated prefix AND get a address.
+# -S means runs stateless config, requests only the extra information.
+# On the network box we only run the stateful version, running both
+# interfere with each other.
+run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900"
 
 lockfile-remove $lock
