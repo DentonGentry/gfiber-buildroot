@@ -100,10 +100,16 @@ mount_config() {
 
   wait-until-created $IMG_DEVICE
 
-  if ! mount -t ext4 $IMG_DEVICE /config ; then
+  FLAGS=""
+  mount | grep /var/config | grep ,sync
+  if [ $? = "0" ]; then
+    FLAGS="-o sync"
+  fi
+
+  if ! mount -t ext4 $FLAGS $IMG_DEVICE /config ; then
     echo "Formatting encrypted config partition..."
     mkfs.ext4 -q $IMG_DEVICE || return 1
-    mount -t ext4 $IMG_DEVICE /config || return 1
+    mount -t ext4 $FLAGS $IMG_DEVICE /config || return 1
   fi
 
   # Make /config writable to non-root.
