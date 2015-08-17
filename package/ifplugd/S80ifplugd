@@ -7,7 +7,6 @@ if is-fiberjack; then
   IFNAME=pon0
 elif is-spacecast; then
   IFNAME=lan0
-# Spacecast is also a network box.
 elif is-network-box; then
   IFNAME=wan0
   APIMODE="--api-mode=iff"
