@@ -8,7 +8,6 @@ SIMPLERAMFS_DEPENDENCIES= \
 	toybox \
 	toolbox \
 	util-linux \
-	lvm2 \
 	google_signing \
 	mtd
 
@@ -30,6 +29,10 @@ endif
 ifeq ($(BR2_PACKAGE_UTIL_LINUX_MOUNT),y)
 SIMPLERAMFS_DEPENDENCIES+=util-linux
 LOSETUP_BIN=$(TARGET_DIR)/sbin/losetup
+endif
+ifeq ($(BR2_PACKAGE_LVM2),y)
+SIMPLERAMFS_DEPENDENCIES+=lvm2
+DMSETUP_BIN=$(TARGET_DIR)/usr/sbin/dmsetup
 endif
 
 define SIMPLERAMFS_EXTRACT_CMDS
@@ -80,12 +83,12 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(TARGET_DIR)/usr/sbin/nanddump \
 		$(TARGET_DIR)/usr/sbin/ubiattach \
 		$(TARGET_DIR)/usr/sbin/ubidetach \
-		$(TARGET_DIR)/usr/sbin/dmsetup \
 		$(TARGET_DIR)/usr/sbin/readverity \
 		$(TARGET_DIR)/sbin/switch_root \
 		$(HNVRAM_BIN) \
 		$(SGDISK_BIN) \
 		$(LOSETUP_BIN) \
+		$(DMSETUP_BIN) \
 		$(@D)/fs/bin/
 
 	# driver firmware and modules
