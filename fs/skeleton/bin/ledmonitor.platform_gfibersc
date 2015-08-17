@@ -33,6 +33,7 @@ AUTHORIZATION_FILE="$CONTROL_PATH/app_authorized"
 APP_RUNNING_FILE="$CONTROL_PATH/app_running"
 TUNER_LOCK_FILE="$CONTROL_PATH/app_tuner_lock"
 DATA_STREAM_FILE="$CONTROL_PATH/app_data"
+APP_INITIALIZING_FILE="$CONTROL_PATH/app_init"
 UPDATING_FILE="CONTROL_PATH/updating"
 
 # Bit sequences.
@@ -135,6 +136,8 @@ while read f; do
     change_state APP_NOTUNERLOCK "$NO_SATELLITE_LED_ON"
   elif [ ! -f "$DATA_STREAM_FILE" ]; then
     change_state APP_NODATA "$NO_SATELLITE_LED_ON"
+  elif [ -f "$APP_INITIALIZING_FILE" ]; then
+    change_state APP_INIT "$WAITING_LED_ON"
   elif [ -f "$UPDATING_FILE" ]; then
     change_state UPDATING "$WAITING_LED_ON"
   else
