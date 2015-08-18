@@ -21,8 +21,13 @@ BLUEZ_UTILS_CONF_OPT = \
 	--enable-test \
 	--disable-udev \
 	--disable-systemd
+HOST_BLUEZ_UTILS_CONF_OPT = $(BLUEZ_UTILS_CONF_OPT) \
+	--prefix=$(HOST_DIR)/usr \
+	--libexecdir=$(HOST_DIR)/usr/bin \
+	--localstatedir=$(HOST_DIR)/user/bluez
 
 BLUEZ_UTILS_AUTORECONF = YES
+HOST_BLUEZ_UTILS_AUTORECONF = YES
 
 ifeq ($(BR2_PACKAGE_PYTHON),y)
 BLUEZ_UTILS_DEPENDENCIES += python
@@ -72,3 +77,4 @@ endef
 BLUEZ_UTILS_POST_INSTALL_TARGET_HOOKS += BLUEZ_UTILS_TARGET_TWEAKS
 
 $(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))
