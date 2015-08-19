@@ -107,6 +107,8 @@ ifneq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
 BUILD_LOGUPLOAD=y
 endif
 
+PUB_KEY=gfiber
+
 ifeq ($(BR2_PACKAGE_GOOGLE_STORAGE_BOX),y)
 BR2_TARGET_GOOGLE_PLATFORM = gfibertv
 else ifeq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
@@ -115,8 +117,13 @@ else ifeq ($(BR2_PACKAGE_GOOGLE_NETWORK_BOX),y)
 BR2_TARGET_GOOGLE_PLATFORM = gfibertv
 else ifeq ($(BR2_PACKAGE_GOOGLE_SPACECAST),y)
 BR2_TARGET_GOOGLE_PLATFORM = gfibersc
+PUB_KEY=gfibersc
 else ifeq ($(BR2_PACKAGE_GOOGLE_WINDCHARGER),y)
 BR2_TARGET_GOOGLE_PLATFORM = gfiberwc
+endif
+
+ifneq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),"")
+PUB_KEY := $(PUB_KEY)-$(patsubst "%",%,$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
 endif
 
 define GOOGLE_PLATFORM_PERMISSIONS
@@ -200,6 +207,8 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD),$(INSTALL) -m 0755 -D package/google/google_platform/S95uploadlog $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),$(INSTALL) -m 0755 -D package/google/google_platform/S50waveguide $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR),$(INSTALL) -m 0755 -D package/google/google_platform/S04sysmgr $(TARGET_DIR)/etc/init.d/)
+	$(INSTALL) -m 0755 -D -T package/google/google_platform/gfiber_public.der/$(PUB_KEY) $(TARGET_DIR)/etc/gfiber_public.der
+
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/
