@@ -74,6 +74,11 @@ config BR2_PACKAGE_GOOGLE_PROD
 	help
 	  Build google production release, using the signed/locked bootloader.
 
+config BR2_PACKAGE_GOOGLE_KEY_SUFFIX
+	string "Signing key suffix"
+	help
+	  Suffix to select a different set of signing keys.
+
 config BR2_PACKAGE_GOOGLE_TEST
 	bool "Include Test Packages"
 	default n
