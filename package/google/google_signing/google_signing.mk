@@ -3,11 +3,11 @@
 # google_signing (signing related code)
 #
 #############################################################
-GOOGLE_SIGNING_SITE_METHOD=null
+GOOGLE_SIGNING_SITE=repo://vendor/google/platform
 GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
-			    google_platform \
-			    host-google_platform \
 			    host-google_keystore_client
+GOOGLE_SIGNING_INSTALL_TARGET=YES
+GOOGLE_SIGNING_TEST=YES
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 ifneq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfsc100")
@@ -23,6 +23,11 @@ KEYSTORE_CONFIG_ID=SPACECAST
 else
 KEYSTORE_CONFIG_ID=GFIBER_DRM
 endif
+
+define GOOGLE_SIGNING_BUILD_CMDS
+	HOSTDIR=$(HOST_DIR) CROSS_COMPILE=$(TARGET_CROSS) $(MAKE) $(TARGET_CONFIGURE_OPTS) -C \
+		 $(@D)/signing
+endef
 
 SIGNING_FLAG=""
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
@@ -90,12 +95,25 @@ define HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN
 		       $(2)))
 endef
 
-define GOOGLE_SIGNING_EXTRACT_CMDS
-	mkdir -p $(@D)
+define GOOGLE_SIGNING_INSTALL_TARGET_CMDS
+	$(MAKE) HOSTDIR=$(HOST_DIR) TARGET_DIR=$(TARGET_DIR) \
+		INSTALL=$(INSTALL) -C $(@D)/signing install
 endef
 
-define HOST_GOOGLE_SIGNING_EXTRACT_CMDS
-	mkdir -p $(@D)
+define GOOGLE_SIGNING_TEST_CMDS
+	$(MAKE) HOSTDIR=$(HOST_DIR) -C $(@D)/signing test
+endef
+
+define HOST_GOOGLE_SIGNING_INSTALL_CMDS
+	mkdir -p $(HOST_DIR)/usr/sbin/
+	$(INSTALL) -D -m 0755 $(@D)/signing/repack.py \
+		$(HOST_DIR)/usr/sbin/repack.py
+	$(INSTALL) -D -m 0755 $(@D)/signing/signserial.py \
+		$(HOST_DIR)/usr/sbin/signserial.py
+endef
+
+define HOST_GOOGLE_SIGNING_TEST_CMDS
+	(cd $(@D)/signing && $(HOST_DIR)/usr/bin/python repacktest.py)
 endef
 
 sign_sn: sn.txt
