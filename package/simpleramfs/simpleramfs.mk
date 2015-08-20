@@ -9,7 +9,6 @@ SIMPLERAMFS_DEPENDENCIES= \
 	toolbox \
 	util-linux \
 	google_signing \
-	google_platform \
 	mtd
 
 ifeq ($(BR2_PACKAGE_SIMPLERAMFS_FIRMWARE),y)
