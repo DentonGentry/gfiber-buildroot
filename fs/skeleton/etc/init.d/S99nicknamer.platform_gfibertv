@@ -2,7 +2,7 @@
 case "$1" in
   start)
     if is-tv-box; then
-      nicknamer | logos nicknamer &
+      nice babysit 60 nicknamer | logos nicknamer &
     fi
     ;;
   stop)

@@ -19,6 +19,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_TLSDATE
 	select BR2_PACKAGE_CLOCKSPEED
 	select BR2_PACKAGE_LIBCARES
+	select BR2_PACKAGE_UTIL_LINUX_SCHEDUTILS
 	help
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fiber devices.

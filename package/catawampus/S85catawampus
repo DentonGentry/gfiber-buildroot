@@ -27,7 +27,7 @@ case "$1" in
     mkdir -p $swimage
     rm -f $swimage/*.gi
     rm -rf $swimage/dnld
-    babysit 60 cwmp_monitor | logos cwmp_monitor &
+    nice babysit 60 cwmp_monitor | logos cwmp_monitor &
 
     if runnable moca2json; then
       [ -e /sys/class/net/eth1 ] && iface=eth1
@@ -35,7 +35,7 @@ case "$1" in
       dir=/tmp/cwmp/monitoring/moca2
       mkdir -p "$dir"
       if [ -n "$iface" ]; then
-        babysit 60 moca2json -i "$iface" -d "$dir" 2>&1 | logos moca2json &
+        nice babysit 60 moca2json -i "$iface" -d "$dir" 2>&1 | logos moca2json &
       fi
     fi
 
@@ -46,13 +46,14 @@ case "$1" in
     if [ -e /tmp/factory_status ]; then
       FACTORY="--factory"
     fi
+    umask 022
+
     # With default CWMPRetryIntervalMultiplier, CWMP
     # maximum exponential backoff is 5120 seconds.
     # Set the alivemonitor to somewhat longer than that.
-    umask 022
-    babysit 60 \
+    supernice babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
-      nice cwmpd $DIAGUI $TECHUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
+      cwmpd $DIAGUI $TECHUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
 
     if is-network-box || is-storage-box; then
       poll_hostnames | logos hostnames &

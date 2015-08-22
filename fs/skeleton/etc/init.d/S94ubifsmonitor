@@ -14,7 +14,7 @@ case "$1" in
     if [ ! -z "$(lsubi)" ] && \
           ( expands "/sys/kernel/debug/ubifs/*/readonly" || \
             expands "/sys/kernel/debug/ubifs/*/ro_error" ) ; then
-      babysit 60 ubifsmonitor 2>&1 | logos ubifsmonitor &
+      nice babysit 60 ubifsmonitor 2>&1 | logos ubifsmonitor &
     fi
     ;;
   stop)

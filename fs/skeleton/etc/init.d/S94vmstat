@@ -2,9 +2,9 @@
 
 case "$1" in
   start)
-    babysit 60 vmstat 15 2>&1 | logos vmstat &
+    nice babysit 60 vmstat 15 2>&1 | logos vmstat &
     if is-storage-box; then
-      babysit 60 diskperf 15 2>&1 | logos diskperf &
+      nice babysit 60 diskperf 15 2>&1 | logos diskperf &
     fi
     ;;
   stop)

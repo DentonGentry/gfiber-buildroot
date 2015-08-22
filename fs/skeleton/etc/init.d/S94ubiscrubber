@@ -6,7 +6,7 @@ case "$1" in
     lsubi |
     while read node name; do
       echo "Starting ubiscrubber for $node ($name)."
-      babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 |
+      supernice babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 |
           logos "ubiscrubber ${node##*/}" &
     done
     ;;
