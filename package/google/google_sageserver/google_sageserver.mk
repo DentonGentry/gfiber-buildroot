@@ -51,6 +51,7 @@ define GOOGLE_SAGESERVER_INSTALL_TARGET_CMDS
 	cp -alf	package/google/google_sageserver/Sage.properties.defaults.* \
 		package/google/google_sageserver/runsage \
 		package/google/google_sageserver/runsageclient \
+		package/google/google_sageserver/jitexcludes \
 		$(TARGET_DIR)/app/sage/
 	ln -sf	/tmp/Sage.properties.defaults \
 		$(TARGET_DIR)/app/sage/Sage.properties.defaults

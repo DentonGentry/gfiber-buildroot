@@ -125,6 +125,9 @@ export SIEGENOGDB=1
 # Prevent siege-on-arm from exiting on changes to stdin
 export SIEGE_BLOCK_GETNEXTEVENT=1
 
+# Disable JIT on methods that are crashing the VM
+export SIEGE_JIT_EXCLUDE=/app/sage/jitexcludes
+
 PREKILL_OPTIONS=
 if [ -e /tmp/DEBUG ]; then
   PREKILL_OPTIONS="-S 11 -T 15"
