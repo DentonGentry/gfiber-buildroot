@@ -1,0 +1,3 @@
+sage/media/format/MPEGParser.verifyMpegIndex(Ljava/io/File;Ljava/io/File;)V
+sage/media/format/FormatParser.getFileDuration(Ljava/io/File;)J
+
