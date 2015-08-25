@@ -1,11 +1,12 @@
 CMAKE_VERSION = 2.8.6
 CMAKE_SITE = http://www.cmake.org/files/v2.8/
+HOST_CMAKE_DEPENDENCIES = host-libcurl
 
 define HOST_CMAKE_CONFIGURE_CMDS
  (cd $(@D); \
 	LDFLAGS="$(HOST_LDFLAGS)" \
 	CFLAGS="$(HOST_CFLAGS)" \
-	$(LOGLINEAR) ./bootstrap --prefix=$(HOST_DIR)/usr --parallel=$(BR2_JLEVEL) \
+	$(LOGLINEAR) ./bootstrap --prefix=$(HOST_DIR)/usr --system-curl --parallel=$(BR2_JLEVEL) \
  )
 endef
 
