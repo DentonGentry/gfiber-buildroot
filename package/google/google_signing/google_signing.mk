@@ -63,6 +63,7 @@ define GOOGLE_CODE_SIGN_TOOL_EXECUTE
 		$(2) \
 		--image_type=$(3) \
 		--keystore_config_id=$(KEYSTORE_CONFIG_ID) \
+		--key_suffix=$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX) \
 		--outfile=$(2);)
 endef
 
