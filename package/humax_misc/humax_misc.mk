@@ -20,6 +20,7 @@ define HUMAX_MISC_INSTALL_STAGING_CMDS
 endef
 
 define HOST_HUMAX_MISC_INSTALL_CMDS
+	mkdir -p $(HOST_DIR)/usr/lib $(HOST_DIR)/usr/include/humax
 	$(INSTALL) -m 0755 $(@D)/libupgrade/libhmxupgrade.a $(HOST_DIR)/usr/lib/libhmxupgrade.a
 	$(INSTALL) -m 0644 $(@D)/libupgrade/hmx_upgrade_nvram.h $(HOST_DIR)/usr/include/humax
 endef
