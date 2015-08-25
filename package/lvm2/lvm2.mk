@@ -52,3 +52,4 @@ define LVM2_UNINSTALL_TARGET_CMDS
 endef
 
 $(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

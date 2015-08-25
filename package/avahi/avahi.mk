@@ -141,6 +141,12 @@ AVAHI_DEPENDENCIES += libintl
 AVAHI_MAKE_OPT = LIBS=-lintl
 endif
 
+HOST_AVAHI_CONF_ENV = $(AVAHI_CONF_ENV) \
+		am_cv_python_pythondir=$(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
+		am_cv_python_pyexecdir=$(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
+HOST_AVAHI_CONF_OPT = $(AVAHI_CONF_OPT) --prefix=$(HOST_DIR)/usr
+HOST_AVAHI_DEPENDENCIES += $(patsubst %,host-%,$(AVAHI_DEPENDENCIES))
+
 define AVAHI_REMOVE_INITSCRIPT
 	rm -rf $(TARGET_DIR)/etc/init.d/avahi-*
 endef
@@ -170,3 +176,4 @@ AVAHI_POST_INSTALL_TARGET_HOOKS += AVAHI_INSTALL_DAEMON_INITSCRIPT
 endif
 
 $(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))

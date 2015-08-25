@@ -12,3 +12,4 @@ LIBDAEMON_CONF_OPT = --disable-lynx
 LIBDAEMON_DEPENDENCIES = host-pkg-config
 
 $(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))
