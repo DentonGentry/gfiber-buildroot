@@ -16,6 +16,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	python \
 	python-setuptools \
 	host-python-setuptools \
+	libcares \
 	libcurl \
 	host-libcares \
 
