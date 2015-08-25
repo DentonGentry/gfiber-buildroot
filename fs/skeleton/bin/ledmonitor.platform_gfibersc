@@ -69,13 +69,12 @@ is_interface_up() {
 }
 
 has_ip_address() {
-  [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
+  # FIXME TODO(efirst): The line below is commented out until we support IPv6.
+  # [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
     [ -n "$(ip -f inet addr show dev $1 scope global)" ]
 }
 
 is_link_up() {
-  # FIXME TODO(efirst): Check whether a network cable is connected instead of whether the interface is up once
-  # CL from Denton is complete that integrates ifplugd, which can take action when links go up or down.
   is_interface_up "$IFNAME"
 }
 
