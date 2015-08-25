@@ -1,0 +1,20 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+if [ "$#" -ne 1 ] || ! [ -c "$1" ]; then
+  echo "Usage: $0 SERIAL_PORT"
+  exit 1
+fi
+
+SERIAL_PORT=$1
+
+stty -F ${SERIAL_PORT} sane
+stty -F ${SERIAL_PORT} 115200
+
+echo -n "Firmware version: " > ${SERIAL_PORT}
+cat /etc/version > ${SERIAL_PORT}
+echo > ${SERIAL_PORT}
+if ! pgrep rungetty > /dev/null; then
+  echo "Console disabled" > ${SERIAL_PORT}
+fi
