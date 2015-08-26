@@ -143,6 +143,8 @@ case "$1" in
       if [ -e /sys/class/net/wan0 ]; then
         echo "Shutting down the WAN port..."
         ifdown wan0
+        ifdown wan0.2
+        ip link del wan0.2
       fi
       for x in $(ls /sys/class/net); do
         if [ -n /sys/class/net/$x/bridge ]; then
