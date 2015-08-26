@@ -128,7 +128,6 @@ case "$1" in
 
     if [ -e /sys/class/net/wan0 ]; then
       echo "Bringing up the WAN port..."
-      ip link set dev wan0 up
       ip link add link wan0 name wan0.2 type vlan id 2
       sysctl net.ipv4.conf.all.forwarding=1
       sysctl net.ipv6.conf.all.forwarding=1
@@ -136,7 +135,16 @@ case "$1" in
       sysctl net.ipv6.conf.wan0/2.accept_ra=2
       ifup wan0
       ifup wan0.2
+
+      # set the class priority to 802.1p bit mapping.  We don't want
+      # pbit=0,1 ever, so force into 2.
+      vconfig set_egress_map wan0.2 0 2
+      vconfig set_egress_map wan0.2 1 2
+      for prio in 2 3 4 5 6 7; do
+        vconfig set_egress_map wan0.2 $prio $prio >/dev/null 2>&1
+      done
     fi
+
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
