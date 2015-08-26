@@ -50,4 +50,5 @@ if [ "$PLATFORM_PREFIX" = "gfsc100" -a "$PROD" = "y" ]; then
   sed -i 's/^root:[^:]*:/root:!:/' $TARGET_DIR/etc/passwd
   # Disable serial console.
   sed -i '/rungetty/d' $TARGET_DIR/etc/inittab
+  echo "psi1:1:wait:/sbin/prodsysinfo /dev/ttyS0" >> $TARGET_DIR/etc/inittab
 fi
