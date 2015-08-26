@@ -46,4 +46,5 @@ source "package/google/google_cast/Config.in"
 source "package/google/google_glfw_nexus/Config.in"
 source "package/google/google_glfw_dart/Config.in"
 source "package/google/google_gl_dart/Config.in"
+source "package/google/google_media/Config.in"
 endmenu
