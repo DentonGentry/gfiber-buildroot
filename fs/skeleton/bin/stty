@@ -5,6 +5,7 @@
 
 __author__ = 'apenwarr@google.com (Avery Pennarun)'
 
+import optparse
 import os
 import pprint
 import sys
@@ -82,30 +83,38 @@ baud_map = {
 
 
 def main():
-  if len(sys.argv) != 2:
+  parser = optparse.OptionParser()
+  parser.add_option("-F" , "--file", dest="DEVICE")
+  (options, args) = parser.parse_args()
+
+  if len(args) != 1:
     Usage()
 
-  if sys.argv[1] == 'raw':
+  fd = 0
+  if options.DEVICE:
+    fd = os.open(options.DEVICE, os.O_RDWR)
+
+  if args[0] == 'raw':
     tty.setraw(0)
-  elif sys.argv[1] == 'sane':
-    tc = termios.tcgetattr(0)
+  elif args[0] == 'sane':
+    tc = termios.tcgetattr(fd)
     tc = SetSane(tc)
-    termios.tcsetattr(0, termios.TCSADRAIN, tc)
-  elif sys.argv[1] == 'echo':
-    tc = termios.tcgetattr(0)
+    termios.tcsetattr(fd, termios.TCSADRAIN, tc)
+  elif args[0] == 'echo':
+    tc = termios.tcgetattr(fd)
     tc[3] |= termios.ECHO
-    termios.tcsetattr(0, termios.TCSADRAIN, tc)
-  elif sys.argv[1] == '-echo':
-    tc = termios.tcgetattr(0)
+    termios.tcsetattr(fd, termios.TCSADRAIN, tc)
+  elif args[0] == '-echo':
+    tc = termios.tcgetattr(fd)
     tc[3] &= ~termios.ECHO
-    termios.tcsetattr(0, termios.TCSADRAIN, tc)
-  elif sys.argv[1] == 'selftest':
+    termios.tcsetattr(fd, termios.TCSADRAIN, tc)
+  elif args[0] == 'selftest':
     os.system('stty sane')
-    tc_orig = termios.tcgetattr(0)
-    tty.setraw(0)
-    tc_raw = termios.tcgetattr(0)
+    tc_orig = termios.tcgetattr(fd)
+    tty.setraw(fd)
+    tc_raw = termios.tcgetattr(fd)
     tc_sane = SetSane(tc_raw)
-    termios.tcsetattr(0, termios.TCSANOW, tc_orig)
+    termios.tcsetattr(fd, termios.TCSANOW, tc_orig)
     print 'orig: %r' % [oct(i) for i in tc_orig[:4]]
     print 'sane: %r' % [oct(i) for i in tc_sane[:4]]
     print 'raw:  %r' % [oct(i) for i in tc_raw[:4]]
@@ -115,12 +124,12 @@ def main():
     tc_orig[3] &= 0xfff
     tc_sane[3] &= 0xfff
     assert tc_orig[:4] == tc_sane[:4]
-  elif baud_map.get(sys.argv[1]):
-    tc = termios.tcgetattr(0)
-    tc[4] = tc[5] = baud_map[sys.argv[1]]
-    termios.tcsetattr(0, termios.TCSADRAIN, tc)
-  elif sys.argv[1] == 'status':
-    tc = termios.tcgetattr(0)
+  elif baud_map.get(args[0]):
+    tc = termios.tcgetattr(fd)
+    tc[4] = tc[5] = baud_map[args[0]]
+    termios.tcsetattr(fd, termios.TCSADRAIN, tc)
+  elif args[0] == 'status':
+    tc = termios.tcgetattr(fd)
     pprint.pprint(tc)
   else:
     Usage()
