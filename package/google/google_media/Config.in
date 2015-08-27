@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GOOGLE_MEDIA
+        bool "google_media"
+        help
+          Includes visual media (wallpapers, etc.)
