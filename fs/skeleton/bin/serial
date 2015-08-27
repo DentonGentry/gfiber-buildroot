@@ -1,6 +1,12 @@
 #!/bin/sh
 # A shortcut to print the serial number of this device.
 
+serial=$(cat /etc/serial)
+if [ -n "$serial" ]; then
+  echo "$serial"
+  exit 0
+fi
+
 if runnable sysvar_cmd; then
   serial=$(sysvar_cmd --get 1ST_SERIAL_NUMBER 2>/dev/null)
   if [ -n "$serial" ]; then
