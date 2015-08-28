@@ -2,9 +2,9 @@
 case "$1" in
   start)
     if is-network-box || is-tv-box || is-fiberjack; then
-      babysit 60 psstat 60 2>&1 | logos ps &
+      nice babysit 60 psstat 60 2>&1 | logos ps &
     fi
-    babysit 60 irqstat 300 2>&1 | logos irq &
+    nice babysit 60 irqstat 300 2>&1 | logos irq &
     ;;
   stop)
     pkillwait -x psstat

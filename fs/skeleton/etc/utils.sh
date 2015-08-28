@@ -65,7 +65,7 @@ rc_pipe_init() {
     mknod $RC_PIPE p
     chown root.video $RC_PIPE
     chmod 620 $RC_PIPE # give sage write permissions
-    babysit 30 soft_rc -i $RC_PIPE 2>&1 | logos softrc &
+    nice babysit 30 soft_rc -i $RC_PIPE 2>&1 | logos softrc &
   fi
 }
 

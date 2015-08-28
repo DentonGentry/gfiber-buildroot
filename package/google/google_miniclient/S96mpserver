@@ -10,7 +10,7 @@ case "$1" in
       wait-until-created /tmp/startupvideo.done
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
       wait-until-created /tmp/nexus_multiprocess
-      babysit 60 irmon 2>&1 | logos irmon &
+      nice babysit 60 irmon 2>&1 | logos irmon &
     ) &
     ;;
   stop)

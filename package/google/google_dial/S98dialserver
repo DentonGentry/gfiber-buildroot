@@ -3,7 +3,7 @@ case "$1" in
   start)
     (
       if is-tv-box; then
-        setuid appclient:video /app/client/rundialserver
+        nice setuid appclient:video /app/client/rundialserver
       fi
     ) &
     ;;
