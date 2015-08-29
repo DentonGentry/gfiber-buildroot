@@ -8,12 +8,6 @@ if [ "$#" -lt 1 ]; then
 fi
 
 
-firstword() {
-  read x junk
-  echo "$x"
-}
-
-
 xport_is_open() {
   [ -n "$ISOSTREAM_DISABLE_IF_PORT" ] &&
   [ "$ISOSTREAM_DISABLE_IF_PORT" != "0" ] &&
@@ -27,13 +21,18 @@ xport_is_open() {
     shift
 
     if [ "$remote" = "--use-storage-box" ]; then
-      echo "$0: use-storage-box: trying to find a server." >&2
       remote=
+      STORAGE_BOX_NAME=gfiberstorage.local
+
+      echo "$0: use-storage-box: trying to find server: $STORAGE_BOX_NAME" >&2
       while [ -z "$remote" ]; do
-        remote=$(find-servers | firstword)
-        if [ -z "$remote" ]; then
-          echo "$0: find-servers returned no answers.  Waiting..." >&2
+        out=$(avahi-resolve -6n "$STORAGE_BOX_NAME")
+        if [ "$?" -ne "0" ]; then
           sleep 1
+        elif [ -z "$out" ]; then
+          sleep 1
+        else
+          remote=$(echo "$out" | head -n 1 | cut -f 2)
         fi
       done
       echo "$0: use-storage-box: found a server: $remote" >&2
