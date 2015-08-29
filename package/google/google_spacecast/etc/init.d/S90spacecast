@@ -27,6 +27,8 @@ case "$1" in
       (
         # Bootstrap
         wait-until-created /tmp/gpio/bootstrap
+        # Service file
+        wait-until-created /config/service_file
         babysit_start 10 "$APP" "$BINARY" "$FLAGS"
       ) &
       echo "SpaceCast started."
