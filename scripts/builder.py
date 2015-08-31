@@ -39,6 +39,7 @@ f,fresh,force      Force rebuild (once=remove stamps, twice=make clean)
 x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
 j,jobs=            Number of parallel jobs for make to use (make -j) [12]
+k,key-suffix=      Suffix for signing keys
 openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 """
@@ -151,6 +152,7 @@ class BuildRootBuilder(object):
     print 'OPENBOX        :', self.opt.openbox
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
+    print 'KEY SUFFIX     :', self.opt.key_suffix
     print '=========================================================='
     sys.stdout.flush()
 
@@ -201,6 +203,9 @@ class BuildRootBuilder(object):
     localcfg = open(self._Path('.localconfig'), 'a')
     for key, value in opts.iteritems():
       localcfg.write('%s=%s\n' % (key, value and 'y' or 'n'))
+    if self.opt.key_suffix:
+      localcfg.write('BR2_PACKAGE_GOOGLE_KEY_SUFFIX="%s"\n' %
+                     self.opt.key_suffix)
     localcfg.close()
 
     # Actually generate the config file
