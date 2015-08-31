@@ -7,7 +7,7 @@ PLATFORM=$(hnvram -qr PLATFORM_NAME)
 echo "$PLATFORM" >/etc/platform &&
 chmod 444 /etc/platform
 
-hostname SpaceCast
+hostname Accelerator
 
 # Populate the serial number file.
 SERIAL=$(hnvram -br 1st_serial_number)
