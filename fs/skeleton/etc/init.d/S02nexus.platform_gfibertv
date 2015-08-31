@@ -32,6 +32,15 @@ start()
   echo "$SERIAL" >/etc/serial &&
   chmod 444 /etc/serial
 
+  # Use the serial number to generate hostid
+  serialmd5=$(md5sum /etc/serial)
+  python -c "
+import sys
+hexstring = \"$serialmd5\"
+sys.stdout.write(hexstring[:8].decode(\"hex\"))
+  " > /etc/hostid
+  chmod 444 /etc/hostid
+
   GPN=$(hnvram -qr GPN)
   [ -n "$GPN" ] &&
   echo "$GPN" >/tmp/gpn &&
