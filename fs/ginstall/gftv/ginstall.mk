@@ -61,7 +61,11 @@ endif  # mipsel
 ifeq ($(ARCH),arm)
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
+ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),)
 LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+else
+LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
+endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BAREBOX = barebox_signed_release
