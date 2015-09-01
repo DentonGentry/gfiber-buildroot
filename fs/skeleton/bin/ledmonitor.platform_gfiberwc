@@ -9,7 +9,6 @@
 BASE_PATH="/tmp/gpio"
 LEDS_FILE="$BASE_PATH/leds"
 CONTROL_PATH="$BASE_PATH/ledcontrol"
-TR69_CONFIG_PATH="/config/tr69/state"
 
 LEDSTATE_FILE="$BASE_PATH/ledstate"
 IP_FILE="$BASE_PATH/ipconnected"
@@ -23,13 +22,8 @@ ALL_LEDS_OFF="0"
 HW_FAIL_LED_ON="1" # solid red
 ACS_LED_ON="2" # solid blue
 IP_LED_ON="2 0 2 0 2 0" # fast blue
-IMAGE_UPGRADE="x3 3 0" # slow red+blue blink
 LINK_DOWN_LED_ON="1 0 " # slow red blink
 ANYTHING_ELSE="x2 2 0" # slow blink blue
-
-is_upgrading() {
-  [ "$(echo $TR69_CONFIG_PATH/tr69_dnld*)" != "$TR69_CONFIG_PATH/tr69_dnld*" ]
-}
 
 change_state() {
   # Check if the new state is different from the previous one
@@ -103,8 +97,6 @@ while read f; do
     change_state NOIP "$ANYTHING_ELSE"                  # progress: link but no ip
   elif [ ! -f "$ACS_FILE" ]; then
     change_state IPV6ACQUIRED "$IP_LED_ON"              # progress: ip but no acs
-  elif is_upgrading ; then
-    change_state IMAGEUPGRADE "$IMAGE_UPGRADE"          # image upgrade in progress
   else
     change_state ACSCONTACT "$ACS_LED_ON"               # success!
   fi
