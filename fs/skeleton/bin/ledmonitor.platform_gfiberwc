@@ -34,6 +34,11 @@ is_upgrading() {
 change_state() {
   # Check if the new state is different from the previous one
   if [ ! -e "$LEDSTATE_FILE" ] || [ "$last_ledstate" != "$1" ]; then
+    if [ "x$1" = "xACSCONTACT" ]; then
+      diags set_led_dim on
+    else
+      diags set_led_dim off
+    fi
     leds $2
     last_leds="$2"
     atomic $LEDSTATE_FILE "$1"
