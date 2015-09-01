@@ -86,11 +86,6 @@ case "$1" in
     chown bin.sys "$CONFIG_PATH"
     chmod 775 "$CONFIG_PATH"
 
-    if [ -e "$CONFIG_PATH/DEBUG" ]; then
-      echo "Enabling DEBUG mode because $CONFIG_PATH/DEBUG is set." >&2
-      echo >/tmp/DEBUG
-    fi
-
     ;;
   stop)
     # Unmount SATA device
