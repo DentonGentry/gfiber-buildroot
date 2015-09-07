@@ -1,7 +1,12 @@
 #!/bin/sh
+. /etc/utils.sh
+
 case "$1" in
   start)
-    supernice babysit 60 memwatcher 2>&1 | logos memwatcher &
+    megs=$(platform_megs_ram)
+    if [ "$megs" -gt 768 ]; then
+      supernice babysit 60 memwatcher 2>&1 | logos memwatcher &
+    fi
     ;;
   stop)
     pkillwait -x memwatcher

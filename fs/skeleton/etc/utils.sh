@@ -241,3 +241,8 @@ babysit_start() {
     babysit $delay $binary $flags 2>&1 | logos $app &
   fi
 }
+
+platform_megs_ram() {
+  n=$(grep MemTotal /proc/meminfo | sed -e 's/MemTotal: *//' -e 's/ kB$//')
+  echo $((n / 1024))
+}
