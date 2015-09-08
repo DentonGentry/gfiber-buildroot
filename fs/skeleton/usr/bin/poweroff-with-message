@@ -17,16 +17,26 @@ if [ -e /config/NO-POWEROFF ]; then
   exit 0
 fi
 
+power_off()
+{
+  QUIET=1 stop harddisk ifplugd wan
+  QUIET=1 powerdown wan
+  echo "Powering off."
+  poweroff
+}
+
+timeout()
+{
+  echo "Timed out; powering off immediately."
+  power_off
+}
+
 # This runs just in case we encounter trouble during the next steps.
 # This background task is double-nested so that it doesn't count toward
 # the 'wait' command below.
-(
-  (
-    sleep 30
-    echo "Timed out; powering off immediately."
-    poweroff
-  ) &
-)
+trap timeout USR1
+pid=$$
+( ( sleep 30; kill -USR1 $pid ) & )
 
 echo "Waiting for LEDs and logs to sync."
 (
@@ -40,7 +50,4 @@ echo "Waiting for LEDs and logs to sync."
 ) &
 wait
 
-QUIET=1 powerdown harddisk wan
-
-echo "Powering off."
-poweroff
+power_off

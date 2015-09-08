@@ -55,10 +55,15 @@ case $1 in
     ;;
   powerdown)
     $0 stop
-    # disable pon phy
-    devmem 0xf10184f4 32 0
-    # disable laser
-    i2cset -y 0 0x51 110 0x40
+    ifdown "$lan_port"
+    #power down GE PHY
+    devmem 0xf1072004 32 0x00000800
+    #power down GPON;
+    devmem 0xf10184f4 32 0xe2000000
+    #turn off some internal clocks
+    #devmem 0xf101821c 32 0x140200c0
+    #power down some internal memory
+    #devmem 0xf1018218 32 0x00ff0100
     ;;
   restart|reload)
     $0 stop
