@@ -8,6 +8,8 @@ case "$1" in
   start)
     (
       wait-until-created /tmp/startupvideo.done
+      # mcnmp_server playback code needs widevine and pullreader .so
+      export LD_LIBRARY_PATH=/app/client
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
       wait-until-created /tmp/nexus_multiprocess
       nice babysit 60 irmon 2>&1 | logos irmon &
