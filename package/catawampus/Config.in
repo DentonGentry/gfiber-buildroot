@@ -3,5 +3,6 @@ config BR2_PACKAGE_CATAWAMPUS
 	select BR2_PACKAGE_PY_CURL
 	select BR2_PACKAGE_PYTHON_NETIFACES
 	select BR2_PACKAGE_PYTHON_ZLIB
+	select BR2_PACKAGE_PYTHON
 	help
 	  tr-69 management agent.
