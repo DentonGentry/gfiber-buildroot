@@ -23,7 +23,7 @@ chmod 444 /tmp/gpn
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
 echo "Starting gpio-mailbox"
 mkdir -p /tmp/gpio/ledcontrol
-leds 4 0  # blink activity while booting
+leds x2 3 0  # blink activity while booting (same as LINKDOWN)
 echo 30 >/tmp/gpio/fanpercent  # low fan at first
 if is-secure-boot; then
   : >/tmp/gpio/ledcontrol/secure_boot
