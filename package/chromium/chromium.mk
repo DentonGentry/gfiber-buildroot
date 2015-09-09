@@ -6,7 +6,7 @@
 
 CHROMIUM_SITE=rrepo://chromium
 CHROMIUM_DEPENDENCIES=\
-	bcm_bseav bcm_nexus bcm_common bcm_rockford bcm_trellis \
+	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient \
 	libpng jpeg zlib freetype openssl expat \
 	libcurl libxml2 libxslt fontconfig boost \
@@ -38,11 +38,9 @@ define CHROMIUM_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
-		APPLIBS_PROCESS_MODEL=single \
 		$(CHROMIUM_CCACHE) \
 		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
 		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR) \
-		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=n \
 		DISABLE_CHROMECAST=$(DISABLE_CHROMECAST)
 endef
 
@@ -50,11 +48,10 @@ define CHROMIUM_BUILD_TEST_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
-		APPLIBS_PROCESS_MODEL=single \
 		$(CHROMIUM_CCACHE) \
 		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
 		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR) \
-		TRELLIS_HAS_YOUTUBE_MEDIASOURCE=y unittests
+		unittests
 endef
 
 define CHROMIUM_INSTALL_TARGET_CMDS
