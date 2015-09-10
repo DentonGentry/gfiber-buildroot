@@ -1,11 +1,12 @@
 #!/bin/sh
-
 case "$1" in
   start)
-    babysit 1 watchdog 2>&1 | logos watchdog &
+    babysit 10 watchdog 2>&1 | logos watchdog &
     ;;
   stop)
+    pkill -USR1 -x watchdog
     pkillwait -x watchdog
+    echo "Warning: killing the watchdog may reboot the system." >&2
     ;;
   restart|reload)
     $0 stop; $0 start
