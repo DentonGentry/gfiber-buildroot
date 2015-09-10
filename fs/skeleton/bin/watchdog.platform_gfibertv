@@ -10,7 +10,19 @@ onusr1()
 
 trap onusr1 USR1
 
-if grep -q "BCM7425" /proc/cpuinfo; then
+if [ -c /dev/watchdog ]; then
+  init=devwatchdog_init
+  setup=devwatchdog_setup
+  pushback=devwatchdog_pushback
+  stop=devwatchdog_stop
+  file=/dev/watchdog
+elif [ -c /dev/comcerto_wdt ]; then
+  init=devwatchdog_init
+  setup=devwatchdog_setup
+  pushback=devwatchdog_pushback
+  stop=devwatchdog_stop
+  file=/dev/comcerto_wdt
+elif grep -q "BCM7425" /proc/cpuinfo; then
   # GFHD100
   init=bcm7425_init
   setup=bcm_setup
@@ -22,12 +34,6 @@ elif grep -q "BCM7429" /proc/cpuinfo; then
   setup=bcm_setup
   pushback=bcm_pushback
   stop=
-elif grep -q "Optimus" /proc/cpuinfo; then
-  # GFRG200/210
-  init=mindspeed_init
-  setup=mindspeed_setup
-  pushback=mindspeed_pushback
-  stop=mindspeed_stop
 else
   echo "Unknown CPU type, cannot initialize watchdog timer"
   cat /proc/cpuinfo
@@ -39,6 +45,31 @@ echo -1000 >/proc/$$/oom_score_adj
 write()
 {
   devmem "$@" >/dev/null
+}
+
+#
+# /dev/watchdog support
+#
+# delay can be set when loading module
+
+devwatchdog_init()
+{
+  :
+}
+
+devwatchdog_setup()
+{
+  exec 9>$file
+}
+
+devwatchdog_pushback()
+{
+  echo -n X >&9
+}
+
+devwatchdog_stop()
+{
+  echo -n V >&9
 }
 
 #
@@ -92,32 +123,6 @@ bcm_pushback()
 {
   write $timer_wdcmd_reg 32 0xff00
   write $timer_wdcmd_reg 32 0x00ff
-}
-
-#
-# mindspeed support
-#
-
-# default wd is 70 seconds
-
-mindspeed_init()
-{
-  :
-}
-
-mindspeed_setup()
-{
-  exec 9>/dev/comcerto_wdt
-}
-
-mindspeed_pushback()
-{
-  echo -n X >&9
-}
-
-mindspeed_stop()
-{
-  echo -n V >&9
 }
 
 #
