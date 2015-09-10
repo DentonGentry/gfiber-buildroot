@@ -8,6 +8,11 @@ case "$1" in
     echo "$PLATFORM" > /etc/platform
     chmod 444 /etc/platform
 
+    SERIAL=$(sysvar_cmd -g SERIAL_NO)
+    [ -n "$SERIAL" ] &&
+    echo "$SERIAL" >/etc/serial &&
+    chmod 444 /etc/serial
+
     babysit 60 gpio-mailbox 2>&1 | logos gpio-mailbox &
     ;;
   stop)
