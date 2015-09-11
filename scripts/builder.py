@@ -253,6 +253,8 @@ def main():
   else:
     base_dir = os.path.abspath('../out')
     Warn('Default output dir: %s', base_dir)
+  if not base_dir or base_dir[-1] in ('-', '.', ',') or '$' in base_dir:
+    o.fatal('weird output dir %r; check your scripts.' % base_dir)
   builder = BuildRootBuilder(base_dir, opt)
   builder.Build()
 
