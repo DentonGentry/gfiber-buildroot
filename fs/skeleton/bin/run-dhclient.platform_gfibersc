@@ -7,6 +7,19 @@ iface=$1
 lock=/var/run/dhclient.$iface.lock
 lockfile-create --use-pid $lock
 
+kill_dhclient() {
+  for i in $(seq 1 10); do
+    # Send TERM to all matching processes.
+    pkill -f "$1"
+    # Break if all matching processes are killed.
+    pgrep -f "$1" || break
+    usleep 500000
+  done
+
+  # Send KILL to all lingering matching processes.
+  pkill -9 -f "$1"
+}
+
 run_dhclient() {
   local suffix="$1" xargs="$2"
   local pidfile="/var/run/dhclient$suffix.$iface"
@@ -25,6 +38,9 @@ run_dhclient() {
       -cf "$conffile" \
       2>&1 | logos "dhclient$suffix.$iface" &
 }
+
+# Kill all dhclient and babysit processes for $iface.
+kill_dhclient "dhclient $iface -d"
 
 run_dhclient "" ""
 
