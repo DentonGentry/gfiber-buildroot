@@ -1,6 +1,8 @@
 #!/bin/sh
 case "$1" in
   start)
+    # TODO(erdi): Disable IPv6 until it is fully supported in App.
+    sysctl net.ipv6.conf.all.disable_ipv6=1
     # SpaceCast receives packets from a 60Mbps multicast UDP stream.
     # Avoid UDP packet loss by increasing socket buffer size.
     # rmem_default defines the default receive socket buffer size in bytes.
