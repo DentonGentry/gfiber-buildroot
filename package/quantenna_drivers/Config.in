@@ -6,10 +6,6 @@ choice
 	prompt "Quantenna drivers"
 	optional
 
-	config BR2_PACKAGE_QUANTENNA_DRIVERS_PCIE_HOST
-		bool "PCIe host"
-		select BR2_PACKAGE_QUANTENNA_DRIVERS
-
 	config BR2_PACKAGE_QUANTENNA_DRIVERS_PCIE_MODULE
 		bool "PCIe module"
 		select BR2_PACKAGE_QUANTENNA_DRIVERS
