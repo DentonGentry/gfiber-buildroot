@@ -10,7 +10,7 @@
 # own bus anyway.
 #
 NUM_PROBES=6
-PROBE_DELAY_MS=500
+PROBE_DELAY_SECS=.5
 
 # If this is non-empty, only matches scsi hosts that contain the given
 # name prefix in their path (example: usb)
@@ -64,7 +64,7 @@ for timeout in $(seq "$NUM_PROBES"); do
     [ -z "$found" ] && ok=
   done
   [ "$ok" = 1 ] && break
-  msleep "$PROBE_DELAY_MS"
+  sleep "$PROBE_DELAY_SECS"
 done
 
 # We've waited for these hosts already, no need to wait again later
