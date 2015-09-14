@@ -4,7 +4,7 @@
 #
 #############################################################
 
-BUFFET_CHROMEOS_VERSION = R44-7077
+BUFFET_CHROMEOS_VERSION = R44-7077.134
 GOOGLE_BUFFET_SITE = repo://vendor/google/tarballs
 
 ifeq ($(BR2_PACKAGE_GOOGLE_BUFFET_DEMOS),y)
