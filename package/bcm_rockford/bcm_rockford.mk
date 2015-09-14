@@ -27,7 +27,7 @@ define BCM_ROCKFORD_INSTALL_STAGING_CMDS
 endef
 
 define BCM_ROCKFORD_INSTALL_TARGET_CMDS
-	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/usr/lib/libv3ddriver.so
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/usr/local/lib/libv3ddriver.so
 	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(TARGET_DIR)/usr/lib/libnxpl.so
 endef
 
