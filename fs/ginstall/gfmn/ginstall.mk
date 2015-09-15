@@ -12,6 +12,7 @@
 ROOTFS_GINSTALL_DEPENDENCIES = linux host-xz host-squashfs host-uboot-tools
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
+ROOTFS_BLACKLIST = $(shell cat $(TOPDIR)/fs/ginstall/gfmn/fileblacklist.txt)
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 GFMN_LOADER_NAME = u-boot-prod
@@ -34,10 +35,9 @@ define ROOTFS_GINSTALL_CMD
 	cp -f $(value GFMN_LOADER) $(BINARIES_DIR)/loader.img && \
 	cp -f $(value GFMN_LOADER_SIG) $(BINARIES_DIR)/loader.sig && \
 	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
-	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99readallfiles && \
-	rm -rf $(BINARIES_DIR)/../target/etc/init.d/S99python_benchmark && \
 	rm -rf $(BINARIES_DIR)/../target/bin/http_bouncer && \
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
+	$(foreach f,$(ROOTFS_BLACKLIST),rm -f $(BINARIES_DIR)/../target/$(f)) && \
 	cd $(BINARIES_DIR) && \
 	$(HOST_DIR)/usr/bin/mksquashfs $(BINARIES_DIR)/../target/* rootfs.sqsh -b 32768 \
 	    -all-root -pf $(TOPDIR)/fs/ginstall/gfmn/devsqsh.txt -comp xz -noappend && \
