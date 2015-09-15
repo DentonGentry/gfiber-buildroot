@@ -1,51 +1,125 @@
-#!/usr/bin/python
-
-# GFLT* uses sysvar_cmd to read/write flash instead of hnvram.
+#!/bin/sh
+# GFMN* and GFLT* use sysvar_cmd to read/write flash instead of hnvram.
 # ginstall wants to call hnvram like:
 # hnvram -w VAR1=val1 -w VAR2=val2 -w VAR3=val3
+# hnvram -r VAR1
+# hnvram -qr VAR1
 #
 # This will translate those into sysvar_cmd calls.
 
-import subprocess
-import sys
+SYSVAR_CMD="sysvar_cmd"
+QUIET_MODE=""
 
-SYSVAR_CMD = '/usr/bin/sysvar_cmd'
+err_log() {
+  echo "$@" >&2
+}
 
+print_usage() {
+  local PROGNAME="$(basename "$0")"
+  err_log "Usage: $PROGNAME [-w key1=val1 key2=val2 ... | -[q]r key]"
+  err_log
+  err_log "hnvram wrapper with $SYSVAR_CMD backend"
+  err_log
+  err_log "Options:"
+  err_log "-h          Print this message and exit."
+  err_log "-w KEY=VAL"
+  err_log "            Variable to write to sysvar.  Must be formatted as KEY=VAL."
+  err_log "            Can be declared multiple times."
+  err_log "[-q] -r KEY"
+  err_log "            Attempt to read the key from sysvar (must declare once)."
+  err_log "            With -q, print value without KEY= prefix."
+  exit 1
+}
 
-def Usage():
-  print 'Usage: hnvram -w var1=val1 -w var2=val2 ...'
+sysvar_read() {
+  local OUTPUT="$("$SYSVAR_CMD" --get "$1" 2>/dev/null)"
+  if [ $? -ne 0 ] || [ -z "$OUTPUT" ]; then
+    err_log "ERROR: sysvar read failed: '$1'"
+    exit 1
+  fi
 
+  if [ -n "$QUIET_MODE" ]; then
+    echo "$OUTPUT"
+  else
+    echo "$1=$OUTPUT"
+  fi
+}
 
-def main():
-  if len(sys.argv) < 3:
-    Usage()
-    sys.exit(1)
+sysvar_write() {
+  # Since the '<<<' is not a supported operator in all shells, echo the write
+  # argument into a sub shell so that IFS can be set and 'read' can split the
+  # "KEY=VAL" string straight from stdin.
+  echo "$1" | {
+    IFS="="
+    read KEY VAL
+    if [ -z "$KEY" ] || [ -z "$VAL" ]; then
+      err_log "ERROR: Malformed key/value pair: $1"
+      exit 1
+    fi
+    "$SYSVAR_CMD" --set "$KEY" "$VAL" 2>/dev/null
+    if [ $? -ne 0 ]; then
+      err_log "ERROR: sysvar failed to write: $1"
+      exit 1
+    fi
+  }
+}
 
-  vars_to_set = {}
-  idx = 1
-  # iterate through args and collect writes together.
-  while idx < len(sys.argv):
-    arg = sys.argv[idx]
-    if arg == '-w':
-      if idx+1 == len(sys.argv):
-        Usage()
-        sys.exit(1)
-      arg = sys.argv[idx+1]
-      key_val = arg.split('=', 1)
-      if len(key_val) != 2:
-        Usage()
-        sys.exit(1)
-      vars_to_set[key_val[0]] = key_val[1]
-      idx += 2
-    else:
-      print 'Ignoring unknown flag: %s' % (arg,)
-      idx += 1
+main() {
+  local WRITE_ARR=""
+  local READ_KEY=""
+  while getopts ":w:qr:dbh" OPT; do
+    case "$OPT" in
+      w)
+        if [ -n "$WRITE_ARR" ]; then
+          WRITE_ARR="$WRITE_ARR $OPTARG"
+        else
+          WRITE_ARR="$OPTARG"
+        fi
+        ;;
+      r)
+        if [ ! -z $READ_KEY ]; then
+          print_usage
+        fi
+        READ_KEY="$OPTARG"
+        ;;
+      q)
+        QUIET_MODE="true"
+        ;;
+      d|b)
+        :
+        ;;
+      h)
+        print_usage
+        ;;
+      :)
+        print_usage
+        ;;
+      \?)
+        print_usage
+        ;;
+      *)
+        print_usage
+        ;;
+    esac
+  done
 
-  # Now we should have a map of key,values
-  retval = 0
-  for k, v in vars_to_set.iteritems():
-    retval |= subprocess.call([SYSVAR_CMD, '--set', k, v])
-  sys.exit(retval)
+  if [ -z "$READ_KEY" ] && [ -z "$WRITE_ARR" ]; then
+    err_log "ERROR: Must either write or read something."
+    print_usage
+  fi
 
-if __name__ == '__main__':
-  main()
+  if [ -n "$READ_KEY" ] && [ -n "$WRITE_ARR" ]; then
+    err_log "ERROR: Can either read or write.  Not both."
+    print_usage
+  fi
+
+  if [ -z "$READ_KEY" ]; then
+    for KEYVAL in "$WRITE_ARR"; do
+      sysvar_write "$KEYVAL"
+    done
+  else
+    sysvar_read "$READ_KEY"
+  fi
+}
+
+main "$@"

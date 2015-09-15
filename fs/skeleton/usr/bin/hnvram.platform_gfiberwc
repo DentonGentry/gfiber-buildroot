@@ -1,7 +1,9 @@
 #!/bin/sh
-# GFMN* uses sysvar_cmd to read/write flash instead of hnvram.
+# GFMN* and GFLT* use sysvar_cmd to read/write flash instead of hnvram.
 # ginstall wants to call hnvram like:
 # hnvram -w VAR1=val1 -w VAR2=val2 -w VAR3=val3
+# hnvram -r VAR1
+# hnvram -qr VAR1
 #
 # This will translate those into sysvar_cmd calls.
 
@@ -14,7 +16,7 @@ err_log() {
 
 print_usage() {
   local PROGNAME="$(basename "$0")"
-  err_log "Usage: $PROGNAME [-w key1=val1 key2=val2 ... | -r key]"
+  err_log "Usage: $PROGNAME [-w key1=val1 key2=val2 ... | -[q]r key]"
   err_log
   err_log "hnvram wrapper with $SYSVAR_CMD backend"
   err_log
@@ -23,8 +25,9 @@ print_usage() {
   err_log "-w KEY=VAL"
   err_log "            Variable to write to sysvar.  Must be formatted as KEY=VAL."
   err_log "            Can be declared multiple times."
-  err_log "-r KEY"
+  err_log "[-q] -r KEY"
   err_log "            Attempt to read the key from sysvar (must declare once)."
+  err_log "            With -q, print value without KEY= prefix."
   exit 1
 }
 
