@@ -1,0 +1,43 @@
+From d2fde558f5bd1b62b74f92c445b6468540a69c5d Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Thu, 17 Sep 2015 22:21:57 -0700
+Subject: [PATCH] Always optimize -OO.
+
+Removes docstrings, which is useful in reducing memory footprint.
+
+Provide a PYTHONDONTOPTIMIZE environment variable to set it back
+to non-optimizing.
+---
+ Python/compile.c   | 2 +-
+ Python/pythonrun.c | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Python/compile.c b/Python/compile.c
+index 481272d..c782e38 100644
+--- a/Python/compile.c
++++ b/Python/compile.c
+@@ -32,7 +32,7 @@
+ #include "symtable.h"
+ #include "opcode.h"
+ 
+-int Py_OptimizeFlag = 0;
++int Py_OptimizeFlag = 2;
+ 
+ #define DEFAULT_BLOCK_SIZE 16
+ #define DEFAULT_BLOCKS 8
+diff --git a/Python/pythonrun.c b/Python/pythonrun.c
+index ade5efe..f7d296e 100644
+--- a/Python/pythonrun.c
++++ b/Python/pythonrun.c
+@@ -170,6 +170,8 @@ Py_InitializeEx(int install_sigs)
+         Py_VerboseFlag = add_flag(Py_VerboseFlag, p);
+     if ((p = Py_GETENV("PYTHONOPTIMIZE")) && *p != '\0')
+         Py_OptimizeFlag = add_flag(Py_OptimizeFlag, p);
++    if (Py_GETENV("PYTHONDONTOPTIMIZE"))
++        Py_OptimizeFlag = 0;
+     if ((p = Py_GETENV("PYTHONDONTWRITEBYTECODE")) && *p != '\0')
+         Py_DontWriteBytecodeFlag = add_flag(Py_DontWriteBytecodeFlag, p);
+     /* The variable is only tested for existence here; _PyRandom_Init will
+-- 
+2.6.0.rc0.131.gf624c3d
+

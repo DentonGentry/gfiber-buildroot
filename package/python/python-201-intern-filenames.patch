@@ -1,0 +1,27 @@
+From 030f2dc516001140fe6fe823eee462b75168c270 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Tue, 15 Sep 2015 00:02:45 -0700
+Subject: [PATCH] Intern filename strings.
+
+Reduce memory footprint of duplicating the full path
+to the source file for every object.
+---
+ Python/compile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Python/compile.c b/Python/compile.c
+index 979e981..481272d 100644
+--- a/Python/compile.c
++++ b/Python/compile.c
+@@ -3876,7 +3876,7 @@ makecode(struct compiler *c, struct assembler *a)
+     freevars = dict_keys_inorder(c->u->u_freevars, PyTuple_Size(cellvars));
+     if (!freevars)
+         goto error;
+-    filename = PyString_FromString(c->c_filename);
++    filename = PyString_InternFromString(c->c_filename);
+     if (!filename)
+         goto error;
+ 
+-- 
+2.6.0.rc0.131.gf624c3d
+
