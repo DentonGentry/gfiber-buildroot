@@ -20,12 +20,10 @@ ifconfig $WAN_IF up
 
 touch /tmp/disable_pings
 
-#We want to limit RSS to be around 20M, however, ulimit -m
+#We want to limit RSS to be around 30M, however, ulimit -m
 #is not working for linux 2.6.30+.
 #There is no accurate, corresponding virtual memory metric for
-#RSS 20M, the number below is from experiment:
-#Boot system and wait for cwmp to grow to 20M, and get its
-#vm size.
-ulimit -v 25512
+#RSS 30M, the number below is from estimate.
+ulimit -v 40960
 
 exec /sbin/init --init </dev/console >/dev/console 2>&1
