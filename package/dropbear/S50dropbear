@@ -46,7 +46,7 @@ start() {
 	) &
 
 	# dropbear will restart until keys are available
-	babysit 10 dropbear -a -s -F -E 2>&1 | logos dropbear &
+	babysit 10 dropbear -a -s -F -E -W 100000 2>&1 | logos dropbear &
 }
 stop() {
 	# we could use pkill dropbear here, but then it would kill running
