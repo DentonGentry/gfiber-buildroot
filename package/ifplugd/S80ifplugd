@@ -15,7 +15,7 @@ fi
 start()
 {
   if [ -n "$IFNAME" ] ; then
-    babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -q -d0 2>&1 | logos ifplugd &
+    babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -p -q -d0 2>&1 | logos ifplugd &
   fi
 }
 
