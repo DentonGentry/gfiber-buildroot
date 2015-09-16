@@ -17,6 +17,12 @@ ACS_FILE="$CONTROL_PATH/acsconnected"
 OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 
+# Hardware verion set by manufacture process.
+# HW_REV/HW_VER is 0/0 or non 0/1, gpio 15 should be ignored.
+# HW_REV/HW_VER is 0/1, gpio 15 is used to control dim/bright.
+HW_REV=$(sysvar_cmd --get HW_REV 2>/dev/null)
+HW_VER=$(sysvar_cmd --get HW_VER 2>/dev/null)
+
 # Bit sequences.
 ALL_LEDS_OFF="0"
 HW_FAIL_LED_ON="1" # solid red
@@ -28,10 +34,12 @@ ANYTHING_ELSE="x2 2 0" # slow blink blue
 change_state() {
   # Check if the new state is different from the previous one
   if [ ! -e "$LEDSTATE_FILE" ] || [ "$last_ledstate" != "$1" ]; then
-    if [ "x$1" = "xACSCONTACT" ]; then
-      diags set_led_dim on
-    else
-      diags set_led_dim off
+    if [ "x$HW_REV" = "x0" ] && [ "x$HW_VER" = "x1" ]; then
+      if [ "x$1" = "xACSCONTACT" ]; then
+        diags set_led_dim on
+      else
+        diags set_led_dim off
+      fi
     fi
     leds $2
     last_leds="$2"
