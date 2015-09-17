@@ -1,0 +1,12 @@
+Fix build with broadcom arm compiler.
+
+--- bridge2/libbridge/libbridge.h	2011-03-28 17:52:54.000000000 -0700
++++ bridge-utils-1.5/libbridge/libbridge.h	2015-09-17 11:29:46.263737398 -0700
+@@ -20,6 +20,7 @@
+ #define _LIBBRIDGE_H
+ 
+ #include <sys/socket.h>
++#include <netinet/in.h>
+ #include <linux/if.h>
+ #include <linux/if_bridge.h>
+ 
