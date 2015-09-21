@@ -28,7 +28,8 @@ endif
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
-ifeq ($(ARCH),mipsel)
+PLAT_NAME=$(shell echo $(BR2_TARGET_GENERIC_PLATFORM_NAME))
+ifneq ($(findstring $(PLAT_NAME),gfibertv gftv200),)
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
 BRUNO_CFE_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
@@ -56,9 +57,36 @@ BRUNO_LOADERS_V2 := loader.bin loader.sig
 BRUNO_LOADERS_V3_V4 := loader.img loader.sig
 endif
 
-endif  # mipsel
+endif  # gfibertv gftv200
 
-ifeq ($(ARCH),arm)
+ifneq ($(findstring $(PLAT_NAME),gtv254),)
+BOLT_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+_BRUNO_LOADER = bolt_signed_release
+ROOTFS_GINSTALL_TYPE=prod
+else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
+_BRUNO_LOADER = bolt_signed_openbox
+ROOTFS_GINSTALL_TYPE=openbox
+else
+_BRUNO_LOADER = bolt_unlocked
+ROOTFS_GINSTALL_TYPE=unlocked
+endif
+
+# These will be blank if the given files don't exist (eg. if you don't have
+# access to the right repositories) and then we'll just leave them out of
+# the build.  The resulting image will not contain a bootloader, which is
+# ok; we'll just leave the existing bootloader in place.
+BRUNO_LOADER     := $(wildcard $(BOLT_DIR)/$(_BRUNO_LOADER).bin)
+BRUNO_LOADER_SIG := $(wildcard $(BOLT_DIR)/$(_BRUNO_LOADER).sig)
+ifneq ($(BRUNO_LOADER),)
+# We intentionally changed the filenames from v2 to v3 to prevent really
+# harmful installs due to accidental half-compatibility.
+BRUNO_LOADERS_V3_V4 := loader.img loader.sig
+endif
+
+endif  # gftv254
+
+ifneq ($(findstring $(PLAT_NAME),gfrg200 gfsc100 gjcb100),)
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
 ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),)
@@ -93,7 +121,7 @@ ifneq ($(ULOADER),)
 BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) uloader.img uloader.sig
 endif
 
-endif #arm
+endif # gfrg200
 
 ifeq ($(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
