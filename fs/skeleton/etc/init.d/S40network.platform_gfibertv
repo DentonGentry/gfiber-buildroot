@@ -90,6 +90,15 @@ redistribute_irqs()
     irq_affinity  96 $wificpu  2>/dev/null  # old boards, ath10k
     irq_affinity 164 $wificpu  2>/dev/null  # old boards, ath9k
     irq_affinity  48 $diskcpu
+  elif grep -q LS1024A /proc/cpuinfo; then
+    # Optimus with Linux 4.1
+    irq_affinity  24 $serialcpu  # serial
+    irq_affinity  26 $serialcpu  # i2c (NOR flash)
+    irq_affinity  27 $diskcpu
+    irq_affinity  28 $wificpu    # ath9k
+    irq_affinity  29 $wificpu    # ath10k
+    irq_affinity  94 $mocacpu
+    irq_affinity  96 $eth0cpu    # *all* PFE
   fi
 }
 
