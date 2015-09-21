@@ -59,7 +59,7 @@ endif
 
 endif  # gfibertv gftv200
 
-ifneq ($(findstring $(PLAT_NAME),gtv254),)
+ifneq ($(findstring $(PLAT_NAME),gftv254),)
 BOLT_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = bolt_signed_release
@@ -68,7 +68,7 @@ else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = bolt_signed_openbox
 ROOTFS_GINSTALL_TYPE=openbox
 else
-_BRUNO_LOADER = bolt_unlocked
+_BRUNO_LOADER = bolt_unsigned_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
 endif
 
@@ -200,6 +200,10 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		if [ -e '$(ULOADER)' ]; then \
 			cp $(ULOADER) $(BINARIES_DIR)/uloader.img && \
 			cp $(ULOADER_SIG) $(BINARIES_DIR)/uloader.sig; \
+		fi && \
+		if [ -e '$(BRUNO_LOADER)' ]; then \
+			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
+			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
 		fi; \
 	fi && \
 	cd $(BINARIES_DIR) && \
