@@ -16,7 +16,7 @@ case "$1" in
       echo "$me: /tmp/tv_buffer_key not found"
       exit 3
     fi
-    babysit 60 frobclient 2>&1 | logos frobclient &
+    babysit 5 frobclient 2>&1 | logos frob &
     ;;
   stop)
     pkillwait -f '(babysit.*)(frobclient)'
