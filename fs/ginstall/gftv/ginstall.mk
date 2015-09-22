@@ -57,6 +57,8 @@ BRUNO_LOADERS_V2 := loader.bin loader.sig
 BRUNO_LOADERS_V3_V4 := loader.img loader.sig
 endif
 
+ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
+BRUNO_SIGNING=y
 endif  # gfibertv gftv200
 
 ifneq ($(findstring $(PLAT_NAME),gftv254),)
@@ -83,7 +85,8 @@ ifneq ($(BRUNO_LOADER),)
 # harmful installs due to accidental half-compatibility.
 BRUNO_LOADERS_V3_V4 := loader.img loader.sig
 endif
-
+ROOTFS_GINSTALL_KERNEL_FILE=zImage
+BRUNOv2_SIGNING=y
 endif  # gftv254
 
 ifneq ($(findstring $(PLAT_NAME),gfrg200 gfsc100 gjcb100),)
@@ -120,14 +123,9 @@ endif
 ifneq ($(ULOADER),)
 BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) uloader.img uloader.sig
 endif
-
-endif # gfrg200
-
-ifeq ($(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE),y)
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
-else
-ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
-endif
+OPTIMUS_SIGNING=y
+endif # gfrg200
 
 MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
 MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
@@ -179,7 +177,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		rm -rf $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma && \
 		$(LZMA) -k --best $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE); \
 	fi && \
-	if [ '$(BR2_LINUX_KERNEL_VMLINUX)' = 'y' ]; then \
+	if [ '$(BRUNO_SIGNING)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
@@ -192,7 +190,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
 	fi && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
+	if [ '$(LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
 		if [ -e '$(BAREBOX)' ]; then \
 			cp $(BAREBOX) $(BINARIES_DIR)/loader.img && \
 			cp $(BAREBOX_SIG) $(BINARIES_DIR)/loader.sig; \
@@ -215,7 +213,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
 		fi; \
 	fi && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
+	if [ '$(OPTIMUS_SIGNING)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T $(MKIMAGE_IMAGE_TYPE) -C $(MKIMAGE_COMPRESSION_TYPE) \
 			-a $(MKIMAGE_KERNEL_LOAD_ADDRESS) -e $(MKIMAGE_KERNEL_ENTRY_POINT) -n Linux \
@@ -232,6 +230,9 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 				fi \
 			fi \
 		); \
+	fi && \
+	if [ '$(BRUNOv2_SIGNING)' = 'y' ]; then \
+		echo 'Add kernel signing code here'; \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
 	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
