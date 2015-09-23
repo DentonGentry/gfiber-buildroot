@@ -1,0 +1,14 @@
+This package can only be built manually, and only by people
+with access to the source code (vendor/broadcom/playready).
+Currently this target will only build PlayReady 2.5.
+
+If want to make changes to the PlayReady 2.5 binary:
+1) Checkout vendor/broadcom/playready (modify the manifest)
+2) Make your changes, and submit the code.
+3) Use this build package to build new binaries
+ - In the out/ directory:
+ - make bcm_playready-dirclean
+ - make bcm_playready
+4) Copy the binaries from bcm_playready-HEAD/2.5/bin/<architecture>/lib
+   to bcm_bseav-HEAD/lib/playready/2.5/bin/<architecture>/lib
+5) Submit the new binaries in bcm_bseav-HEAD/
