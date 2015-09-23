@@ -1,4 +1,4 @@
-GRPC_VERSION=release-0_10_0
+GRPC_VERSION=release-0_11_0
 GRPC_SITE=https://github.com/grpc/grpc/archive/
 GRPC_SOURCE=grpc-$(GRPC_VERSION).tar.gz
 GRPC_INSTALL_STAGING = YES
