@@ -57,7 +57,10 @@ endef
 
 define GOOGLE_CAST_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chrome/lib/
-	ln -s $(TARGET_DIR)/user/drm $(TARGET_DIR)/data
+
+	# TODO(sfunkenhauser): Remove these once this path is no longer
+	# hard-coded in drm_context.cc.
+	ln -sf /user/drm $(TARGET_DIR)/data
 
 	$(INSTALL) -m 755 -D package/google/google_cast/logwrapper $(TARGET_DIR)/bin/logwrapper
 
