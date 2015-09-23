@@ -1,4 +1,4 @@
-BACKPORTS_CUSTOM_SITE    = repo://vendor/opensource/backports
+BACKPORTS_CUSTOM_SITE    = repo://vendor/opensource/$(BR2_PACKAGE_BACKPORTS_CUSTOM_SITE)
 BACKPORTS_CUSTOM_DEPENDENCIES = linux
 
 BACKPORTS_CUSTOM_MAKE_ENV = \
