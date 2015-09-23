@@ -19,4 +19,8 @@ endef
 define BCM_PLAYREADY_INSTALL_TARGET_CMDS
 endef
 
+define BCM_PLAYREADY_CONFIGURE_CMDS
+	ln -sf $(@D) $(BUILD_DIR)/playready
+endef
+
 $(eval $(call GENTARGETS))
