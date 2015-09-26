@@ -1,7 +1,7 @@
-TLSDATE_VERSION = 0.0.7
+TLSDATE_VERSION = 0.0.13
 TLSDATE_SITE = http://ftp.de.debian.org/debian/pool/main/t/tlsdate
-TLSDATE_SOURCE = tlsdate_${TLSDATE_VERSION}.orig.tar.gz
-TLSDATE_DEPENDENCIES = host-pkg-config openssl
+TLSDATE_SOURCE = tlsdate_${TLSDATE_VERSION}.orig.tar.xz
+TLSDATE_DEPENDENCIES = host-pkg-config openssl libevent
 
 TLSDATE_PRE_CONFIGURE_HOOKS += TLSDATE_AUTOGEN
 TLSDATE_CONF_OPT = --disable-hardened-checks

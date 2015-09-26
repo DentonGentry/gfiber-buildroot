@@ -1,0 +1,48 @@
+From 852703df61eaf1038b017a0e04d937f7d7444b01 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 26 Sep 2015 08:03:19 -0700
+Subject: [PATCH] Add SNI support in OpenSSL mode.
+
+PolarSSL would need to add a call to
+ssl_set_hostname(ssl, hostname_to_verify)
+but I don't have a way to test that it even compiles.
+---
+ src/tlsdate-helper.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/tlsdate-helper.c b/src/tlsdate-helper.c
+index 877c67e..bda5a70 100644
+--- a/src/tlsdate-helper.c
++++ b/src/tlsdate-helper.c
+@@ -1124,6 +1124,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
+   SSL *ssl;
+   struct stat statbuf;
+   uint32_t result_time;
++  int do_sni = 0;
+ 
+   SSL_load_error_strings();
+   SSL_library_init();
+@@ -1141,6 +1142,7 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
+   {
+     verb ("V: using TLSv1_client_method()");
+     ctx = SSL_CTX_new(TLSv1_client_method());
++    do_sni = 1;
+   } else
+     die("Unsupported protocol `%s'", protocol);
+ 
+@@ -1186,6 +1188,12 @@ run_ssl (uint32_t *time_map, int time_is_an_illusion, int http)
+     SSL_set_info_callback(ssl, openssl_time_callback);
+   }
+ 
++  if (do_sni)
++  {
++    if (1 != SSL_set_tlsext_host_name(ssl, host))
++      die ("Failed to set SNI host name `%s`", host);
++  }
++
+   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+   verb("V: opening socket to %s:%s", host, port);
+   if ( (1 != BIO_set_conn_hostname(s_bio, host)) ||
+-- 
+2.6.0.rc2.230.g3dd15c0
+

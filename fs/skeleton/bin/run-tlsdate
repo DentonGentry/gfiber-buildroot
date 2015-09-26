@@ -140,7 +140,7 @@ done
 # Now let dbus services know that time is sane.
 tlsdate-dbus-announce
 # Status code 1 means error and 2 means no dbus support.
-if [ $? == 1 ]; then
+if [ $? -eq 1 ]; then
   echo "tlsdate-dbus-announce failed." >&2
 fi
 
