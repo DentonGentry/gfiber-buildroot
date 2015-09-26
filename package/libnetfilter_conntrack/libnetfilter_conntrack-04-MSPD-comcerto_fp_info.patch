@@ -44,7 +44,7 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/linux
  	CTA_ZONE,
  	CTA_SECCTX,
  	CTA_TIMESTAMP,
-+	CTA_COMCERTO_FP_ORIG,
++	CTA_COMCERTO_FP_ORIG = 32,
 +	CTA_COMCERTO_FP_REPLY,
  	__CTA_MAX
  };
