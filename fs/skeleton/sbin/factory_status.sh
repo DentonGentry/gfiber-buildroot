@@ -93,4 +93,11 @@ if runnable /chroot/chromeos/bin/cryptohome ; then
 	chroot /chroot/chromeos cryptohome --action=tpm_more_status
 fi
 
+uitype="$(hnvram -qr UITYPE 2>&1)"
+if [ "$?" -eq 0 ]; then
+  echo "UITYPE=$uitype"
+else
+  echo UITYPE=
+fi
+
 echo
