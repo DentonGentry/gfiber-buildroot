@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PY_PYMPLER
+	bool "py-pympler"
+	depends on BR2_PACKAGE_PYTHON
+	help
+      Pympler is a memory footprint analysis tool for Python.
+      https://pythonhosted.org/Pympler/
