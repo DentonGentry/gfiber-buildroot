@@ -1,0 +1,5 @@
+config BR2_PACKAGE_BCM_OEMCRYPTO
+	bool "bcm_oemcrypto"
+	select BR2_PACKAGE_BCM_COMMON
+	help
+	  Builds bcm_oemcrypto for Broadcom boards
