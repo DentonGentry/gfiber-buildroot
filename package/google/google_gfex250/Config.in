@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_GFEX250
+	bool "google_gfex250"
+  select BR2_ROOTFS_SKELETON_CUSTOM
+	help
+	  Configuration for GFEX250
