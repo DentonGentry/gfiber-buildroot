@@ -125,19 +125,20 @@ BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) uloader.img uloader.sig
 endif
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 OPTIMUS_SIGNING=y
-endif # gfrg200
-
+BUILD_UIMAGE=y
 MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
 MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
 MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz
 MKIMAGE_IMAGE_TYPE=multi
 MKIMAGE_COMPRESSION_TYPE=none
 MKIMAGE_EXTRA_FLAGS=
+endif # gfrg200
 
-ifeq ($(ARCH),arc)
+ifneq ($(findstring $(PLAT_NAME),gfex250),)
 # This is really for compressing the kernel image rather than the rootfs, but
 # it is a convenient way to specify the dependency.
 ROOTFS_GINSTALL_DEPENDENCIES += host-lzma
+BUILD_UIMAGE=y
 
 ROOTFS_GINSTALL_KERNEL_FILE=Image
 MKIMAGE_KERNEL_LOAD_ADDRESS = 0x84904000
@@ -213,7 +214,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
 		fi; \
 	fi && \
-	if [ '$(OPTIMUS_SIGNING)' = 'y' ]; then \
+	if [ '$(BUILD_UIMAGE)' = 'y' ]; then \
 		$(HOST_DIR)/usr/bin/mkimage \
 			-A $(BR2_ARCH) -O linux -T $(MKIMAGE_IMAGE_TYPE) -C $(MKIMAGE_COMPRESSION_TYPE) \
 			-a $(MKIMAGE_KERNEL_LOAD_ADDRESS) -e $(MKIMAGE_KERNEL_ENTRY_POINT) -n Linux \
@@ -222,7 +223,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			uImage; \
 		chmod a+r uImage && \
 		( \
-			if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
+			if [ '$(OPTIMUS_SIGNING)' = 'y' ]; then \
 				if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
 					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
 				else \
