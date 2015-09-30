@@ -30,9 +30,11 @@ define I2C_TOOLS_INSTALL_TARGET_CMDS
 		$(INSTALL) -m 755 -D $(@D)/tools/$$i $(TARGET_DIR)/usr/bin/$$i; \
 	done
 	(cd $(@D)/py-smbus && \
+        $(TOPDIR)/support/scripts/simple_lock create $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
 		PYTHONPATH=$(TARGET_PYTHONPATH) \
 		$(HOST_DIR)/usr/bin/python setup.py install \
-		--prefix=$(TARGET_DIR)/usr)
+			--prefix=$(TARGET_DIR)/usr && \
+        $(TOPDIR)/support/scripts/simple_lock remove $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth)
 endef
 
 define HOST_I2C_TOOLS_BUILD_CMDS

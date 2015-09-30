@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# creates a simple semaphore to allow separate concurrent build processes
+# to safely write to the same file
+#
+# Based on this example
+# http://unix.stackexchange.com/questions/70/what-unix-commands-can-be-used-as-a-semaphore-lock
+#
+
+print_error(){
+  echo "Usage: $0 {create|remove} path"
+  exit 1
+}
+
+if [[ -z "$2" ]]; then
+  print_error
+fi
+
+path=$2
+
+case "$1" in
+  create)
+  wait_time="1"
+  while true; do
+    if mkdir "${path}.lock.d"; then
+      break;
+    fi
+  sleep $wait_time
+  done
+  ;; 
+
+  remove)
+    path="$2"
+    rmdir "${path}.lock.d"
+  ;;
+
+  *)
+    print_error
+esac
+

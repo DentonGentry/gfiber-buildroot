@@ -120,9 +120,11 @@ define BCM_DRIVERS_INSTALL_TARGET_MOCA
 		$(@D)/moca2/bin/*.so \
 		$(TARGET_DIR)/usr/lib/
 	cd $(@D)/google/py_moca2 && \
+        $(TOPDIR)/support/scripts/simple_lock create $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
 		PYTHONPATH=$(TARGET_PYTHONPATH) \
 		$(HOST_DIR)/usr/bin/python setup.py install \
-			--prefix=$(TARGET_DIR)/usr
+			--prefix=$(TARGET_DIR)/usr && \
+		$(TOPDIR)/support/scripts/simple_lock remove $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 	$(INSTALL) -m 0755 \
 	    $(@D)/google/moca2json/moca2json \
 	    $(TARGET_DIR)/bin/

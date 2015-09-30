@@ -13,7 +13,9 @@ define HOST_GYP_INSTALL_CMDS
 	cd $(@D) ; \
 		export PATH=$(TARGET_PATH) ; \
 		export PYTHONPATH=$(HOST_PYTHONPATH) ; \
-		./setup.py install --prefix=$(HOST_DIR)/usr
+        $(TOPDIR)/support/scripts/simple_lock create $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
+		./setup.py install --prefix=$(HOST_DIR)/usr && \
+        $(TOPDIR)/support/scripts/simple_lock remove $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 endef
 
 $(eval $(call GENTARGETS,host))

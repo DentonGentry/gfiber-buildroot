@@ -44,9 +44,10 @@ endef
 define QUALCOMM_SWITCH_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0555 $(@D)/build/bin/ssdk_sh $(TARGET_DIR)/usr/bin/ssdk_sh
 	cd $(@D)/google/py-qca83xx && \
+        $(TOPDIR)/support/scripts/simple_lock create $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
 		PYTHONPATH=$(TARGET_PYTHONPATH) \
-		$(HOST_DIR)/usr/bin/python setup.py install \
-			--prefix=$(TARGET_DIR)/usr
+		$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr && \
+        $(TOPDIR)/support/scripts/simple_lock remove $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 	$(INSTALL) -m 0755 package/qualcomm_switch/S42switch $(TARGET_DIR)/etc/init.d
 endef
 

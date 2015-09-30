@@ -17,7 +17,10 @@ define HOST_PYTHON_PYREX_BUILD_CMDS
 endef
 
 define HOST_PYTHON_PYREX_INSTALL_CMDS
-	(cd $(@D); $(HOST_DIR)/usr/bin/python setup.py install --prefix=$(HOST_DIR)/usr)
+	(cd $(@D); \
+     $(TOPDIR)/support/scripts/simple_lock create $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
+	 $(HOST_DIR)/usr/bin/python setup.py install --prefix=$(HOST_DIR)/usr && \
+     $(TOPDIR)/support/scripts/simple_lock remove $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth)
 endef
 
 $(eval $(call GENTARGETS,host))

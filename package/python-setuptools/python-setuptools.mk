@@ -18,13 +18,19 @@ define PYTHON_SETUPTOOLS_BUILD_CMDS
 endef
 
 define HOST_PYTHON_SETUPTOOLS_INSTALL_CMDS
-	(cd $(@D); PYTHONPATH="$(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages"\
-	$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(HOST_DIR)/usr)
+	cd $(@D) && \
+		$(TOPDIR)/support/scripts/simple_lock create $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
+		PYTHONPATH="$(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages" \
+		$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(HOST_DIR)/usr && \
+		$(TOPDIR)/support/scripts/simple_lock remove $(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 endef
 
 define PYTHON_SETUPTOOLS_INSTALL_TARGET_CMDS
-	(cd $(@D); PYTHONPATH="$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages"\
-	$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
+	cd $(@D) && \
+		$(TOPDIR)/support/scripts/simple_lock create $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth && \
+		PYTHONPATH="$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages" \
+		$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr && \
+		$(TOPDIR)/support/scripts/simple_lock remove $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 endef
 
 $(eval $(call GENTARGETS))
