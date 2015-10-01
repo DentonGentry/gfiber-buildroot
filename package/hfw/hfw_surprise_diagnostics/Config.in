@@ -1,0 +1,5 @@
+config BR2_PACKAGE_HFW_SURPRISE_DIAGNOSTICS
+	bool hfw_surprise_diagnostics
+	default n
+	help
+	  HFW_SURPRISE_DIAGNOSTICS

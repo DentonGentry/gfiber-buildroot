@@ -1,0 +1,5 @@
+config BR2_PACKAGE_HFW_GLAUKUS_HAL
+	bool hfw_glaukus_hal
+	default n
+	help
+	  HFW_GLAUKUS_HAL
