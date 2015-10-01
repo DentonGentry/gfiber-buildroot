@@ -90,9 +90,9 @@ BRUNOv2_SIGNING=y
 endif  # gftv254
 
 ifneq ($(findstring $(PLAT_NAME),gfrg200 gfsc100 gjcb100),)
+ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),"")
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
-ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),)
 LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 else
 LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
