@@ -1,5 +1,5 @@
---- a/dart/runtime/bin/net/nss.gyp
-+++ b/dart/runtime/bin/net/nss.gyp
+--- a/sdk/runtime/bin/net/nss.gyp
++++ b/sdk/runtime/bin/net/nss.gyp
 @@ -69,6 +69,12 @@
            'NSS_USE_64',
          ],
@@ -9,7 +9,7 @@
 +        'defines': [
 +          'CHECK_FORK_GETPID',
 +        ],
-+      }
++      },
      },
      'conditions': [
        ['OS=="win"', {
