@@ -37,6 +37,10 @@ define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/root
 	# libcurl.so.4 in ChromeOS expected Equifax cert with hash name 578d5c04.0
 	cp -fp $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/578d5c04.0
+	# Create a mount point for Widevine license storage.
+	if [ "$(BR2_PACKAGE_GOOGLE_WIDEVINE_PREFETCH)" = "y" ]; then \
+		mkdir -p $(TARGET_DIR)/license; \
+	fi
 endef
 
 define GOOGLE_CRYPTOHOME_CLEAN_CMDS
@@ -44,6 +48,7 @@ define GOOGLE_CRYPTOHOME_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Cryptohome.conf
 	rm -rf $(TARGET_DIR)/etc/init.d/S31cryptohome
 	rm -rf $(TARGET_DIR)/chroot/chromeos
+	rm -rf $(TARGET_DIR)/license
 endef
 
 define GOOGLE_CRYPTOHOME_PERMISSIONS

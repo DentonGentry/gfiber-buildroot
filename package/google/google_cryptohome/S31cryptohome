@@ -119,6 +119,46 @@ mount_config() {
   return 0
 }
 
+mount_license() {
+  # Mount a second encrypted partition of 650 MB for Widevine licenses.
+  # Holds up to 220k license files (200k + 20k buffer), each 3 KB in size.
+  IMG_PATH=/var/media/license.img
+  IMG_DEVICE=/dev/mapper/license
+
+  # Only create encrypted partition if /license mount point exists.
+  if [ ! -d /license ] ; then
+    return 0
+  fi
+
+  echo "Mounting encrypted license partition..."
+
+  # Stop if /license is already mounted.
+  if mount | grep -q "on /license" ; then
+    return 0
+  fi
+
+  if [ ! -f $IMG_PATH ] ; then
+    rm -f ${IMG_PATH}.key
+    dd if=/dev/zero of=$IMG_PATH bs=1024 seek=665599 count=1 || return 1
+  fi
+
+  cryptdev license $IMG_PATH || return 1
+
+  wait-until-created $IMG_DEVICE
+
+  if ! mount -t ext4 $IMG_DEVICE /license ; then
+    echo "Formatting encrypted license partition..."
+    mkfs.ext4 -q $IMG_DEVICE || return 1
+    mount -t ext4 $FLAGS $IMG_DEVICE /license || return 1
+  fi
+
+  # Make /license writable to non-root.
+  chown bin.sys /license
+  chmod 775 /license
+
+  return 0
+}
+
 start() {
   echo "Starting cryptohome services..."
 
@@ -138,6 +178,9 @@ start() {
   # Encrypted partition depends on cryptohome for encryption key.
   if ! mount_config 2>&1 | logos configfs ; then
     echo "Failed to mount encrypted config partition..."
+  fi
+  if ! mount_license 2>&1 | logos licensefs ; then
+    echo "Failed to mount encrypted license partition..."
   fi
 }
 
