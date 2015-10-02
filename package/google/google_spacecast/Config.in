@@ -1,6 +1,7 @@
 config BR2_PACKAGE_GOOGLE_SPACECAST
 	bool "google_spacecast"
 	default n
+	select BR2_PACKAGE_GO_CRON
 	select BR2_PACKAGE_GO_FSNOTIFY
 	select BR2_PACKAGE_GO_GLOG
 	select BR2_PACKAGE_GO_GODBUS_DBUS

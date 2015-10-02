@@ -1,5 +1,6 @@
 menu "Go packages"
 source "package/golang/go_cloud/Config.in"
+source "package/golang/go_cron/Config.in"
 source "package/golang/go_fsnotify/Config.in"
 source "package/golang/go_glog/Config.in"
 source "package/golang/go_godbus_dbus/Config.in"

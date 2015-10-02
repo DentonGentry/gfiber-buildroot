@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_CRON
+        bool "go_cron"
+        help
+          Cron spec parser and job runner for Go

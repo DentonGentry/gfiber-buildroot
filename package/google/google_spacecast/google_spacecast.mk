@@ -8,6 +8,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				host-golang \
 				host-go_protobuf \
 				host-go_mock \
+				go_cron \
 				go_fsnotify \
 				go_glog \
 				go_godbus_dbus \
