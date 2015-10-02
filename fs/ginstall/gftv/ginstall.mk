@@ -224,10 +224,17 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		chmod a+r uImage && \
 		( \
 			if [ '$(OPTIMUS_SIGNING)' = 'y' ]; then \
-				if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
-					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+				if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' = 'y' ]; then \
+					if [ '$(BR2_HAVE_EXTRA_CLEANUP)' != 'y' ]; then \
+						echo 'Signing recovery kernel with recovery private key'; \
+						export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN,uImage); \
+					else \
+						echo 'Signing emergency kernel with Optimus private key'; \
+						export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
+					fi \
 				else \
-					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_RECOVERY_SIGN,uImage); \
+					echo 'Signing kernel with Optimus private key'; \
+					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
 				fi \
 			fi \
 		); \

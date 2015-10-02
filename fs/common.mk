@@ -45,6 +45,9 @@ ifeq ($(BR2_ROOTFS_DEVICE_CREATION_STATIC),y)
 	echo -e '$(subst $(sep),\n,$(PACKAGES_DEVICES_TABLE))' >> $(FULL_DEVICE_TABLE)
 endif
 	echo -e '$(subst $(sep),\n,$(PACKAGES_PERMISSIONS_TABLE))' >> $(FULL_DEVICE_TABLE)
+ifeq ($(BR2_HAVE_EXTRA_CLEANUP),y)
+	( support/scripts/cleanup.sh $(BUILD_DIR) $(TARGET_DIR) )
+endif
 	echo "$(HOST_DIR)/usr/bin/makedevs -d $(FULL_DEVICE_TABLE) $(TARGET_DIR)" >> $(FAKEROOT_SCRIPT)
 endif
 	chmod a+x $(FAKEROOT_SCRIPT)
