@@ -40,3 +40,5 @@ fi
 
 # Move USB interrupt to core 2.
 echo 2 >/proc/irq/54/smp_affinity
+
+echo 8192 > /proc/sys/vm/min_free_kbytes
