@@ -21,6 +21,9 @@ define MV_APP_INSTALL_TARGET_CMDS
 	fi
 	mkdir -p $(TARGET_DIR)/etc/xml_params
 	cp -fpP package/mv_app/xml_params/* $(TARGET_DIR)/etc/xml_params/
+	# 
+	echo "applying marvell binary patches..."
+	for n in package/mv_app/*.tar.gz; do tar xvf $$n -C $(TARGET_DIR)/usr; done
 endef
 
 $(eval $(call GENTARGETS))
