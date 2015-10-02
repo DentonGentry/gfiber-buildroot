@@ -15,6 +15,15 @@ if [ -e /tmp/DEBUG ]; then
   FLAGS="$FLAGS -debug=true"
 fi
 
+# Pre-fetch Widevine licenses if the /license directory exists.
+if [ -d /license ] ; then
+  # Flags to support pre-fetching Widevine licenses
+  # Start: 14:15 UTC = 22:15 PH
+  # Stop:  22:15 UTC = 06:15 PH
+  # TODO(efirst): Make these times customizable or based on broadcast country.
+  FLAGS="$FLAGS -widevine_license_dir=/license -widevine_use_prefetch -widevine_prefetch_start_time=14:15:00 -widevine_prefetch_stop_time=22:15:00"
+fi
+
 running() {
   [ -n "$(pgrep -f "$BINARY")" ]
 }
