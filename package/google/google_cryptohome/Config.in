@@ -3,3 +3,9 @@ config BR2_PACKAGE_GOOGLE_CRYPTOHOME
        default n
        help
          Google's Cryptohome
+
+config BR2_PACKAGE_GOOGLE_WIDEVINE_PREFETCH
+       bool "google_widevine_prefetch"
+       default n
+       help
+         Pre-fetch Widevine licenses for Spacecast
