@@ -1,0 +1,92 @@
+################################################################################
+#
+# hostapd-quantenna
+#
+################################################################################
+
+HOSTAPD_QUANTENNA_SITE = repo://vendor/opensource/hostapd-quantenna
+HOSTAPD_QUANTENNA_SUBDIR = hostapd
+HOSTAPD_QUANTENNA_CONFIG = $(HOSTAPD_QUANTENNA_DIR)/$(HOSTAPD_QUANTENNA_SUBDIR)/.config
+HOSTAPD_QUANTENNA_DEPENDENCIES = libnl
+HOSTAPD_QUANTENNA_CFLAGS = $(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/libnl3/
+HOSTAPD_QUANTENNA_LICENSE = GPLv2/BSD-3c
+HOSTAPD_QUANTENNA_LICENSE_FILES = README
+HOSTAPD_QUANTENNA_CONFIG_SET =
+
+HOSTAPD_QUANTENNA_CONFIG_ENABLE = \
+	CONFIG_ACS \
+	CONFIG_DRIVER_MADWIFI \
+	CONFIG_FULL_DYNAMIC_VLAN \
+	CONFIG_HS20 \
+	CONFIG_IEEE80211AC \
+	CONFIG_IEEE80211N \
+	CONFIG_IEEE80211R \
+	CONFIG_IEEE80211W \
+	CONFIG_INTERNAL_LIBTOMMATH \
+	CONFIG_INTERWORKING \
+	CONFIG_LIBNL32 \
+	CONFIG_VLAN_NETLINK \
+	CONFIG_CLIENT_TAXONOMY
+
+HOSTAPD_QUANTENNA_CONFIG_DISABLE =
+
+# libnl-3 needs -lm (for rint) and -lpthread if linking statically
+# And library order matters hence stick -lnl-3 first since it's appended
+# in the hostapd Makefiles as in LIBS+=-lnl-3 ... thus failing
+ifeq ($(BR2_PREFER_STATIC_LIB),y)
+HOSTAPD_QUANTENNA_LIBS += -lnl-3 -lm -lpthread
+endif
+
+ifeq ($(BR2_INET_IPV6),)
+	HOSTAPD_QUANTENNA_CONFIG_DISABLE += CONFIG_IPV6
+endif
+
+# Try to use openssl if it's already available
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+	HOSTAPD_QUANTENNA_DEPENDENCIES += openssl
+	HOSTAPD_QUANTENNA_LIBS += $(if $(BR2_PREFER_STATIC_LIB),-lcrypto -lz)
+	HOSTAPD_QUANTENNA_CONFIG_EDITS += 's/\#\(CONFIG_TLS=openssl\)/\1/'
+else
+	HOSTAPD_QUANTENNA_CONFIG_DISABLE += CONFIG_EAP_PWD
+	HOSTAPD_QUANTENNA_CONFIG_EDITS += 's/\#\(CONFIG_TLS=\).*/\1internal/'
+endif
+
+ifeq ($(BR2_PACKAGE_HOSTAPD_QUANTENNA_EAP),y)
+	HOSTAPD_QUANTENNA_CONFIG_ENABLE += \
+		CONFIG_EAP \
+		CONFIG_RADIUS_SERVER \
+		CONFIG_TLSV1
+else
+	HOSTAPD_QUANTENNA_CONFIG_DISABLE += CONFIG_EAP
+	HOSTAPD_QUANTENNA_CONFIG_ENABLE += \
+		CONFIG_NO_ACCOUNTING \
+		CONFIG_NO_RADIUS
+endif
+
+ifeq ($(BR2_PACKAGE_HOSTAPD_QUANTENNA_WPS),y)
+	HOSTAPD_QUANTENNA_CONFIG_ENABLE += CONFIG_WPS
+endif
+
+define HOSTAPD_QUANTENNA_CONFIGURE_CMDS
+	cp $(@D)/hostapd/defconfig $(HOSTAPD_QUANTENNA_CONFIG)
+	sed -i $(patsubst %,-e 's/^#\(%\)/\1/',$(HOSTAPD_QUANTENNA_CONFIG_ENABLE)) \
+		$(patsubst %,-e 's/^\(%\)/#\1/',$(HOSTAPD_QUANTENNA_CONFIG_DISABLE)) \
+		$(patsubst %,-e '1i%=y',$(HOSTAPD_QUANTENNA_CONFIG_SET)) \
+		$(patsubst %,-e %,$(HOSTAPD_QUANTENNA_CONFIG_EDITS)) \
+		$(HOSTAPD_QUANTENNA_CONFIG)
+endef
+
+define HOSTAPD_QUANTENNA_BUILD_CMDS
+	$(TARGET_MAKE_ENV) CFLAGS="$(HOSTAPD_QUANTENNA_CFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS)" LIBS="$(HOSTAPD_QUANTENNA_LIBS)" \
+		$(MAKE) CC="$(TARGET_CC)" -C $(@D)/$(HOSTAPD_QUANTENNA_SUBDIR)
+endef
+
+define HOSTAPD_QUANTENNA_INSTALL_TARGET_CMDS
+	$(INSTALL) -m 0755 -D $(@D)/$(HOSTAPD_QUANTENNA_SUBDIR)/hostapd \
+		$(TARGET_DIR)/usr/sbin/hostapd
+	$(INSTALL) -m 0755 -D $(@D)/$(HOSTAPD_QUANTENNA_SUBDIR)/hostapd_cli \
+		$(TARGET_DIR)/usr/bin/hostapd_cli
+endef
+
+$(eval $(call AUTOTARGETS))
