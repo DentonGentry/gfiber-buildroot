@@ -360,6 +360,15 @@ config BR2_HAVE_DEVFILES
 	  Install headers and static libraries in the
 	  target filesystem
 
+config BR2_HAVE_EXTRA_CLEANUP
+	bool "extra clean up on rootfs to create an emergency rootfs"
+	select BR2_TARGET_ROOTFS_RECOVERYFS
+	help
+	  do some additional clean up on the rootfs after the post-build scripts run
+	  to create a slimmed down rootfs that can be used to run an emergency
+	  recovery process. The rootfs must be smaller than 32MB in order to fit into
+	  the reserved emergency partitions most platforms have set aside.
+
 config BR2_PACKAGE_OVERRIDE_FILE
 	string "location of a package override file"
 	default "$(TOPDIR)/local.mk"
