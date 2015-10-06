@@ -23,8 +23,10 @@
 [ -x /chroot/chromeos/bin/chapsd ] || exit 1
 [ -x /chroot/chromeos/bin/tpm-manager ] || exit 1
 
+. /etc/utils.sh
 
 CONFIG_PATH=/var/config
+SYNC_MOUNT_FLAGS="-o sync"
 
 # kill_if_running is used to kill an application only if it is running.
 # using a pkill alone would return an error if the program couldn't be found.
@@ -101,14 +103,35 @@ mount_config() {
   wait-until-created $IMG_DEVICE
 
   FLAGS=""
-  mount | grep /var/config | grep ,sync
+  mount | grep ${CONFIG_PATH} | grep ,sync
   if [ $? = "0" ]; then
-    FLAGS="-o sync"
+    FLAGS="${SYNC_MOUNT_FLAGS}"
   fi
 
+  CONFIG_PART=$(find_sata_blkdev)20
+
   if ! mount -t ext4 $FLAGS $IMG_DEVICE /config ; then
+    ORIG_MOUNT_OPTS=$(grep ${CONFIG_PATH} /proc/mounts | sed -e "s/\S\+ \S\+ \S\+ \(.\+\) .\+ /\1/")
+
+    if [ "${FLAGS}" = "${SYNC_MOUNT_FLAGS}" ]; then
+      # Remount /var/config asynchronously to speed up formatting
+      ASYNC_MOUNT_OPTS=$(echo ${ORIG_MOUNT_OPTS} | sed -e "s/,sync,/,/")
+      mount -o remount,${ASYNC_MOUNT_OPTS} ${CONFIG_PART} ${CONFIG_PATH}
+    fi
+
     echo "Formatting encrypted config partition..."
-    mkfs.ext4 -q $IMG_DEVICE || return 1
+    mkfs.ext4 -q $IMG_DEVICE
+    MKFS_STATUS="$?"
+
+    if [ "${FLAGS}" = "${SYNC_MOUNT_FLAGS}" ]; then
+      # Re-establish synchronous mount
+      mount -o remount,${ORIG_MOUNT_OPTS} ${CONFIG_PART} ${CONFIG_PATH}
+    fi
+
+    if [ "${MKFS_STATUS}" != "0" ]; then
+      return 1
+    fi
+
     mount -t ext4 $FLAGS $IMG_DEVICE /config || return 1
   fi
 
