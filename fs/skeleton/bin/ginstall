@@ -1,0 +1,44 @@
+#!/bin/sh
+
+die() {
+  local code="$1"
+  shift
+  echo "$@" >&2
+  exit "$code"
+}
+
+main() {
+  local res
+  local once=0
+
+  # One-indexed arguments.
+  local i=1
+  for arg in "$@"; do
+    if [ "$arg" = "--once" ]; then
+      [ "$i" -gt 1 ] && die 1 "Error: --once should be first arg. Was arg $i"
+      once=1
+      shift
+      break
+    fi
+
+    i=$(($i + 1))
+  done
+
+  lockfile-create --use-pid --retry 0 /tmp/ginstall ||
+    die 2 "Unable to acquire lock. Ginstall instance already running."
+
+  if [ "$once" -eq 1 ] && [ -e "/tmp/ginstall_complete" ]; then
+    lockfile-remove /tmp/ginstall
+    die 0 "Previous instance completion detected.  Skipping."
+  fi
+
+  ginstall.real "$@"
+  res="$?"
+  if [ "$res" -eq 0 ]; then
+    touch /tmp/ginstall_complete
+  fi
+  lockfile-remove /tmp/ginstall
+  exit "$res"
+}
+
+main "$@"
