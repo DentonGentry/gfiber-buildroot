@@ -2,4 +2,6 @@
 #
 # Returns 0 (true) if Google Cast is supported on this device.
 
-[ -f /usr/local/bin/webkitGl3/VERSION ]
+# This should only return success for developers. This
+# file must be created manually.
+[ -f /tmp/google_cast_enabled ]
