@@ -185,6 +185,21 @@ mount_license() {
 start() {
   echo "Starting cryptohome services..."
 
+  PCR0=$(chroot /chroot/chromeos /bin/tpmc pcrread 0)
+  PCR0_INIT_PATH=${CONFIG_PATH}/pcr0.init
+
+  if [ -f ${PCR0_INIT_PATH} ]; then
+    PCR0_INIT=$(cat ${PCR0_INIT_PATH})
+
+    if [ x"${PCR0}" != x"${PCR0_INIT}" ]; then
+      echo "Bootmode has changed: wiping data then reboot..."
+      /bin/zap --i-really-mean-it --erase-backups
+      reboot
+    fi
+  else
+    echo -n "${PCR0}" > ${PCR0_INIT_PATH}
+  fi
+
   echo "starting TCSD..."
   chroot /chroot/chromeos /bin/tcsd 2>&1 | logos tcsd
 
