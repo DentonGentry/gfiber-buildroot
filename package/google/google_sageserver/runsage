@@ -68,6 +68,7 @@ mkdir -p /rw/sage
 hnvram -qr 1ST_SERIAL_NUMBER >/tmp/serial
 
 # Fix permissions for running SageTV as non-root
+chmod 775 /rw/sage
 chown video.video /rw/sage
 chown video.video /rw/sage/*
 if [ "$MODE" = "server" ]; then
