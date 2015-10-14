@@ -49,7 +49,7 @@ case "$1" in
       fi
     fi
 
-    if is-network-box; then
+    if is-network-box || is-storage-box || is-tv-box; then
       DIAGUI="--diagui"
       TECHUI="--techui"
     fi
