@@ -21,6 +21,12 @@ BCM_APPS_DIR=$(abspath $(@D))
 GOOGLE_CAST_INSTALL_STAGING=NO
 GOOGLE_CAST_INSTALL_TARGET=YES
 
+ifdef BR2_mipsel
+BCM_ARCH=mips
+else
+BCM_ARCH=arm
+endif
+
 define GOOGLE_CAST_CONFIGURE_CMDS
 	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
 endef
@@ -64,19 +70,21 @@ define GOOGLE_CAST_INSTALL_TARGET_CMDS
 	# hard-coded in drm_context.cc.
 	ln -sf /user/drm $(TARGET_DIR)/data
 
-	$(INSTALL) -m 755 -D package/google/google_cast/logwrapper $(TARGET_DIR)/bin/logwrapper
+	# TODO(sfunkenhauser) : We currently can't build cast binaries for our ARM
+	# platform.  Only copy over cast shell binaries for MIPS for the time being.
+	$(if $(filter $(BCM_ARCH),mips),$(call GOOGLE_CAST_INSTALL_BINARIES),)
+endef
 
-	# $(INSTALL) -m 755 -D $(@D)/buildroot/cast_shell $(TARGET_DIR)/chrome/cast_shell
-	# $(INSTALL) -m 4755 -D $(@D)/buildroot/chrome_sandbox $(TARGET_DIR)/chrome/chrome_sandbox
-	# $(INSTALL) -m 755 -D $(@D)/buildroot/process_manager $(TARGET_DIR)/chrome/process_manager
-	# $(INSTALL) -m 644 -D $(@D)/buildroot/process.json $(TARGET_DIR)/chrome/process.json
+define GOOGLE_CAST_INSTALL_BINARIES
+	# Don't change file permissions here.  Change file permissions in
+	# google_cast/build/Makefile and then copy the file, preserving the current
+	# permissions.  This ensures that output files from local and buildroot builds
+	# will have the same permissions.
+	cp -af $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
+	cp -af $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
 
-	# TOOD(nbegley): Install this to $(TARGET_DIR)/etc/init.d/ instead of /chrome once
-	# we're ready to make it an init script.
-	# $(INSTALL) -m 755 -D $(@D)/buildroot/S99cast.process_manager $(TARGET_DIR)/chrome/S99cast.process_manager
-
-	# cp -afr $(@D)/buildroot/bin/* $(TARGET_DIR)/chrome/
-	# cp -afr $(@D)/buildroot/lib/* $(TARGET_DIR)/chrome/lib/
+	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
+	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
 endef
 
 $(eval $(call GENTARGETS))
