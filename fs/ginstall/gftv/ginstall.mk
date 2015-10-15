@@ -134,7 +134,7 @@ MKIMAGE_COMPRESSION_TYPE=none
 MKIMAGE_EXTRA_FLAGS=
 endif # gfrg200
 
-ifneq ($(findstring $(PLAT_NAME),gfex250),)
+ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy),)
 # This is really for compressing the kernel image rather than the rootfs, but
 # it is a convenient way to specify the dependency.
 ROOTFS_GINSTALL_DEPENDENCIES += host-lzma
