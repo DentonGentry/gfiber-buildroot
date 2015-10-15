@@ -7,9 +7,14 @@ else ifeq ($(BR2_PACKAGE_QUANTENNA_DRIVERS_STANDALONE),y)
 QUANTENNA_DRIVERS_FS_DIR=standalone
 endif
 
+define QUANTENNA_DRIVERS_BUILD_CMDS
+	$(MAKE) MAKEFLAGS="-j1" -C $(@D)/qcsapi-1.0.1 EXTRA_PROGS="call_qcsapi_rpcd qcsapi_rpcd" CC="$(TARGET_CC)" STRIP="$(TARGET_STRIP)" XCFLAGS="$(TARGET_CFLAGS)" PREFIX="$(TARGET_DIR)" build_all
+endef
+
 define QUANTENNA_DRIVERS_INSTALL_TARGET_CMDS
 	cp -a $(@D)/fs/common/* $(TARGET_DIR)
 	cp -a $(@D)/fs/$(QUANTENNA_DRIVERS_FS_DIR)/* $(TARGET_DIR)
+	$(MAKE) MAKEFLAGS="-j1" -C $(@D)/qcsapi-1.0.1 EXTRA_PROGS="call_qcsapi_rpcd qcsapi_rpcd" CC="$(TARGET_CC)" STRIP="$(TARGET_STRIP)" XCFLAGS="$(TARGET_CFLAGS)" PREFIX="$(TARGET_DIR)" install
 endef
 
 $(eval $(call GENTARGETS))
