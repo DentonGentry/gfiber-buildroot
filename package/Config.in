@@ -681,6 +681,7 @@ endmenu
 
 menu "Quantenna custom build"
 source "package/quantenna_drivers/Config.in"
+source "package/hostapd-quantenna/Config.in"
 endmenu
 
 menu "Drivers"
