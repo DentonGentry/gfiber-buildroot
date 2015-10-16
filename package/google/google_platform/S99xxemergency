@@ -1,0 +1,111 @@
+#!/bin/sh
+# Emergency Recovery Mode.
+#
+# The recovery image will be streamed using ginstall from a Google property
+# over HTTPS. If the 'emergency' boot flag is set then we will immediately break
+# out of emergency mode and allow the device to fully boot into the emergency
+# recovery image.
+
+. /etc/utils.sh
+
+# The URL where our recovery GI images are hosted.
+DOMAIN="https://storage.googleapis.com/gfiber-emergency-images/current"
+
+# The number of times we will retry an operation before giving up and rebooting.
+MAX_RETRIES="3"
+
+# Host to ping to verify we have external reachability.
+PING_HOST="8.8.8.8"
+
+log() {
+  echo "$(basename $0):" "$@" >&2
+}
+
+is_emergency_debug() {
+  # If boot flag is set, allow the box to boot fully.
+  if grep -Fq "emergency_debug=1" /proc/cmdline; then
+    return 0
+  fi
+  return 1
+}
+
+do_reboot() {
+  # Ensure we don't reboot when we are supposed to allow a complete boot up.
+  if ! is_emergency_debug; then
+    log "Rebooting..."
+    reboot || log "Failed to reboot!"
+  fi
+}
+
+on_exit() {
+  do_reboot
+}
+# We can't trap ERR because it's a POSIX extension that dash does not implement.
+trap on_exit EXIT
+
+image_file() {
+  local model=$(cat /etc/platform)
+  log "model: ${model}"
+  # TODO(cgibson): Add support for more platforms.
+  # TODO(cgibson): Pass model name in URL and let the server decide what
+  # image we get.
+  case "${model}" in
+    GFRG2*0)
+      echo "gfrg200.gi"
+      ;;
+    GFHD200)
+      echo "gftv200.gi"
+      ;;
+    *)
+      log "Unsupported platform: ${model}"
+      ;;
+  esac
+}
+
+log "Starting emergency recovery mode!"
+if is_emergency_debug; then
+  log "emergency boot flag is set, allowing device to fully boot."
+  exit 0
+fi
+
+log "Checking platform support for emergency recovery image..."
+GINSTALL_IMAGE_FILE=$(image_file)
+if [ -z ${GINSTALL_IMAGE_FILE} ]; then
+  log "Failed to identify a recovery image for this platform!"
+  exit 1
+fi
+
+# We may not have a publically routable IP address yet, so wait for a while
+# until we can ping the outside world.
+log "Waiting for external connectivity..."
+i="0"
+while [ ${i} -lt ${MAX_RETRIES} ]; do
+  i=$((i+1))
+  if ping -c5 ${PING_HOST}; then
+    log "  ...success!"
+    break
+  fi
+  if [ ${i} -ge ${MAX_RETRIES} ]; then
+    log "  ...timed out waiting to ping ${PING_HOST}"
+    do_reboot
+  fi
+  sleep 3
+done
+
+DOWNLOAD_URL="${DOMAIN}/${GINSTALL_IMAGE_FILE}"
+log "New emergency recovery image will be downloaded from: ${DOWNLOAD_URL}"
+i="0"
+while [ ${i} -lt ${MAX_RETRIES} ]; do
+  i=$((i+1))
+  if ginstall -t "${DOWNLOAD_URL}"; then
+    log "  ...ginstall was successful!"
+    break
+  else
+    if [ ${i} -ge ${MAX_RETRIES} ]; then
+      log " ...ginstall failed to fetch requested image; giving up."
+      exit 1
+    else
+      log " ...ginstall failed, retrying..."
+    fi
+  fi
+done
