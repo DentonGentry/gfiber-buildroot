@@ -13,6 +13,7 @@ OPENSSH_CONF_OPT = --libexecdir=/usr/lib --disable-lastlog --disable-utmp \
 OPENSSH_DEPENDENCIES = zlib openssl
 
 define OPENSSH_INSTALL_TARGET_CMDS
+	mkdir -p $(TARGET_DIR)/usr/libexec
 	$(INSTALL) -m 755 $(@D)/sftp-server $(TARGET_DIR)/usr/libexec/sftp-server
 endef
 
