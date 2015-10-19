@@ -14,7 +14,9 @@
 . /etc/utils.sh
 read plat </etc/platform
 if [ -e /rw/force-storage-box ] ||
-    startswith "$plat" 'GFMS' || [ "$plat" = GFRG210 ]; then
+    startswith "$plat" 'GFMS' ||
+    [ "$plat" = GFRG210 ] ||
+    [ "$plat" = GFRG250 ]; then
   exit 0
 else
   exit 1
