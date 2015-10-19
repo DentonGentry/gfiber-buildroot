@@ -8,6 +8,7 @@ define QUANTENNA_DRIVERS_BUILD_CMDS
 endef
 
 define QUANTENNA_DRIVERS_INSTALL_TARGET_CMDS
+	cp -a $(@D)/topaz-linux.lzma.img $(TARGET_DIR)/lib/firmware
 	cp -a $(@D)/libqcsapi_client/qcsapi_pcie_static $(TARGET_DIR)/usr/bin
 endef
 
