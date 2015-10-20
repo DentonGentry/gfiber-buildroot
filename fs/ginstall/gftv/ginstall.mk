@@ -29,6 +29,10 @@ ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
 PLAT_NAME=$(shell echo $(BR2_TARGET_GENERIC_PLATFORM_NAME))
+
+#
+# Broadcom/CFE - GFHD100 (thin bruno), GFMS100 (fat bruno), GFHD200 (camaro)
+#
 ifneq ($(findstring $(PLAT_NAME),gfibertv gftv200),)
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
@@ -61,6 +65,9 @@ ROOTFS_GINSTALL_KERNEL_FILE=vmlinuz
 BRUNO_SIGNING=y
 endif  # gfibertv gftv200
 
+#
+# Broadcom/Bolt - GFHD254 (Lockdown)
+#
 ifneq ($(findstring $(PLAT_NAME),gftv254),)
 BOLT_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
@@ -89,6 +96,9 @@ ROOTFS_GINSTALL_KERNEL_FILE=zImage
 BRUNOv2_SIGNING=y
 endif  # gftv254
 
+#
+# Mindspeed/Barebox - GFRG200/210/250, GFSC100, GJCB100
+#
 ifneq ($(findstring $(PLAT_NAME),gfrg200 gfsc100 gjcb100),)
 ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),"")
 # Config strings have quotes around them for some reason, which causes
@@ -132,8 +142,11 @@ MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz
 MKIMAGE_IMAGE_TYPE=multi
 MKIMAGE_COMPRESSION_TYPE=none
 MKIMAGE_EXTRA_FLAGS=
-endif # gfrg200
+endif # gfrg200 gfsc100 gjcb100
 
+#
+# Arc/uboot - GFEX250 (skids, frenzy)
+#
 ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy),)
 # This is really for compressing the kernel image rather than the rootfs, but
 # it is a convenient way to specify the dependency.
@@ -147,8 +160,28 @@ MKIMAGE_DATA_FILE = $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma
 MKIMAGE_IMAGE_TYPE = kernel
 MKIMAGE_COMPRESSION_TYPE = lzma
 MKIMAGE_EXTRA_FLAGS = -Q 0x1
-endif #arc
+endif # gfex250 gffrenzy
 
+#
+# Armada/uboot - GFCH100 (chimera)
+#
+ifneq ($(findstring $(PLAT_NAME),gfch100),)
+ROOTFS_GINSTALL_KERNEL_FILE = uImage
+BUILD_UIMAGE=y
+MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
+MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
+MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz:gfch100.dtb
+MKIMAGE_IMAGE_TYPE=multi
+MKIMAGE_COMPRESSION_TYPE=none
+MKIMAGE_EXTRA_FLAGS=
+endif # gfch100
+
+#
+# sanity check
+#
+ifndef ROOTFS_GINSTALL_KERNEL_FILE
+$(error ROOTFS_GINSTALL_KERNEL_FILE is not defined for this platform)
+endif
 
 # v3 and v4 image formats contain a manifest file, which describes the image
 # and supported platforms.
@@ -220,7 +253,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			-a $(MKIMAGE_KERNEL_LOAD_ADDRESS) -e $(MKIMAGE_KERNEL_ENTRY_POINT) -n Linux \
 			-d $(MKIMAGE_DATA_FILE) \
 			$(MKIMAGE_EXTRA_FLAGS) \
-			uImage; \
+			uImage && \
 		chmod a+r uImage && \
 		( \
 			if [ '$(OPTIMUS_SIGNING)' = 'y' ]; then \
@@ -233,7 +266,7 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 						export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
 					fi \
 				else \
-					echo 'Signing kernel with Optimus private key'; \
+					echo 'Signing kernel with Optimus private key' && \
 					export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_OPTIMUS_KERNEL_SIGN,uImage); \
 				fi \
 			fi \
