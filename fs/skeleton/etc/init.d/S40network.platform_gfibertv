@@ -130,12 +130,26 @@ case "$1" in
     if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
       # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
       # the production firmware at all, or it barfs.
-      #
+
+      # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
+      # values during enumeration. Remove the device and rescan to force
+      # re-enumeration.
+      # TODO(mikemu): Find a better way to do this.
+      for d in /sys/devices/pci*/*/vendor; do
+        if [ -f "$d" ] && [ "$(cat $d)" = "0x1bb5" ]; then
+          echo 1 > "$(dirname $d)"/remove
+          sleep 1
+          echo 1 > /sys/bus/pci/rescan
+          break
+        fi
+      done
+
       # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
       # the wifi device ordering is constant.
       modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
       modprobe mwifiex $mwifi_param 2>/dev/null
       modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
+      modprobe qdpc-host 2>/dev/null
 
       # Enable wifi beacon debug logging.
       if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
