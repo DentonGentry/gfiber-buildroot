@@ -34,20 +34,7 @@ chmod 777 /tmp/run
 # Start all init scripts in /etc/init.d
 # executing them in numerical order.
 #
-case "$1" in
-   start)
-     SCRIPTS=/etc/init.d/S[0-9]?*
-     ;;
-   stop)
-     # We use "crash-only" shutdown style, based on the assumption that
-     # our system will mostly be stopped by a hard poweroff anyway.  Thus,
-     # there's no reason to try to shutdown the system politely.  Instead
-     # of using /etc/init.d/K* for shutdown scripts, we just leave it blank.
-     SCRIPTS=
-     ;;
-esac
-
-for i in ${SCRIPTS}; do
+for i in /etc/init.d/S[0-9]?*; do
 
   # Ignore if /config/init_skiplist exists and contains the name of the file
   if [ -e /config/init_skiplist ] &&
@@ -69,13 +56,13 @@ for i in ${SCRIPTS}; do
       # Source shell script for speed.
       (
          trap - INT QUIT TSTP
-         set $1
+         set start
          . $i
       )
       ;;
     *)
       # No sh extension, so fork subprocess.
-      $i $1
+      $i start
       ;;
   esac
 done
