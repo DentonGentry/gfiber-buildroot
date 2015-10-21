@@ -11,6 +11,16 @@ case "$1" in
     # blocksize from the streamer.
     # wmem_max defines the maximum send socket buffer size in bytes.
     sysctl net.core.wmem_max=1572864
+    # Run the kernel flusher threads every 500ms (instead of every 5s)
+    # On systems without a full cache most data from the 60Mbps stream is
+    # written to disk. At 500ms the data can be written out relatively
+    # early, without hogging the CPU.
+    sysctl vm.dirty_writeback_centisecs=50
+    # Make dirty pages eligible for writeout by the flusher threads after
+    # 100ms (instead of 30s). On SpaceCast there is no benefit in delaying
+    # the writeout and accumulating dirty pages which could be used by
+    # other parts of the system.
+    sysctl vm.dirty_expire_centisecs=10
     # Panic everytime there is a kernel oops
     sysctl -q kernel.panic_on_oops=1
     ;;
