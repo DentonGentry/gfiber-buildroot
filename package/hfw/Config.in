@@ -1,0 +1,5 @@
+menu "HFW (Athena Wireless) libraries and applications"
+source "package/hfw/hfw_glaukus_hal/Config.in"
+source "package/hfw/hfw_glaukus_linkman/Config.in"
+source "package/hfw/hfw_surprise_diagnostics/Config.in"
+endmenu

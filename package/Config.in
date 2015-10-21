@@ -636,6 +636,10 @@ source "package/google/Config.in"
 source "package/humax_misc/Config.in"
 endmenu
 
+menu "HFW (Athena Wireless) custom build"
+source "package/hfw/Config.in"
+endmenu
+
 menu "Google open source packages"
 source "package/catawampus/Config.in"
 endmenu
