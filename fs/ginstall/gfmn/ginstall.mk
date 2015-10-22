@@ -35,7 +35,6 @@ define ROOTFS_GINSTALL_CMD
 	cp -f $(value GFMN_LOADER) $(BINARIES_DIR)/loader.img && \
 	cp -f $(value GFMN_LOADER_SIG) $(BINARIES_DIR)/loader.sig && \
 	rm -rf $(BINARIES_DIR)/../target/tmp/* && \
-	rm -rf $(BINARIES_DIR)/../target/bin/http_bouncer && \
 	rm -f $(BINARIES_DIR)/rootfs.sqsh && \
 	$(foreach f,$(ROOTFS_BLACKLIST),rm -f $(BINARIES_DIR)/../target/$(f)) && \
 	cd $(BINARIES_DIR) && \
