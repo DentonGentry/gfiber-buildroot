@@ -179,8 +179,10 @@ endif # gfch100
 #
 # sanity check
 #
+ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3)$(BR2_TARGET_ROOTFS_GINSTALL_V4),y)
 ifndef ROOTFS_GINSTALL_KERNEL_FILE
-$(error ROOTFS_GINSTALL_KERNEL_FILE is not defined for this platform)
+$(error ROOTFS_GINSTALL_KERNEL_FILE is not defined for platform '$(PLAT_NAME)')
+endif
 endif
 
 # v3 and v4 image formats contain a manifest file, which describes the image
