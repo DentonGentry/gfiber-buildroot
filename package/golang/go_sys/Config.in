@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_SYS
+        bool "go_sys"
+        help
+          Go packages for low-level interaction with the operating system
