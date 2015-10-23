@@ -20,6 +20,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_oauth2 \
 				go_protobuf \
 				go_shanemhansen_gossl \
+				go_sys \
 				go_tpm \
 				google_widevine_cenc
 
