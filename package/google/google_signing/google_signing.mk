@@ -54,6 +54,13 @@ define HOST_GOOGLE_SIGNING_SIGN
 		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
+define HOST_BRUNOv2_SIGNING_SIGN
+	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
+		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
+		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) -k zImage && \
+		$(HOST_GOOGLE_SIGNING_CLEANUP))
+endef
+
 define GOOGLE_CODE_SIGN_TOOL_EXECUTE
 	(cd /google/src/files/head/depot/google3 && \
 		blaze --batch run \

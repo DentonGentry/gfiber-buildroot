@@ -280,7 +280,10 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		); \
 	fi && \
 	if [ '$(BRUNOv2_SIGNING)' = 'y' ]; then \
-		echo 'Add kernel signing code here'; \
+		cp $(BINARIES_DIR)/zImage $(BINARIES_DIR)/zImage_unsigned && \
+		( \
+			export LD_PRELOAD=; $(call HOST_BRUNOv2_SIGNING_SIGN); \
+		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
 	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
