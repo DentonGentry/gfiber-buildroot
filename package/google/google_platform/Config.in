@@ -82,6 +82,12 @@ config BR2_PACKAGE_GOOGLE_PROD
 	help
 	  Build google production release, using the signed/locked bootloader.
 
+config BR2_PACKAGE_GOOGLE_UNSIGNED
+	bool "Unsigned Release"
+  default n
+	help
+	  Prevent signing workflows from being executed to allow post-build signing.
+
 config BR2_PACKAGE_GOOGLE_KEY_SUFFIX
 	string "Signing key suffix"
 	help

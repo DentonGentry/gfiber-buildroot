@@ -5,6 +5,7 @@ TARGET_DIR=$1
 TARGET_SKELETON=$2
 PLATFORM_PREFIX=$3
 PROD=$4
+UNSIGNED=$5
 BINARIES_DIR=$TARGET_DIR/../images
 
 # Some skeleton files are overwritten by installed packages. Recover them to
@@ -35,7 +36,10 @@ fi
 echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
 
 if [ "$PROD" != "y" ]; then
-  (echo -n '-'; whoami | cut -c1-2) >>$TARGET_DIR/etc/version;
+  echo -n '-$(whoami | cut -c1-2)' >>$TARGET_DIR/etc/version;
+fi
+if [ "$UNSIGNED" == "y" ]; then
+  echo -n '-unsigned' >> $TARGET_DIR/etc/version
 fi
 cp "$TARGET_DIR/etc/version" "$BINARIES_DIR/version"
 (d="$(git log --date=iso --pretty=%ad -1)"; date +%s --date="$d"; echo "$d") \
