@@ -21,7 +21,12 @@ findall()
 
 try_install()
 {
-  wait-scsi usb
+  if ! grep -q root= /proc/cmdline; then
+    # Only wait for USB when not booting from the hard drive,
+    # otherwise a mass-storage device should be enumerated at
+    # this point
+    wait-scsi usb
+  fi
   any=
   current_ver=$(cat /etc/version)
   platform_prefix=${current_ver%%-*}
