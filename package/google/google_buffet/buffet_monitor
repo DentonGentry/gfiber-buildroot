@@ -1,0 +1,9 @@
+#!/bin/sh
+# buffet_monitor periodically restarts buffet.
+
+while true
+do
+  sleep $1
+  echo "Restarting buffet"
+  pkill -9 /bin/buffet
+done
