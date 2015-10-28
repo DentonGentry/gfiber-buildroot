@@ -3,7 +3,7 @@
 # go_net
 #
 #############################################################
-GO_NET_VERSION = 2cba614e8ff920c60240d2677bc019af32ee04e5
+GO_NET_VERSION = f090b05f9bc9fe228db5cef02d762c4fe3a87547
 GO_NET_SITE = https://go.googlesource.com/net
 GO_NET_SITE_METHOD = git
 GO_NET_DEPENDENCIES = host-golang
