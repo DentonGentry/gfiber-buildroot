@@ -3,8 +3,6 @@
 
 CONFIG_PATH=/var/config
 
-sata_blkdev=$(find_sata_blkdev)
-
 trim() {
   local var="$1"
   var="${var#"${var%%[![:space:]]*}"}"
@@ -45,15 +43,21 @@ case "$1" in
   start)
     failure_media=1
     failure_config=1
-    wait-scsi
+
+    sata_blkdev=$(find_sata_blkdev)
     if ! [ -e "$sata_blkdev" ]; then
+      # This should only happen on recovery or NFS boots
       echo "No drive found; rescanning."
+      wait-scsi
+
       # "ata1.00: both IDENTIFYs aborted, assuming NODEV"
       # This happens sometimes, make it rescan.
       for d in /sys/class/scsi_host/host*/scan; do
         [ -e "$d" ] && echo "0 0 0" >$d
       done
       sleep 5
+
+      sata_blkdev=$(find_sata_blkdev)
     fi
     if [ -e "$sata_blkdev" ]; then
       (
