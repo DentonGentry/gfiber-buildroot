@@ -26,7 +26,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 
 define GOOGLE_SPACECAST_GOENV
 	export $(GOLANG_ENV) ; \
-	export GOPATH=$(@D)/go:$(@D)/gomock:$(@D)/proto:$$GOPATH ; \
+	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
 	export CGO_ENABLED=1
 endef
 
@@ -43,7 +43,7 @@ endef
 
 define GOOGLE_SPACECAST_TEST_CMDS
 	export $(HOST_GOLANG_ENV) ; \
-	export GOPATH=$(@D)/go:$(@D)/gomock:$(@D)/proto:$$GOPATH ; \
+	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk test
 endef
 

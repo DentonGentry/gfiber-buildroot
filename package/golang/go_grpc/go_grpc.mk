@@ -3,7 +3,7 @@
 # go_grpc
 #
 #############################################################
-GO_GRPC_VERSION = 5ea2bfc4020beb40a94e7f1068ac1fe76cfe25c6
+GO_GRPC_VERSION = 1f1a4999ca75ba4fd6d5c91233383a170034a1a5
 GO_GRPC_SITE = https://github.com/grpc/grpc-go
 GO_GRPC_SITE_METHOD = git
 GO_GRPC_DEPENDENCIES = host-golang go_http2

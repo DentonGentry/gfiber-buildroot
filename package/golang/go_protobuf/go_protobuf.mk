@@ -3,7 +3,7 @@
 # go_protobuf
 #
 #############################################################
-GO_PROTOBUF_VERSION = e228b1ac337584c4ce21b022312332ca6a5532ff
+GO_PROTOBUF_VERSION = 5baca1b63153b1a82014546382edbdd302b138b6
 GO_PROTOBUF_SITE = https://github.com/golang/protobuf
 GO_PROTOBUF_SITE_METHOD = git
 GO_PROTOBUF_DEPENDENCIES = host-golang
