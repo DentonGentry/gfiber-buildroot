@@ -6,6 +6,7 @@ BASE_PATH="/tmp/gpio"
 MONITOR_PATH="$BASE_PATH/ledcontrol"
 MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
+HALTED_FILE="$MONITOR_PATH/halted"
 NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
 NETWORK_STATUS_DISCONNECTED="DISCONNECTED"
@@ -117,7 +118,9 @@ while [ -z "$led_state" ] || read event; do
   fi
 
   if [ ! -e "$MFG_MODE_FILE" ] ; then
-    if ! is_interface_up "$PON_IFACE" ; then
+    if [ -e "$HALTED_FILE" ]; then
+      set_led_state "$SOLID_MODE" "$RED_LED" "HALTED" "$LEDS_BRIGHTNESS_100P"
+    elif ! is_interface_up "$PON_IFACE" ; then
       set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_100P"
     elif ! is_provisioned ; then
       set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_100P"
