@@ -124,8 +124,12 @@ _ULOADER = uloader_signed_release
 BAREBOX     := $(wildcard $(LOADER_DIR)/$(_BAREBOX).bin)
 BAREBOX_SIG := $(wildcard $(LOADER_DIR)/$(_BAREBOX).sig)
 
+# Don't include a uloader, until ginstall is smart enough to not downgrade the
+# uloader if a newer one is in the flash.
+ifeq (true,false)
 ULOADER     := $(wildcard $(LOADER_DIR)/$(_ULOADER).bin)
 ULOADER_SIG := $(wildcard $(LOADER_DIR)/$(_ULOADER).sig)
+endif
 
 ifneq ($(BAREBOX),)
 BRUNO_LOADERS_V3_V4 := $(BRUNO_LOADERS_V3_V4) loader.img loader.sig
