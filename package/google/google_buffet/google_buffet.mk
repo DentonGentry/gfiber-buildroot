@@ -34,6 +34,9 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	# Install /etc/init.d file
 	mkdir -p $(TARGET_DIR)/etc/init.d && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/S86buffet $(TARGET_DIR)/etc/init.d/
+	# Install buffet monitor
+	mkdir -p $(TARGET_DIR)/bin && \
+	$(INSTALL) -m 0755 -D package/google/google_buffet/buffet_monitor $(TARGET_DIR)/bin/
 	# Install customized dbus config to run in chroot.
 	mkdir -p $(TARGET_DIR)/etc/dbus-1/system.d && \
 	$(INSTALL) -m 0755 -D package/google/google_buffet/org.chromium.Buffet.conf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Buffet.conf
@@ -58,6 +61,7 @@ endef
 define GOOGLE_BUFFET_CLEAN_CMDS
 	rm -rf $(TARGET_DIR)/etc/dbus-1/system.d/org.chromium.Buffet.conf
 	rm -rf $(TARGET_DIR)/etc/init.d/S86buffet
+	rm -rf $(TARGET_DIR)/bin/buffet_monitor
 	rm -rf $(TARGET_DIR)/chroot/chromeos
 endef
 

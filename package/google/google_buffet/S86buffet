@@ -54,6 +54,9 @@ start() {
       babysit_start 10 "$APP" "chroot /chroot/chromeos $BINARY" "$FLAGS"
       [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
       echo "Buffet started successfully"
+      if [ ! -n "$(pgrep -f buffet_monitor)" ]; then
+        buffet_monitor 7200 &
+      fi
     ) &
   fi
 }
@@ -62,6 +65,7 @@ stop() {
   echo "Stopping buffet..."
   pkill -x buffet
   [ $? -ne 0 ] && echo "Failed to stop buffet..." && exit 1
+  pkill -x buffet_monitor
   echo "Buffet stopped successfully"
 }
 
