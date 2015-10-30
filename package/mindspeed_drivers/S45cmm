@@ -5,7 +5,7 @@ register_experiment NoFastForwarding
 
 case "$1" in
   start)
-    if runnable cmm && ! experiment NoFastForwarding; then
+    if is-network-box && runnable cmm && ! experiment NoFastForwarding; then
       echo "Starting cmm."
       modprobe -a nfnetlink fci auto_bridge
       MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
@@ -15,7 +15,7 @@ case "$1" in
     fi
     ;;
   stop)
-    if runnable cmm; then
+    if is-network-box && runnable cmm; then
       pkillwait -x cmm
       grep -q fci /proc/modules && rmmod fci
     fi
