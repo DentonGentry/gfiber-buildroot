@@ -38,12 +38,8 @@ trap timeout USR1
 pid=$$
 ( ( sleep 30; kill -USR1 $pid ) & )
 
-echo "Waiting for LEDs and logs to sync."
-(
-  : >/tmp/gpio/ledcontrol/halted
-  leds-and-wait 1  # red
-  echo "LEDs set."
-) &
+: >/tmp/gpio/ledcontrol/halted
+echo "Waiting for logs to sync."
 (
   upload-logs-and-wait
   echo "Logs uploaded."
