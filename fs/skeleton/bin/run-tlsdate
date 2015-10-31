@@ -79,11 +79,16 @@ choose_ntp_server()
 
 do_tlsdate()
 {
-  echo "trying host '$1'"
+  local http_args
+  host="$1"
+  if [ "$2" = "http" ]; then
+    http_args="-w"
+  fi
+  echo "trying host '$host' with '$2'"
   tlsdate -V -v \
       --timewarp --leap \
       -C /etc/ssl/certs/ca-certificates.crt \
-      -H "$1"
+      $http_args -H "$host"
 }
 
 
@@ -94,8 +99,10 @@ echo "timewarp tlsdate sync:" >&2
   # run tlsdate once immediately
   echo start
 
-  # re-run tlsdate on network change
-  tlsdate-routeup &
+  if runnable tlsdate-routeup; then
+    # re-run tlsdate on network change
+    tlsdate-routeup &
+  fi
 
   # re-run tlsdate periodically
   while ! [ -e /tmp/ntp.synced ]; do
@@ -110,11 +117,8 @@ while read reason; do
     *)        echo "unknown reason ($reason) for time change!"; sleep 55 ;;
   esac
 
-  # TODO(apenwarr): I'd like to use gfsvc.com or googlefiber.net here.
-  #  ...but I can't, because tlsdate doesn't know how to use TLS SNI,
-  #  so the google front end always responds as "www.google.com" and
-  #  fails the certificate check.
-  if do_tlsdate google.com; then
+  if do_tlsdate diag.cpe.gfsvc.com http || do_tlsdate google.com http || \
+     do_tlsdate diag.cpe.gfsvc.com tls  || do_tlsdate google.com tls; then
     echo "timewarp: tlsdate success. clock should be +/- 10 sec." >&2
     : >/tmp/ntp.synced
     break
@@ -128,7 +132,10 @@ echo "mini-timewarp ntp sync:" >&2
 while :; do
   choose_ntp_server
   echo "using ntp server: $ntp_server" >&2
-  sntpclock "$ntp_server" | clockview
+  # logmessage for this first adjustment is distinctive, to let
+  # them be distinguished for analysis.
+  sntpclock "$ntp_server" | clockview | \
+      sed -e 's/before:/initial:/' -e 's/after:/tuned:/'
   if sntpclock "$ntp_server" | clockadd; then
     echo "mini-timewarp: success. clock should be +/- 10 msec." >&2
     : >/tmp/ntp2.synced
@@ -138,10 +145,12 @@ done
 
 
 # Now let dbus services know that time is sane.
-tlsdate-dbus-announce
-# Status code 1 means error and 2 means no dbus support.
-if [ $? -eq 1 ]; then
-  echo "tlsdate-dbus-announce failed." >&2
+if runnable tlsdate-dbus-announce; then
+  tlsdate-dbus-announce
+  # Status code 1 means error and 2 means no dbus support.
+  if [ $? -eq 1 ]; then
+    echo "tlsdate-dbus-announce failed." >&2
+  fi
 fi
 
 
