@@ -1,0 +1,26 @@
+From 0e6f2a2b63f48919f91b56379fef473916099596 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 31 Oct 2015 08:48:57 -0700
+Subject: [PATCH] Suppress "Forced match of 'google' against '*'"
+
+Not a useful log message.
+---
+ src/tlsdate-helper.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/tlsdate-helper.c b/src/tlsdate-helper.c
+index 84ff998..3768549 100644
+--- a/src/tlsdate-helper.c
++++ b/src/tlsdate-helper.c
+@@ -556,7 +556,7 @@ check_wildcard_match_rfc2595 (const char *orig_hostname,
+           if (wildcard_label[0] == wildchar[0] &&
+               0 == wildcard_encountered && 0 == ok)
+           {
+-            verb ("V: Forced match of '%s' against '%s'", expected_label, wildcard_label);
++            verb_debug ("V: Forced match of '%s' against '%s'", expected_label, wildcard_label);
+             wildcard_encountered = 1;
+           } else {
+             verb_debug ("V: Attempting match of '%s' against '%s'",
+-- 
+2.6.0.rc2.230.g3dd15c0
+
