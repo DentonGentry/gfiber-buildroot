@@ -1,0 +1,29 @@
+From 232fc61c80dffd2cf324a0160a8d772d5aa82bb3 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 31 Oct 2015 23:08:55 -0700
+Subject: [PATCH] Stop if compilation fails.
+
+---
+ Makefile.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 6028513..602a1a3 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -14,10 +14,10 @@ distdir = $(PACKAGE)-$(VERSION)
+ SUBDIRS=libbridge brctl doc
+ 
+ all:
+-	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x ; done
++	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x || exit 1; done
+ 
+ clean:
+-	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x clean ; done
++	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x clean || exit 1; done
+ 
+ distclean:	clean
+ 	rm -f config.log
+-- 
+2.6.0.rc2.230.g3dd15c0
+
