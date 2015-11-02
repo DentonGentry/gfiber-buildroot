@@ -2,6 +2,4 @@
 #
 # Returns 0 (true) if Google Cast is supported on this device.
 
-# This should only return success for developers. This
-# file must be created manually.
-[ -f /tmp/google_cast_enabled ]
+[ -f /chrome/cast_shell ]
