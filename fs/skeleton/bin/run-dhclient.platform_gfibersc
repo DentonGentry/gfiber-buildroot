@@ -48,6 +48,7 @@ run_dhclient "" ""
 # -S means runs stateless config, requests only the extra information.
 # On the network box we only run the stateful version, running both
 # interfere with each other.
-run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900"
+# TODO(erdi): Disable IPv6 until it is fully supported in App.
+#run_dhclient "6" "-N -P -6 --never-gonna-give-you-up 900"
 
 lockfile-remove $lock
