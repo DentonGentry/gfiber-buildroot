@@ -3,7 +3,7 @@
 # go_shanemhansen_gossl
 #
 ###########################################################
-GO_SHANEMHANSEN_GOSSL_VERSION = 253d3ec4700bcd899e1a2d98ed4df7d768712075
+GO_SHANEMHANSEN_GOSSL_VERSION = 5add35e26d283222a015a32c02b18579307d20b9
 GO_SHANEMHANSEN_GOSSL_SITE = https://github.com/shanemhansen/gossl
 GO_SHANEMHANSEN_GOSSL_SITE_METHOD = git
 GO_SHANEMHANSEN_GOSSL_DEPENDENCIES = host-golang \

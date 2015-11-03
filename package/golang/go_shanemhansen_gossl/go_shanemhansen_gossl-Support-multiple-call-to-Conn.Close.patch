@@ -1,6 +1,6 @@
-From e69fe400d642612fa8f8fba979fe43ac291ad142 Mon Sep 17 00:00:00 2001
-From: Erdi Chen <erdi@google.com>
-Date: Tue, 5 May 2015 21:17:19 -0700
+From bc7e9366334b46f8f89f8fedf732ee7d68421604 Mon Sep 17 00:00:00 2001
+From: pzm <pzm@google.com>
+Date: Mon, 2 Nov 2015 18:40:09 -0800
 Subject: [PATCH] Support multiple call to Conn.Close().
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] Support multiple call to Conn.Close().
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/conn.go b/conn.go
-index 18e88d0..1a49fe8 100644
+index a1437d7..7815039 100644
 --- a/conn.go
 +++ b/conn.go
 @@ -57,8 +57,12 @@ func NewClientConn(ctx *Context, conn net.Conn) (*Conn, error) {
@@ -27,5 +27,5 @@ index 18e88d0..1a49fe8 100644
  func (self *Conn) LocalAddr() net.Addr {
  	return self.conn.LocalAddr()
 -- 
-2.2.0.rc0.207.ga3a616c
+2.6.0.rc2.230.g3dd15c0
 
