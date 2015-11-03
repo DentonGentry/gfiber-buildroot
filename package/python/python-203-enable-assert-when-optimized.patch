@@ -1,0 +1,25 @@
+From c93ad93b97a93cb0275d2e3d9fabb285be77158b Mon Sep 17 00:00:00 2001
+From: Michael Jones <jonesmi@google.com>
+Date: Tue, 3 Nov 2015 17:02:20 -0500
+Subject: [PATCH] enabling assert when Optimizing
+
+---
+ Python/compile.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Python/compile.c b/Python/compile.c
+index 5aadccf..77621bd 100644
+--- a/Python/compile.c
++++ b/Python/compile.c
+@@ -2079,8 +2079,6 @@ compiler_assert(struct compiler *c, stmt_ty s)
+     static PyObject *assertion_error = NULL;
+     basicblock *end;
+
+-    if (Py_OptimizeFlag)
+-        return 1;
+     if (assertion_error == NULL) {
+         assertion_error = PyString_InternFromString("AssertionError");
+         if (assertion_error == NULL)
+--
+2.6.0.rc2.230.g3dd15c0
+
