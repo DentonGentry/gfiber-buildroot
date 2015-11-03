@@ -1,6 +1,6 @@
-From 67704ea586f90fa98a4fc0c049c6f8eed12b9a78 Mon Sep 17 00:00:00 2001
+From f3812d374cb18d5a05f4140d0e655d296e9347fd Mon Sep 17 00:00:00 2001
 From: pzm <pzm@google.com>
-Date: Tue, 31 Mar 2015 17:11:11 -0700
+Date: Mon, 2 Nov 2015 18:47:21 -0800
 Subject: [PATCH] fix aes
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] fix aes
  1 file changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/aes/aes.go b/aes/aes.go
-index b8f89c8..1d8980c 100644
+index b8f89c8..8a8408e 100644
 --- a/aes/aes.go
 +++ b/aes/aes.go
 @@ -1,4 +1,4 @@
@@ -31,7 +31,7 @@ index b8f89c8..1d8980c 100644
 -	}
 +	// err := sslerr.Error()
 +	// if err != nil {
-+	//	panic(err.Error())
++	//      panic(err.Error())
 +	// }
  }
  func (self *aesKey) Decrypt(dst, src []byte) {
@@ -56,5 +56,5 @@ index b8f89c8..1d8980c 100644
  
  // Here for compatibility with 'crypto/aes'
 -- 
-2.2.0.rc0.207.ga3a616c
+2.6.0.rc2.230.g3dd15c0
 

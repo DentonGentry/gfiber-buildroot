@@ -1,14 +1,14 @@
-From e5622d3baa54f0841a8e99d9fb6abb6b9e0ae49e Mon Sep 17 00:00:00 2001
+From 5e839aa2d9b7776f0bcd17964a0050d88461ade5 Mon Sep 17 00:00:00 2001
 From: pzm <pzm@google.com>
 Date: Tue, 27 Oct 2015 19:24:11 -0700
-Subject: [PATCH 1/1] Patch gossl to support deadline.
+Subject: [PATCH] Patch gossl to support deadline.
 
 ---
  conn.go | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/conn.go b/conn.go
-index 18e88d0..0138c6a 100644
+index a1437d7..91fd5a8 100644
 --- a/conn.go
 +++ b/conn.go
 @@ -80,13 +80,13 @@ func (self *Conn) Write(b []byte) (int, error) {
