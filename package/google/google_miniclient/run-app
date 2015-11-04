@@ -79,7 +79,9 @@ case $appname in
     cd /usr/local/bin/webkitGl?
     export PATH=$PWD:$PATH
     [ -z "$opts" ] && opts='https://www.youtube.com/tv'
-    start_chromium $opts 2>&1 | logos youtube
+    # YouTube is run under an alivemonitor. Setting any of the keepalive flags
+    # is sufficient to turn it on.
+    start_chromium --fiber-keepalive-file $opts 2>&1 | logos youtube
     ;;
   miracast)
     /usr/local/bin/trellis/StandaloneWFDPlayer $opts 2>&1 | logos miracast
