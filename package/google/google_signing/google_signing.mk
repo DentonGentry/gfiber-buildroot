@@ -55,9 +55,10 @@ define HOST_GOOGLE_SIGNING_SIGN
 endef
 
 define HOST_BRUNOv2_SIGNING_SIGN
-	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
+	(cp $(1) $(2) && \
+	 $(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
 		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
-		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) -k zImage && \
+		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) -k $(2) && \
 		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
