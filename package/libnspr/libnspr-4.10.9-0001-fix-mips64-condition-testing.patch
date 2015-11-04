@@ -1,0 +1,38 @@
+From: Stephen McGruer <smcgruer@google.com>
+Date: Wed, 4 Nov 2015 09:37:36 -0500
+Subject: [PATCH] Fix mips64 condition testing
+
+Backport of https://hg.mozilla.org/projects/nspr/rev/f40f22264704 to fix
+https://bugzilla.mozilla.org/show_bug.cgi?id=1199867 (and thus, the NSS
+Chromium build).
+
+Original commit text:
+
+Bug 1199867: Fix mips64 condition testing, avoiding e.g. wrong types
+being picked up on 32-bits mips. r=wtc.
+
+---
+ nspr/pr/include/md/_linux.cfg |  2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+--- a/nspr/pr/include/md/_linux.cfg
++++ b/nspr/pr/include/md/_linux.cfg
+@@ -503,17 +503,17 @@
+ #undef  IS_LITTLE_ENDIAN
+ #elif defined(__MIPSEL__)
+ #define IS_LITTLE_ENDIAN 1
+ #undef  IS_BIG_ENDIAN
+ #else
+ #error "Unknown MIPS endianness."
+ #endif
+ 
+-#ifdef _ABI64
++#if _MIPS_SIM == _ABI64
+ 
+ #define IS_64
+ 
+ #define PR_BYTES_PER_BYTE   1
+ #define PR_BYTES_PER_SHORT  2
+ #define PR_BYTES_PER_INT    4
+ #define PR_BYTES_PER_INT64  8
+ #define PR_BYTES_PER_LONG   8
