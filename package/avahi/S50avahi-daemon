@@ -2,11 +2,17 @@
 #
 # avahi-daemon init script
 
-! is-storage-box && exit 0
+is-storage-box || is-tv-box || exit 0
+
+if is-google-cast-enabled; then
+  AVAHI_DAEMON_CONF="/etc/avahi/avahi-daemon-cast.conf"
+else
+  AVAHI_DAEMON_CONF="/etc/avahi/avahi-daemon.conf"
+fi
 
 case "$1" in
   start)
-    nice babysit 60 avahi-daemon 2>&1 | logos avahi &
+    nice babysit 60 avahi-daemon --file="$AVAHI_DAEMON_CONF" 2>&1 | logos avahi &
     ;;
   stop)
     avahi-daemon -c && avahi-daemon -k
