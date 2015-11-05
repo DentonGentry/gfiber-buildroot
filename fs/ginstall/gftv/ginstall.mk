@@ -92,7 +92,7 @@ ifneq ($(BRUNO_LOADER),)
 # harmful installs due to accidental half-compatibility.
 BRUNO_LOADERS_V3_V4 := loader.img loader.sig
 endif
-ROOTFS_GINSTALL_KERNEL_FILE=zImage
+ROOTFS_GINSTALL_KERNEL_FILE=zImage_signed
 BRUNOv2_SIGNING=y
 endif  # gftv254
 
@@ -282,7 +282,9 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	if [ '$(BRUNOv2_SIGNING)' = 'y' ]; then \
 		cp $(BINARIES_DIR)/zImage $(BINARIES_DIR)/zImage_unsigned && \
 		( \
-			export LD_PRELOAD=; $(call HOST_BRUNOv2_SIGNING_SIGN); \
+			export LD_PRELOAD=; $(call HOST_BRUNOv2_SIGNING_SIGN,\
+									$(BINARIES_DIR)/zImage,\
+									$(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE)); \
 		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
