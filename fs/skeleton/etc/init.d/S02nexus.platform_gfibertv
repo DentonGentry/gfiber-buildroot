@@ -41,6 +41,7 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
   " > /etc/hostid
   chmod 444 /etc/hostid
 
+  # Google Product Number
   GPN=$(hnvram -qr GPN)
   [ -n "$GPN" ] &&
   echo "$GPN" >/tmp/gpn &&
@@ -70,6 +71,8 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
     hostname GFiberTV
   elif is-network-box; then
     hostname GFiberRouter
+  elif is-ptp; then
+    hostname GFiberPTP
   else
     hostname GFiberUnknown
   fi
