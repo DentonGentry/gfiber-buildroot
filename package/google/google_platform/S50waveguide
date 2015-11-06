@@ -1,11 +1,16 @@
 #!/bin/sh
 . /etc/utils.sh
 
+# in waveguide itself
 register_experiment WifiPrimarySpreading
 register_experiment WifiUseActiveTime
 register_experiment WifiChannelsLimited2G
 register_experiment WifiLowIsHigh
 register_experiment WifiUseDFS
+
+# in this file
+register_experiment WifiNoBgScans
+register_experiment WifiMoreBgScans
 
 case "$1" in
   start)
@@ -16,11 +21,22 @@ case "$1" in
     fi
 
     if is-network-box; then
-      babysit 60 alivemonitor /tmp/waveguide/alive 10 10 60 \
-          waveguide --high-power --scan-interval=300 2>&1 | logos waveguide &
+      YES=1
+      HP=--high-power
     elif has_wifi && runnable iw; then
+      YES=1
+      HP=--no-high-power
+    fi
+    if experiment WifiNoBgScans; then
+      SI=--scan-interval=0
+    elif experiment WifiMoreBgScans; then
+      SI=--scan-interval=30
+    else
+      SI=--scan-interval=300
+    fi
+    if [ -n "$YES" ]; then
       supernice babysit 60 alivemonitor /tmp/waveguide/alive 10 10 600 \
-          waveguide --no-high-power --scan-interval=300 2>&1 | logos waveguide &
+          waveguide "$HP" "$SI" 2>&1 | logos waveguide &
     fi
     ;;
   stop)
