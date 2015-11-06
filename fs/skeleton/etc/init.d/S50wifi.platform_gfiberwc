@@ -23,7 +23,9 @@ case "$1" in
     mkdir -p /tmp/wifi/fingerprints
     mkdir -p /tmp/wifi/wifiblaster
     mkdir -p /tmp/stations
-    babysit 30 wifi_files 2>&1 | logos wifistatus &
+    if runnable wifi_files; then
+      babysit 30 wifi_files 2>&1 | logos wifistatus &
+    fi
     if is-network-box; then
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then
