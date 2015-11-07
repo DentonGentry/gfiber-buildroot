@@ -130,7 +130,7 @@ case "$1" in
       fi
 
       # cwmpd ACS kick
-      ip6tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
+      ip46tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
       ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd
       iptables -t nat -A PREROUTING -p tcp --dport 7547 -j ACCEPT  # cwmpd
 
