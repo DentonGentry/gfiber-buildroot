@@ -686,6 +686,7 @@ endmenu
 menu "Quantenna custom build"
 source "package/quantenna_drivers/Config.in"
 source "package/hostapd-quantenna/Config.in"
+source "package/wpa_supplicant-quantenna/Config.in"
 endmenu
 
 menu "Drivers"
