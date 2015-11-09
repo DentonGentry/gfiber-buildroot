@@ -22,6 +22,7 @@ case "$1" in
   start)
     mkdir -p /tmp/wifi/fingerprints
     mkdir -p /tmp/wifi/wifiblaster
+    mkdir -p /tmp/wifi/wifiinfo
     mkdir -p /tmp/stations
     if runnable wifi_files; then
       babysit 30 wifi_files 2>&1 | logos wifistatus &
