@@ -1,33 +1,33 @@
-diff -Naur libnetfilter_conntrack-0.9.1.mod/include/internal/object.h libnetfilter_conntrack-0.9.1.mod1/include/internal/object.h
---- libnetfilter_conntrack-0.9.1.mod/include/internal/object.h	2013-04-10 14:25:03.000000000 +0530
-+++ libnetfilter_conntrack-0.9.1.mod1/include/internal/object.h	2013-04-10 15:14:54.000000000 +0530
-@@ -150,12 +150,19 @@
- 	union __nfct_l4_src 	l4min, l4max;
+--- a/include/internal/object.h	2015-05-27 03:27:34.102294894 -0700
++++ b/include/internal/object.h	2015-10-28 13:01:38.315308063 -0700
+@@ -153,6 +153,12 @@
+ 	uint32_t               set[__NFCT_BITSET];
  };
  
 +struct __nfct_comcerto_fp_info {
 +	int		ifindex;
 +	int		iif;
-+	u_int32_t	mark;
++	uint32_t	mark;
 +};
 +
  struct nf_conntrack {
- 	struct __nfct_tuple 	tuple[__DIR_MAX];
- 	
- 	u_int32_t 	timeout;
- 	u_int32_t	mark;
- 	u_int32_t	secmark;
+ 	struct nfct_tuple_head 	head;
+ 	struct __nfct_tuple	repl;
+@@ -161,6 +167,7 @@
+ 	uint32_t 	timeout;
+ 	uint32_t	mark;
+ 	uint32_t	secmark;
 +	struct __nfct_comcerto_fp_info fp_info[__DIR_MAX];
- 	u_int32_t 	status;
- 	u_int32_t	use;
- 	u_int32_t	id;
-diff -Naur libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/libnetfilter_conntrack.h libnetfilter_conntrack-0.9.1.mod1/include/libnetfilter_conntrack/libnetfilter_conntrack.h
---- libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2013-04-10 14:33:45.000000000 +0530
-+++ libnetfilter_conntrack-0.9.1.mod1/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2013-04-10 15:15:31.000000000 +0530
-@@ -130,6 +130,12 @@
- 	ATTR_SECCTX,				/* string */
- 	ATTR_TIMESTAMP_START,			/* u64 bits, linux >= 2.6.38 */
- 	ATTR_TIMESTAMP_STOP = 64,		/* u64 bits, linux >= 2.6.38 */
+ 	uint32_t 	status;
+ 	uint32_t	use;
+ 	uint32_t	id;
+
+--- a/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2015-10-28 12:16:54.927728157 -0700
++++ b/include/libnetfilter_conntrack/libnetfilter_conntrack.h	2015-10-28 13:03:47.498110493 -0700
+@@ -136,6 +136,12 @@
+ 	ATTR_HELPER_INFO,			/* variable length */
+ 	ATTR_CONNLABELS,			/* variable length */
+ 	ATTR_CONNLABELS_MASK,			/* variable length */
 +	ATTR_ORIG_COMCERTO_FP_IIF,
 +	ATTR_ORIG_COMCERTO_FP_IFINDEX,
 +	ATTR_ORIG_COMCERTO_FP_MARK,
@@ -36,20 +36,19 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/libne
 +	ATTR_REPL_COMCERTO_FP_MARK,
  	ATTR_MAX
  };
- 
-diff -Naur libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h libnetfilter_conntrack-0.9.1.mod1/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h
---- libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h	2013-04-10 14:25:03.000000000 +0530
-+++ libnetfilter_conntrack-0.9.1.mod1/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h	2013-04-10 15:16:58.000000000 +0530
-@@ -47,6 +47,8 @@
- 	CTA_ZONE,
- 	CTA_SECCTX,
- 	CTA_TIMESTAMP,
+
+--- a/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h	2015-05-27 03:25:48.066296086 -0700
++++ b/include/libnetfilter_conntrack/linux_nfnetlink_conntrack.h	2015-10-28 13:06:10.884777061 -0700
+@@ -57,6 +57,8 @@
+ 	CTA_MARK_MASK,
+ 	CTA_LABELS,
+ 	CTA_LABELS_MASK,
 +	CTA_COMCERTO_FP_ORIG = 32,
 +	CTA_COMCERTO_FP_REPLY,
  	__CTA_MAX
  };
  #define CTA_MAX (__CTA_MAX - 1)
-@@ -187,6 +189,15 @@
+@@ -222,6 +224,15 @@
  };
  #define CTA_HELP_MAX (__CTA_HELP_MAX - 1)
  
@@ -65,11 +64,11 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/include/libnetfilter_conntrack/linux
  enum ctattr_secctx {
  	CTA_SECCTX_UNSPEC,
  	CTA_SECCTX_NAME,
-diff -Naur libnetfilter_conntrack-0.9.1.mod/src/conntrack/getter.c libnetfilter_conntrack-0.9.1.mod1/src/conntrack/getter.c
---- libnetfilter_conntrack-0.9.1.mod/src/conntrack/getter.c	2013-04-10 14:25:03.000000000 +0530
-+++ libnetfilter_conntrack-0.9.1.mod1/src/conntrack/getter.c	2013-04-10 15:18:48.000000000 +0530
-@@ -332,6 +332,36 @@
- 	return &ct->timestamp.stop;
+
+--- a/src/conntrack/getter.c	2015-05-27 03:23:01.782297954 -0700
++++ b/src/conntrack/getter.c	2015-10-28 13:10:43.782229021 -0700
+@@ -349,6 +349,36 @@
+ 	return ct->connlabels_mask;
  }
  
 +static const void *get_attr_orig_comcerto_fp_iif(const struct nf_conntrack *ct)
@@ -105,21 +104,21 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/src/conntrack/getter.c libnetfilter_
  const get_attr get_attr_array[ATTR_MAX] = {
  	[ATTR_ORIG_IPV4_SRC]		= get_attr_orig_ipv4_src,
  	[ATTR_ORIG_IPV4_DST] 		= get_attr_orig_ipv4_dst,
-@@ -398,4 +428,10 @@
- 	[ATTR_SECCTX]			= get_attr_secctx,
- 	[ATTR_TIMESTAMP_START]		= get_attr_timestamp_start,
- 	[ATTR_TIMESTAMP_STOP]		= get_attr_timestamp_stop,
-+	[ATTR_ORIG_COMCERTO_FP_IIF]		= get_attr_orig_comcerto_fp_iif,
-+	[ATTR_ORIG_COMCERTO_FP_IFINDEX]		= get_attr_orig_comcerto_fp_ifindex,
-+	[ATTR_ORIG_COMCERTO_FP_MARK]		= get_attr_orig_comcerto_fp_mark,
-+	[ATTR_REPL_COMCERTO_FP_IIF]		= get_attr_repl_comcerto_fp_iif,
-+	[ATTR_REPL_COMCERTO_FP_IFINDEX]		= get_attr_repl_comcerto_fp_ifindex,
-+	[ATTR_REPL_COMCERTO_FP_MARK]		= get_attr_repl_comcerto_fp_mark,
+@@ -418,4 +448,10 @@
+ 	[ATTR_HELPER_INFO]		= get_attr_helper_info,
+ 	[ATTR_CONNLABELS]		= get_attr_connlabels,
+ 	[ATTR_CONNLABELS_MASK]		= get_attr_connlabels_mask,
++	[ATTR_ORIG_COMCERTO_FP_IIF]	= get_attr_orig_comcerto_fp_iif,
++	[ATTR_ORIG_COMCERTO_FP_IFINDEX] = get_attr_orig_comcerto_fp_ifindex,
++	[ATTR_ORIG_COMCERTO_FP_MARK]	= get_attr_orig_comcerto_fp_mark,
++	[ATTR_REPL_COMCERTO_FP_IIF]	= get_attr_repl_comcerto_fp_iif,
++	[ATTR_REPL_COMCERTO_FP_IFINDEX] = get_attr_repl_comcerto_fp_ifindex,
++	[ATTR_REPL_COMCERTO_FP_MARK]	= get_attr_repl_comcerto_fp_mark,
  };
-diff -Naur libnetfilter_conntrack-0.9.1.mod/src/conntrack/parse.c libnetfilter_conntrack-0.9.1.mod1/src/conntrack/parse.c
---- libnetfilter_conntrack-0.9.1.mod/src/conntrack/parse.c	2013-04-10 14:25:03.000000000 +0530
-+++ libnetfilter_conntrack-0.9.1.mod1/src/conntrack/parse.c	2013-04-10 15:20:28.000000000 +0530
-@@ -473,6 +473,50 @@
+
+--- a/src/conntrack/parse.c	2015-05-27 03:27:34.114294894 -0700
++++ b/src/conntrack/parse.c	2015-10-28 13:21:18.412256588 -0700
+@@ -493,6 +493,50 @@
  	}
  }
  
@@ -131,37 +130,37 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/src/conntrack/parse.c libnetfilter_c
 +	nfnl_parse_nested(tb, CTA_COMCERTO_FP_MAX, attr);
 +
 +	if (tb[CTA_COMCERTO_FP_IIF-1]) {
-+		ct->fp_info[dir].iif = *(u_int32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_IIF-1]);
++		ct->fp_info[dir].iif = *(uint32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_IIF-1]);
 +		switch(dir) {
 +		case __DIR_ORIG:
-+			set_bit(ATTR_ORIG_COMCERTO_FP_IIF, ct->set);
++			set_bit(ATTR_ORIG_COMCERTO_FP_IIF, ct->head.set);
 +			break;
 +		case __DIR_REPL:
-+			set_bit(ATTR_REPL_COMCERTO_FP_IIF, ct->set);
++			set_bit(ATTR_REPL_COMCERTO_FP_IIF, ct->head.set);
 +			break;
 +		}
 +	}
 +
 +	if (tb[CTA_COMCERTO_FP_IFINDEX-1]) {
-+		ct->fp_info[dir].ifindex = *(u_int32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_IFINDEX-1]);
++		ct->fp_info[dir].ifindex = *(uint32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_IFINDEX-1]);
 +		switch(dir) {
 +		case __DIR_ORIG:
-+			set_bit(ATTR_ORIG_COMCERTO_FP_IFINDEX, ct->set);
++			set_bit(ATTR_ORIG_COMCERTO_FP_IFINDEX, ct->head.set);
 +			break;
 +		case __DIR_REPL:
-+			set_bit(ATTR_REPL_COMCERTO_FP_IFINDEX, ct->set);
++			set_bit(ATTR_REPL_COMCERTO_FP_IFINDEX, ct->head.set);
 +			break;
 +		}
 +	}
 +
 +	if (tb[CTA_COMCERTO_FP_MARK-1]) {
-+		ct->fp_info[dir].mark = *(u_int32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_MARK-1]);
++		ct->fp_info[dir].mark = *(uint32_t *)NFA_DATA(tb[CTA_COMCERTO_FP_MARK-1]);
 +		switch(dir) {
 +		case __DIR_ORIG:
-+			set_bit(ATTR_ORIG_COMCERTO_FP_MARK, ct->set);
++			set_bit(ATTR_ORIG_COMCERTO_FP_MARK, ct->head.set);
 +			break;
 +		case __DIR_REPL:
-+			set_bit(ATTR_REPL_COMCERTO_FP_MARK, ct->set);
++			set_bit(ATTR_REPL_COMCERTO_FP_MARK, ct->head.set);
 +			break;
 +		}
 +	}
@@ -170,8 +169,8 @@ diff -Naur libnetfilter_conntrack-0.9.1.mod/src/conntrack/parse.c libnetfilter_c
  void __parse_conntrack(const struct nlmsghdr *nlh,
  		       struct nfattr *cda[],
  		       struct nf_conntrack *ct)
-@@ -532,6 +576,12 @@
- 		set_bit(ATTR_SECMARK, ct->set);
+@@ -552,6 +596,12 @@
+ 		set_bit(ATTR_SECMARK, ct->head.set);
  	}
  
 +	if (cda[CTA_COMCERTO_FP_ORIG-1])

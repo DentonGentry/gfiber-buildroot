@@ -2,6 +2,7 @@ config BR2_PACKAGE_LIBNETFILTER_CONNTRACK
 	bool "libnetfilter_conntrack"
 	depends on BR2_LARGEFILE
 	select BR2_PACKAGE_LIBNFNETLINK
+	select BR2_PACKAGE_LIBMNL
 	help
 	  libnetfilter_conntrack is a userspace library providing
 	  a programming interface (API) to the in-kernel
