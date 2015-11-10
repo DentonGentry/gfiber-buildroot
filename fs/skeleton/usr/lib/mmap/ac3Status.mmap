@@ -1,0 +1,17 @@
+open 0 /sys/bus/pci/devices/0000:01:00.0/resource0 0 0x00100000
+open 2 /sys/bus/pci/devices/0000:01:00.0/resource2 0 0x04000000
+open 4 /sys/bus/pci/devices/0000:01:00.0/resource4 0 0x00800000
+# OLD BAR: 0xe0000000 0xe4000000 0xe0800000
+# NEW BAR: 0xe4800000 0xe0000000 0xe4000000
+
+# Read AC3 ports status - port 0,4, 24, 25
+write 2 0x00000000 4 0x00001200
+dump 2 0x01000000 4 5
+dump 2 0x01004000 4 5
+
+write 2 0x00000000 4 0x00001200
+dump 2 0x010d8000 4 4
+
+write 2 0x00000000 4 0x00001200
+dump 2 0x010d9000 4 4
+
