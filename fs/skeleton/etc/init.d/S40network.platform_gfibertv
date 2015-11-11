@@ -165,6 +165,16 @@ case "$1" in
       modprobe pktgen 2>/dev/null
     fi
 
+    pci="/sys/bus/pci/devices/0000:01:00.0"
+    if [ -d $pci ]; then
+      vendor_id="$(cat ${pci}/vendor)"
+      device_id="$(cat ${pci}/device)"
+      if [ "$vendor_id" = "0x11ab" ] && [ "$device_id" = "0xf410" ]; then
+        echo "Initializing AlleyCat3 10G switch..."
+        mmap /usr/lib/mmap/ac3Config.mmap
+      fi
+    fi
+
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
