@@ -1,13 +1,14 @@
 #############################################################
 #
-# golang 1.4.2 - https://go.googlesource.com/go/+/go1.4.2
+# golang 1.5.1 - https://go.googlesource.com/go/+/go1.5.1
 #
 #############################################################
-GOLANG_VERSION = 883bc6ed0ea815293fe6309d66f967ea60630e87
+GOLANG_VERSION = f2e4c8b5fb3660d793b2c545ef207153db0a34b1
 GOLANG_SITE = https://go.googlesource.com/go
 GOLANG_SITE_METHOD = git
+GOLANG_DEPENDENCIES = host-golang_bootstrap
 
-GOLANG_RELEASE = 1.4.2
+GOLANG_RELEASE = 1.5.1
 GOLANG_GOROOT = $(HOST_DIR)/usr/lib/golang-$(GOLANG_RELEASE)
 
 ifeq ("arm",$(BR2_ARCH))
@@ -45,6 +46,7 @@ define HOST_GOLANG_BUILD_CMDS
 	GOARCH=$(GOLANG_GOARCH) \
 	GOARM=$(GOLANG_GOARM) \
 	CGO_ENABLED=$(GOLANG_CGO_ENABLED) \
+	GOROOT_BOOTSTRAP=$(GOLANG_BOOTSTRAP_GOROOT) \
 	CC_FOR_TARGET="$(notdir $(TARGET_CC_NOCCACHE))" \
 	CXX_FOR_TARGET="$(notdir $(TARGET_CXX_NOCCACHE))" \
 	./make.bash
