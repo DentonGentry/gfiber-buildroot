@@ -171,7 +171,8 @@ case "$1" in
       device_id="$(cat ${pci}/device)"
       if [ "$vendor_id" = "0x11ab" ] && [ "$device_id" = "0xf410" ]; then
         echo "Initializing AlleyCat3 10G switch..."
-        mmap /usr/lib/mmap/ac3Config.mmap
+        echo 1 > $pci/enable
+        mmap -q /usr/lib/mmap/ac3Config.mmap
       fi
     fi
 
