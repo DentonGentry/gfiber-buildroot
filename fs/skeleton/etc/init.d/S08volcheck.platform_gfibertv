@@ -6,6 +6,7 @@
 . /etc/utils.sh
 
 sata_blkdev=$(find_sata_blkdev)
+platform=$(cat /etc/platform)
 
 # 'data+ubi' partition
 DATA_MTD_NAME='"data+ubi"'
@@ -22,6 +23,8 @@ DATA_UBI_NO=1
 
 # eMMC support
 DATA_MMC_NAME="data+ext4"
+DRM_FS_NAME="drmfs1"
+DRM_FS_RECOVER_NAME="drmfs2"
 
 USER_NAME=user
 CONFIG_NAME=config
@@ -183,6 +186,28 @@ umount_ubifs()
 }
 
 
+mount_drmfs_ro()
+{
+  mount -t ext4 -o ro,defaults $1 $2 || return 1
+}
+
+# $1 : primary drmfs
+# $2 : secondary drmfs
+recover_drmfs()
+{
+    e2fsck $1 || mkfs.ext4 $1 || return 1
+    mkdir -p /tmp/drmfs_primary
+    mkdir -p /tmp/drmfs_secondary
+    mount -t ext4 -o ro,defaults $2 /tmp/drmfs_secondary || return 1
+    mount -t ext4 -o defaults $1 /tmp/drmfs_primary || return 1
+    # TODO(jnewlin):  Need to revisit with real keybox name.
+    cp /tmp/drmfs_secondary/drm.bin /tmp/drmfs_primary/drm.bin
+
+    umount /tmp/drmfs_primary
+    umount /tmp/drmfs_secondary
+    mount_drmfs_ro $1 /user/drmfs
+}
+
 mount_ext4fs()
 {
   mount -t ext4 -o defaults,noatime,discard,data=writeback $1 /user || return 1
@@ -244,6 +269,22 @@ case "$1" in
     [ ! -d /user/ytlb ] && mkdir -p /user/ytlb
     [ ! -d /tmp/vudu ] && mkdir -p /tmp/vudu
     [ ! -d /tmp/oprofile ] && mkdir -p /tmp/oprofile
+
+    if has-drm-fs; then
+      DRM_FS_MMC_NO=$(check_mmc ${DRM_FS_NAME})
+      DRM_FS_RECOVER_MMC_NO=$(check_mmc ${DRM_FS_RECOVER_NAME})
+      DRM_FS_BLK_NAME=/dev/mmcblk0p${DRM_FS_MMC_NO}
+      DRM_FS_RECOVER_BLK_NAME=/dev/mmcblk0p${DRM_FS_RECOVER_MMC_NO}
+      if [ -b ${DRM_FS_BLK_NAME} ]; then
+        [ ! -d /user/drmfs ] && mkdir -p /user/drmfs
+        if ! mount_drmfs_ro ${DRM_FS_BLK_NAME} /user/drmfs; then
+          echo "DRMFS is corrupt, attempting to recover keybox..."
+          if ! recover_drmfs ${DRM_FS_BLK_NAME} ${DRM_FS_RECOVER_BLK_NAME}; then
+            echo "DRMFS is corrupted and not recoverable."
+          fi
+        fi
+      fi
+    fi
 
     rm -rf /user/diag/diagdb.bin /user/diag/*.tmp /user/diag/log
 
