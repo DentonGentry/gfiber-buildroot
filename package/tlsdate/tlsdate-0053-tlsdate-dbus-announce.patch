@@ -1,0 +1,83 @@
+From 5d621fbf9d794e91697e951679ccc639d0049e03 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Thu, 12 Nov 2015 20:23:51 -0800
+Subject: [PATCH] Restore tlsdate-dbus-announce.
+
+---
+ src/include.am              |  4 ++++
+ src/tlsdate-dbus-announce.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+ create mode 100644 src/tlsdate-dbus-announce.c
+
+diff --git a/src/include.am b/src/include.am
+index ec091e5..29f108d 100644
+--- a/src/include.am
++++ b/src/include.am
+@@ -13,6 +13,7 @@ include src/compat/include.am
+ if TARGET_LINUX
+ bin_PROGRAMS+= src/tlsdate
+ bin_PROGRAMS+= src/tlsdate-helper
++bin_PROGRAMS+= src/tlsdate-dbus-announce
+ 
+ if HAVE_SECCOMP_FILTER
+ src_tlsdate_helper_SOURCES+= src/seccomp.c
+@@ -483,6 +484,9 @@ endif
+ endif
+ endif
+ 
++src_tlsdate_dbus_announce_CFLAGS = @DBUS_CFLAGS@
++src_tlsdate_dbus_announce_LDADD = @DBUS_LIBS@
++src_tlsdate_dbus_announce_SOURCES = src/tlsdate-dbus-announce.c
+ 
+ check_PROGRAMS+= src/test/proxy-override src/test/check-host-1 \
+                  src/test/check-host-2 src/test/sleep-wrap \
+diff --git a/src/tlsdate-dbus-announce.c b/src/tlsdate-dbus-announce.c
+new file mode 100644
+index 0000000..fc474fe
+--- /dev/null
++++ b/src/tlsdate-dbus-announce.c
+@@ -0,0 +1,41 @@
++/*
++ * tlsdate-dbus-announce.c - announce date change on dbus
++ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
++ * Use of this source code is governed by a BSD-style license that can be
++ * found in the LICENSE file.
++ */
++
++#include "config.h"
++
++#ifdef HAVE_DBUS
++#include <dbus/dbus.h>
++#include <stdint.h>
++
++int main(void)
++{
++  DBusConnection *conn = NULL;
++  DBusMessage *msg = NULL;
++  DBusError error;
++  uint32_t ignored;
++
++  dbus_error_init(&error);
++  conn = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
++  if (!conn)
++    return 1;
++  if (dbus_bus_request_name(conn, "org.torproject.tlsdate", 0, &error) < 0)
++    return 1;
++  msg = dbus_message_new_signal("/org/torproject/tlsdate", "org.torproject.tlsdate", "TimeUpdated");
++  if (!msg)
++    return 1;
++  if (!dbus_connection_send(conn, msg, &ignored))
++    return 1;
++  dbus_connection_flush(conn);
++  dbus_message_unref(msg);
++  return 0;
++}
++#else
++int main(void)
++{
++  return 2;
++}
++#endif
+-- 
+2.6.0.rc2.230.g3dd15c0
+
