@@ -9,3 +9,4 @@ include toolchain/toolchain-crosstool-ng/crosstool-ng.mk
 include toolchain/mklibs/mklibs.mk
 include toolchain/uClibc/uclibc.mk
 include toolchain/golang/golang.mk
+include toolchain/golang_bootstrap/golang_bootstrap.mk

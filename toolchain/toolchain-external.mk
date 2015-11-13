@@ -9,3 +9,4 @@ include toolchain/mklibs/mklibs.mk
 include toolchain/toolchain-external/ext-tool.mk
 include toolchain/uClibc/uclibc.mk
 include toolchain/golang/golang.mk
+include toolchain/golang_bootstrap/golang_bootstrap.mk
