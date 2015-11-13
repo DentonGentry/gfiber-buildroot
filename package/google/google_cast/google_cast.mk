@@ -85,6 +85,7 @@ define GOOGLE_CAST_INSTALL_BINARIES
 
 	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
 	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
+	chmod 4755 $(TARGET_DIR)/chrome/chrome-sandbox
 endef
 
 $(eval $(call GENTARGETS))
