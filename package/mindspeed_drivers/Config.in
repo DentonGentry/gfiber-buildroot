@@ -6,4 +6,8 @@ menu "Mindspeed Drivers"
 		bool "Enable Mindspeed PFE Driver"
 		depends on BR2_PACKAGE_MINDSPEED_DRIVERS
 		default n
+	config BR2_PACKAGE_MINDSPEED_DRIVERS_GIT_REPO_URL
+		string "URL of Git repository"
+		depends on BR2_PACKAGE_MINDSPEED_DRIVERS
+		default "repo://vendor/mindspeed/drivers"
 endmenu
