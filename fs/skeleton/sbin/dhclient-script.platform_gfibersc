@@ -24,6 +24,10 @@
 # 4. TIMEOUT not tested. ping has a flag I don't know, and I'm suspicious
 # of the $1 in its args.
 
+# Difference from dhclient for other platforms: adds an entry to /etc/hosts
+# for the FQDN so that it can resolve when the network is down for healthz
+# checks.
+
 printenv
 
 . /etc/utils.sh
@@ -177,7 +181,7 @@ make_cwmp_files() {
 make_etc_hosts() {
   atomic /tmp/hosts "$(
     echo "$new_ip_address  $(hostname)"
-    echo "127.0.0.1  localhost"
+    echo "127.0.0.1  localhost  $(fqdn)" # Includes FQDN as alias if available.
   )"
   log_file_contents /tmp/hosts
 }
@@ -338,6 +342,12 @@ if [ x$reason = xPREINIT ]; then
 fi
 
 if [ x$reason = xARPCHECK ] || [ x$reason = xARPSEND ]; then
+  exit_with_hooks 0
+fi
+
+if [ x$reason = xFQDN ]; then
+  # FQDN was updated, rewrite /etc/hosts.
+  make_etc_hosts
   exit_with_hooks 0
 fi
 
