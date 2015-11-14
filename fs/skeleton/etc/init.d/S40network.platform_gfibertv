@@ -17,8 +17,7 @@ irq_affinity() {
 }
 
 
-redistribute_irqs()
-{
+redistribute_irqs() {
   # if a second CPU isn't available, do nothing.
   echo "distribute IRQ handling between cores"
   if ! taskset 2 true 2>/dev/null; then
@@ -103,66 +102,116 @@ redistribute_irqs()
   fi
 }
 
+get_moca_iface() {
+  # TODO(apenwarr): remove this once all devices use 'moca0' as the name.
+  if [ -e /sys/class/net/moca0 ]; then
+    # GFRG200
+    echo "moca0"
+  else
+    # GFMS100/GFHD100/GFHD200
+    echo "eth1"
+  fi
+}
+
+get_wifi_macaddr_param() {
+  local WIFI_MAC=$(hnvram -qr MAC_ADDR_WIFI)
+  if [ -z "$WIFI_MAC" ]; then
+    local MAC=$(hnvram -qr MAC_ADDR)
+    if [ -z "${MAC}" ]; then
+      echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI" >&2
+    else
+      local WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
+    fi
+  fi
+  if [ -n "$WIFI_MAC" ]; then
+    echo "wifi_addr=$WIFI_MAC"
+  fi
+}
+
+load_moca_driver() {
+  modprobe bmoca 2>/dev/null
+}
+
+load_wifi_drivers() {
+  if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
+    # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
+    # the production firmware at all, or it barfs.
+
+    # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
+    # values during enumeration. Remove the device and rescan to force
+    # re-enumeration.
+    # TODO(mikemu): Find a better way to do this.
+    for d in /sys/devices/pci*/*/vendor; do
+      if [ -f "$d" ] && [ "$(cat $d)" = "0x1bb5" ]; then
+        echo 1 > "$(dirname $d)"/remove
+        sleep 1
+        echo 1 > /sys/bus/pci/rescan
+        break
+      fi
+    done
+
+    # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
+    # the wifi device ordering is constant.
+    modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
+
+    local mwifi_param=$(get_wifi_macaddr_param)
+    modprobe mwifiex $mwifi_param 2>/dev/null
+
+    modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
+    modprobe qdpc-host 2>/dev/null
+
+    # Enable wifi beacon debug logging.
+    if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
+      echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
+    fi
+
+    # Enable wifi beacon and fatal debug logging.
+    if [ -e /sys/module/ath9k/parameters/debug ]; then
+      echo 0x00004400 >/sys/module/ath9k/parameters/debug
+    fi
+
+    # Enable pktgen.
+    modprobe pktgen 2>/dev/null
+  fi
+}
+
+set_mac_from_hnvram() {
+  local DEV="$1"
+  local VAR_NAME="$2"
+  if [ -h /sys/class/net/$DEV ]; then
+    local addr="$(hnvram -qr "$VAR_NAME")"
+    if [ -n "$addr" ]; then
+      echo "Setting $DEV mac address to $addr"
+      ip link set dev $DEV down
+      ip link set dev $DEV address "$addr"
+      ip link set dev $DEV up
+    else
+      echo "$DEV: sysvar $VAR_NAME not found"
+    fi
+  fi
+}
+
+enable_rx_coalescing() {
+  # Enable receive interrupt coalescing, this is a significant
+  # performance gain for multicast receive.
+  ethtool -C $1 rx-usecs 1000
+}
+
+enable_hw_offloads() {
+  # Enable hardware offloads, do this at the end to avoid
+  # invalid access caused by powered down core
+  ethtool -K $1 rx on tx on sg on gso on gro on
+}
+
 case "$1" in
   start)
-    # TODO(apenwarr): remove this once all devices use 'moca0' as the name.
-    if [ -e /sys/class/net/moca0 ]; then
-      # GFRG200
-      mocaifc=moca0
-    else
-      # GFMS100/GFHD100/GFHD200
-      mocaifc=eth1
+    if is-tv-box || is-storage-box; then
+      local mocaifc=$(get_moca_iface)
+      load_moca_driver
     fi
 
-    WIFI_MAC=$(hnvram -qr MAC_ADDR_WIFI)
-    if [ -z "$WIFI_MAC" ]; then
-      MAC=$(hnvram -qr MAC_ADDR)
-      if [ -z "${MAC}" ]; then
-        echo "$0: WARNING: Box has no MAC_ADDR nor MAC_ADDR_WIFI"
-      else
-        WIFI_MAC=$(mac_addr_increment "${MAC}" 3)
-      fi
-    fi
-    if [ -n "$WIFI_MAC" ]; then
-      mwifi_param="wifi_addr=$WIFI_MAC"
-    fi
-
-    modprobe bmoca 2>/dev/null
-    if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
-      # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
-      # the production firmware at all, or it barfs.
-
-      # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
-      # values during enumeration. Remove the device and rescan to force
-      # re-enumeration.
-      # TODO(mikemu): Find a better way to do this.
-      for d in /sys/devices/pci*/*/vendor; do
-        if [ -f "$d" ] && [ "$(cat $d)" = "0x1bb5" ]; then
-          echo 1 > "$(dirname $d)"/remove
-          sleep 1
-          echo 1 > /sys/bus/pci/rescan
-          break
-        fi
-      done
-
-      # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
-      # the wifi device ordering is constant.
-      modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
-      modprobe mwifiex $mwifi_param 2>/dev/null
-      modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
-      modprobe qdpc-host 2>/dev/null
-
-      # Enable wifi beacon debug logging.
-      if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
-        echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
-      fi
-      # Enable wifi beacon and fatal debug logging.
-      if [ -e /sys/module/ath9k/parameters/debug ]; then
-        echo 0x00004400 >/sys/module/ath9k/parameters/debug
-      fi
-
-      # Enable pktgen.
-      modprobe pktgen 2>/dev/null
+    if ! is-spacecast && ! is-ptp; then
+      load_wifi_drivers
     fi
 
     pci="/sys/bus/pci/devices/0000:01:00.0"
@@ -185,7 +234,7 @@ case "$1" in
 
     echo 1 >/proc/sys/net/ipv4/conf/all/arp_ignore
 
-    # create a default resolv.conf and /etc/hosts in case DHCP doesn't.
+    # Create a default resolv.conf and /etc/hosts in case DHCP doesn't.
     # (this is always true if using nfsroot).
     # 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
     # that can be used from anywhere, so it makes a good place to start.
@@ -206,18 +255,8 @@ case "$1" in
     ifup lo
 
     # Set the wifi mac address from values in hnvram.
-    if [ -e /sys/class/net/wlan0 ]; then
-      a=$(hnvram -qr MAC_ADDR_WIFI)
-      if [ -n "$a" ]; then
-        ip link set wlan0 address "$a"
-      fi
-    fi
-    if [ -e /sys/class/net/wlan1 ]; then
-      a=$(hnvram -qr MAC_ADDR_WIFI2)
-      if [ -n "$a" ]; then
-        ip link set wlan1 address "$a"
-      fi
-    fi
+    set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
+    set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
     echo -n "Creating bridge... "
     brctl addbr br0 || exit 1
@@ -332,14 +371,14 @@ case "$1" in
 
       # Enable receive interrupt coalescing, this is a significant
       # performance gain for multicast receive.
-      ethtool -C wan0 rx-usecs 1000
+      enable_rx_coalescing wan0
 
     fi
 
     # Enable hardware offloads, do this at the end to avoid
     # invalid access caused by powered down core
-    ethtool -K eth0 rx on tx on sg on gso on gro on
-    ethtool -K $mocaifc rx on tx on sg on gso on gro on
+    enable_hw_offloads eth0
+    enable_hw_offloads $mocaifc
 
     ;;
   stop)
