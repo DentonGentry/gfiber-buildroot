@@ -27,6 +27,13 @@ case "$1" in
       YES=1
       HP=--no-high-power
     fi
+
+    if is-tv-box; then
+      TB=--tv-box
+    else
+      unset TB
+    fi
+
     if experiment WifiNoBgScans; then
       SI=--scan-interval=0
     elif experiment WifiMoreBgScans; then
@@ -36,7 +43,7 @@ case "$1" in
     fi
     if [ -n "$YES" ]; then
       supernice babysit 60 alivemonitor /tmp/waveguide/alive 10 10 600 \
-          waveguide "$HP" "$SI" 2>&1 | logos waveguide &
+          waveguide "$HP" "$SI" "$TB" 2>&1 | logos waveguide &
     fi
     ;;
   stop)
