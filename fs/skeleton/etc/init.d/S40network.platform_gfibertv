@@ -283,6 +283,24 @@ add_multicast_route() {
   done
 }
 
+lan0_up_no_bridging() {
+  echo "Adding interface lan0..."
+  ip link set lan0 up &&
+  kernopt ip |
+  while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
+    # $ip should be already setup by simpleramfs.
+    # TODO(apenwarr): simpleramfs should set up $gatewayip too.
+    #  But right now its included networking commands are too limited.
+    if [ -n "$gatewayip" ]; then
+      echo "IP: adding default gateway '$gatewayip'"
+      ip route add default via "$gatewayip"
+    fi
+  done
+  echo "Bringing up interface lan0..."
+  ifup lan0
+  enable_rx_coalescing lan0
+}
+
 bridge_up() {
   echo "Bringing up the bridge..."
   ip link set br0 up  # kernel 3.16 behavior, sometimes br0 does not come up.
@@ -299,6 +317,29 @@ enable_hw_offloads() {
   # Enable hardware offloads, do this at the end to avoid
   # invalid access caused by powered down core
   ethtool -K $1 rx on tx on sg on gso on gro on
+}
+
+wan0_down() {
+  if [ -e /sys/class/net/wan0 ]; then
+    echo "Shutting down the WAN port..."
+    ifdown wan0
+    ifdown wan0.2
+    ip link del wan0.2
+  fi
+}
+
+bridge_down() {
+  for x in $(ls /sys/class/net); do
+    if [ -n /sys/class/net/$x/bridge ]; then
+      ifdown $x
+      echo "Shutting down $x interface"
+    fi
+    if [ -e /sys/class/net/$x/device ]; then
+      brctl delif br0 $x
+    fi
+  done
+  ifdown br0
+  [ -e /sys/class/net/br0 ] && brctl delbr br0
 }
 
 case "$1" in
@@ -356,14 +397,18 @@ case "$1" in
     set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
     set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
-    create_bridge
-    if is-tv-box || is-storage-box; then
-      configure_moca_vlan
+    if is-spacecast; then
+      lan0_up_no_bridging
+    else
+      create_bridge
+      if is-tv-box || is-storage-box; then
+        configure_moca_vlan
+      fi
+      add_interfaces_to_bridge
+      add_multicast_route
+      bridge_up
+      redistribute_irqs
     fi
-    add_interfaces_to_bridge
-    add_multicast_route
-    bridge_up
-    redistribute_irqs
 
     if [ -e /dev/bmoca0 ]; then
       echo "starting moca..."
@@ -391,40 +436,31 @@ case "$1" in
       # Enable receive interrupt coalescing, this is a significant
       # performance gain for multicast receive.
       enable_rx_coalescing wan0
-
     fi
 
-    # Enable hardware offloads, do this at the end to avoid
-    # invalid access caused by powered down core
-    enable_hw_offloads eth0
-    enable_hw_offloads $MOCAIFC
-
+    if is-tv-box || is-storage-box; then
+      # Enable hardware offloads, do this at the end to avoid
+      # invalid access caused by powered down core
+      enable_hw_offloads eth0
+      enable_hw_offloads $MOCAIFC
+    fi
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
-      if [ -e /sys/class/net/wan0 ]; then
-        echo "Shutting down the WAN port..."
-        ifdown wan0
-        ifdown wan0.2
-        ip link del wan0.2
+      if is-spacecast; then
+        ifdown lan0
+        echo "Shutting down lan0 interface"
+      else
+        wan0_down
+        bridge_down
       fi
-      for x in $(ls /sys/class/net); do
-        if [ -n /sys/class/net/$x/bridge ]; then
-          ifdown $x
-          echo "Shutting down $x interface"
-        fi
-        if [ -e /sys/class/net/$x/device ]; then
-          brctl delif br0 $x
-        fi
-      done
-      ifdown br0
+
       # Kill mocad and mocactl
       if [ -e /dev/bmoca0 ]; then
         echo -n "mocacfg kill"
         pkillwait mocad
       fi
     fi
-    [ -e /sys/class/net/br0 ] && brctl delbr br0
     ;;
   restart|reload)
     "$0" stop
