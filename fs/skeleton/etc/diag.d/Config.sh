@@ -61,6 +61,8 @@ case "$PLATFORM_NAME" in
     ;;
   GFRG210)
     ;;
+  GFRG250)
+    ;;
   GFSC100)
     has_wifi=0
     ;;
