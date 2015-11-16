@@ -1,4 +1,5 @@
-MINDSPEED_DRIVERS_SITE=repo://vendor/mindspeed/drivers
+MINDSPEED_DRIVERS_SITE=$(call qstrip,$(BR2_PACKAGE_MINDSPEED_DRIVERS_GIT_REPO_URL))
+
 MINDSPEED_DRIVERS_DEPENDENCIES=linux libcli libnetfilter_conntrack libpcap
 
 ifeq ($(BR2_PACKAGE_GOOGLE_SPACECAST),y)
