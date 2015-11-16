@@ -24,6 +24,8 @@ if is-windcharger; then
   WDIOC_GETBOOTSTATUS=0x40045702
 fi
 
+platform=$(cat /etc/platform)
+
 if [ -c /dev/watchdog ]; then
   init=devwatchdog_init
   setup=devwatchdog_setup
@@ -48,6 +50,10 @@ elif grep -q "BCM7429" /proc/cpuinfo; then
   setup=bcm_setup
   pushback=bcm_pushback
   stop=
+elif [ "$platform" = "GFHD254" ]; then
+  init=bcm7252_init
+  setup=bcm_setup
+  pushback=bcm_pushback
 else
   echo "Unknown CPU type, cannot initialize watchdog timer"
   cat /proc/cpuinfo
@@ -123,6 +129,14 @@ bcm7429_init()
   timer_wdcmd_reg=0x104066ec
   timer_wdchiprst_cnt_reg=0x104066f0
   timer_wdctrl_reg=0x104066fc
+}
+
+bcm7252_init()
+{
+  timer_wdtimeout_reg=0xf040a7a8
+  timer_wdcmd_reg=0xf040a7ac
+  timer_wdchiprst_cnt_reg=0xf040a7b0
+  timer_wdctrl_reg=0xf040a7bc
 }
 
 bcm_setup()
