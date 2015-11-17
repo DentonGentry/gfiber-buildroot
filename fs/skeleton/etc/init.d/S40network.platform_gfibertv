@@ -203,7 +203,7 @@ create_bridge() {
   # Storage and network boxes should have higher precedence (lower value)
   #  when choosing the root of the spanning tree.
   #  The default in Linux is 0x8000.
-  if is-network-box; then
+  if is-network-box || is-windcharger; then
     brctl setbridgeprio br0 0x7980
   elif is-storage-box; then
     brctl setbridgeprio br0 0x7990
@@ -375,13 +375,16 @@ case "$1" in
 
     # Create a default resolv.conf and /etc/hosts in case DHCP doesn't.
     # (this is always true if using nfsroot).
-    # 8.8.8.8 and 8.8.4.4 are well-known Google public DNS servers
+    # 8.8.8.8 and 8.8.4.4 are well-known IPv4 Google public DNS servers
     # that can be used from anywhere, so it makes a good place to start.
+    # 2001:4860:4860::8888 is one of the two IPv6 Google public DNS servers
+    # (the other being 2001:4860:4860::8844).
     # DHCP will just overwrite this file when it's ready to go.
     if [ ! -r /etc/resolv.conf ]; then
-      #TODO(apenwarr): add IPv6 DNS once our uClibc can handle it.
+      # Note: uClibc only reads the first three nameserver entries.
       (echo 'nameserver 8.8.8.8';
-       echo 'nameserver 8.8.4.4') >/etc/resolv.conf
+       echo 'nameserver 8.8.4.4';
+       echo 'nameserver 2001:4860:4860::8888') >/etc/resolv.conf
     fi
     if [ ! -r /etc/hosts ]; then
       echo "127.0.0.1 localhost $(hostname)" >/etc/hosts
@@ -393,7 +396,9 @@ case "$1" in
     # configure loopback
     ifup lo
 
-    # Set the wifi mac address from values in hnvram.
+    # Set the mac address from values in hnvram.
+    set_mac_from_hnvram wan0 MAC_ADDR1
+    set_mac_from_hnvram lan0 MAC_ADDR2
     set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
     set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
