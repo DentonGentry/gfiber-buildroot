@@ -244,8 +244,8 @@ add_interfaces_to_bridge() {
     while read a b c ip d brd junk; do
       ip addr add $ip broadcast $brd dev br0
     done &&
-    if [ $x = $MOCAIFC ]; then
-      x=$MOCAIFC.0
+    if [ -n "$MOCAIFC" ] && [ $x = $MOCAIFC ]; then
+      x="${MOCAIFC}.0"
     fi &&
     brctl addif br0 $x &&
     ip -o -f inet route list dev $x |
@@ -344,6 +344,16 @@ bridge_down() {
 
 case "$1" in
   start)
+    if is-fiberjack; then
+      local lan_port=$(cat /etc/config/lanport)
+      echo "Starting LAN."
+      ifup lo
+      if [ -n "$lan_port" ]; then
+        ifup $lan_port
+      fi
+      exit
+    fi
+
     if is-tv-box || is-storage-box; then
       MOCAIFC=$(get_moca_iface)
       load_moca_driver
@@ -395,7 +405,7 @@ case "$1" in
     # Configure dhclient with the right hostname etc.
     setup-dhclient
 
-    # configure loopback
+    # Configure loopback
     ifup lo
 
     # Set the mac address from values in hnvram.
@@ -454,6 +464,16 @@ case "$1" in
     ;;
   stop)
     if [ ! -e /tmp/NFS ]; then
+      if is-fiberjack; then
+        local lan_port=$(cat /etc/config/lanport)
+        echo "Stopping LAN."
+        ifdown lo
+        if [ -n "$lan_port" ]; then
+          ifdown $lan_port
+        fi
+        exit
+      fi
+
       if is-spacecast; then
         ifdown lan0
         echo "Shutting down lan0 interface"
