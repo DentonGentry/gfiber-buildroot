@@ -18,6 +18,11 @@ disktest()
   # disk may not be formatted
   sata_blkdev=$(find_sata_blkdev)
 
+  if [ -z "$sata_blkdev" ]; then
+    error="Cannot find hard drive"
+    return 1
+  fi
+
   # run dd non-destuctive read test with several block sizes
   for bs in 32 64 128 256; do
     bytes=$(($bs * 1024))
