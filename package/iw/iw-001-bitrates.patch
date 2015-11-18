@@ -1,0 +1,48 @@
+From 7f148561a4d36f9d3f2574285a488717d83e7e0c Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Wed, 18 Nov 2015 05:58:46 -0800
+Subject: [PATCH] output something rational for tx bitrate.
+
+1. Ensure the buffer will always be initialized.
+   parse_bitrates is passed a pointer to a buffer on the stack. If the
+   rate is zero and no other attributes are set, nothing is printed to
+   the buffer and iw ends up outputting whatever garbage was on the
+   stack.
+
+2. Print *something*
+   If there ss a NL80211_STA_INFO_[TR]X_BITRATE present, then print
+   something for thetx/rx bitrate even if the rate is zero. It is useful
+   to know the difference between no-rate-present and rate-is-zero.
+
+Fixes b/25737028
+---
+ station.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/station.c b/station.c
+index 2b2eef8..51532fa 100644
+--- a/station.c
++++ b/station.c
+@@ -56,6 +56,7 @@ void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
+ 		[NL80211_RATE_INFO_SHORT_GI] = { .type = NLA_FLAG },
+ 	};
+ 
++	buf[0] = '\0';
+ 	if (nla_parse_nested(rinfo, NL80211_RATE_INFO_MAX,
+ 			     bitrate_attr, rate_policy)) {
+ 		snprintf(buf, buflen, "failed to parse nested rate attributes!");
+@@ -66,9 +67,8 @@ void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
+ 		rate = nla_get_u32(rinfo[NL80211_RATE_INFO_BITRATE32]);
+ 	else if (rinfo[NL80211_RATE_INFO_BITRATE])
+ 		rate = nla_get_u16(rinfo[NL80211_RATE_INFO_BITRATE]);
+-	if (rate > 0)
+-		pos += snprintf(pos, buflen - (pos - buf),
+-				"%d.%d MBit/s", rate / 10, rate % 10);
++	pos += snprintf(pos, buflen - (pos - buf),
++			"%d.%d MBit/s", rate / 10, rate % 10);
+ 
+ 	if (rinfo[NL80211_RATE_INFO_MCS])
+ 		pos += snprintf(pos, buflen - (pos - buf),
+-- 
+2.6.0.rc2.230.g3dd15c0
+
