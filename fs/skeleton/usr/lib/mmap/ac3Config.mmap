@@ -22,6 +22,7 @@ open 4 /sys/bus/pci/devices/0000:01:00.0/resource4 0 0x00800000
 # !!! 0xe0000000
 # !!! pci write.l 0.0.0 0x10 0xe0000000
 # !!! pci write.l 0.0.0 0x14 0x0
+# set resource2 and resource4 to match where PCI driver puts them (.../resource)
 write 0 0x00041820 4 0x03ff0031
 write 0 0x00041824 4 0xe0000000
 write 0 0x00041830 4 0x007f0083
@@ -45,36 +46,36 @@ write 0 0x00041834 4 0xe4000000
 #     Marvell>> md e5000000
 #     e5000000: 00008be5 00000003 0000c048 0000b0e8    // Port control
 
-# dump some registers to verify we are talking to the bars
+# notes on writing to registers.  Lines like so:
+#     write 2 0x00000000 4 0x30201200
+# set the upper byte of future writes.  There are 4 address spaces in resource2.
+#     0x00000000 - 0x01ffffff bank0
+#     0x01000000 - 0x01ffffff bank1
+#     0x02000000 - 0x01ffffff bank2
+#     0x03000000 - 0x01ffffff bank3
+# Register 0 sets the msb of the address for the 4 banks.  0x30201200 makes
+# bank0 prefix 0, bank1 prefix 0x12, back2 prefix 0x20, bank3 prefix 0x30.
+# this means a read/write to:
+#     0x00...... gets mapped to 0x00......
+#     0x01...... gets mapped to 0x12......
+#     0x02...... gets mapped to 0x20......
+#     0x03...... gets mapped to 0x30......
+# This allows the small resource2 address space to me mapped to the large PCI space
+
+# set address completion to legacy mode
 write 2 0x00000140 4 0x00018102
-write 2 0x00000000 4 0x30201200
-dump 2 0x01000000 4 64
 
-read 0 0x00040000 4
-read 2 0x00000050 4
-read 4 0x000f8240 4
+read 0 0x00040000 4 
+read 2 0x00000050 4 
+read 4 0x000f8240 4 
 
-# Read AC3 ports status - port 0,4, 24, 25
-write 2 0x00000000 4 0x00001200
-dump 2 0x01000000 4 5
-dump 2 0x01004000 4 5
 
-write 2 0x00000000 4 0x00001200
-dump 2 0x010d8000 4 4
-
-write 2 0x00000000 4 0x00001200
-dump 2 0x010d9000 4 4
-
-# --------ONLY 2 writes to Ingress Policy and Egress Policy  -----------
-write 2 0x00000000 4 0x00001500
-write 2 0x01000000 4 0x12150000
-write 2 0x00000000 4 0x00001d00
-write 2 0x01000000 4 0x1D100000
+# *****************   Start of INIT:  ***********
 
 # Metal fix in SW space
 write 2 0x00000000 4 0x00000600
 write 2 0x010002b0 4 0x8002ffff
-# General Ctrl in SW space
+# General Ctrl in SW space 
 write 2 0x00000000 4 0x00000000
 write 2 0x010000d4 4 0x00110f0f
 # Global Ctrl in SW space
@@ -88,12 +89,10 @@ write 4 0x000f8250 4 0x701fff00
 # Enable Device for Tx and Rx in DFX
 write 4 0x000f800c 4 0x00008003
 
-write 2 0x00000140 4 0x00018102
-
 # ----------------------------------------------------------------------
 # --  Init Ports
 # ----------------------------------------------------------------------
-# -  Port 0 in 1000Base-X        ---------------------------------------
+# -  Port 0 in SGMII   ---------------------------------------
 write 2 0x00000000 4 0x00000200
 write 2 0x01800080 4 0x0005FFFE
 write 2 0x01800080 4 0x0005FFFC
@@ -221,10 +220,10 @@ write 2 0x01000004 4 0x0000DD69
 write 2 0x00000000 4 0x00001200
 write 2 0x01000090 4 0x0000009A
 write 2 0x01000000 4 0x00008BE6
-write 2 0x0100000c 4 0x00009268
+write 2 0x0100000c 4 0x0000B2EC
 write 2 0x01000004 4 0x00000001
-write 2 0x01000008 4 0x0000C048
-write 2 0x01000008 4 0x0000C008
+write 2 0x01000008 4 0x0000C049
+write 2 0x01000008 4 0x0000C009
 write 2 0x00000000 4 0x00000200
 write 2 0x01800080 4 0x0005FF01
 write 2 0x01800080 4 0x0005FF03
@@ -235,7 +234,7 @@ write 2 0x01800080 4 0x0005FF3F
 write 2 0x01800080 4 0x0005FF7F
 write 2 0x01800080 4 0x0005FFFF
 write 2 0x00000000 4 0x00001200
-write 2 0x01000000 4 0x00008BE7
+write 2 0x01000000 4 0x00008BE5
 
 # -  Port 4 in 1000Base-X        ---------------------------------------
 write 2 0x00000000 4 0x00000200
@@ -714,15 +713,4 @@ write 2 0x010d9000 4 0x00000683
 write 2 0x010d9000 4 0x00000683
 write 2 0x010d9018 4 0x0000008C
 write 2 0x010d9018 4 0x0000008E
-
-# Read AC3 ports status - port 0,4, 24, 25
-write 2 0x00000000 4 0x00001200
-dump 2 0x01000000 4 5
-dump 2 0x01004000 4 5
-
-write 2 0x00000000 4 0x00001200
-dump 2 0x010d8000 4 4
-
-write 2 0x00000000 4 0x00001200
-dump 2 0x010d9000 4 4
 

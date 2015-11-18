@@ -1,64 +1,19 @@
 #
-# show config, status and mib counters for ports 0, 4, 24 and 25
+# show mib counters for ports 0, 4, 24 and 25
 #
 
 open 0 /sys/bus/pci/devices/0000:01:00.0/resource0 0 0x00100000
 open 2 /sys/bus/pci/devices/0000:01:00.0/resource2 0 0x04000000
 open 4 /sys/bus/pci/devices/0000:01:00.0/resource4 0 0x00800000
 
-# bank 01 == 04, bank 02 == 09, bank 03 == 12
-write 2 0x00000000 4 0x12090400
-
-echo port 0 config
-dump 2 0x03000000 4 5
-dump 2 0x03000044 4 6
-dump 2 0x03000090 4 1
-
-echo port 4 config
-dump 2 0x03004000 4 5
-dump 2 0x03004044 4 6
-dump 2 0x03004090 4 1
-
-echo try to put port 4 in 1g mode?
-write 2 0x03004000 4 0x8be5
-write 2 0x03004008 4 0xc009
-write 2 0x0300400c 4 0xb3ec
-dump 2 0x03004000 4 5
-
-echo port 24 config
-dump 2 0x03018000 4 5
-dump 2 0x03018044 4 6
-dump 2 0x03018090 4 1
-
-echo port 25 config
-dump 2 0x03019000 4 5
-dump 2 0x03019044 4 6
-dump 2 0x03019090 4 1
-
-echo port 0 status
-dump 2 0x03000010 4 1
-dump 2 0x03000040 4 1
-
-echo port 4 status
-dump 2 0x03004010 4 1
-dump 2 0x03004040 4 1
-
-echo port 24 status
-dump 2 0x030d8000 4 4
-
-echo port 25 status
-dump 2 0x030d9000 4 4
-
-write 2 0x00000000 4 0x12090700
-
-echo mib counters for port 0
-dump 2 0x01010000 4 32
-
-echo mib counters for port 4
-dump 2 0x01010200 4 32
-
-echo mib counters for port 24
-dump 2 0x02300000 4 32
-
-echo mib counters for port 25
-dump 2 0x02320000 4 32
+# Read counters - port 0, 4, 24, 25
+# need to read all 32 to prime next results
+write 2 0x00000000 4 0x00001100
+echo counters port 0 PoE
+dump 2 0x01000000 4 32
+echo counters port 4 SOC
+dump 2 0x01001000 4 32
+echo counters port 24 88x2011
+dump 2 0x01006000 4 32
+echo counters port 25 sfp+
+dump 2 0x01006400 4 32
