@@ -1,0 +1,40 @@
+#!/bin/sh
+# Check whether an interface has an internet connection by pinging both
+# HonestDNS servers over both IPV4 and IPV6. If either succeeds, we  must be
+# connected to the internet.
+
+HONEST_DNS="8.8.4.4 8.8.8.8"
+HONEST_DNS6="2001:4860:4860::8844 2001:4860:4860::8888"
+
+usage() {
+	echo "Check whether an interface is connected to the internet."
+	echo ""
+	echo "connection_check -I <interface>"
+}
+
+while getopts "I:" option
+do
+	case $option in
+	I)
+		interface="$OPTARG" ;;
+
+	*)
+		usage
+		exit 99 ;;
+	esac
+done
+
+if [ -z "$interface" ]; then
+	usage
+	exit 99
+fi
+
+for IP in $HONEST_DNS; do
+	if ping $IP -c1 -I "$interface" &>/dev/null; then exit 0; fi
+done
+
+for IP in $HONEST_DNS6; do
+	if ping6 $IP -c1  -I "$interface" &>/dev/null; then exit 0; fi
+done
+
+exit 1
