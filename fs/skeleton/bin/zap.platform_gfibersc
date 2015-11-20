@@ -71,6 +71,7 @@ for f in /etc/init.d/S[89]* ; do
 done
 
 # force kill chroot binaries, just in case.
+pkill -9 -f buffet_monitor
 pkill -9 -f buffet
 pkill -9 -f cryptohomed
 pkill -9 -f chapsd
