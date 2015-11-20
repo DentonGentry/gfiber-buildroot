@@ -1,0 +1,30 @@
+#
+# show registers in 88x3220
+#
+
+open 0 /sys/bus/pci/devices/0000:01:00.0/resource0 0 0x00100000
+open 2 /sys/bus/pci/devices/0000:01:00.0/resource2 0 0x04000000
+open 4 /sys/bus/pci/devices/0000:01:00.0/resource4 0 0x00800000
+
+write 2 0x00000000 4 0x00000000
+
+echo # vendorid
+mread 2 0x01040008 0x01040000 7 1 0x0002 1
+
+echo # fw version
+mread 2 0x01040008 0x01040000 7 1 0xc011 2
+
+echo # boot status
+mread 2 0x01040008 0x01040000 7 1 0xc050 1
+
+echo # mode config, port control
+mread 2 0x01040008 0x01040000 7 31 0xf000 2
+
+echo # mode config, port control
+mread 2 0x01040008 0x01040000 7 3 0x1000 2
+
+echo # 10GBase-R PCS Status 1, 2
+mread 2 0x01040008 0x01040000 7 3 0x1020 2
+
+echo # 10GBase-R Interrupt status, real time status
+mread 2 0x01040008 0x01040000 7 3 0x9001 2
