@@ -61,6 +61,11 @@ define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
 	$(INSTALL) -D $(@D)/bin/libnexus_client.so $1/usr/lib/libnexus_client.so
 	$(INSTALL) -D $(@D)/bin/libnxclient.so $1/usr/lib/libnxclient.so
+	if [ -f $(@D)/bin/sage_os_app.bin ]; then \
+	  mkdir -p $1/usr/lib/sage_firmware; \
+	  $(INSTALL) -D $(@D)/bin/sage_os_app.bin $1/usr/lib/sage_firmware; \
+	  $(INSTALL) -D $(@D)/bin/sage_bl.bin $1/usr/lib/sage_firmware; \
+	fi
 endef
 
 define BCM_NEXUS_INSTALL_STAGING_CMDS
