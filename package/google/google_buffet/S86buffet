@@ -52,8 +52,6 @@ start() {
       # Sanity check: DBus socket has to be present.
       wait-until-created /chroot/chromeos/var/run/dbus/system_bus_socket
       babysit_start 10 "$APP" "chroot /chroot/chromeos $BINARY" "$FLAGS"
-      [ $? -ne 0 ] && echo "Failed to start buffet..." && exit 1
-      echo "Buffet started successfully"
       if [ ! -n "$(pgrep -f buffet_monitor)" ]; then
         buffet_monitor 7200 &
       fi
