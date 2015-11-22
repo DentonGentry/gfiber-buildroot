@@ -361,6 +361,8 @@ case "$1" in
         echo "Initializing AlleyCat3 10G switch..."
         echo 1 > $pci/enable
         mmap -q /usr/lib/mmap/ac3Config.mmap
+        echo "Initializing 88x2011 transceiver..."
+        mmap -q /usr/lib/mmap/2011Config.mmap
       fi
     fi
 
