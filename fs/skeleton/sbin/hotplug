@@ -49,3 +49,16 @@ case "$SUBSYSTEM-$ACTION" in
     echo -1 >/sys/$DEVPATH/loading
     ;;
 esac
+
+# DirectFB apps listen for an AF_UNIX message for hotplug events, which
+# dfb_input_hotplug sends using the ACTION and DEVPATH in the environment.
+if [ "$SUBSYSTEM" = "input" ] && [ "$ACTION" = "add" -o "$ACTION" = "remove" ]; then
+  for dir in /usr/local/bin/directfb/* ; do
+    if [ -d "$dir" ]; then
+      export PATH="$PATH":"$dir"
+    fi
+  done
+  if runnable dfb_input_hotplug; then
+    dfb_input_hotplug
+  fi
+fi
