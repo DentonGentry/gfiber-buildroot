@@ -1,0 +1,5 @@
+config BR2_PACKAGE_MV_CPSS
+	bool "mv_cpss"
+	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
+	help
+	  Builds cpss switch config tool for Marvell boards
