@@ -5,18 +5,24 @@
 
 HONEST_DNS="8.8.4.4 8.8.8.8"
 HONEST_DNS6="2001:4860:4860::8844 2001:4860:4860::8888"
+DEFAULT_ACS="acs.prod.gfsvc.com"
 
 usage() {
 	echo "Check whether an interface is connected to the internet."
+	echo "With -a, checks for access to the ACS instead."
 	echo ""
 	echo "connection_check -I <interface>"
+	echo "connection_check -a -I <interface>"
 }
 
-while getopts "I:" option
+while getopts "I:a" option
 do
 	case $option in
 	I)
 		interface="$OPTARG" ;;
+
+	a)
+		ACS=true ;;
 
 	*)
 		usage
@@ -27,6 +33,13 @@ done
 if [ -z "$interface" ]; then
 	usage
 	exit 99
+fi
+
+if [ $ACS ]; then
+	if ping6 $DEFAULT_ACS -c1 -I "$interface" &>/dev/null; then exit 0; fi
+	if ping $DEFAULT_ACS -c1 -I "$interface" &>/dev/null; then exit 0; fi
+
+	exit 1
 fi
 
 for IP in $HONEST_DNS; do
