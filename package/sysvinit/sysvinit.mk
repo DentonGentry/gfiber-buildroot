@@ -25,7 +25,7 @@ define SYSVINIT_BUILD_CMDS
 endef
 
 define SYSVINIT_INSTALL_TARGET_CMDS
-	for x in halt init shutdown; do \
+	for x in halt init; do \
 		install -D -m 0755 $(@D)/src/$$x $(TARGET_DIR)/sbin/$$x || exit 1; \
 	done
 	# Override Busybox's inittab with an inittab compatible with
