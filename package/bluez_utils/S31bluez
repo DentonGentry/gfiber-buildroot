@@ -82,7 +82,7 @@ case "$1" in
 
     if [ "$(cat /etc/platform)" = GFHD100 ]; then
       # BCM20702 USB Bluetooth chip
-      wl reset_bt_chip 2>&1
+      wl reset_bt_chip 1 2>&1
       sleep 1  # chip needs time to stabilize, else it will be flakey
     fi
 
