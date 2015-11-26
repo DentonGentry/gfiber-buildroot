@@ -13,9 +13,6 @@ BSA_DEVICES_FILE="/user/bsa/bt_devices.xml"
 # Bluetooth is needed only on TV Box
 ! is-tv-box && exit 0
 
-# implemented in Blue/Z for GFRM100.
-register_experiment BluezUnplugNoKeypress
-
 # in debug mode, support multiple BT adapters
 if [ -f /tmp/DEBUG ]; then
   hci_ifaces=$(cd /sys/kernel/debug/bluetooth; echo hci* 2> /dev/null)

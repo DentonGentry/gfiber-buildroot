@@ -67,6 +67,7 @@ BLUEZ_UTILS_CONF_OPT +=	\
 endif
 
 define BLUEZ_UTILS_TARGET_TWEAKS
+	mv $(TARGET_DIR)/usr/lib/bluez/test/unplug-GFRM100 $(TARGET_DIR)/usr/bin/
 	mv $(TARGET_DIR)/usr/lib/bluez/test/* $(TARGET_DIR)/usr/bin/bluetooth/
 	rm -rf $(TARGET_DIR)/usr/lib/bluez/
 	rm -rf $(TARGET_DIR)/user/bluez/
