@@ -11,13 +11,15 @@ else
 BCM_ARCH=arm
 endif
 
-PLAT_NOQUOTES=$(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM) | sed -e s/\"//g)
 ifeq ($(findstring $(PLAT_NOQUOTES), 97425 97428), $(PLAT_NOQUOTES))
 BCM_CMNDRM_DIR=Zeus20
 endif
 ifeq ($(findstring $(PLAT_NOQUOTES), 97250 97252 97439), $(PLAT_NOQUOTES))
 BCM_CMNDRM_DIR=Zeus4x
+CPE_25=y
 #BCM_MAKEFLAGS += NEXUS_SECURITY_SUPPORT=n
+else
+CPE_25=n
 endif
 
 ifeq ($(BCM_CMNDRM_DIR),,)
@@ -37,6 +39,10 @@ endef
 
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt all
+	if [ $(CPE_25) = y ]; then \
+		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai install; \
+		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/common_drm install; \
+	fi
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs install
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/livemedia all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/build all
