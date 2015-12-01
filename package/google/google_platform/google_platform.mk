@@ -109,6 +109,10 @@ endif
 
 PUB_KEY=gfiber
 
+ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfsc100")
+PUB_KEY=gfibersc
+endif
+
 ifneq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),"")
 PUB_KEY := $(PUB_KEY)-$(patsubst "%",%,$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
 endif
