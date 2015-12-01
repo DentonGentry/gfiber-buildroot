@@ -3,9 +3,9 @@
 # iperf3
 #
 #############################################################
-IPERF3_VERSION = 3.0.11
+IPERF3_VERSION = 3.1.1
 IPERF3_SOURCE = iperf-$(IPERF3_VERSION).tar.gz
-IPERF3_SITE = https://github.com/esnet/iperf/releases
+IPERF3_SITE = http://downloads.es.net/pub/iperf/
 
 IPERF3_AUTORECONF = YES
 

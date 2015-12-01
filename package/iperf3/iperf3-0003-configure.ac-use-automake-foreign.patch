@@ -8,18 +8,18 @@ Subject: [PATCH 3/3] configure.ac: use automake foreign
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index de0f8ab..449339f 100644
+index c85b907..135a01a 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -32,7 +32,7 @@ AC_CONFIG_AUX_DIR(config)
+@@ -33,7 +33,7 @@ AC_CONFIG_AUX_DIR(config)
  
  
  # Initialize the automake system
 -AM_INIT_AUTOMAKE
 +AM_INIT_AUTOMAKE([foreign])
- 
  AM_MAINTAINER_MODE
- AM_CONFIG_HEADER(src/config.h)
+ AM_CONFIG_HEADER(src/iperf_config.h)
+ 
 -- 
-2.2.0.rc0.207.ga3a616c
+2.6.0.rc2.230.g3dd15c0
 
