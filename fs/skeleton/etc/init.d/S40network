@@ -3,6 +3,8 @@
 
 register_experiment BigInitRwnd
 register_experiment NoSTP
+register_experiment TVBoxNoGigEthernet
+register_experiment TcpWmem1Meg
 
 
 irq_affinity() {
@@ -462,6 +464,14 @@ case "$1" in
       # invalid access caused by powered down core
       enable_hw_offloads eth0
       enable_hw_offloads $MOCAIFC
+    fi
+    if is-tv-box && experiment TVBoxNoGigEthernet; then
+      # advertise only 10 & 100 at half and full duplex.
+      ethtool -s eth0 advertise 0xf
+    fi
+    if is-storage-box && experiment TcpWmem1Meg; then
+      # Values from GFRG210, applied to all Storage Boxes.
+      echo "4096 16384 1019904" >/proc/sys/net/ipv4/tcp_wmem
     fi
     ;;
   stop)
