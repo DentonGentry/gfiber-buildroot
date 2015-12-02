@@ -137,19 +137,6 @@ load_wifi_drivers() {
     # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
     # the production firmware at all, or it barfs.
 
-    # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
-    # values during enumeration. Remove the device and rescan to force
-    # re-enumeration.
-    # TODO(mikemu): Find a better way to do this.
-    for d in /sys/devices/pci*/*/vendor; do
-      if [ -f "$d" ] && [ "$(cat $d)" = "0x1bb5" ]; then
-        echo 1 > "$(dirname $d)"/remove
-        sleep 1
-        echo 1 > /sys/bus/pci/rescan
-        break
-      fi
-    done
-
     # WARNING: Keep ath9k first, ath10k second, other wifi stuff later so that
     # the wifi device ordering is constant.
     modprobe -a ath9k ath10k_pci mwl8k 2>/dev/null
@@ -158,7 +145,22 @@ load_wifi_drivers() {
     modprobe mwifiex $mwifi_param 2>/dev/null
 
     modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
-    modprobe qdpc-host 2>/dev/null
+
+    # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
+    # values during enumeration. Remove the device and rescan to force
+    # re-enumeration.
+    # TODO(mikemu): Find a better way to do this.
+    pci="/sys/bus/pci/devices/0001:01:00.0"
+    if [ -d "${pci}" ]; then
+      vendor_id="$(cat "${pci}"/vendor)"
+      device_id="$(cat "${pci}"/device)"
+      if [ "${vendor_id}" = "0x1bb5" ] && [ "${device_id}" = "0x0008" ]; then
+        echo 1 > "${pci}"/remove
+        sleep 1
+        echo 1 > /sys/bus/pci/rescan
+        modprobe qdpc-host 2>/dev/null
+      fi
+    fi
 
     # Enable wifi beacon debug logging.
     if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
