@@ -27,9 +27,15 @@ case "$1" in
 
         (
          wait-until-created /var/run/gpio-mailbox
-         startupvideo /tmp/svpipe \
-           /usr/sv/fiber-logo-animation.ts 2 0 256 257 0 \
-           /usr/sv/connecting.ts 2 0 256 0 1
+
+         # TODO(jnewlin):  startupvideo currently broken on gfhd254, put this
+         # back when startupvideo is fixed.  CSP#999394
+         platform=$(cat /etc/platform)
+         if [ "$platform" != GFHD254 ]; then
+           startupvideo /tmp/svpipe \
+             /usr/sv/fiber-logo-animation.ts 2 0 256 257 0 \
+             /usr/sv/connecting.ts 2 0 256 0 1
+         fi
 
          # in case sv crashes early, make sure ntp is synced
          wait-until-created /tmp/time.synced
