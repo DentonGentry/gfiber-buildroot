@@ -10,6 +10,19 @@ log()
 }
 
 
+SERIAL_PORT=/dev/ttyS0
+
+log2serial()
+{
+  if [ "$(stty -F ${SERIAL_PORT} speed)" != "115200" ] ; then
+    stty -F ${SERIAL_PORT} sane
+    stty -F ${SERIAL_PORT} 115200
+  fi
+
+  echo "$@" > ${SERIAL_PORT}
+}
+
+
 findall()
 {
   local path=
@@ -66,6 +79,7 @@ try_install()
           if [ "$(basename $lastimg)" = "$current_ver.gi" ]; then
             log "  already installed; skipping."
           elif [ -n "$lastimg" ]; then
+            log2serial "USB upgrade from $current_ver to $(basename $lastimg)"
             log "  installing $(basename $lastimg)"
             leds 15 0 15 0 15 0  # super noisy leds while doing update
             if ginstall -t "$lastimg" -p other; then
@@ -77,6 +91,7 @@ try_install()
             fi
             umount /tmp/installsrc
             log "Please remove USB and reboot."
+            log2serial "Please remove USB and reboot."
             while sleep 10; do
               echo -n '.'
             done
