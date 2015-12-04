@@ -148,21 +148,27 @@ load_wifi_drivers() {
 
     modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
 
-    # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
-    # values during enumeration. Remove the device and rescan to force
-    # re-enumeration.
-    # TODO(mikemu): Find a better way to do this.
-    pci="/sys/bus/pci/devices/0001:01:00.0"
-    if [ -d "${pci}" ]; then
-      vendor_id="$(cat "${pci}"/vendor)"
-      device_id="$(cat "${pci}"/device)"
-      if [ "${vendor_id}" = "0x1bb5" ] && [ "${device_id}" = "0x0008" ]; then
-        echo 1 > "${pci}"/remove
-        sleep 1
-        echo 1 > /sys/bus/pci/rescan
-        modprobe qdpc-host 2>/dev/null
+    platform="$(cat /etc/platform)"
+    for pci in /sys/bus/pci/devices/*; do
+      if [ -d "${pci}" ]; then
+        vendor_id="$(cat "${pci}"/vendor)"
+        device_id="$(cat "${pci}"/device)"
+        if [ "${vendor_id}" = "0x1bb5" ] && [ "${device_id}" = "0x0008" ]; then
+          # Quantenna PCIe module has a bug where the PCIe BARs have the wrong
+          # values during enumeration. Remove the device and rescan to force
+          # re-enumeration.
+          # TODO(mikemu): Find a better way to do this.
+          # TODO(jnewlin): On BCM7252, this causes a kernel panic but is not
+          # needed.
+          if [ "${platform}" != "GFHD254" ]; then
+            echo 1 > "${pci}"/remove
+            sleep 1
+            echo 1 > /sys/bus/pci/rescan
+          fi
+          modprobe qdpc-host 2>/dev/null
+        fi
       fi
-    fi
+    done
 
     # Enable wifi beacon debug logging.
     if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
