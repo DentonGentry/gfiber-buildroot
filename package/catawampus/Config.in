@@ -1,8 +1,9 @@
 config BR2_PACKAGE_CATAWAMPUS
 	bool "catawampus"
-	select BR2_PACKAGE_PY_CURL
+	select BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_PYTHON_NETIFACES
 	select BR2_PACKAGE_PYTHON_ZLIB
-	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_PY_CURL
+	select BR2_PACKAGE_PY_YAML
 	help
 	  tr-69 management agent.
