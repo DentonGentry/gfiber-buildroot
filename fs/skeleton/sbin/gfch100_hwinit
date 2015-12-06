@@ -1,0 +1,60 @@
+#! /bin/sh
+
+#
+# reset and initialize the marvell parts in chimera
+#
+
+pci="/sys/bus/pci/devices/0000:01:00.0"
+if [ ! -d $pci ]; then
+  echo "$0: pci device '$pci' not found" >&2
+  exit 1
+fi
+
+vendor_id="$(cat ${pci}/vendor)"
+device_id="$(cat ${pci}/device)"
+if [ "$vendor_id" != "0x11ab" ] || [ "$device_id" != "0xf410" ]; then
+  echo "$0: pci vendor_id or device_id mismatch" >&2
+  exit 1
+fi
+
+# reset phys and switch
+reset="pcie0_reset 2011_reset 3220_reset sd_reset"
+for n in $reset; do
+  echo 1 >/dev/gpio/$n/value
+done
+msleep 100
+for n in $reset; do
+  echo 0 >/dev/gpio/$n/value
+done
+
+# enable the switch
+echo 1 >$pci/enable
+
+# set up switch config
+cat >/tmp/config.txt <<EOF
+  cpssInitSystem 19,2,0
+  config
+    interface ethernet 0/0
+      speed 1000 mode SGMII
+    exit
+
+    interface ethernet 0/4
+      speed 1000 mode 1000Base_X
+    exit
+
+    interface range ethernet 0/24,0/25
+      speed 10000 mode SR_LR
+    exit
+  end
+EOF
+
+# start cpss to load vlans, ports (uses ./config.txt)
+# TODO(edjames) keep it running under babysitter instead of killing it
+pkill cpss
+(cd /tmp && cpss -tty &)
+sleep 6
+pkill cpss
+
+# init 88x2011 (xfi/xaui transceiver)
+mmap /usr/lib/mmap/2011Config.mmap
+
