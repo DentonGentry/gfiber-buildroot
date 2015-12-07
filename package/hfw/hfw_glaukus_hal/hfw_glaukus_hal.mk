@@ -36,6 +36,17 @@ define HFW_GLAUKUS_HAL_BUILD_CMDS
 	$(HFW_GLAUKUS_HAL_MAKE) -C $(@D) all
 endef
 
+HFW_GLAUKUS_HAL_ETCDIR = $(TARGET_DIR)/etc/gfch100
+
+define HFW_GLAUKUS_HAL_INSTALL_TARGET_CMDS
+	$(INSTALL) -m 0755 -D $(@D)/build/modemctl $(TARGET_DIR)/usr/bin/modemctl
+	mkdir -p $(HFW_GLAUKUS_HAL_ETCDIR)
+	$(INSTALL) -m 0644 -D $(@D)/config/chimera_modem.properties $(HFW_GLAUKUS_HAL_ETCDIR)/modem.properties
+	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/k60_firmware/bcm85100mc.fw $(HFW_GLAUKUS_HAL_ETCDIR)/bcm85100mc.fw
+	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/binfile/default.bin $(HFW_GLAUKUS_HAL_ETCDIR)/default.bin
+	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/binfile/default.bin $(HFW_GLAUKUS_HAL_ETCDIR)/loopback.bin
+endef
+
 define HFW_GLAUKUS_HAL_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 0644 -D $(@D)/build/libhal.a $(STAGING_DIR)/usr/lib/libhal.a
 endef
