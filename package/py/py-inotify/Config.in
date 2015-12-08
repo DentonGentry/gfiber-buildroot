@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PY_INOTIFY
+	bool "py-inotify"
+	depends on BR2_PACKAGE_PYTHON
+	help
+	  py-inotify Python wrapper for Linux inotify
