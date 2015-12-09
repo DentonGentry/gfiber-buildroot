@@ -40,7 +40,9 @@ case "$1" in
     if runnable wifi_files; then
       babysit 30 wifi_files 2>&1 | logos wifistatus &
     fi
-    if runnable apman; then
+    if is-wireless-client; then
+      babysit 30 conman 2>&1 | logos conman &
+    elif runnable apman; then
       babysit 30 apman 2>&1 | logos apman &
     fi
     if is-network-box; then

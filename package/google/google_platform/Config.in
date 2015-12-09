@@ -93,6 +93,14 @@ config BR2_PACKAGE_GOOGLE_KEY_SUFFIX
 	help
 	  Suffix to select a different set of signing keys.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_CONNECTION_MANAGER
+	bool "include connection manager"
+	default n
+	select BR2_PACKAGE_PY_INOTIFY
+	select BR2_PACKAGE_PY_WPACTRL
+	help
+	  Connection manager for devices which can operate entirely over Wi-Fi.
+
 config BR2_PACKAGE_GOOGLE_TEST
 	bool "Include Test Packages"
 	default n
