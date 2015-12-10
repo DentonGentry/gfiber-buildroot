@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device is enabled as a wireless client.
+
+[ -e /bin/conman ]
