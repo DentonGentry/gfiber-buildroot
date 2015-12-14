@@ -51,6 +51,9 @@ is_link_up() {
     # For storage boxes (the ones that don't have a wan0), the MoCA
     # link should never be upstream, so count only the ethernet.
     is_interface_up eth0
+  elif is-ptp; then
+    is_interface_up eth0 ||
+    is_interface_up eth1
   else
     echo "Unknown device type; assuming link is down." >&2
     false
