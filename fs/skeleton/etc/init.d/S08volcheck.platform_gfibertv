@@ -188,7 +188,10 @@ umount_ubifs()
 
 mount_drmfs_ro()
 {
-  mount -t ext4 -o ro,defaults $1 $2 || return 1
+  # TODO(jnewlin): Making this mount rw for a few builds.
+  #  The first batch of EVT2 boards has unbound keyboxes so we need
+  #  this writable so the keybox gets bound when oregano starts.
+  mount -t ext4 -o rw,defaults $1 $2 || return 1
 }
 
 # $1 : primary drmfs
