@@ -170,6 +170,24 @@ endif # gfex250 gffrenzy
 # Armada/uboot - GFCH100 (chimera)
 #
 ifneq ($(findstring $(PLAT_NAME),gfch100),)
+LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+_BRUNO_LOADER = u-boot-spi-prod
+ROOTFS_GINSTALL_TYPE=prod
+else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
+_BRUNO_LOADER = u-boot-spi-openbox
+ROOTFS_GINSTALL_TYPE=openbox
+else
+_BRUNO_LOADER = u-boot-spi-dev
+ROOTFS_GINSTALL_TYPE=unlocked
+endif
+
+BRUNO_LOADER     := $(wildcard $(LOADER_DIR)/$(_BRUNO_LOADER).bin)
+BRUNO_LOADER_SIG := $(wildcard $(LOADER_DIR)/$(_BRUNO_LOADER).sig)
+ifneq ($(BRUNO_LOADER),)
+BRUNO_LOADERS_V3_V4 := loader.img loader.sig
+endif
+
 ROOTFS_GINSTALL_KERNEL_FILE = uImage
 OPTIMUS_SIGNING=y
 BUILD_UIMAGE=y
