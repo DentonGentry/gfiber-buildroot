@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_LIBGEP
+        bool "google_libgep"
+        select BR2_PACKAGE_PROTOBUF
+        help
+          Builds the libgep libraries (libgepclient.a, libgepserver.a)
