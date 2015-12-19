@@ -109,7 +109,7 @@ ifneq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
 # fiber jack kernel is too old for the new-style loguploader for now
 BUILD_LOGUPLOAD=y
 # Fiber Jack toolchain doesn't support -std=c++11
-BUILD_SPEEDTEST=n
+BUILD_SPEEDTEST=y
 endif
 
 PUB_KEY=gfiber
