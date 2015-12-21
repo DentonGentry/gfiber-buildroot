@@ -2,10 +2,11 @@
 
 #
 # Configure GFRG2X0 QCA8337N switch:
-# - Enabling hardware IGMP snooping of join/leave requests to avoid multicast
-#   flooding
 # - Disable flow control on port 0 (Mindspeed C2K SoC)
 #
+
+. /etc/utils.sh
+register_experiment RgLanNoFlowcontrol
 
 disable_multicast_flood_cmds()
 {
@@ -49,6 +50,16 @@ case "$1" in
       {
         #disable_multicast_flood_cmds           # commented out for for b/16856861"
         disable_flowctrl_port0_cmds
+        if experiment RgLanNoFlowcontrol; then
+          echo port flowCtrlforcemode set 1 enable
+          echo port rxfcstatus set 1 disable
+          echo port flowCtrlforcemode set 2 enable
+          echo port rxfcstatus set 2 disable
+          echo port flowCtrlforcemode set 3 enable
+          echo port rxfcstatus set 3 disable
+          echo port flowCtrlforcemode set 4 enable
+          echo port rxfcstatus set 4 disable
+        fi
         echo quit
       } | ssdk_sh 2>&1 | logos switch
     fi
