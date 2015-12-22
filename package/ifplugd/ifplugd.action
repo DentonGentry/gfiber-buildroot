@@ -25,10 +25,16 @@ case "$action" in
         run-dhclient wan0.2
       fi
     fi
+    if is-tv-box && is-wireless-client && [ "$iface" = eth0 ]; then
+      echo 1 > /tmp/conman/ethernet
+    fi
     ;;
   down)
     if [ "$iface" = pon0 ]; then
       ethtool -r eth0
+    fi
+    if is-tv-box && is-wireless-client && [ "$iface" = eth0 ]; then
+      echo 0 > /tmp/conman/ethernet
     fi
     ;;
   *)

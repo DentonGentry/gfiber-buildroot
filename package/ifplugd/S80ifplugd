@@ -10,6 +10,10 @@ elif is-spacecast; then
 elif is-network-box; then
   IFNAME=wan0
   APIMODE="--api-mode=iff"
+elif is-tv-box && is-wireless-client; then
+  IFNAME=eth0
+  APIMODE="--api-mode=iff"
+  mkdir -p /tmp/conman
 fi
 
 start()
