@@ -57,7 +57,8 @@ define ROOTFS_GINSTALL_CMD
 	 echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
 	 echo -n 'rootfs.sqsh-sha1: ' && sha1sum rootfs.sqsh | cut -c1-40;) >>MANIFEST && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
-		MANIFEST loader.img loader.sig kernel.img rootfs.sqsh
+		MANIFEST loader.img loader.sig kernel.img rootfs.sqsh && \
+	ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))

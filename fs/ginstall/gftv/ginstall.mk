@@ -317,7 +317,8 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 			$(ROOTFS_GINSTALL_MANIFEST) \
 			$(BRUNO_LOADERS_V3_V4) \
 			kernel.img \
-			rootfs.img; \
+			rootfs.img && \
+		ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi; \
 	fi
 endef
 
@@ -345,7 +346,8 @@ define ROOTFS_GINSTALL_CMD_V2
 		version \
 		$(BRUNO_LOADERS_V2) \
 		vmlinuz \
-		rootfs.squashfs
+		rootfs.squashfs && \
+	ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi
 endef
 
 ifeq ($(BR2_TARGET_ROOTFS_GINSTALL_V3)$(BR2_TARGET_ROOTFS_GINSTALL_V4),y)
