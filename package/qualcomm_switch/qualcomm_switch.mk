@@ -47,6 +47,7 @@ define QUALCOMM_SWITCH_INSTALL_TARGET_CMDS
 		PYTHONPATH=$(TARGET_PYTHONPATH) \
 		$(HOST_DIR)/usr/bin/python setup.py install \
 			--prefix=$(TARGET_DIR)/usr
+	$(INSTALL) -m 0755 package/qualcomm_switch/S42switch $(TARGET_DIR)/etc/init.d
 endef
 
 $(eval $(call GENTARGETS))
