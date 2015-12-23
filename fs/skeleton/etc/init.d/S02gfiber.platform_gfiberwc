@@ -21,6 +21,9 @@ ulimit -c 49152
 
 case "$1" in
   start)
+    # Do this before gpio-mailbox
+    update-gpio-links
+
     babysit 1 gpio-mailbox 2>&1 | logos gpio-mailbox &
     wait-until-created /var/run/gpio-mailbox
     pid_gpio_mailbox=$(pidof gpio-mailbox)

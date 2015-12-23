@@ -1,0 +1,60 @@
+# see https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
+#
+# format of /etc/gpios file
+#   model gpio name active_low edge direction
+#
+#   model: /etc/platform names, comma separated
+#   gpio: 0-63 or more
+#   name: name of gpio to put in /dev/gpio
+#   active_low: 0 or 1, inverts value and edge for read and write
+#   edge: none rising falling both
+#   direction: in out low high (low and high are out+value=0 and out+value=1)
+#
+# note we do not set value file, use high and low for that so it is atomic
+#
+# model, gpio and name are required, others are optional
+#
+# Examples:
+#
+# configure but don't change value
+#     GFCH100 12 led_red 0 none out
+#
+# interrupt on 1->0 falling (rising inverted)
+#   GFCH100 31 reset_button 1 rising in
+#
+# set as output & low at same time (take out of reset)
+#   GFCH100 12 reset 1 none high
+#
+# just enable the gpio and create the link
+#   GFCH100 5 3220_reset
+#
+
+#model  gpio    name            act_low edge    direction/value
+
+GFCH100 6       tpm_int         1       rising  -
+GFCH100 7       mcu_gpio1       -       -       -
+GFCH100 9       mcu_gpio3       -       -       -
+GFCH100 11      1322_int        1       rising  -
+GFCH100 12      pcie0_reset     1       -       high
+GFCH100 13      3220_int        1       rising  -
+GFCH100 14      k60_i2c_int     1       rising  -
+GFCH100 15      k60_gpio        -       -       -
+GFCH100 16      85100_int       1       rising  -
+GFCH100 17      1322_reset      1       -       high
+GFCH100 18      mcu_gpio2       -       -       -
+GFCH100 19      2011_int        1       rising  -
+GFCH100 20      mcu_reset       1       -       high
+GFCH100 29      3220_reset      1       -       high
+GFCH100 30      led_activity    1       -       high
+GFCH100 31      led_red         1       -       low
+GFCH100 32      2011_reset      1       -       high
+GFCH100 37      sfp_mod_abs     -       -       -
+GFCH100 38      sfp_tx_disable  -       -       -
+GFCH100 39      sfp_tx_fault    -       -       -
+GFCH100 40      sfp_rx_los      -       -       -
+GFCH100 44      k60_reset       1       -       high
+GFCH100 45      k60_spi_ready   -       -       -
+GFCH100 45      k60_spi_int     1       rising  -
+GFCH100 47      sd_reset        1       -       high
+GFCH100 56      modem_fc_int    1       rising  -
+
