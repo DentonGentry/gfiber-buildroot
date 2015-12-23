@@ -45,7 +45,8 @@ define ROOTFS_GINSTALL_CMD
 	(echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
 	 echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40;) >>manifest && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
-		manifest version loader.img loader.sig kernel.img
+		manifest version loader.img loader.sig kernel.img && \
+	ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi
 endef
 
 $(eval $(call ROOTFS_TARGET,ginstall))
