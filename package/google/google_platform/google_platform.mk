@@ -108,8 +108,15 @@ endif
 ifneq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
 # fiber jack kernel is too old for the new-style loguploader for now
 BUILD_LOGUPLOAD=y
-# Fiber Jack toolchain doesn't support -std=c++11
+endif
+
 BUILD_SPEEDTEST=y
+ifeq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
+# Fiber Jack toolchain doesn't support -std=c++11
+BUILD_SPEEDTEST=n
+else ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfch100")
+# Avanta toolchain doesn't support -std=c++11
+BUILD_SPEEDTEST=n
 endif
 
 PUB_KEY=gfiber
