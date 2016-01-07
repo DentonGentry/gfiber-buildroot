@@ -1,0 +1,36 @@
+From 84268a00275a4ba639cf1236b4b42dcdb32b42d6 Mon Sep 17 00:00:00 2001
+From: Richard Frankel <rofrankel@google.com>
+Date: Wed, 6 Jan 2016 18:45:54 -0500
+Subject: [PATCH] Removes exceptions caused by close's call to detach.
+
+If wpa_supplicant is closed (and therefore its control socket goes
+away), WPACtrl.detach will raise an exception.  Because the underlying
+C object's destructor calls detach, this results in an exception that
+occurs during garbage collection, causing the Python program to crash
+in a way that is hard or impossible to avoid.
+---
+ wpactrl.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/wpactrl.c b/wpactrl.c
+index 1e4ecc9..4c8c5e7 100755
+--- a/wpactrl.c
++++ b/wpactrl.c
+@@ -289,8 +289,13 @@ static PyObject* WPACtrl_scanresults(WPACtrl* self)
+ static void WPACtrl_close(WPACtrl* self)
+ {
+ 	if (self->ctrl_iface) {
+-		if (self->attached == 1)
++		if (self->attached == 1) {
++			int no_previous_exception = PyErr_Occurred() == NULL;
+ 			WPACtrl_detach(self);
++			if (no_previous_exception && PyErr_Occurred()) {
++				PyErr_Restore(NULL, NULL, NULL);
++			}
++		}
+ 
+ 		wpa_ctrl_close(self->ctrl_iface);
+ 		self->ctrl_iface = NULL;
+-- 
+2.6.0.rc2.230.g3dd15c0
+
