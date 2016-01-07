@@ -47,7 +47,7 @@ ifeq ($(BR2_PACKAGE_BLUEZ_UTILS),y)
 ifeq ($(BR2_PACKAGE_UTIL_LINUX),y)
 BUILD_IBEACON=y
 GOOGLE_PLATFORM_DEPENDENCIES += bluez_utils util-linux
-HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-bluez_utils
+HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-bluez_utils host-util-linux
 endif
 endif
 
