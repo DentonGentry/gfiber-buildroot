@@ -165,7 +165,7 @@ load_wifi_drivers() {
             sleep 1
             echo 1 > /sys/bus/pci/rescan
           fi
-          modprobe qdpc-host 2>/dev/null
+          modprobe qdpc-host ethaddr=02:00:00:00:00:00 2>/dev/null
         fi
       fi
     done
@@ -189,6 +189,11 @@ set_mac_from_hnvram() {
   local DEV="$1"
   local VAR_NAME="$2"
   if [ -h /sys/class/net/$DEV ]; then
+    # If $DEV is a Quantenna device, /bin/wifi will set the MAC address of the
+    # underlying interface instead of the PCIe interface.
+    if [ "$(cat /sys/class/net/$DEV/device/vendor)" = "0x1bb5" ]; then
+      return 0
+    fi
     local addr="$(hnvram -qr "$VAR_NAME")"
     if [ -n "$addr" ]; then
       echo "Setting $DEV mac address to $addr"
