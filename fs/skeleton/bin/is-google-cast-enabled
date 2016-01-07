@@ -2,4 +2,6 @@
 #
 # Returns 0 (true) if Google Cast is supported on this device.
 
-[ -f /chrome/cast_shell ]
+. /etc/utils.sh
+
+is-google-cast-available && experiment EnableCastCPE
