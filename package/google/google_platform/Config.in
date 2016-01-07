@@ -61,6 +61,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR
 	help
 	  System manager.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_QUANTENNA
+	bool "include Quantenna support"
+	default n
+	help
+	  Quantenna support.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n

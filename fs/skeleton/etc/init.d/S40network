@@ -160,6 +160,7 @@ load_wifi_drivers() {
         device_id="$(cat "${pci}"/device)"
         if [ "${vendor_id}" = "0x1bb5" ] && [ "${device_id}" = "0x0008" ]; then
           modprobe qdpc-host ethaddr=02:00:00:00:00:00 2>/dev/null
+          babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
         fi
       fi
     done
