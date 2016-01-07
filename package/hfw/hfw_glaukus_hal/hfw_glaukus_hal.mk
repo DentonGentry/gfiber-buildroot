@@ -22,8 +22,10 @@ HFW_GLAUKUS_HAL_MFLAGS= \
 	LD="$(TARGET_CC)" \
 	TARGET_CFLAGS=-I$(STAGING_DIR)/usr/include \
 	XTARGET_LDFLAGS=-L$(STAGING_DIR)/usr/lib \
-	INSTALL_DIR=$(STAGING_DIR)/usr/include \
-	LIB_PREFIX=$(STAGING_DIR)/usr/lib \
+	LIB_INSTALL_DIR=$(STAGING_DIR)/usr/lib \
+	HEADERS_INSTALL_DIR=$(STAGING_DIR)/usr/include/glaukus \
+	TOOLS_INSTALL_DIR=$(TARGET_DIR)/sbin \
+	CONFIG_INSTALL_DIR=$(TARGET_DIR)/etc/glaukus \
 
 HOST_HFW_GLAUKUS_HAL_MAKE=$(HOST_HFW_GLAUKUS_HAL_ENV) $(MAKE) $(HOST_HFW_GLAUKUS_HAL_MFLAGS)
 HFW_GLAUKUS_HAL_MAKE=$(HFW_GLAUKUS_HAL_ENV) $(MAKE) $(HFW_GLAUKUS_HAL_MFLAGS)
@@ -38,17 +40,12 @@ endef
 
 HFW_GLAUKUS_HAL_ETCDIR = $(TARGET_DIR)/etc/gfch100
 
-define HFW_GLAUKUS_HAL_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 0755 -D $(@D)/build/modemctl $(TARGET_DIR)/usr/bin/modemctl
-	mkdir -p $(HFW_GLAUKUS_HAL_ETCDIR)
-	$(INSTALL) -m 0644 -D $(@D)/config/chimera_modem.properties $(HFW_GLAUKUS_HAL_ETCDIR)/modem.properties
-	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/k60_firmware/bcm85100mc.fw $(HFW_GLAUKUS_HAL_ETCDIR)/bcm85100mc.fw
-	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/binfile/default.bin $(HFW_GLAUKUS_HAL_ETCDIR)/default.bin
-	$(INSTALL) -m 0644 -D $(@D)/3rd-party/bcm85100/binfile/default.bin $(HFW_GLAUKUS_HAL_ETCDIR)/loopback.bin
+define HFW_GLAUKUS_HAL_INSTALL_STAGING_CMDS
+	$(HFW_GLAUKUS_HAL_MAKE) -C $(@D) install-lib
 endef
 
-define HFW_GLAUKUS_HAL_INSTALL_STAGING_CMDS
-	$(INSTALL) -m 0644 -D $(@D)/build/libhal.a $(STAGING_DIR)/usr/lib/libhal.a
+define HFW_GLAUKUS_HAL_INSTALL_TARGET_CMDS
+	$(HFW_GLAUKUS_HAL_MAKE) -C $(@D) install-tools
 endef
 
 $(eval $(call GENTARGETS))
