@@ -373,17 +373,8 @@ case "$1" in
       load_wifi_drivers
     fi
 
-    pci="/sys/bus/pci/devices/0000:01:00.0"
-    if [ -d $pci ]; then
-      vendor_id="$(cat ${pci}/vendor)"
-      device_id="$(cat ${pci}/device)"
-      if [ "$vendor_id" = "0x11ab" ] && [ "$device_id" = "0xf410" ]; then
-        echo "Initializing AlleyCat3 10G switch..."
-        echo 1 > $pci/enable
-        mmap -q /usr/lib/mmap/ac3Config.mmap
-        echo "Initializing 88x2011 transceiver..."
-        mmap -q /usr/lib/mmap/2011Config.mmap
-      fi
+    if is-ptp; then
+      gfch100_hwinit
     fi
 
     # if the file exists and it isn't empty
