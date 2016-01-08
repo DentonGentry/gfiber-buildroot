@@ -1,0 +1,157 @@
+#! /bin/sh
+
+#
+# load /etc/gpios, look for matching model name,
+# create named symlinks in /dev/gpio/...
+#
+
+die() {
+  local message="$1"
+  echo "$0: fatal error: $message" >&2
+  exit 1
+}
+
+warn() {
+  local message="$1"
+  echo "$0: warning: $message" >&2
+}
+
+# /sys tree for gpios
+sys_dir()
+{
+  echo /sys/class/gpio
+}
+
+# path to a specific gpio dir
+gpio_dir()
+{
+  local gpio="$1"
+  local sys="$(sys_dir)"
+  echo "$sys/gpio$gpio"
+}
+
+# unexport then export to allow possible reconfiguration
+reexport_gpio()
+{
+  local gpio="$1"
+  local sys="$(sys_dir)" gdir control
+
+  gdir=$(gpio_dir "$gpio")
+
+  if [ -d "$gdir" ]; then
+    echo "$gpio" >"$sys/unexport" || return 1
+  fi
+
+  echo "$gpio" >"$sys/export" || return 1
+
+  if [ ! -d "$gdir" ]; then
+    warn "$gdir failed to appear"
+    return 1
+  fi
+
+  return 0
+}
+
+set_gpio_prop()
+{
+  local gpio="$1" key="$2" value="$3"
+  local gdir
+
+  gdir=$(gpio_dir "$gpio")
+
+  # allow "" and "-" as noop values
+  if [ -z "$value" ] || [ "$value" = "-" ]; then
+    return 0
+  fi
+
+  echo "$value" >"$gdir/$key" || return 1
+
+  return 0
+}
+
+
+# create links for all gpios in config file
+create_gpio_links()
+{
+  local config="$1" linkdir="$2"
+  local platform err="0" line="0" tmp="/tmp/gpios.$$" m
+
+  read platform </etc/platform
+
+  rm -rf "$linkdir.new" "$linkdir.old"
+  mkdir "$linkdir.new" || return 1
+
+  # remove comments
+  sed -e 's/#.*//' "$config" >"$tmp" || return 1
+
+  while read model gpio name active_low edge direction rest; do
+    line=$(( $line + 1 ))
+    m=$config:$line
+
+    # ignore blank lines
+    if [ -z "$model" ]; then
+      continue
+    fi
+
+    # check for min and max args
+    if [ -z "$direction" ] || [ -n "$rest" ]; then
+      warn "wrong number of fields for '$m'"
+      err=1
+      continue
+    fi
+
+    # skip lines not for this platform
+    if [ "$model" != "$platform" ]; then
+      continue
+    fi
+
+    if ! reexport_gpio "$gpio"; then
+      err=1
+      continue
+    fi
+
+    gdir=$(gpio_dir $gpio)
+
+    # set up link
+    if ! ln -s "$gdir" "$linkdir.new/$name"; then
+      err=1
+      continue
+    fi
+
+    # set properties (may be noops)
+    if ! set_gpio_prop active_low "$active_low" ||
+       ! set_gpio_prop edge "$edge" ||
+       ! set_gpio_prop direction "$direction"; then
+      err=1
+      continue
+    fi
+
+  done <"$tmp"
+
+  rm -f "$tmp"
+
+  if [ -e "$linkdir" ]; then
+    mv "$linkdir" "$linkdir.old" || return 1
+  fi
+
+  mv "$linkdir.new" "$linkdir" || return 1
+
+  rm -rf "$linkdir.old"
+  return $err
+}
+
+#
+# main
+#
+
+config=/etc/gpios
+dir=/dev/gpio
+
+# for testing
+if [ -n "$1" ]; then
+  config="$1"
+fi
+
+create_gpio_links "$config" "$dir" || die "create_gpio_links($config, $dir)"
+
+exit 0

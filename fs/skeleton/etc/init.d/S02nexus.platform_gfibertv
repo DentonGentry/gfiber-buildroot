@@ -47,6 +47,9 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
   echo "$GPN" >/tmp/gpn &&
   chmod 444 /tmp/gpn
 
+  # Do this before gpio-mailbox
+  update-gpio-links
+
   # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
   echo "Starting gpio-mailbox"
   mkdir -p /tmp/gpio/ledcontrol

@@ -13,6 +13,9 @@ case "$1" in
     echo "$SERIAL" >/etc/serial &&
     chmod 444 /etc/serial
 
+    # Do this before gpio-mailbox
+    update-gpio-links
+
     babysit 60 gpio-mailbox 2>&1 | logos gpio-mailbox &
     ;;
   stop)
