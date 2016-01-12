@@ -77,7 +77,7 @@ else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = bolt_signed_openbox
 ROOTFS_GINSTALL_TYPE=openbox
 else
-_BRUNO_LOADER = bolt_unsigned_unlocked
+_BRUNO_LOADER = bolt_signed_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
 endif
 
