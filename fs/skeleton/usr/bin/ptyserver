@@ -1,0 +1,149 @@
+#! /usr/bin/python
+# Copyright 2016 Google Inc. All Rights Reserved.
+
+"""Run a process on a pty, listen for clients on a socket.
+
+For processes that are long-lived, or need a tty.
+Use 'nc localhost 1234' to connect to the process and ^D to disconnect.
+"""
+
+__author__ = 'edjames@google.com (Ed James)'
+
+import getopt
+import os
+import select
+import signal
+import socket
+import sys
+
+
+# arg defaults
+def_host = 'localhost'
+def_port = 1964
+
+
+def usage():
+  print ('Usage: %s [-h)ost hostname] [-p)ort port] [-b)lock] command [args]'
+         % sys.argv[0])
+  print '  defaults: hostname=%s port=%d' % (def_host, def_port)
+  print '  The block flag waits for clients before reading from the process,'
+  print '  blocking it.  Use this if you want clients to get all output,'
+  print '  at the cost of blocking the process when no client is connected.'
+
+
+def main():
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], 'h:p:b',
+                               ['host=', 'port=', 'block'])
+  except getopt.GetoptError as err:
+    print str(err)
+    usage()
+    sys.exit(1)
+
+  host = def_host
+  port = def_port
+  block = False
+
+  for o, a in opts:
+    if o in ('-h', '--host'):
+      host = a
+    elif o in ('-p', '--port'):
+      port = int(a)
+    elif o in ('-b', '--block'):
+      block = True
+    else:
+      print 'unknown option: %s' % o
+      usage()
+      sys.exit(1)
+
+  command = args
+  if not args:
+    print 'required command is missing'
+    usage()
+    sys.exit(1)
+
+  print '!!! listening on %s:%d' % (host, port)
+
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  s.bind((host, port))
+  s.listen(5)
+  s_fd = s.fileno()
+
+  pid, pty_fd = os.forkpty()
+  if pid == 0:
+    os.execvp(command[0], command)
+    sys.exit(1)
+
+  client_fd = -1
+
+  while True:
+    # build list of fd's for select
+    rlist = []
+
+    if not block or client_fd != -1:
+      rlist.append(pty_fd)
+
+    if client_fd == -1:
+      rlist.append(s_fd)
+    else:
+      rlist.append(client_fd)
+
+    # wait for input
+    rready, unused_, unused_ = select.select(rlist, [], [])
+
+    # handle new client
+    if s_fd in rready:
+      (client, unused_) = s.accept()
+      client_fd = client.fileno()
+      print '!!! new client'
+
+    # handle client input
+    if client_fd in rready:
+      try:
+        data = os.read(client_fd, 1024)
+      except OSError as err:
+        print '!!! client exception: %s' % str(err)
+        data = ''
+
+      if not data:
+        print '!!! client EOF'
+        client.close()
+        client_fd = -1
+      else:
+        print '<<< ', data
+        try:
+          os.write(pty_fd, data)
+        except OSError as err:
+          print '!!! write to server exception: %s' % str(err)
+          break
+
+    # handle command output
+    if pty_fd in rready:
+      try:
+        data = os.read(pty_fd, 1024)
+      except OSError as err:
+        print '!!! read from server exception: %s' % str(err)
+        break
+      if not data:
+        print '!!! server process EOF'
+        break
+      if client_fd != -1:
+        try:
+          os.write(client_fd, data)
+          sys.stdout.write(data)
+        except OSError as err:
+          print '!!! client exception: %s' % str(err)
+          client.close()
+          client_fd = -1
+
+  # shut down
+  if client_fd != -1:
+    client.close()
+  s.close()
+  os.close(pty_fd)
+  os.kill(pid, signal.SIGTERM)
+  sys.exit(1)
+
+if __name__ == '__main__':
+  main()
