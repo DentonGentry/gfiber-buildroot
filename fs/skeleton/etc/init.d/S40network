@@ -149,9 +149,21 @@ load_wifi_drivers() {
     modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
 
     # On GFRG250, the Quantenna PCIe module has not initialized by the time the
-    # kernel enumerates PCIe devices.
-    echo 1 > /sys/bus/pci/rescan
-    modprobe qdpc-host ethaddr=02:00:00:00:00:00 2>/dev/null
+    # kernel enumerates PCIe devices. For development, also include GFRG200 and
+    # GFRG210.
+    if contains "GFRG200 GFRG210 GFRG250" "$(cat /etc/platform)"; then
+      echo 1 > /sys/bus/pci/rescan
+    fi
+    for pci in /sys/bus/pci/devices/*; do
+      if [ -d "${pci}" ]; then
+        vendor_id="$(cat "${pci}"/vendor)"
+        device_id="$(cat "${pci}"/device)"
+        if [ "${vendor_id}" = "0x1bb5" ] && [ "${device_id}" = "0x0008" ]; then
+          modprobe qdpc-host ethaddr=02:00:00:00:00:00 2>/dev/null
+          babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
+        fi
+      fi
+    done
 
     # Enable wifi beacon debug logging.
     if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
@@ -174,7 +186,7 @@ set_mac_from_hnvram() {
   if [ -h /sys/class/net/$DEV ]; then
     # If $DEV is a Quantenna device, /bin/wifi will set the MAC address of the
     # underlying interface instead of the PCIe interface.
-    if [ $DEV = "$(get-quantenna-interface)" ]; then
+    if [ "$(cat /sys/class/net/$DEV/device/vendor)" = "0x1bb5" ]; then
       return 0
     fi
     local addr="$(hnvram -qr "$VAR_NAME")"
@@ -442,10 +454,6 @@ case "$1" in
       # Enable receive interrupt coalescing, this is a significant
       # performance gain for multicast receive.
       enable_rx_coalescing wan0
-    fi
-
-    if [ -n "$(get-quantenna-interface)" ]; then
-      babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
     fi
 
     if is-tv-box || is-storage-box; then
