@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# This script monitors /tmp/conman/command* /tmp/conman/access_point_enabled*
+# and starts or stops access points accordingly.
+#
+. /etc/utils.sh
+
+WATCH="/tmp/conman"
+
+# extension is either "interface_suffix.band" or just "band"
+stopap() {
+  local extension="$1"
+
+  bands="2.4 5"
+  for band in $bands; do
+    if [ "$extension" = "$band" ]; then
+      break
+    else
+      if endswith "$extension" "$band"; then
+        interface_suffix=${extension%.$band}
+        break
+      else
+        interface_suffix=
+        band=
+      fi
+    fi
+  done
+  if [ -z "$band" ]; then
+    echo "Failed to parse extension '$extension'"
+    continue
+  fi
+  flags="--band $band"
+  if [ -n "$interface_suffix" ]; then
+    flags="$flags --interface-suffix "$interface_suffix""
+  fi
+  if ! $(wifi stopap $flags); then
+    echo "Failed to stop access point for '$extension'"
+    false
+  fi
+}
+
+# Check all existing command files, then monitor command and access_point files
+# for changes.
+{ cd "$WATCH" && ls command.*; watch-dir "$WATCH"; } |
+while read filename; do
+  command=
+  access_point=
+
+  if startswith "$filename" "command."; then
+    extension=${filename#command.}
+    command="$WATCH/$filename"
+    access_point="$WATCH/access_point.$extension"
+  else
+    if startswith "$filename" "access_point."; then
+      extension=${filename#access_point.}
+      command="$WATCH/command.$extension"
+      access_point="$WATCH/$filename"
+    fi
+  fi
+
+  if [ -e "$command" ] && [ -e "$access_point" ]; then
+    if ! run_command_lines $command; then
+      echo "Failed to start access point for '$extension'"
+    fi
+  else
+    stopap "$extension"
+  fi
+done

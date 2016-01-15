@@ -1,0 +1,89 @@
+#!/bin/sh
+# Test script for /bin/apman
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+. /etc/utils.sh
+
+hostapd_running() {
+  pgrep -f '^hostapd .* /tmp/hostapd.conf.wlan.*' >/dev/null
+}
+
+binwifi_running() {
+  pgrep -f '/bin/wifi' >/dev/null
+}
+
+hostapd_wait_check_running() {
+  local should_be_running="$1"
+
+  echo 'waiting for /bin/wifi to start'
+  for x in $(seq 50); do
+    if binwifi_running; then
+      break
+    fi
+    echo -n "."
+    sleep 0.1
+  done
+
+  echo "waiting for /bin/wifi to finish..."
+  while binwifi_running; do
+    echo -n "."
+    sleep 0.5
+  done
+  if hostapd_running; then echo 'hostapd running'; fi
+  if $should_be_running; then
+    WVPASS hostapd_running
+  else
+    WVFAIL hostapd_running
+  fi
+}
+
+echo "Setting up"
+wifi stop
+pkill "apman$"
+rm /tmp/conman/command*
+rm /tmp/conman/access_point*
+# Creating wlan0_apmantest sometimes fails if we don't reset wlan0.
+wlan0mac=$(cat /sys/class/net/wlan0/address)
+mac=$(mac_addr_increment $wlan0mac 100)
+iw dev wlan0 del
+iw dev wlan0_apmantest del
+WVPASS iw phy phy0 interface add wlan0 type __ap
+WVPASS ip link set dev wlan0 address "$wlan0mac"
+WVPASS iw phy phy0 interface add wlan0_apmantest type __ap
+WVPASS ip link set dev wlan0_apmantest address "$mac"
+
+WVSTART "apman"
+apman&
+WVFAIL hostapd_running
+
+touch /tmp/conman/access_point.5
+WVFAIL hostapd_running
+
+echo "Enable 5 GHz access point"
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n5\n-s\nssid" > /tmp/conman/command.5
+hostapd_wait_check_running true
+
+echo "Disable 5 GHz access point"
+rm /tmp/conman/access_point.5
+hostapd_wait_check_running false
+
+touch /tmp/conman/access_point._apmantest.2.4
+echo "Waiting to make sure hostapd doesn't start"
+hostapd_wait_check_running false
+
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid" > /tmp/conman/command.2.4
+echo "Waiting to make sure hostapd doesn't start"
+hostapd_wait_check_running false
+
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /tmp/conman/command._apmantest.2.4
+hostapd_wait_check_running true
+
+echo "Cleaning up"
+WVPASS iw dev wlan0_apmantest del
+pkill "apman$"
+wifi off
+rm /tmp/conman/command*
+rm /tmp/conman/access_point*
