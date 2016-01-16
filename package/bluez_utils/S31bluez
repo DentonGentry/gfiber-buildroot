@@ -77,12 +77,6 @@ case "$1" in
     echo 7 > /tmp/hci/conn_latency
     echo 300 > /tmp/hci/supervision_timeout
 
-    if [ "$(cat /etc/platform)" = GFHD100 ]; then
-      # BCM20702 USB Bluetooth chip
-      wl reset_bt_chip 1 2>&1
-      sleep 1  # chip needs time to stabilize, else it will be flakey
-    fi
-
     # Start BlueZ stack
     (
       echo "$0: Starting btmon"
