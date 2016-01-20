@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Returns 0 (true) if Google Cast is part of the image
+# installed on this device.
+
+[ -x /chrome/cast_shell ]
