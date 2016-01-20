@@ -78,6 +78,7 @@ config BR2_PACKAGE_GOOGLE_PROD
 	bool "Production Release"
 	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
 	select BR2_PACKAGE_BCM_SIGNING if BR2_mipsel
+	select BR2_PACKAGE_BCM_BOLT_SIGNING if BR2_PACKAGE_BCM_COMMON_PLATFORM = 97439
 	help
 	  Build google production release, using the signed/locked bootloader.
 
