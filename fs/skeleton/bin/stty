@@ -14,7 +14,7 @@ import tty
 
 
 def Usage():
-  sys.stderr.write('usage: %s [raw|sane|[-]echo|selftest|<baud>|status>\n'
+  sys.stderr.write('usage: %s [raw|sane|[no]echo|selftest|<baud>|status>\n'
                    '  sets the tty mode\n' % sys.argv[0])
   sys.exit(99)
 
@@ -104,7 +104,7 @@ def main():
     tc = termios.tcgetattr(fd)
     tc[3] |= termios.ECHO
     termios.tcsetattr(fd, termios.TCSADRAIN, tc)
-  elif args[0] == '-echo':
+  elif args[0] == 'noecho':
     tc = termios.tcgetattr(fd)
     tc[3] &= ~termios.ECHO
     termios.tcsetattr(fd, termios.TCSADRAIN, tc)
