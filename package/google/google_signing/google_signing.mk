@@ -11,7 +11,7 @@ GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 ifneq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfsc100")
-GOOGLE_SIGNING_DEPENDENCIES += bcm_signing host-bcm_signing
+GOOGLE_SIGNING_DEPENDENCIES += bcm_signing bcm_bolt_signing host-bcm_signing
 endif
 endif
 
@@ -28,7 +28,8 @@ SIGNING_FLAG=""
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	(mkdir -m 700 -p $(SIGNING_DIR); \
-	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem))
+	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem); \
+	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,gfhd254_key0_private,$(SIGNING_DIR)/gfhd254_private.pem))
 endef
 SIGNING_FLAG="-s"
 GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += \
@@ -58,7 +59,7 @@ define HOST_BRUNOv2_SIGNING_SIGN
 	(cp $(1) $(2) && \
 	 $(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
 		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
-		-o $(HOST_DIR) $(SIGNING_FLAG) -b $(BINARIES_DIR) -k $(2) && \
+		-o $(HOST_DIR) $(SIGNING_FLAG) --bolt_sign -b $(BINARIES_DIR) -k $(2) && \
 		$(HOST_GOOGLE_SIGNING_CLEANUP))
 endef
 
