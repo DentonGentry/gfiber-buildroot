@@ -55,16 +55,22 @@ reexport_gpio()
 set_gpio_prop()
 {
   local gpio="$1" key="$2" value="$3"
-  local gdir
+  local gdir keyfile
 
   gdir=$(gpio_dir "$gpio")
+  keyfile="$gdir/$key"
+
+  if [ ! -f "$keyfile" ]; then
+    echo "set_gpio_prop: '$keyfile' not found" >&2
+    return 1
+  fi
 
   # allow "" and "-" as noop values
   if [ -z "$value" ] || [ "$value" = "-" ]; then
     return 0
   fi
 
-  echo "$value" >"$gdir/$key" || return 1
+  echo "$value" >"$keyfile" || return 1
 
   return 0
 }
@@ -119,9 +125,9 @@ create_gpio_links()
     fi
 
     # set properties (may be noops)
-    if ! set_gpio_prop active_low "$active_low" ||
-       ! set_gpio_prop edge "$edge" ||
-       ! set_gpio_prop direction "$direction"; then
+    if ! set_gpio_prop "$gpio" active_low "$active_low" ||
+       ! set_gpio_prop "$gpio" edge "$edge" ||
+       ! set_gpio_prop "$gpio" direction "$direction"; then
       err=1
       continue
     fi
