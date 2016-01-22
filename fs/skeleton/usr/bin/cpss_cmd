@@ -1,0 +1,157 @@
+#! /usr/bin/python
+# Copyright 2016 Google Inc. All Rights Reserved.
+
+"""Chat with cpss on port 4455.
+
+  Send stdin, wait for Console# prompt.
+"""
+
+__author__ = 'edjames@google.com (Ed James)'
+
+import getopt
+import os
+import re
+import select
+import socket
+import subprocess
+import sys
+
+
+# arg defaults
+def_host = 'localhost'
+def_port = 4455
+
+
+def on_alarm(unused_, dummy_):
+  raise IOError('timed out waiting for prompt')
+
+
+def usage():
+  print ('Usage: %s [-h)ost hostname] [-p)ort port] < command'
+         % sys.argv[0])
+  print '  defaults: hostname=%s port=%d' % (def_host, def_port)
+  print '  Sends commands one line at a time, waits for Console...# prompts.'
+
+
+def main():
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], 'h:p:',
+                               ['host=', 'port=', 'block'])
+  except getopt.GetoptError as err:
+    print str(err)
+    usage()
+    sys.exit(1)
+
+  host = def_host
+  port = def_port
+
+  for o, a in opts:
+    if o in ('-h', '--host'):
+      host = a
+    elif o in ('-p', '--port'):
+      port = int(a)
+    else:
+      print 'unknown option: %s' % o
+      usage()
+      sys.exit(1)
+
+  if args:
+    print 'extra args found'
+    usage()
+    sys.exit(1)
+
+  print '!!! connecting to %s:%d' % (host, port)
+
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  s.connect((host, port))
+  s_fd = s.fileno()
+
+  stdin_fd = sys.stdin.fileno()
+  timeout = 5
+
+  isatty = os.isatty(sys.stdin.fileno())
+
+  # put tty in interactive mode
+  if isatty:
+    print '!!! type ^C or ^D to quit'
+    timeout = None
+    subprocess.call('stty raw'.split())
+    subprocess.call('stty noecho'.split())
+
+  stdin_eof = False
+  need_prompt = False
+
+  lines = []
+  if isatty:
+    lines.append('\n')
+
+  while True:
+
+    # feed a line to server and flag that we need a prompt
+    if not need_prompt and lines:
+      line = lines.pop(0)
+      try:
+        os.write(s_fd, line)
+      except OSError as err:
+        print '!!! write to server exception: %s' % str(err)
+        break
+      if not isatty:
+        need_prompt = True
+
+    rlist = [s_fd]
+    if not stdin_eof:
+      rlist.append(stdin_fd)
+
+    # wait for more input
+    rready, unused_, unused_ = select.select(rlist, [], [], timeout)
+
+    if not rready:
+      print '!!! timeout'
+      break
+
+    # read from stdin and push lines to queue
+    if stdin_fd in rready:
+      try:
+        data = os.read(stdin_fd, 1024)
+      except OSError as err:
+        print '!!! stdin exception: %s' % str(err)
+      if not data:
+        print '!!! stdin eof'
+        stdin_eof = True
+      else:
+        # exit on ^C or ^D.  Kills server if we pass ^C
+        if '\x03' in data or '\x04' in data:
+          break
+        lines.extend(data.splitlines(True))
+
+    # read from server and check for prompts
+    if s_fd in rready:
+      try:
+        data = os.read(s_fd, 1024)
+      except OSError as err:
+        print '!!! read from server exception: %s' % str(err)
+        break
+      if not data:
+        break
+      sys.stdout.write(data)
+      sys.stdout.flush()
+      if re.search(r'Console(\([^)]*\))?# ', data):
+        need_prompt = False
+
+    # quit if no more lines and not interactive
+    if not need_prompt and not lines and not isatty:
+      break
+
+  # reset tty
+  if isatty:
+    subprocess.call('stty sane'.split())
+
+  # exit with error if we didn't get the expected prompts
+  if not isatty and need_prompt:
+    sys.exit(1)
+
+  sys.exit(0)
+
+
+if __name__ == '__main__':
+  main()

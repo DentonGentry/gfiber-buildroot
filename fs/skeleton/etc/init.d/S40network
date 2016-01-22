@@ -365,7 +365,8 @@ case "$1" in
     fi
 
     if is-ptp; then
-      gfch100_hwinit
+      # start marvell switch CLI
+      babysit 10 cpss_wrapper 2>&1 | logos cpss &
     fi
 
     # if the file exists and it isn't empty
@@ -490,6 +491,11 @@ case "$1" in
       if [ -e /dev/bmoca0 ]; then
         echo -n "mocacfg kill"
         pkillwait mocad
+      fi
+
+      # kill cpss and babysitter
+      if is-ptp; then
+        pkill -f cpss
       fi
     fi
     ;;

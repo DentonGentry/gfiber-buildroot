@@ -4,6 +4,13 @@
 # reset and initialize the marvell parts in chimera
 #
 
+die()
+{
+  echo "$0: $*" >&2
+  pkill -x cpss
+  exit 1
+}
+
 pci="/sys/bus/pci/devices/0000:01:00.0"
 if [ ! -d $pci ]; then
   echo "$0: pci device '$pci' not found" >&2
@@ -17,8 +24,9 @@ if [ "$vendor_id" != "0x11ab" ] || [ "$device_id" != "0xf410" ]; then
   exit 1
 fi
 
-# reset phys and switch
-reset="pcie0_reset 2011_reset 3220_reset sd_reset"
+# reset phys
+# TODO(edjames): reset switch
+reset="pcie0_reset 2011_reset 3220_reset"
 for n in $reset; do
   echo 1 >/dev/gpio/$n/value
 done
@@ -30,31 +38,51 @@ done
 # enable the switch
 echo 1 >$pci/enable
 
-# set up switch config
-cat >/tmp/config.txt <<EOF
+# start cpss as persistent server
+pkill -x cpss
+ptyserver -p 4455 cpss -tty -config /dev/null &
+
+# wait for Console# prompt
+sleep 1
+echo "" | cpss_cmd || die "no console prompt"
+
+# init the switch, check for result
+cpss_cmd <<EOF | grep "Init system returned:0" || die "cpssInitSystem failed"
   cpssInitSystem 19,2,0
+EOF
+
+echo show version | cpss_cmd
+
+# configure ports, vlans
+cpss_cmd <<EOF || die "config failed"
   config
+    interface vlan device 0 vid 4090
+    exit
+
     interface ethernet 0/0
       speed 1000 mode SGMII
+      switchport allowed vlan add 4090 untagged
+      switchport pvid 4090
     exit
 
     interface ethernet 0/4
       speed 1000 mode 1000Base_X
+      switchport allowed vlan add 4090 untagged
+      switchport pvid 4090
     exit
 
     interface range ethernet 0/24,0/25
       speed 10000 mode SR_LR
     exit
   end
-EOF
 
-# start cpss to load vlans, ports (uses ./config.txt)
-# TODO(edjames) keep it running under babysitter instead of killing it
-pkill cpss
-(cd /tmp && cpss -tty &)
-sleep 6
-pkill cpss
+EOF
 
 # init 88x2011 (xfi/xaui transceiver)
 mmap /usr/lib/mmap/2011Config.mmap
 
+# wait on ptyserver
+wait
+
+# exit badly to get babysitter to restart
+exit 1
