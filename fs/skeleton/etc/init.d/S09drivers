@@ -1,0 +1,149 @@
+#!/bin/sh
+MODULE_PATH=/usr/lib/modules
+. /etc/utils.sh
+
+# RwFirmware mount /rw/firmware over /lib/firmware
+# allows developers to test new mrvl firmware
+check_rwfw_experiment()
+{
+  register_experiment RwFirmware
+
+  if experiment RwFirmware; then
+    local src=/lib/firmware
+    local dst=/rw/firmware
+    if [ ! -d "$dst" ]; then
+      echo "RwFirmware: copying $src to $dst"
+      mkdir -p "$dst"
+      tar cf - -C "$src" . | tar xf - -C "$dst"
+    fi
+    if ! touch "$src/this_is_rw" 2>/dev/null; then
+      echo "RwFirmware: mounting writable $dst on $src"
+      mount -o bind "$dst" "$src"
+    fi
+  fi
+}
+
+rename_net_device()
+{
+  local old_dev=$1
+  local new_dev=$2
+  if [ -e /sys/class/net/$old_dev ]; then
+    echo "Renaming $old_dev to $new_dev..."
+    ip link set dev $old_dev down
+    ip link set dev $old_dev name $new_dev
+    ip link set dev $new_dev up
+  fi
+}
+
+check_rwfw_experiment
+
+start()
+{
+  if is-windcharger; then
+    # Renames network devices for compatibility with optimus scripts.
+    rename_net_device eth0 wan0
+    rename_net_device eth1 lan0
+  fi
+
+  if is-spacecast; then
+    # Loads sc100 driver.
+    DVB_MAC=$(hnvram -qr MAC_ADDR)
+    if [ -n "$DVB_MAC" ]; then
+      modprobe dvb-usb-sc100 mac_addr="$DVB_MAC"
+    else
+      modprobe dvb-usb-sc100
+    fi
+  fi
+
+  if is-ptp; then
+    # Rename eth0 to craft0: This is the interface that the tech will connect to
+    # when configuring the device. We want to keep this interface isolated from
+    # customer traffic.
+    rename_net_device eth0 craft0
+  fi
+
+  if is-tv-box; then
+    register_experiment SkipBluetoothWifi
+    register_experiment BluetoothLast
+
+    if experiment SkipBluetoothWifi; then
+      exit 0
+    fi
+    done=/tmp/btlast_$(basename $0).done
+    if experiment BluetoothLast && [ ! -f "$done" ]; then
+      : > "$done"
+      echo "$0: skipping start due to BluetoothLast experiment."
+      exit 0
+    fi
+
+    [ -e "$MODULE_PATH/wl.ko" ] && insmod "$MODULE_PATH/wl.ko"
+
+    # Set up BT, if present
+    BT_MAC=$(hnvram -qr MAC_ADDR_BT)
+    if [ -z "$BT_MAC" ]; then
+      MAC=$(hnvram -qr MAC_ADDR)
+      if [ -z "$MAC" ]; then
+        echo "$0: ERROR: TV Box has no MAC_ADDR nor MAC_ADDR_BT"
+        exit 1
+      fi
+      BT_MAC=$(mac_addr_increment "$MAC" 2)
+    fi
+    BT_MAC=$(echo "$BT_MAC" | sed 's/./\U&/g')
+    echo "$BT_MAC" >/tmp/btmacaddress
+
+    if [ "$(kernopt wifical)" = "1" ]; then
+      # If we're trying to calibrate Wifi/BT, loading
+      # the production driver disrupts the process, and we need the "primary
+      # kernel" bluetooth core.
+      insmod /lib/modules/$(uname -r)/kernel/net/bluetooth/bluetooth.ko
+      modprobe -a bluetooth
+    else  # Not trying to calibrate
+      if [ "$(cat /etc/platform)" = GFHD100 ]; then
+        # BCM20702 USB Bluetooth chip
+        wl reset_bt_chip 1 2>&1
+        sleep 1  # chip needs time to stabilize, else it will be flakey
+      fi
+
+      modprobe -a compat
+
+      # If a backports bluetooth module is present, use it.
+      backport="/lib/modules/$(uname -r)/backports/net/bluetooth/bluetooth.ko"
+      [ -e "$backport" ] && insmod "$backport"
+
+      modprobe -a bluetooth hidp hid-gfrm uhid
+      modprobe btmrvl bdaddr_base="$BT_MAC"
+      modprobe btmrvl_sdio
+      if [ -e "/lib/modules/$(uname -r)/kernel/drivers/bluetooth/btbcm.ko" ]; then
+        modprobe btbcm bdaddr_base="$BT_MAC"
+        modprobe btusb
+      else
+        modprobe btusb bdaddr_base="$BT_MAC"
+      fi
+    fi
+  fi
+}
+
+stop()
+{
+  if is-tv-box; then
+    rmmod btusb btbcm btmrvl_sdio btmrvl bluetooth hidp hid-gfrm uhid
+    rmmod compat
+    [ -e "$MODULE_PATH/wl.ko" ] && rmmod wl
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
