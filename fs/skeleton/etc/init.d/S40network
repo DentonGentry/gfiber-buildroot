@@ -284,9 +284,10 @@ add_multicast_route() {
   done
 }
 
-lan0_up_no_bridging() {
-  echo "Adding interface lan0..."
-  ip link set lan0 up &&
+if_up_no_bridging() {
+  local dev="$1"
+  echo "Adding interface $dev..."
+  ip link set "$dev" up &&
   kernopt ip |
   while IFS=: read ip serverip gatewayip netmask hostname ifc junk; do
     # $ip should be already setup by simpleramfs.
@@ -297,9 +298,9 @@ lan0_up_no_bridging() {
       ip route add default via "$gatewayip"
     fi
   done
-  echo "Bringing up interface lan0..."
-  ifup lan0
-  enable_rx_coalescing lan0
+  echo "Bringing up interface $dev..."
+  ifup "$dev"
+  enable_rx_coalescing "$dev"
 }
 
 bridge_up() {
@@ -407,8 +408,16 @@ case "$1" in
     set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
     set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
+    if is-ptp; then
+      set_mac_from_hnvram craft0 MAC_ADDR1
+      set_mac_from_hnvram eth1 MAC_ADDR2
+      ptp-config -s craft_ipaddr 192.168.1.1/24
+      ptp-config -i craft_ipaddr
+      if_up_no_bridging craft0
+    fi
+
     if is-spacecast; then
-      lan0_up_no_bridging
+      if_up_no_bridging lan0
     else
       create_bridge
       if is-tv-box || is-storage-box; then
