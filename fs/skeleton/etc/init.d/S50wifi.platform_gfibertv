@@ -36,8 +36,12 @@ case "$1" in
     mkdir -p /tmp/wifi/wifiblaster
     mkdir -p /tmp/wifi/wifiinfo
     mkdir -p /tmp/stations
+    mkdir -p /tmp/conman
     if runnable wifi_files; then
       babysit 30 wifi_files 2>&1 | logos wifistatus &
+    fi
+    if runnable apman; then
+      babysit 30 apman 2>&1 | logos apman &
     fi
     if is-network-box; then
       for interface in wlan0 wlan1; do

@@ -1,0 +1,25 @@
+#!/usr/bin/python -S
+
+"""Run a command split across multiple lines."""
+
+# TODO(rofrankel): Replace this with a C program.
+
+import os
+import sys
+
+USAGE = """usage:
+
+run_command_lines filename
+"""
+
+if len(sys.argv) != 2:
+  print >> sys.stderr, USAGE
+  sys.exit(127)
+
+filename = sys.argv[1]
+if not os.path.isfile(filename):
+  print >> sys.stderr, '%r does not exist' % filename
+  sys.exit(126)
+
+command = open(filename).read().splitlines()
+os.execvp(command[0], command)
