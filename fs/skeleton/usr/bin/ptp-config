@@ -1,0 +1,116 @@
+#!/bin/sh
+# Controls configuration knobs for ptp devices.
+
+. /etc/utils.sh
+
+CONFIG_DIR="/config/settings"
+
+usage() {
+  echo "Usage:"
+  echo
+  echo "  -h				This help screen"
+  echo "  -g config_option		Get config_option"
+  echo "  -i config_option		Do any initialization for config_option"
+  echo "  -s config_option value	Set config_option to value"
+  echo "  -c config_option		Clear config_option"
+  echo
+  echo "Some example invocations:"
+  echo
+  echo "  Set the craft port ip address to 192.168.1.1 on subnet 255.255.255.0:"
+  echo "    $0 -s craft_ipaddr 192.168.1.1/24"
+  echo
+  echo "  Get the craft port ip address:"
+  echo "    $0 -g craft_ipaddr"
+  echo "    192.168.1.1/24"
+  echo
+  echo "  Initialize the craft port with the provided ip address:"
+  echo "    $0 -i craft_ipaddr"
+  echo
+  echo "  Clear the craft port ip address:"
+  echo "    $0 -c craft_ipaddr"
+  echo
+  exit 99
+}
+
+die() {
+  echo "Fatal: $@" >&2
+  exit 1
+}
+
+do_get() {
+  local config_file="$CONFIG_DIR/$1"
+  [ -e "$config_file" ] || exit 2
+  read opt <"$config_file"
+  [ -n "$opt" ] || exit 2
+  echo "$opt"
+}
+
+do_init() {
+  case "$1" in
+    craft_ipaddr)
+      local file="$CONFIG_DIR/$1"
+      [ -r "$file" ] || die "Failed to initialize $1: Cannot open $file"
+      read craft_ipaddr <"$file"
+      [ -n "$craft_ipaddr" ] || die "Failed to initialize $1! Value not set!"
+      # ip writes errors to stderr, so redirect to stdout for the script to
+      # capture and pretty print.
+      retval=$(ip addr add $craft_ipaddr dev craft0 2>&1)
+      [ "$?" -eq "0" ] || die "Failed to set $craft_ipaddr on craft0: $retval"
+      ;;
+    *)
+      echo "Nothing to initialize for $1" && exit 2
+      ;;
+  esac
+}
+
+do_set() {
+  local file="$CONFIG_DIR/$1"
+  local value="$2"
+  if [ -z "$file" ] || [ -z "$value" ]; then
+    die "Missing 'value' for set command."
+  fi
+  atomic $file $value || die "Failed to write config value to $file: $retval"
+}
+
+do_clear() {
+  rm -f "$CONFIG_DIR/$1"
+}
+
+if [ "$#" -eq "0" ]; then
+  usage
+fi
+
+# If the config settings directory structure does not exist, we need to try to
+# create it.
+if [ ! -d "$CONFIG_DIR" ]; then
+  mkdir -p "$CONFIG_DIR"
+fi
+
+while getopts ":cg:hi:s:" option
+do
+  case "$option" in
+    g)
+      option_found=1 && do_get "$2"
+      ;;
+    i)
+      option_found=1 && do_init "$2"
+      ;;
+    s)
+      option_found=1 && do_set "$2" "$3"
+      ;;
+    c)
+      option_found=1 && do_clear "$2"
+      ;;
+    h)
+      usage
+      ;;
+    \?|:|*)
+      echo "$0: Missing option for -$OPTARG" && echo && usage
+      ;;
+  esac
+done
+
+if [ -z "$option_found" ]; then
+  echo "$0: Unknown options: $@"
+  usage
+fi
