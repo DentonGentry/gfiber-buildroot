@@ -1,0 +1,121 @@
+From f3eeed3d41a4b4b1bacd91c1634de44728fe34e2 Mon Sep 17 00:00:00 2001
+From: Daniel Mentz <danielmentz@google.com>
+Date: Tue, 26 Jan 2016 14:40:29 -0800
+Subject: [PATCH] Don't report negligible number of bit flips
+
+Previously, nanddump would print a message like the following for every
+corrected bit flip:
+
+ECC: 1 corrected bitflip(s) at offset 0x01cae000
+
+This creates too much noise when using MLC NAND flash chips. A small
+number of bit flips are expected for these chips and is no reason for
+concern.  With this change, we only print this message when the number
+of bit flips exceeds a certain threshold set by the kernel.
+---
+ include/libmtd.h |  1 +
+ lib/libmtd.c     |  7 +++++++
+ lib/libmtd_int.h |  2 ++
+ nanddump.c       | 15 ++++++++++++++-
+ 4 files changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/include/libmtd.h b/include/libmtd.h
+index 07c304a..c0c9365 100644
+--- a/include/libmtd.h
++++ b/include/libmtd.h
+@@ -87,6 +87,7 @@ struct mtd_dev_info
+ 	int region_cnt;
+ 	unsigned int writable:1;
+ 	unsigned int bb_allowed:1;
++	int bitflip_threshold;
+ };
+ 
+ /**
+diff --git a/lib/libmtd.c b/lib/libmtd.c
+index 9b247ae..d2dd056 100644
+--- a/lib/libmtd.c
++++ b/lib/libmtd.c
+@@ -614,6 +614,10 @@ libmtd_t libmtd_open(void)
+ 	if (!lib->mtd_flags)
+ 		goto out_error;
+ 
++	lib->mtd_bitflip_threshold = mkpath(lib->mtd, MTD_BITFLIP_THRESHOLD);
++	if (!lib->mtd_bitflip_threshold)
++		goto out_error;
++
+ 	lib->sysfs_supported = 1;
+ 	return lib;
+ 
+@@ -626,6 +630,7 @@ void libmtd_close(libmtd_t desc)
+ {
+ 	struct libmtd *lib = (struct libmtd *)desc;
+ 
++	free(lib->mtd_bitflip_threshold);
+ 	free(lib->mtd_flags);
+ 	free(lib->mtd_region_cnt);
+ 	free(lib->mtd_oob_size);
+@@ -765,6 +770,8 @@ int mtd_get_dev_info1(libmtd_t desc, int mtd_num, struct mtd_dev_info *mtd)
+ 	if (dev_read_hex_int(lib->mtd_flags, mtd_num, &ret))
+ 		return -1;
+ 	mtd->writable = !!(ret & MTD_WRITEABLE);
++	if (dev_read_pos_int(lib->mtd_bitflip_threshold, mtd_num, &mtd->bitflip_threshold))
++		return -1;
+ 
+ 	mtd->eb_cnt = mtd->size / mtd->eb_size;
+ 	mtd->type = type_str2int(mtd->type_str);
+diff --git a/lib/libmtd_int.h b/lib/libmtd_int.h
+index bb48d35..d49b9e1 100644
+--- a/lib/libmtd_int.h
++++ b/lib/libmtd_int.h
+@@ -42,6 +42,7 @@ extern "C" {
+ #define MTD_OOB_SIZE     "oobsize"
+ #define MTD_REGION_CNT   "numeraseregions"
+ #define MTD_FLAGS        "flags"
++#define MTD_BITFLIP_THRESHOLD "bitflip_threshold"
+ 
+ #define OFFS64_IOCTLS_UNKNOWN       0
+ #define OFFS64_IOCTLS_NOT_SUPPORTED 1
+@@ -90,6 +91,7 @@ struct libmtd
+ 	char *mtd_oob_size;
+ 	char *mtd_region_cnt;
+ 	char *mtd_flags;
++	char *mtd_bitflip_threshold;
+ 	unsigned int sysfs_supported:1;
+ 	unsigned int offs64_ioctls:2;
+ };
+diff --git a/nanddump.c b/nanddump.c
+index be458c6..eab50a2 100644
+--- a/nanddump.c
++++ b/nanddump.c
+@@ -427,6 +427,7 @@ int main(int argc, char * const argv[])
+ 
+ 		/* ECC stats available ? */
+ 		if (eccstats) {
++			int bitflip_threshold = mtd.bitflip_threshold ? : 1;
+ 			if (ioctl(fd, ECCGETSTATS, &stat2)) {
+ 				perror("ioctl(ECCGETSTATS)");
+ 				goto closeall;
+@@ -435,7 +436,19 @@ int main(int argc, char * const argv[])
+ 				fprintf(stderr, "ECC: %d uncorrectable bitflip(s)"
+ 						" at offset 0x%08llx\n",
+ 						stat2.failed - stat1.failed, ofs);
+-			if (stat1.corrected != stat2.corrected)
++			/*
++			 * Report the number of corrected bitflips only if it
++			 * is above the threshold used by the kernel. This
++			 * logic is flawed, though, because the
++			 * bitflip_threshold relates to ecc steps not an entire
++			 * page. For example, a 4kB page might be broken up
++			 * into four ECC steps of 1024 bytes each due to
++			 * limitations of the hardware engine. We would need to
++			 * consider the value referred to as max_bitflips which
++			 * is not exported by the kernel, unfortunately.  As a
++			 * result, we might print this message even if the
++			 * number of bit flips are below the threshold.  */
++			if (stat2.corrected - stat1.corrected >= bitflip_threshold)
+ 				fprintf(stderr, "ECC: %d corrected bitflip(s) at"
+ 						" offset 0x%08llx\n",
+ 						stat2.corrected - stat1.corrected, ofs);
+-- 
+2.7.0.rc3.207.g0ac5344
+
