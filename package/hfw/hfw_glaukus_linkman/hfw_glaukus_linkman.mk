@@ -36,7 +36,7 @@ define HFW_GLAUKUS_LINKMAN_BUILD_CMDS
 endef
 
 define HFW_GLAUKUS_LINKMAN_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 755 -D $(@D)/build/glaukusd $(TARGET_DIR)/usr/bin/glaukusd
+	$(HFW_GLAUKUS_LINKMAN_MAKE) -C $(@D) INSTALL_DIR=$(TARGET_DIR)/ install
 endef
 
 $(eval $(call GENTARGETS))
