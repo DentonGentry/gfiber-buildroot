@@ -53,7 +53,7 @@ GFCH100 38      sfp_tx_disable  -       -       -
 GFCH100 39      sfp_tx_fault    -       -       -
 GFCH100 40      sfp_rx_los      -       -       -
 GFCH100 44      k60_reset       1       -       high
-GFCH100 45      k60_spi_ready   -       -       -
+GFCH100 45      k60_spi_ready   0       rising  in
 GFCH100 45      k60_spi_int     1       rising  -
 GFCH100 47      sd_reset        1       -       high
 GFCH100 56      modem_fc_int    1       rising  -
