@@ -418,6 +418,8 @@ case "$1" in
 
     if is-spacecast; then
       if_up_no_bridging lan0
+
+      (nohup /sbin/lan0_watchdog 2>&1 > /dev/null) &
     else
       create_bridge
       if is-tv-box || is-storage-box; then
