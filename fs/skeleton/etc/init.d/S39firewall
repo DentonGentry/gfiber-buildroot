@@ -20,6 +20,46 @@ flush()
 case "$1" in
   start|restart|reload)
     if [ -e /sys/class/net/wan0 ]; then
+      if ! is-windcharger; then
+        modprobe -a \
+            iptable_filter \
+            iptable_nat \
+            ipt_tcp \
+            ipt_udp \
+            ipt_conntrack \
+            ipt_pkttype \
+            ipt_limit \
+            ipt_LOG \
+            ipt_REJECT \
+            ipt_MASQUERADE \
+            \
+            nf_nat_ftp \
+            nf_nat_tftp \
+            nf_nat_sip \
+            nf_nat_pptp \
+            nf_nat_irc \
+            nf_nat_proto_gre \
+            nf_nat_h323 \
+            nf_nat_rtsp \
+            \
+            nf_conntrack_ftp \
+            nf_conntrack_tftp \
+            nf_conntrack_sip \
+            nf_conntrack_pptp \
+            nf_conntrack_irc \
+            nf_conntrack_proto_gre \
+            nf_conntrack_h323 \
+            nf_conntrack_rtsp \
+            \
+            ip6table_filter \
+            ip6t_tcp \
+            ip6t_udp \
+            nf_conntrack_ipv6 \
+            ip6t_pkttype \
+            ip6t_limit \
+            ip6t_LOG \
+            ip6t_REJECT
+      fi
       flush
 
       # Do these first to reduce race conditions
@@ -44,7 +84,7 @@ case "$1" in
       ip46tables -t filter -A FORWARD -j acs-captive-portal-filter
       ip46tables -A FORWARD -i br0 -j ACCEPT
 
-      # I wanted to use '!eth1' here but, it doesn't work as documented.
+      # I wanted to use '!wan0' here but, it doesn't work as documented.
       for ifc in lo br0; do
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
       done
@@ -78,7 +118,7 @@ case "$1" in
       fi
 
       # Outgoing connections
-      # TODO(apenwarr): Add a whitelist on OUTPUT for -o eth1.
+      # TODO(apenwarr): Add a whitelist on OUTPUT for -o wan0.
       # In particular we should have one for samba ports.
 
       # TODO(apenwarr): Remove this when we have real port forwarding controls.
