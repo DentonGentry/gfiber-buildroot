@@ -244,6 +244,10 @@ while :; do
     fi
   fi
 
+  if [ -e /proc/bcmdriver/debug ]; then
+    echo core > /proc/bcmdriver/debug
+  fi
+
   if [ -n "$DELAY" ]; then
     sleep "$DELAY" || exit 1
   else
