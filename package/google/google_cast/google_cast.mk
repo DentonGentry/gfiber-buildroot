@@ -80,11 +80,11 @@ define GOOGLE_CAST_INSTALL_BINARIES
 	# google_cast/build/Makefile and then copy the file, preserving the current
 	# permissions.  This ensures that output files from local and buildroot builds
 	# will have the same permissions.
-	cp -af $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
-	cp -af $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
+	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
+	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
 
-	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
-	cp -afr $(@D)/buildroot/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
+	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
+	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
 	chmod 4755 $(TARGET_DIR)/chrome/chrome-sandbox
 endef
 
