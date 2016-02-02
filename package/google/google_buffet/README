@@ -15,7 +15,7 @@ See details here: http://dev.chromium.org/chromium-os/developer-guide
 - Tarball the Buffet binaries and their required shared libraries under
 //chromeos root dir as below:
     chromeos
-        |__ bin -> buffet, buffet_client, test_buffet_daemon etc.
+        |__ bin -> buffet, buffet_client, buffet_test_daemon etc.
         |__ lib -> libprotobuf, libpthread, libdbus etc.
 - Ensure Buffet daemon can run and communicate with buffet_client in target box.
 - Name the tarball 'google_buffet-<ChromeOS version>.tar.gz'.
