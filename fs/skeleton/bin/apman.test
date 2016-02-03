@@ -40,6 +40,21 @@ hostapd_wait_check_running() {
   fi
 }
 
+wait_route_created() {
+  local interface="$1"
+  local gateway="$2"
+
+  for x in $(seq 20); do
+    if grep "default" | grep "dev $interface" | grep "via $gateway"; then
+      return 0
+    fi
+    sleep 0.1
+  done
+
+  return 1
+}
+
+
 echo "Setting up"
 wifi stop
 pkill "apman$"
@@ -81,9 +96,23 @@ hostapd_wait_check_running false
 echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /tmp/conman/command._apmantest.2.4
 hostapd_wait_check_running true
 
+
+WVSTART "apman routes"
+original_br0_route=$(ip route | grep default.*br0)
+rm -f /tmp/conman/gateway.br0
+echo "192.168.255.1" > /tmp/conman/gateway.br0
+WVPASS wait_route_created br0 192.168.255.1
+echo "192.168.255.255" > /tmp/conman/gateway.br0
+WVPASS wait_route_created br0 192.168.255.255
+
+
 echo "Cleaning up"
 WVPASS iw dev wlan0_apmantest del
 pkill "apman$"
 wifi off
 rm /tmp/conman/command*
 rm /tmp/conman/access_point*
+rm -f /tmp/conman/gateway.br0
+if [ -n "$original_br0_route" ]; then
+  echo "$original_br0_route" | xargs ip route add
+fi
