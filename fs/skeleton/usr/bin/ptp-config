@@ -26,7 +26,7 @@ usage() {
   echo "  Initialize the craft port with the provided ip address:"
   echo "    $0 -i craft_ipaddr"
   echo
-  echo "  Clear the craft port ip address:"
+  echo "  Clear the craft_ipaddr config setting:"
   echo "    $0 -c craft_ipaddr"
   echo
   exit 99
@@ -51,9 +51,13 @@ do_init() {
       local file="$CONFIG_DIR/$1"
       [ -r "$file" ] || die "Failed to initialize $1: Cannot open $file"
       read craft_ipaddr <"$file"
-      [ -n "$craft_ipaddr" ] || die "Failed to initialize $1! Value not set!"
-      # ip writes errors to stderr, so redirect to stdout for the script to
-      # capture and pretty print.
+      [ -n "$craft_ipaddr" ] || die "Cannot init $1: Need to set a value first."
+
+      # Clear any existing values on this interface so we don't get an error.
+      retval=$(ip addr flush dev craft0 2>&1)
+      [ "$?" -eq "0" ] || die "Failed to flush craft0: $retval."
+
+      # Set the new ip address from the config file.
       retval=$(ip addr add $craft_ipaddr dev craft0 2>&1)
       [ "$?" -eq "0" ] || die "Failed to set $craft_ipaddr on craft0: $retval"
       ;;
