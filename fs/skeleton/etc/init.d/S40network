@@ -411,7 +411,10 @@ case "$1" in
     if is-ptp; then
       set_mac_from_hnvram craft0 MAC_ADDR1
       set_mac_from_hnvram eth1 MAC_ADDR2
-      ptp-config -s craft_ipaddr 192.168.1.1/24
+      craft_ipaddr=$(ptp-config -g craft_ipaddr)
+      if [ -z "$craft_ipaddr" ]; then
+        ptp-config -s craft_ipaddr 192.168.1.1/24
+      fi
       ptp-config -i craft_ipaddr
       if_up_no_bridging craft0
     fi
