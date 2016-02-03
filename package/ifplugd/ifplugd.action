@@ -7,6 +7,9 @@
 iface="$1"
 action="$2"
 
+CONMAN_STATUS_DIR=/tmp/conman/interfaces
+
+
 case "$action" in
   up)
     if [ "$iface" = pon0 ]; then
@@ -25,16 +28,22 @@ case "$action" in
         run-dhclient wan0.2
       fi
     fi
-    if is-tv-box && is-wireless-client && [ "$iface" = eth0 ]; then
-      echo 1 > /tmp/conman/ethernet
+    if is-wireless-client; then
+      echo 1 > "$CONMAN_STATUS_DIR/$iface"
+
+      if [ "$iface" = eth0 ] || [ "$iface" = moca0 ]; then
+        run-dhclient br0
+      elif startswith "$iface" wcli; then
+        run-dhclient "$iface"
+      fi
     fi
     ;;
   down)
     if [ "$iface" = pon0 ]; then
       ethtool -r eth0
     fi
-    if is-tv-box && is-wireless-client && [ "$iface" = eth0 ]; then
-      echo 0 > /tmp/conman/ethernet
+    if is-wireless-client; then
+      echo 0 > "$CONMAN_STATUS_DIR/$iface"
     fi
     ;;
   *)
