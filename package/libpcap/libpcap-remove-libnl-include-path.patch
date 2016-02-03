@@ -1,0 +1,39 @@
+From 537303102e8e30834e886019ab37c097ab791ddb Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Wed, 3 Feb 2016 23:21:40 -0800
+Subject: [PATCH] Remove host /usr/include/libnl3.
+
+Not good when cross-compiling.
+
+---
+ configure    | 1 -
+ configure.in | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/configure b/configure
+index be87668..f1691b1 100755
+--- a/configure
++++ b/configure
+@@ -5568,7 +5568,6 @@ $as_echo "#define HAVE_LIBNL_NLE 1" >>confdefs.h
+ 
+ $as_echo "#define HAVE_LIBNL_SOCKETS 1" >>confdefs.h
+ 
+-			V_INCLS="$V_INCLS -I/usr/include/libnl3"
+ 			have_any_nl="yes"
+ 
+ fi
+diff --git a/configure.in b/configure.in
+index 2cae646..97948f4 100644
+--- a/configure.in
++++ b/configure.in
+@@ -460,7 +460,6 @@ linux)
+ 			AC_DEFINE(HAVE_LIBNL_3_x,1,[if libnl exists and is version 3.x])
+ 			AC_DEFINE(HAVE_LIBNL_NLE,1,[libnl has NLE_FAILURE])
+ 			AC_DEFINE(HAVE_LIBNL_SOCKETS,1,[libnl has new-style socket api])
+-			V_INCLS="$V_INCLS -I/usr/include/libnl3"
+ 			have_any_nl="yes"
+ 		])
+ 
+-- 
+2.7.0.rc3.207.g0ac5344
+

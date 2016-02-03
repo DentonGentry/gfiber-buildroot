@@ -25,7 +25,8 @@ HOST_GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-gtest \
 	host-libcurl \
 	host-libcares \
-	host-protobuf
+	host-protobuf \
+	host-libpcap
 
 GOOGLE_PLATFORM_TARGET_CFLAGS=-I$(STAGING_DIR)/usr/include/python2.7
 GOOGLE_PLATFORM_HOST_CFLAGS=-isystem $(HOST_DIR)/usr/include
