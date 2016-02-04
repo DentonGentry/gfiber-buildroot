@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Start the Chimera radio control software
+
+. /etc/utils.sh
+
+start()
+{
+  echo "starting glaukusd..."
+  babysit glaukusd 2>&1 | logos glaukus &
+}
+
+stop()
+{
+  echo "stopping glaukusd..."
+  pkill -INT -f glaukus_wrapper
+}
+
+# only for chimera
+is-ptp || exit 0
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
