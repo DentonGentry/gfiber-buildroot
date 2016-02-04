@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# Ensure the Oregano browser_shell processes are kept at nice -5
+
+keep_nice_value=-5
+suppress_errors=0
+
+log_error () {
+  if [ "${suppress_errors}" -eq 0 ]; then
+    echo "$1"
+  fi
+}
+
+renice_oregano () {
+  local oregano_browser_process="$(pgrep -f browser_shell.*file:///app/oregano)"
+  local number_of_oreganos="$(echo "${oregano_browser_process}" | wc -w)"
+  if [ "${number_of_oreganos}" -eq 0 ]; then
+    log_error "Error keeping Oregano nice, Oregano is not running."
+    return 1
+  fi
+  if [ "${number_of_oreganos}" -gt 1 ]; then
+    log_error "Error keeping Oregano nice, more than one instance of Oregano is running."
+    return 1
+  fi
+  local oregano_group_id
+  oregano_group_id="$(cut -d ' ' -f 5 /proc/"${oregano_browser_process}"/stat)"
+  if [ $? -ne 0 ]; then
+    log_error "Error keeping Oregano nice, unable to get gpid for browser process "${oregano_browser_process}""
+    return 1
+  fi
+  local oregano_browser_shells
+  oregano_browser_shells="$(pgrep -g "${oregano_group_id}" -x browser_shell)"
+  if [ $? -ne 0 ] || [ "$(echo "${oregano_browser_shells}" | wc -w)" -eq 0 ]; then
+    log_error "Error keeping Oregano nice, unable to get Oregano browser_shell pids"
+    return 1
+  fi
+  local renice_failed=0
+  for i in $oregano_browser_shells; do
+    local nice_value="$(cut -d ' ' -f 19 /proc/"${i}"/stat)"
+    if [ "${nice_value}" -ne "${keep_nice_value}" ]; then
+      renice -n ${keep_nice_value} ${i}
+      if [ $? -ne 0 ]; then
+        reniced_failed=1
+      fi
+    fi
+  done
+  if [ "${renice_failed}" -eq 1 ]; then
+    log_error "Error keeping Oregano nice, renice failed."
+    return 1
+  fi
+  return 0
+}
+
+renice_oregano_with_timeout () {
+  # Retry timeout is 2 minutes
+  local timeout=$((2 * 60))
+  local sleep_time=10
+  suppress_errors=0
+  for i in $(seq 1 $((${timeout} / ${sleep_time}))); do
+    renice_oregano
+    if [ $? -eq 0 ]; then
+      break;
+    fi
+    # Only log the first error so we don't spam the logs
+    suppress_errors=1
+    sleep "${sleep_time}"
+  done
+}
+
+(
+  while true; do
+    wait-until-created /tmp/renice_oregano
+    rm /tmp/renice_oregano
+    renice_oregano_with_timeout
+  done
+) &
+
+# To be extra sure we never run into the case where Oregano is not niced, have
+# a fall back that checks every hour to ensure Oregano stays niced.
+while true; do
+  renice_oregano_with_timeout
+  # Check every hour to ensure Oregano stays niced
+  sleep $((60 * 60))
+done
