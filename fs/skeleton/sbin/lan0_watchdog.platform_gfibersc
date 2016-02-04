@@ -1,0 +1,11 @@
+#!/bin/sh
+
+sleep 30
+
+TX_PACKETS=$(cat /sys/class/net/lan0/statistics/tx_packets)
+echo "lan0: TX packets = ${TX_PACKETS}" > /dev/kmsg
+
+if [ "${TX_PACKETS}" = "0" ]; then
+  echo "lan0: TX broken, reboot to recover" > /dev/kmsg
+  reboot
+fi
