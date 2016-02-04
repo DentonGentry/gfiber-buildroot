@@ -468,6 +468,7 @@ case "$1" in
     fi
 
     if [ -n "$(get-quantenna-interface)" ]; then
+      babysit 60 monitor-bbic-temp 2>&1 | logos bbictemp &
       babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
     fi
 

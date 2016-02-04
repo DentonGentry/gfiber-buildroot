@@ -1,0 +1,40 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+if ! runnable get-quantenna-interface || ! runnable qcsapi_pcie_static; then
+  exit 0
+fi
+
+iface=$(get-quantenna-interface)
+bbic_temp_file=/tmp/bbic.temp
+
+if [ -z "$iface" ]; then
+  echo "No bbic found, exiting."
+  exit 0
+fi
+
+while :; do
+  temp=$(qcsapi_pcie_static get_temperature "$iface")
+  if [ $? != 0 ]; then
+    atomic "$bbic_temp_file" "-1"
+    echo "accessing bbic failed."
+    sleep 5
+    continue
+  fi
+
+  # The string returned is
+  #   temperature_bbic_internal = 55.0
+  # This line of code strips off the prefix and leaves the temperature value.
+  temp=${temp#*= }
+  echo "bbic temp=$temp"
+
+  if [ -n "$temp" ]; then
+    atomic "$bbic_temp_file" "$temp"
+  else
+    echo "accessing bbic returned empty temperature string."
+    atomic "$bbic_temp_file" "-1"
+  fi
+
+  sleep 5
+done
