@@ -1,33 +1,37 @@
 #!/bin/sh
 
-IFNAME=
+. /etc/utils.sh
+
+INTERFACES=
 APIMODE=
 
 if is-fiberjack; then
-  IFNAME=pon0
+  INTERFACES="pon0"
 elif is-spacecast; then
-  IFNAME=lan0
+  INTERFACES="lan0"
 elif is-network-box; then
-  IFNAME=wan0
+  INTERFACES="wan0"
   APIMODE="--api-mode=iff"
-elif is-tv-box && is-wireless-client; then
-  IFNAME=eth0
+elif is-wireless-client; then
+  INTERFACES="eth0 wcli0 wcli1"
   APIMODE="--api-mode=iff"
-  mkdir -p /tmp/conman
+  mkdir -p /tmp/conman/interfaces
 fi
 
 start()
 {
-  if [ -n "$IFNAME" ] ; then
-    babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -p -q -d0 2>&1 | logos ifplugd &
-  fi
+  for IFNAME in $INTERFACES; do
+    if interface_exists $ifc; then
+      babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -p -q -d0 2>&1 | logos "ifplugd-$IFNAME" &
+    fi
+  done
 }
 
 stop()
 {
-  if [ -n "$IFNAME" ] ; then
+  for IFNAME in $INTERFACES; do
     ifplugd -k -W -i $IFNAME
-  fi
+  done
   pkill ifplugd.action
 }
 
