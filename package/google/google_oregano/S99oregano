@@ -18,8 +18,9 @@ case "$1" in
           if [ "$(id -u)" != "0" ]; then
             # We are already not running as root, keep current user
             $runoregano
+            touch /tmp/renice_oregano
           else
-            setuid appclient:video $runoregano
+            nice -n -5 setuid appclient:video $runoregano
           fi
         ) 2>&1 | logos oregano 0 20000000 &
       fi

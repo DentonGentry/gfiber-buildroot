@@ -12,6 +12,7 @@ case "$1" in
       wait-until-created /tmp/nexus_multiprocess
       rc_pipe_init
       if is-tv-box; then
+        babysit 10 keep_oregano_nice 2>&1 | logos keep-oregano-nice 0 0 &
         setuid appclient:video /app/oregano/runbasil 2>&1 | logos basil 0 20000000 &
       fi
     ) &
@@ -19,6 +20,7 @@ case "$1" in
   stop)
     # End the Basil dart server (which will also end its babysitter).
     pkillwait -f '(dart.*)([b]asil.*\.dart)'
+    pkillwait -f -x '/bin/sh /bin/keep_oregano_nice'
     rc_pipe_deinit
     ;;
   restart)
