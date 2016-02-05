@@ -7,13 +7,14 @@
 start()
 {
   echo "starting glaukusd..."
-  babysit glaukusd 2>&1 | logos glaukus &
+  babysit 60 glaukusd 2>&1 | logos glaukus &
 }
 
 stop()
 {
   echo "stopping glaukusd..."
-  pkill -INT -f glaukus_wrapper
+  pkill -INT glaukusd           # shut down cleanly
+  pkillwait -f glaukusd         # TERM then KILL
 }
 
 # only for chimera
