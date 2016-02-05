@@ -45,7 +45,7 @@ LINK_DOWN_LED_ON="x2 3 0" # slow blink purple
 NO_IP_LED_ON="3 0 3 0 3 0" # fast blink purple
 NO_SATELLITE_LED_ON="3" # solid purple
 FASTWAIT_LED_ON="2 0 2 0 2 0" # fast blink blue
-WAITING_LED_ON="2 0" # blink blue
+WAITING_LED_ON="x2 2 0" # slow blink blue
 RUNNING_LED_ON="2" # solid blue
 
 IFNAME="lan0"
