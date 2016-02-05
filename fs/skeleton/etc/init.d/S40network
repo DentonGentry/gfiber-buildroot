@@ -403,14 +403,19 @@ case "$1" in
     ifup lo
 
     # Set the mac address from values in hnvram.
-    set_mac_from_hnvram wan0 MAC_ADDR1
-    set_mac_from_hnvram lan0 MAC_ADDR2
+    if is-windcharger; then
+      set_mac_from_hnvram wan0 MAC_ADDR1
+      set_mac_from_hnvram lan0 MAC_ADDR2
+    fi
     set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
     set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
+    # GFRG2X0 sets lan0, wan0, and moca0 in pfe kernel module
+    # from addrs passed on command line from barebox
+
     if is-ptp; then
-      set_mac_from_hnvram craft0 MAC_ADDR1
-      set_mac_from_hnvram eth1 MAC_ADDR2
+      set_mac_from_hnvram craft0 MAC_ADDR
+      set_mac_from_hnvram eth1 MAC_ADDR_WAN
       craft_ipaddr=$(ptp-config -g craft_ipaddr)
       if [ -z "$craft_ipaddr" ]; then
         ptp-config -s craft_ipaddr 192.168.1.1/24
