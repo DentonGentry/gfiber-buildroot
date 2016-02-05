@@ -36,18 +36,18 @@ if [ -z "$interface" ]; then
 fi
 
 if [ $ACS ]; then
-	if ping6 $DEFAULT_ACS -c1 -I "$interface" &>/dev/null; then exit 0; fi
-	if ping $DEFAULT_ACS -c1 -I "$interface" &>/dev/null; then exit 0; fi
+	if ping6 $DEFAULT_ACS -c1 -I "$interface" >/dev/null 2>&1; then exit 0; fi
+	if ping $DEFAULT_ACS -c1 -I "$interface" >/dev/null 2>&1; then exit 0; fi
 
 	exit 1
 fi
 
 for IP in $HONEST_DNS; do
-	if ping $IP -c1 -I "$interface" &>/dev/null; then exit 0; fi
+	if ping $IP -c1 -I "$interface" >/dev/null 2>&1; then exit 0; fi
 done
 
 for IP in $HONEST_DNS6; do
-	if ping6 $IP -c1  -I "$interface" &>/dev/null; then exit 0; fi
+	if ping6 $IP -c1  -I "$interface" >/dev/null 2>&1; then exit 0; fi
 done
 
 exit 1
