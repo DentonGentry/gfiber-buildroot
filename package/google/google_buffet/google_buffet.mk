@@ -56,6 +56,11 @@ define GOOGLE_BUFFET_INSTALL_TARGET_CMDS
 	# directory and copy the cert to it.
 	mkdir -p $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates
 	cp -fp $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt $(TARGET_DIR)/chroot/chromeos/usr/share/chromeos-ca-certificates/578d5c04.0
+
+	if [ "$(BR2_PACKAGE_GOOGLE_PROD)" = "y" ]; then \
+		rm -f $(TARGET_DIR)/chroot/chromeos/bin/buffet_client; \
+		rm -f $(TARGET_DIR)/chroot/chromeos/bin/buffet_test_daemon; \
+	fi
 endef
 
 define GOOGLE_BUFFET_CLEAN_CMDS
