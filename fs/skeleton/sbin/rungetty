@@ -11,7 +11,7 @@ fi
 
 if [ -z "$err" ]; then
   wait-until-created /dev/"$1"
-  agetty -L "$1" 115200 vt100
+  agetty -8 -L "$1" 115200 vt100
 else
   echo "Not running getty on '$1'. $err" >&2
   while true; do
