@@ -1,0 +1,10 @@
+config BR2_PACKAGE_BOSSA
+	bool "bossa"
+	depends on BR2_INSTALL_LIBSTDCPP
+	help
+	  Flash tool for Atmel SAM
+
+	  https://github.com/shumatech/BOSSA
+
+comment "bossa requires a toolchain with C++ support enabled"
+	depends on !BR2_INSTALL_LIBSTDCPP

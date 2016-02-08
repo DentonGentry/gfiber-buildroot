@@ -709,4 +709,8 @@ menu "DVB tools"
 source "package/dvbsnoop/Config.in"
 endmenu
 
+menu "Chimera tools"
+source "package/bossa/Config.in"
+endmenu
+
 endmenu

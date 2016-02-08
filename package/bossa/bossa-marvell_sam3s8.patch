@@ -1,0 +1,76 @@
+diff --git a/Makefile b/Makefile
+index ac49dff..3c739ca 100644
+--- a/Makefile
++++ b/Makefile
+@@ -167,7 +167,7 @@ BOSSASH_LIBS=-lreadline $(COMMON_LIBS)
+ #
+ # Main targets
+ #
+-all: $(BINDIR)/bossa$(EXE) $(BINDIR)/bossac$(EXE) $(BINDIR)/bossash$(EXE)
++all:  $(BINDIR)/bossac$(EXE)
+ 
+ #
+ # Common rules
+diff --git a/src/EefcFlash.cpp b/src/EefcFlash.cpp
+index 76f0057..d13b7ba 100644
+--- a/src/EefcFlash.cpp
++++ b/src/EefcFlash.cpp
+@@ -3,7 +3,7 @@
+ //
+ // Copyright (c) 2011-2012, ShumaTech
+ // All rights reserved.
+-// 
++//
+ // Redistribution and use in source and binary forms, with or without
+ // modification, are permitted provided that the following conditions are met:
+ //     * Redistributions of source code must retain the above copyright
+@@ -14,7 +14,7 @@
+ //     * Neither the name of the <organization> nor the
+ //       names of its contributors may be used to endorse or promote products
+ //       derived from this software without specific prior written permission.
+-// 
++//
+ // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+@@ -72,7 +72,7 @@ EefcFlash::EefcFlash(Samba& samba,
+       _regs(regs), _canBrownout(canBrownout), _eraseAuto(true)
+ {
+     assert(planes == 1 || planes == 2);
+-    assert(pages <= 1024);
++    assert(pages <= 2048);
+     assert(lockRegions <= 32);
+ 
+     // SAM3 Errata (FWS must be 6)
+diff --git a/src/FlashFactory.cpp b/src/FlashFactory.cpp
+index a946d7b..393d4f4 100644
+--- a/src/FlashFactory.cpp
++++ b/src/FlashFactory.cpp
+@@ -3,7 +3,7 @@
+ //
+ // Copyright (c) 2011-2012, ShumaTech
+ // All rights reserved.
+-// 
++//
+ // Redistribution and use in source and binary forms, with or without
+ // modification, are permitted provided that the following conditions are met:
+ //     * Redistributions of source code must retain the above copyright
+@@ -14,7 +14,7 @@
+ //     * Neither the name of the <organization> nor the
+ //       names of its contributors may be used to endorse or promote products
+ //       derived from this software without specific prior written permission.
+-// 
++//
+ // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+@@ -141,6 +141,9 @@ FlashFactory::create(Samba& samba, uint32_t chipId)
+     case 0x28aa0560 : // C
+         flash = new EefcFlash(samba, "ATSAM3S1", 0x400000, 256, 256, 1, 4, 0x20000800, 0x20004000, 0x400e0a00, false);
+         break;
++    case 0x289b0a60 : //B <== added by Calin
++        flash = new EefcFlash(samba, "ATSAM3S8", 0x400000, 2048, 256, 1, 16, 0x20000800, 0x20004000, 0x400e0a00, false);
++        break;
+     //
+     // SAM3U
+     //
