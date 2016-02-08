@@ -1,5 +1,7 @@
 #! /bin/sh
 
+. /etc/utils.sh
+
 #
 # reset and initialize the marvell parts in chimera
 #
@@ -38,6 +40,15 @@ done
 # enable the switch
 echo 1 >$pci/enable
 
+register_experiment CpssNoStart
+register_experiment CpssNoInit
+register_experiment Cpss10GOnly
+
+if experiment CpssNoStart; then
+  echo "$0: experiment CpssNoStart is enabled, not starting cpss." >&2
+  exit 0
+fi
+
 # start cpss as persistent server
 pkill -x cpss
 ptyserver -p 4455 cpss -tty -config /dev/null &
@@ -46,40 +57,70 @@ ptyserver -p 4455 cpss -tty -config /dev/null &
 sleep 1
 echo "" | cpss_cmd || die "no console prompt"
 
-# init the switch, check for result
-cpss_cmd <<EOF | grep "Init system returned:0" || die "cpssInitSystem failed"
-  cpssInitSystem 19,2,0
+if experiment CpssNoInit; then
+  echo "$0: experiment CpssNoInit enabled, skipping init and 2011 config." >&2
+else
+
+  # init the switch, check for result
+  cpss_cmd <<EOF | grep "Init system returned:0" || die "cpssInitSystem failed"
+    cpssInitSystem 19,2,0
 EOF
 
-echo show version | cpss_cmd
+  # show cpss version
+  echo show version | cpss_cmd
 
-# configure ports, vlans
-cpss_cmd <<EOF || die "config failed"
-  config
-    interface vlan device 0 vid 4090
-    exit
+  # init 88x2011 (xfi/xaui transceiver)
+  # TODO(edjames): replace with cpss lua cmd.  stop/cont to avoid hang
+  pkill -STOP -x cpss
+  echo "$0: initializing 2011, this may hang..."
+  mmap /usr/lib/mmap/2011Config.mmap
+  echo "$0: 2011 init done."
+  pkill -CONT -x cpss
 
-    interface ethernet 0/0
-      speed 1000 mode SGMII
-      switchport allowed vlan add 4090 untagged
-      switchport pvid 4090
-    exit
-
-    interface ethernet 0/4
-      speed 1000 mode 1000Base_X
-      switchport allowed vlan add 4090 untagged
-      switchport pvid 4090
-    exit
-
-    interface range ethernet 0/24,0/25
-      speed 10000 mode SR_LR
-    exit
-  end
-
+  if experiment Cpss10GOnly; then
+    echo "$0: experiment Cpss10GOnly is enabled, skipping vlans." >&2
+    # configure just the 10G path
+    cpss_cmd <<EOF || die "config failed"
+      config
+        interface range ethernet 0/24,0/25
+          speed 10000 mode SR_LR
+        exit
+      end
 EOF
 
-# init 88x2011 (xfi/xaui transceiver)
-mmap /usr/lib/mmap/2011Config.mmap
+  else
+    # configure ports, vlans
+    cpss_cmd <<EOF || die "config failed"
+      config
+        interface vlan device 0 vid 4090
+        exit
+        interface vlan device 0 vid 1001
+        exit
+        interface vlan device 0 vid 1002
+        exit
+
+        interface ethernet 0/0
+          speed 1000 mode SGMII
+          switchport allowed vlan add 1001 untagged
+          switchport pvid 1001
+        exit
+        interface ethernet 0/4
+          speed 1000 mode 1000Base_X
+          switchport allowed vlan add 1001 untagged
+          switchport allowed vlan add 4090 tagged
+          switchport pvid 1001
+        exit
+        interface range ethernet 0/24,0/25
+          speed 10000 mode SR_LR
+          switchport allowed vlan add 1002 untagged
+          switchport allowed vlan add 4090 tagged
+          switchport pvid 1002
+        exit
+      end
+EOF
+
+  fi
+fi
 
 # wait on ptyserver
 wait
