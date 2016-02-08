@@ -76,15 +76,17 @@ define GOOGLE_CAST_INSTALL_TARGET_CMDS
 endef
 
 define GOOGLE_CAST_INSTALL_BINARIES
-	# Don't change file permissions here.  Change file permissions in
-	# google_cast/build/Makefile and then copy the file, preserving the current
-	# permissions.  This ensures that output files from local and buildroot builds
-	# will have the same permissions.
-	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
 	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
 
 	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
 	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
+
+	$(INSTALL) -D -m 0644 $(@D)/build/process.json $(TARGET_DIR)/chrome/process.json
+	$(INSTALL) -D -m 0755 $(@D)/build/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
+	$(INSTALL) -D -m 0755 $(@D)/build/start_cast_process_manager $(TARGET_DIR)/chrome/start_cast_process_manager
+	$(INSTALL) -D -m 0755 $(@D)/build/start_cast_shell $(TARGET_DIR)/chrome/start_cast_shell
+	$(INSTALL) -D -m 0755 $(@D)/build/start_cert_fetcher $(TARGET_DIR)/chrome/start_cert_fetcher
+
 	chmod 4755 $(TARGET_DIR)/chrome/chrome-sandbox
 endef
 
