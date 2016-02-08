@@ -19,49 +19,106 @@ flush()
 
 case "$1" in
   start|restart|reload)
-    if [ -e /sys/class/net/wan0 ]; then
-      if ! is-windcharger; then
-        modprobe -a \
-            iptable_filter \
-            iptable_nat \
-            ipt_tcp \
-            ipt_udp \
-            ipt_conntrack \
-            ipt_pkttype \
-            ipt_limit \
-            ipt_LOG \
-            ipt_REJECT \
-            ipt_MASQUERADE \
-            \
-            nf_nat_ftp \
-            nf_nat_tftp \
-            nf_nat_sip \
-            nf_nat_pptp \
-            nf_nat_irc \
-            nf_nat_proto_gre \
-            nf_nat_h323 \
-            nf_nat_rtsp \
-            \
-            nf_conntrack_ftp \
-            nf_conntrack_tftp \
-            nf_conntrack_sip \
-            nf_conntrack_pptp \
-            nf_conntrack_irc \
-            nf_conntrack_proto_gre \
-            nf_conntrack_h323 \
-            nf_conntrack_rtsp \
-            \
-            ip6table_filter \
-            ip6t_tcp \
-            ip6t_udp \
-            nf_conntrack_ipv6 \
-            ip6t_pkttype \
-            ip6t_limit \
-            ip6t_LOG \
-            ip6t_REJECT
-      fi
-      flush
+    if ! is-windcharger; then
+      modprobe -a \
+          iptable_filter \
+          iptable_nat \
+          ipt_tcp \
+          ipt_udp \
+          ipt_conntrack \
+          ipt_pkttype \
+          ipt_limit \
+          ipt_LOG \
+          ipt_REJECT \
+          ipt_MASQUERADE \
+          \
+          nf_nat_ftp \
+          nf_nat_tftp \
+          nf_nat_sip \
+          nf_nat_pptp \
+          nf_nat_irc \
+          nf_nat_proto_gre \
+          nf_nat_h323 \
+          nf_nat_rtsp \
+          \
+          nf_conntrack_ftp \
+          nf_conntrack_tftp \
+          nf_conntrack_sip \
+          nf_conntrack_pptp \
+          nf_conntrack_irc \
+          nf_conntrack_proto_gre \
+          nf_conntrack_h323 \
+          nf_conntrack_rtsp \
+          \
+          ip6table_filter \
+          ip6t_tcp \
+          ip6t_udp \
+          nf_conntrack_ipv6 \
+          ip6t_pkttype \
+          ip6t_limit \
+          ip6t_LOG \
+          ip6t_REJECT
+    fi
 
+    # Flush all existing rules when starting or reloading.
+    flush
+
+    if is-ptp; then
+      ip46tables -P INPUT DROP
+      ip46tables -P OUTPUT ACCEPT
+      ip46tables -P FORWARD DROP
+
+      # Accept established and related connections.
+      ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+      # ping and path MTU discovery (PMTUD)
+      iptables -A INPUT -p icmp --icmp-type 8/0 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 3/4 -j ACCEPT
+      iptables -A INPUT -p icmp --icmp-type 11/0 -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+
+      if [ -e /sys/class/net/craft0 ]; then
+        ip46tables -A INPUT -i craft0 -p tcp --dport 22 -j ACCEPT
+        ip46tables -A INPUT -i craft0 -p tcp --dport 80 -j ACCEPT
+        # Reject everything else that comes in on the craft port. Any new rules
+        # must be added above the REJECT.
+        ip46tables -A INPUT -i craft0 -j REJECT
+      fi
+
+      # multicast (fiber TV, EAS)
+      ip46tables -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
+
+      # Allow all incoming connections to the loopback interface.
+      ip46tables -A INPUT -i lo -j ACCEPT
+
+      # cwmpd ACS kick
+      ip46tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
+
+      # DHCPv4 client
+      iptables -A INPUT -p udp --sport 67:68 --dport 67:68 -j ACCEPT
+      # DHCP6 client
+      ip6tables -A INPUT -p udp --sport 547 --dport 546 -j ACCEPT
+
+      # TODO(cgibson): Revisit allowing SSH access on all but the craft port
+      # pre-launch and also the SSH keying strategy: http://b/27072881
+      ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+      # IPv6 addressing
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-advertisement -j ACCEPT
+      ip6tables -A INPUT -p icmpv6 --icmpv6-type neighbour-solicitation -j ACCEPT
+
+      # Log packets which weren't explicitly accepted by above rules
+      ip46tables -N log
+      ip46tables -A log -m pkttype -m limit \
+          --pkt-type unicast \
+          --limit 1/second \
+          -j LOG --log-prefix "FW: "
+      ip46tables -A INPUT -j log
+    fi
+
+    if [ -e /sys/class/net/wan0 ]; then
       # Do these first to reduce race conditions
       if [ -e /tmp/NFS ]; then
         # Workaround because we can't have a temporary network dropout
