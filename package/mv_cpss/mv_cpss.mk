@@ -16,6 +16,8 @@ endef
 
 define MV_CPSS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D $(@D)/cpss $(TARGET_DIR)/usr/bin/cpss
+	mkdir -p $(TARGET_DIR)/usr/lib/cpss/
+	cp -R $(@D)/scripts $(TARGET_DIR)/usr/lib/cpss/scripts
 endef
 
 $(eval $(call GENTARGETS))

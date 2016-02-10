@@ -40,7 +40,8 @@ echo 1 >$pci/enable
 
 # start cpss as persistent server
 pkill -x cpss
-ptyserver -p 4455 cpss -tty -config /dev/null &
+export CMDFS_ROOT=/usr/lib/cpss/scripts
+ptyserver -p 4455 cpss -tty &
 
 # wait for Console# prompt
 sleep 1
