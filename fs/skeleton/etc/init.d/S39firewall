@@ -103,6 +103,10 @@ case "$1" in
       # pre-launch and also the SSH keying strategy: http://b/27072881
       ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT
 
+      if [ -e /tmp/DEBUG ]; then
+        ip46tables -A INPUT -p tcp --dport 8080 -j ACCEPT
+      fi
+
       # IPv6 addressing
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
