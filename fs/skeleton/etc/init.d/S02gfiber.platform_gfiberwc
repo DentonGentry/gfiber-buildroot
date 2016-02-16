@@ -13,6 +13,10 @@ chmod 444 /etc/serial
 
 hostname WindCharger
 
+# debugfs isn't mounted automatically because this device doesn't use
+# simpleramfs.
+mount -t debugfs none /sys/kernel/debug
+
 # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
 echo "Starting gpio-mailbox"
 mkdir -p /tmp/gpio/ledcontrol
