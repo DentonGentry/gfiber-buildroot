@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBWEAVE
+	bool "libweave"
+	help
+	  LibWeave is the library for device side implementation of the Weave
+	  protocol.
+
+	  https://weave.googlesource.com/weave/libweave
