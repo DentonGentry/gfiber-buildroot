@@ -71,12 +71,11 @@ EOF
   echo show version | cpss_cmd
 
   # init 88x2011 (xfi/xaui transceiver)
-  # TODO(edjames): replace with cpss lua cmd.  stop/cont to avoid hang
-  pkill -STOP -x cpss
-  echo "$0: initializing 2011, this may hang..."
-  mmap /usr/lib/mmap/2011Config.mmap
-  echo "$0: 2011 init done."
-  pkill -CONT -x cpss
+  cpss_cmd <<EOF | grep "Successfully" || die "failed to initialize 2011"
+    chimera
+      init_2011
+    end
+EOF
 
   if experiment Cpss10GOnly; then
     echo "$0: experiment Cpss10GOnly is enabled, skipping vlans." >&2
