@@ -1,0 +1,30 @@
+#!/bin/sh
+. /etc/utils.sh
+
+# in this file
+register_experiment ConmanDebug
+
+case "$1" in
+  start)
+    mkdir -p /tmp/conman
+    if is-wireless-client; then
+      if experiment ConmanDebug; then
+        DBG=--debug
+      else
+        unset DBG
+      fi
+      babysit 30 conman "$DBG" 2>&1 | logos conman &
+    elif runnable apman; then
+      babysit 30 apman 2>&1 | logos apman &
+    fi
+    ;;
+  stop)
+    pkillwait -f conman
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
