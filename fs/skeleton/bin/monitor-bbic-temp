@@ -7,7 +7,7 @@ if ! runnable get-quantenna-interface || ! runnable qcsapi_pcie_static; then
 fi
 
 iface=$(get-quantenna-interface)
-bbic_temp_file=/tmp/bbic.temp
+bbic_temp_file=/tmp/gpio/aux1_temperature
 
 if [ -z "$iface" ]; then
   echo "No bbic found, exiting."
