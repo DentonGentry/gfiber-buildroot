@@ -15,8 +15,14 @@ if [ -z "$iface" ]; then
 fi
 
 while :; do
-  temp=$(qcsapi_pcie_static get_temperature "$iface")
-  if [ $? != 0 ]; then
+  temp=$(
+  qcsapi_pcie_static get_temperature "$iface" | while read n e v; do
+    if [ "$n" = temperature_bbic_internal ]; then
+      echo $v
+    fi
+  done
+  )
+  if [ -z "$temp" ]; then
     atomic "$bbic_temp_file" "-1"
     echo "accessing bbic failed."
     sleep 5
