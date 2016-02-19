@@ -113,7 +113,7 @@ start()
       modprobe -a bluetooth hidp hid-gfrm uhid
       modprobe btmrvl bdaddr_base="$BT_MAC"
       modprobe btmrvl_sdio
-      if modinfo -F filename btbcm &>/dev/null; then
+      if modinfo -F filename btbcm >/dev/null 2>&1; then
         modprobe btbcm bdaddr_base="$BT_MAC"
         modprobe btusb
       else
