@@ -13,7 +13,11 @@ else
   initrwnd=
 fi
 
-WATCH="/tmp/conman"
+GATEWAY_DIR="/tmp/conman"
+COMMAND_DIR="/config/conman"
+
+mkdir -p $GATEWAY_DIR
+mkdir -p $COMMAND_DIR
 
 # extension is either "interface_suffix.band" or just "band"
 stopap() {
@@ -49,10 +53,12 @@ stopap() {
 
 # Check all existing command and gateway files, then monitor those as well as
 # access_point files for changes.
-{ cd "$WATCH" && ls command.* gateway.*; watch-dir "$WATCH"; } |
+{ cd "$GATEWAY_DIR" && ls gateway.*;
+  cd "$COMMAND_DIR" && ls command.*;
+  watch-dir $GATEWAY_DIR $COMMAND_DIR; } |
 while read filename; do
   if startswith "$filename" "gateway."; then
-    filepath="$WATCH/$filename"
+    filepath="$GATEWAY_DIR/$filename"
     if [ -e "$filepath" ]; then
       interface=${filename#gateway.}
       gateway=$(cat "$filepath")
@@ -67,13 +73,13 @@ while read filename; do
 
   if startswith "$filename" "command."; then
     extension=${filename#command.}
-    command="$WATCH/$filename"
-    access_point="$WATCH/access_point.$extension"
+    command="$COMMAND_DIR/$filename"
+    access_point="$COMMAND_DIR/access_point.$extension"
   else
     if startswith "$filename" "access_point."; then
       extension=${filename#access_point.}
-      command="$WATCH/command.$extension"
-      access_point="$WATCH/$filename"
+      command="$COMMAND_DIR/command.$extension"
+      access_point="$COMMAND_DIR/$filename"
     fi
   fi
 

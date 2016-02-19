@@ -58,8 +58,8 @@ wait_route_created() {
 echo "Setting up"
 wifi stop
 pkill "apman$"
-rm /tmp/conman/command*
-rm /tmp/conman/access_point*
+rm /config/conman/command*
+rm /config/conman/access_point*
 # Creating wlan0_apmantest sometimes fails if we don't reset wlan0.
 wlan0mac=$(cat /sys/class/net/wlan0/address)
 mac=$(mac_addr_increment $wlan0mac 100)
@@ -74,44 +74,35 @@ WVSTART "apman"
 apman&
 WVFAIL hostapd_running
 
-touch /tmp/conman/access_point.5
+touch /config/conman/access_point.5
 WVFAIL hostapd_running
 
 echo "Enable 5 GHz access point"
-echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n5\n-s\nssid" > /tmp/conman/command.5
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n5\n-s\nssid" > /config/conman/command.5
 hostapd_wait_check_running true
 
 echo "Disable 5 GHz access point"
-rm /tmp/conman/access_point.5
+rm /config/conman/access_point.5
 hostapd_wait_check_running false
 
-touch /tmp/conman/access_point._apmantest.2.4
+touch /config/conman/access_point._apmantest.2.4
 echo "Waiting to make sure hostapd doesn't start"
 hostapd_wait_check_running false
 
-echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid" > /tmp/conman/command.2.4
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid" > /config/conman/command.2.4
 echo "Waiting to make sure hostapd doesn't start"
 hostapd_wait_check_running false
 
-echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /tmp/conman/command._apmantest.2.4
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /config/conman/command._apmantest.2.4
 hostapd_wait_check_running true
-
-
-WVSTART "apman routes"
-original_br0_route=$(ip route | grep default.*br0)
-rm -f /tmp/conman/gateway.br0
-echo "192.168.255.1" > /tmp/conman/gateway.br0
-WVPASS wait_route_created br0 192.168.255.1
-echo "192.168.255.255" > /tmp/conman/gateway.br0
-WVPASS wait_route_created br0 192.168.255.255
 
 
 echo "Cleaning up"
 WVPASS iw dev wlan0_apmantest del
 pkill "apman$"
 wifi off
-rm /tmp/conman/command*
-rm /tmp/conman/access_point*
+rm /config/conman/command*
+rm /config/conman/access_point*
 rm -f /tmp/conman/gateway.br0
 if [ -n "$original_br0_route" ]; then
   echo "$original_br0_route" | xargs ip route add
