@@ -65,6 +65,7 @@ endef
 
 define GOOGLE_CAST_INSTALL_TARGET_CMDS
 	mkdir -p $(TARGET_DIR)/chrome/lib/
+	mkdir -p $(TARGET_DIR)/oem_cast_shlib/
 
 	# TODO(sfunkenhauser): Remove these once this path is no longer
 	# hard-coded in drm_context.cc.
@@ -78,8 +79,11 @@ endef
 define GOOGLE_CAST_INSTALL_BINARIES
 	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
 
-	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/* $(TARGET_DIR)/chrome/
-	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/lib/* $(TARGET_DIR)/chrome/lib/
+	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/cast_binaries/* $(TARGET_DIR)/chrome/
+	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_binaries/* $(TARGET_DIR)/chrome/
+	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_libs/* $(TARGET_DIR)/oem_cast_shlib/
+
+	mv $(TARGET_DIR)/chrome/chrome_sandbox $(TARGET_DIR)/chrome/chrome-sandbox
 
 	$(INSTALL) -D -m 0644 $(@D)/build/process.json $(TARGET_DIR)/chrome/process.json
 	$(INSTALL) -D -m 0755 $(@D)/build/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
