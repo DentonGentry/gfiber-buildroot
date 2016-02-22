@@ -19,7 +19,8 @@ case "$1" in
     fi
     ;;
   stop)
-    pkillwait -f conman
+    pkillwait -f "\bconman"
+    pkillwait -f "\bapman"
     ;;
   restart)
     $0 stop; $0 start
