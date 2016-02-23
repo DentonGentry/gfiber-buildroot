@@ -8,7 +8,8 @@ PYTHON_CRYPTO_VERSION = 2.6
 PYTHON_CRYPTO_SOURCE  = pycrypto-$(PYTHON_CRYPTO_VERSION).tar.gz
 PYTHON_CRYPTO_SITE    = http://pypi.python.org/packages/source/p/pycrypto/
 
-PYTHON_CRYPTO_DEPENDENCIES = python host-python
+PYTHON_CRYPTO_DEPENDENCIES = python host-python-setuptools
+HOST_PYTHON_CRYPTO_DEPENDENCIES = host-python host-python-setuptools
 
 define HOST_PYTHON_CRYPTO_BUILD_CMDS
 	(cd $(@D); $(HOST_DIR)/usr/bin/python setup.py build)
