@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]; then
+  echo "usage: $0 <timeout> <filenames>\n  Waits until any of the given files has been created or the timeout (in seconds) expires." >&2
+  exit 1
+fi
+
+TIMEOUT=$1
+shift
+
+wait-until-created "$@" &
+PID=$!
+(sleep ${TIMEOUT}; kill ${PID}) 2> /dev/null &
+wait ${PID} 2> /dev/null
