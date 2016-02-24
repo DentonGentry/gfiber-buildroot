@@ -2,6 +2,8 @@
 
 . /etc/utils.sh
 
+register_experiment NoSIPConntrack
+
 ip46tables()
 {
   iptables $*
@@ -34,7 +36,6 @@ case "$1" in
           \
           nf_nat_ftp \
           nf_nat_tftp \
-          nf_nat_sip \
           nf_nat_pptp \
           nf_nat_irc \
           nf_nat_proto_gre \
@@ -43,7 +44,6 @@ case "$1" in
           \
           nf_conntrack_ftp \
           nf_conntrack_tftp \
-          nf_conntrack_sip \
           nf_conntrack_pptp \
           nf_conntrack_irc \
           nf_conntrack_proto_gre \
@@ -58,6 +58,11 @@ case "$1" in
           ip6t_limit \
           ip6t_LOG \
           ip6t_REJECT
+      if ! experiment NoSIPConntrack; then
+        modprobe -a \
+            nf_nat_sip \
+            nf_conntrack_sip
+      fi
     fi
 
     # Flush all existing rules when starting or reloading.
