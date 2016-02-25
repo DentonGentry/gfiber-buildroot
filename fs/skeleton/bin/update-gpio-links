@@ -80,9 +80,10 @@ set_gpio_prop()
 create_gpio_links()
 {
   local config="$1" linkdir="$2"
-  local platform err="0" line="0" tmp="/tmp/gpios.$$" m
+  local platform err="0" line="0" tmp="/tmp/gpios.$$" m hwver
 
   read platform </etc/platform
+  hwver=$(hnvram -r -q HW_VER 2>/dev/null)
 
   rm -rf "$linkdir.new" "$linkdir.old"
   mkdir "$linkdir.new" || return 1
@@ -107,7 +108,7 @@ create_gpio_links()
     fi
 
     # skip lines not for this platform
-    if [ "$model" != "$platform" ]; then
+    if [ "$model" != "$platform" ] && [ "$model" != "$platform-$hwver" ]; then
       continue
     fi
 
