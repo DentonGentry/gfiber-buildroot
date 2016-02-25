@@ -24,7 +24,7 @@ case "$1" in
       fi
       (
         # Bootstrap
-        wait-until-created /tmp/gpio/bootstrap
+        wait-until-created-timeout 60 /tmp/gpio/bootstrap
         babysit_start 10 "$APP" "$BINARY" "$FLAGS"
       ) &
     fi
