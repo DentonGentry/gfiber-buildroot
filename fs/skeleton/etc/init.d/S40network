@@ -467,11 +467,6 @@ case "$1" in
       enable_rx_coalescing wan0
     fi
 
-    if [ -n "$(get-quantenna-interface)" ]; then
-      babysit 60 monitor-bbic-temp 2>&1 | logos bbictemp &
-      babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
-    fi
-
     if is-tv-box || is-storage-box; then
       # Enable hardware offloads, do this at the end to avoid
       # invalid access caused by powered down core

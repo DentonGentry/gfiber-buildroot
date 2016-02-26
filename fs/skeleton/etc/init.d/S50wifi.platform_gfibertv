@@ -61,11 +61,19 @@ case "$1" in
     if runnable wifi_files; then
       babysit 30 wifi_files 2>&1 | logos wifistatus &
     fi
+    if [ -n "$(get-quantenna-interface)" ]; then
+      babysit 30 monitor-bbic-temp 2>&1 | logos bbictemp &
+      babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
+      babysit 30 quantenna-status 2>&1 | logos quantenna-status &
+    fi
     wifi restore
     ;;
   stop)
     wifi stop
     pkillwait -f wifi_files
+    pkillwait -f monitor-bbic-temp
+    pkillwait -f quantenna-kmsgd
+    pkillwait -f quantenna-status
     rm -rf /tmp/stations
     rm /tmp/wifisignal
     ;;
