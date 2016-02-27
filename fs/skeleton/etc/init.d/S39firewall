@@ -82,6 +82,10 @@ case "$1" in
       iptables -A INPUT -p icmp --icmp-type 11/0 -j ACCEPT
       ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
 
+      if [ -e /tmp/DEBUG ]; then
+        ip46tables -A INPUT -p tcp --dport 8080 -j ACCEPT
+      fi
+
       if [ -e /sys/class/net/craft0 ]; then
         ip46tables -A INPUT -i craft0 -p tcp --dport 22 -j ACCEPT
         ip46tables -A INPUT -i craft0 -p tcp --dport 80 -j ACCEPT
@@ -107,10 +111,6 @@ case "$1" in
       # TODO(cgibson): Revisit allowing SSH access on all but the craft port
       # pre-launch and also the SSH keying strategy: http://b/27072881
       ip46tables -A INPUT -p tcp --dport 22 -j ACCEPT
-
-      if [ -e /tmp/DEBUG ]; then
-        ip46tables -A INPUT -p tcp --dport 8080 -j ACCEPT
-      fi
 
       # IPv6 addressing
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
