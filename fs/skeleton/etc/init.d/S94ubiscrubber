@@ -5,9 +5,13 @@ case "$1" in
     # Use ubinfo to get a list of such volumes.
     lsubi |
     while read node name; do
-      echo "Starting ubiscrubber for $node ($name)."
-      supernice babysit 60 sh -ec "while :; do ubiscrubber /dev/$node; done" 2>&1 |
-          logos "ubiscrubber ${node##*/}" &
+      if [ "$name" = rootfs ] || [ "$name" = config ] || [ "$name" = user ];
+      then
+	echo "Starting ubiscrubber for $node ($name)."
+	supernice babysit 60 sh -ec \
+	    "while :; do ubiscrubber /dev/$node; done" 2>&1 |
+	      logos "ubiscrubber ${node##*/}" &
+      fi
     done
     ;;
   stop)
