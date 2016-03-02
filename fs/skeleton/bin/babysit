@@ -22,6 +22,7 @@ progname() {
       alivemonitor) shift 5 ;;
       babysit) shift 2 ;;
       startpid) shift 2 ;;
+      deathrattle) shift 2 ;;
       *) echo "$1"; return ;;
     esac
   done
