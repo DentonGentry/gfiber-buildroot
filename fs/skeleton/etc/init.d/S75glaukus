@@ -6,12 +6,18 @@
 
 start()
 {
+  echo "starting jsonpoll..."
+  babysit 60 jsonpoll 2>&1 | logos jsonpoll &
+
   echo "starting glaukusd..."
   babysit 60 glaukusd 2>&1 | logos glaukus &
 }
 
 stop()
 {
+  echo "stopping jsonpoll..."
+  pkillwait -f jsonpoll
+
   echo "stopping glaukusd..."
   pkill -INT glaukusd           # shut down cleanly
   pkillwait -f glaukusd         # TERM then KILL
