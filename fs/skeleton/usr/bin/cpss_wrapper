@@ -6,6 +6,10 @@
 # reset and initialize the marvell parts in chimera
 #
 
+register_experiment CpssNoStart
+register_experiment CpssNoInit
+register_experiment Cpss10GOnly
+
 die()
 {
   echo "$0: $*" >&2
@@ -15,20 +19,51 @@ die()
 
 pci="/sys/bus/pci/devices/0000:01:00.0"
 if [ ! -d $pci ]; then
-  echo "$0: pci device '$pci' not found" >&2
-  exit 1
+  die "pci device '$pci' not found"
 fi
 
 vendor_id="$(cat ${pci}/vendor)"
 device_id="$(cat ${pci}/device)"
 if [ "$vendor_id" != "0x11ab" ] || [ "$device_id" != "0xf410" ]; then
-  echo "$0: pci vendor_id or device_id mismatch" >&2
-  exit 1
+  die "pci vendor_id (0x11ab != $vendor_id) or" \
+      "device_id (0xf410 != $device_id) mismatch!"
+fi
+
+# Resetting the 3236 causes all the PCI BARs to be reset, so we need to remove
+# the switch from the pci bus then rescan the pci bus at the end. Finally we
+# need to enable the switch again.
+echo 1 >$pci/remove
+msleep 100
+if [ ! -d $pci ]; then
+  echo "$pci was removed successfully!"
+else
+  die "There is still a PCI device present after removal at: $pci"
+fi
+
+# If 3236_reset is available then the switch software reset line is available.
+# Wait for 3236_ready to go high before starting cpss.
+if [ -e /dev/gpio/3236_reset ]; then
+  echo 1 >/dev/gpio/3236_reset/value
+  msleep 100
+  echo 0 >/dev/gpio/3236_reset/value
+  bailout=0
+  while [ ${bailout} -le 3 ]; do
+    state=$(cat /dev/gpio/3236_ready/value)
+    if [ ${state} -eq 1 ]; then
+      echo "$0: 3236 is ready after reset!"
+      break
+    else
+      bailout=$(($bailout+1))
+      msleep 500
+    fi
+  done
+  if [ ${bailout} -gt 3 ]; then
+    die "Error: 3236 was NOT reset!"
+  fi
 fi
 
 # reset phys
-# TODO(edjames): reset switch
-reset="pcie0_reset 2011_reset 3220_reset"
+reset="2011_reset 3220_reset"
 for n in $reset; do
   echo 1 >/dev/gpio/$n/value
 done
@@ -37,12 +72,16 @@ for n in $reset; do
   echo 0 >/dev/gpio/$n/value
 done
 
-# enable the switch
-echo 1 >$pci/enable
+echo 1 >/sys/bus/pci/rescan
+msleep 200
+if [ ! -d $pci ]; then
+  die "There is no PCI device at $pci after rescanning!"
+else
+  echo "Excellent! $pci has reappeared."
+fi
 
-register_experiment CpssNoStart
-register_experiment CpssNoInit
-register_experiment Cpss10GOnly
+echo "Finally, enabling the switch..."
+echo 1 >$pci/enable
 
 if experiment CpssNoStart; then
   echo "$0: experiment CpssNoStart is enabled, not starting cpss." >&2
