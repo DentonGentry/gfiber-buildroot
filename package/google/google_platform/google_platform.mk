@@ -226,7 +226,7 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD),$(INSTALL) -m 0755 -D package/google/google_platform/S95uploadlog $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE),$(INSTALL) -m 0755 -D package/google/google_platform/S50waveguide $(TARGET_DIR)/etc/init.d/)
-	$(INSTALL) -m 0755 -D package/google/google_platform/S51conman $(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -m 0755 -D package/google/google_platform/S52conman $(TARGET_DIR)/etc/init.d/
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR),$(INSTALL) -m 0755 -D package/google/google_platform/S04sysmgr $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_HAVE_EXTRA_CLEANUP),$(INSTALL) -m 0755 -D package/google/google_platform/S99xxemergency $(TARGET_DIR)/etc/init.d/)
 	$(INSTALL) -m 0755 -D -T package/google/google_platform/gfiber_public.der/$(PUB_KEY) $(TARGET_DIR)/etc/gfiber_public.der

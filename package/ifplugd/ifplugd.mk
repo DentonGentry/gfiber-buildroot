@@ -18,8 +18,9 @@ ifeq ($(BR2_PACKAGE_BUSYBOX),y)
 endif
 
 define IFPLUGD_INSTALL_FIXUP
+	# We want ifplugd to run after S50wifi but before S52conman.
 	$(INSTALL) -m 755 -D package/ifplugd/S80ifplugd \
-		$(TARGET_DIR)/etc/init.d/S80ifplugd
+		$(TARGET_DIR)/etc/init.d/S51ifplugd
 	$(INSTALL) -d $(TARGET_DIR)/etc/ifplugd
 	$(INSTALL) -m 755 -D package/ifplugd/ifplugd.action \
 		$(TARGET_DIR)/etc/ifplugd/ifplugd.action
