@@ -47,7 +47,7 @@ GFCH100        14   k60_i2c_int    1       rising -
 GFCH100        15   k60_gpio       -       -      -
 GFCH100        16   85100_int      1       rising -
 GFCH100        17   1322_reset     1       -      high
-GFCH100        18   mcu_gpio2      -       -      -
+GFCH100        18   mcu_erase      0       -      low
 GFCH100        19   2011_int       1       rising -
 GFCH100        20   mcu_reset      1       -      high
 GFCH100        29   3220_reset     1       -      high
