@@ -30,6 +30,7 @@ GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
 MONLOG_CREDS_FILE="$CONTROL_PATH/monlog_creds"
 PARAMS_FILE="$CONTROL_PATH/has_params"
 AUTHORIZATION_FILE="$CONTROL_PATH/app_authorized"
+CERT_FILE="$CONTROL_PATH/app_cert"
 APP_RUNNING_FILE="$CONTROL_PATH/app_running"
 TUNER_LOCK_FILE="$CONTROL_PATH/app_tuner_lock"
 DATA_STREAM_FILE="$CONTROL_PATH/app_data"
@@ -130,6 +131,8 @@ while read f; do
     change_state NOPARAMS "$NO_INTERNET_LED_ON"
   elif [ ! -f "$AUTHORIZATION_FILE" ]; then
     change_state APP_NOTAUTHORIZED "$NO_INTERNET_LED_ON"
+  elif [ ! -f "$CERT_FILE" ]; then
+    change_state APP_NOCERT "$NO_INTERNET_LED_ON"
   elif [ ! -f "$APP_RUNNING_FILE" ]; then
     change_state APP_ERROR "$SW_FAIL_LED_ON"
   elif [ ! -f "$TUNER_LOCK_FILE" ]; then
