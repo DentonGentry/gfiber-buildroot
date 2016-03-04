@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Run a command when another command exits.  Example:
+#
+#   deathrattle "ls /tmp" sleep 5
+#
+# This will sleep for 5 seconds and then list the contents of /tmp.
+
+rattle="$1"
+shift
+
+$@
+result=$?
+
+( $rattle )
+
+exit $result

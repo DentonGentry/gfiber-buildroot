@@ -13,7 +13,7 @@ case "$1" in
       else
         unset DBG
       fi
-      babysit 30 conman "$DBG" 2>&1 | logos conman &
+      babysit 30 deathrattle "timeout 600 apman" conman "$DBG" 2>&1 | logos conman &
     elif runnable apman; then
       babysit 30 apman 2>&1 | logos apman &
     fi
