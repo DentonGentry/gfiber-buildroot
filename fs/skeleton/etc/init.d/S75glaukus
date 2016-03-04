@@ -6,6 +6,10 @@
 
 start()
 {
+  echo 1 >/dev/gpio/mcu_reset/value
+  msleep 100
+  echo 0 >/dev/gpio/mcu_reset/value
+
   echo "starting jsonpoll..."
   babysit 60 jsonpoll 2>&1 | logos jsonpoll &
 
