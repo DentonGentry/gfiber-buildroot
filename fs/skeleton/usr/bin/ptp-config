@@ -8,11 +8,12 @@ CONFIG_DIR="/config/settings"
 usage() {
   echo "Usage:"
   echo
-  echo "  -h				This help screen"
-  echo "  -g config_option		Get config_option"
-  echo "  -i config_option		Do any initialization for config_option"
-  echo "  -s config_option value	Set config_option to value"
-  echo "  -c config_option		Clear config_option"
+  echo "  -h                            This help screen"
+  echo "  -g config_option              Get config_option"
+  echo "  -i config_option              Do any initialization for config_option"
+  echo "  -s config_option value        Set config_option to value"
+  echo "  -d config_option value        Set default (set if not set)"
+  echo "  -c config_option              Clear config_option"
   echo
   echo "Some example invocations:"
   echo
@@ -45,21 +46,55 @@ do_get() {
   echo "$opt"
 }
 
+do_vlan() {
+  local file="$CONFIG_DIR/$1" if="$2" vname="$3"
+  local vif="$if.$vname" vlan
+  [ -r "$file" ] || die "Failed to initialize $1: Cannot open $file"
+  read vlan <"$file"
+  [ -n "$vlan" ] || die "Cannot init $1: Need to set a value first."
+
+  # clear existing
+  if [ -e "/sys/class/net/$vif" ]; then
+    retval=$(ip link delete "$vif" 2>&1)
+    [ "$?" -eq "0" ] || die "Failed to delete $vif: $retval."
+  fi
+
+  # add vlan interface, bring up
+  retval=$(ip link add link $if name $vif type vlan id $vlan 2>&1)
+  [ "$?" -eq "0" ] || die "Failed to add $vif: $retval."
+  retval=$(ifup $vif 2>&1)
+  [ "$?" -eq "0" ] || die "Failed to ifup $vif: $retval."
+}
+
+do_ipaddr() {
+  local file="$CONFIG_DIR/$1" if="$2"
+  local ipaddr
+  [ -r "$file" ] || die "Failed to initialize $1: Cannot open $file"
+  read ipaddr <"$file"
+  [ -n "$ipaddr" ] || die "Cannot init $1: Need to set a value first."
+
+  # Clear any existing values on this interface so we don't get an error.
+  retval=$(ip addr flush dev $if 2>&1)
+  [ "$?" -eq "0" ] || die "Failed to flush $if: $retval."
+
+  # Set the new ip address from the config file.
+  retval=$(ip addr add $ipaddr dev $if 2>&1)
+  [ "$?" -eq "0" ] || die "Failed to set $ipaddr on $if: $retval"
+}
+
 do_init() {
   case "$1" in
     craft_ipaddr)
-      local file="$CONFIG_DIR/$1"
-      [ -r "$file" ] || die "Failed to initialize $1: Cannot open $file"
-      read craft_ipaddr <"$file"
-      [ -n "$craft_ipaddr" ] || die "Cannot init $1: Need to set a value first."
-
-      # Clear any existing values on this interface so we don't get an error.
-      retval=$(ip addr flush dev craft0 2>&1)
-      [ "$?" -eq "0" ] || die "Failed to flush craft0: $retval."
-
-      # Set the new ip address from the config file.
-      retval=$(ip addr add $craft_ipaddr dev craft0 2>&1)
-      [ "$?" -eq "0" ] || die "Failed to set $craft_ipaddr on craft0: $retval"
+      do_ipaddr "$1" craft0
+      ;;
+    local_ipaddr)
+      do_ipaddr "$1" eth1.peer
+      ;;
+    vlan_inband)
+      do_vlan "$1" eth1 inband
+      ;;
+    vlan_peer)
+      do_vlan "$1" eth1 peer
       ;;
     *)
       echo "Nothing to initialize for $1" && exit 2
@@ -76,6 +111,13 @@ do_set() {
   atomic $file $value || die "Failed to write config value to $file: $retval"
 }
 
+do_set_if_not_set() {
+  local file="$CONFIG_DIR/$1"
+  if [ ! -f "$file" ]; then
+    do_set "$1" "$2"
+  fi
+}
+
 do_clear() {
   rm -f "$CONFIG_DIR/$1"
 }
@@ -90,7 +132,7 @@ if [ ! -d "$CONFIG_DIR" ]; then
   mkdir -p "$CONFIG_DIR"
 fi
 
-while getopts ":cg:hi:s:" option
+while getopts ":cg:hi:s:d:" option
 do
   case "$option" in
     g)
@@ -101,6 +143,9 @@ do
       ;;
     s)
       option_found=1 && do_set "$2" "$3"
+      ;;
+    d)
+      option_found=1 && do_set_if_not_set "$2" "$3"
       ;;
     c)
       option_found=1 && do_clear "$2"

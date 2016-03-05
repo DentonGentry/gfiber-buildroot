@@ -5,6 +5,10 @@ if is-network-box; then
   if [ "$iface" = wan0 ] || [ "$iface" = wan0.2 ]; then
     uplink=1
   fi
+elif is-ptp; then
+  if [ "$iface" = br0 ] || [ "$iface" = eth1.inband ]; then
+    uplink=1
+  fi
 else
   if [ "$iface" = br0 ]; then
     uplink=1
