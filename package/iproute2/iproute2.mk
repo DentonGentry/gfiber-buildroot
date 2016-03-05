@@ -4,7 +4,7 @@
 #
 #############################################################
 
-IPROUTE2_VERSION = v2.6.37
+IPROUTE2_VERSION = v3.16.0
 IPROUTE2_SITE = git://git.kernel.org/pub/scm/linux/kernel/git/shemminger/iproute2.git
 IPROUTE2_TARGET_SBINS = ctstat genl ifstat ip lnstat nstat routef routel rtacct rtmon rtpr rtstat ss tc
 
@@ -17,23 +17,15 @@ endif
 # If we've got iptables enable xtables support for tc
 ifeq ($(BR2_PACKAGE_IPTABLES),y)
 IPROUTE2_DEPENDENCIES += iptables
-define IPROUTE2_WITH_IPTABLES
-	# Makefile is busted so it never passes IPT_LIB_DIR properly
-	$(SED) "s/-DIPT/-DXT/" $(IPROUTE2_DIR)/tc/Makefile
-	echo "TC_CONFIG_XT:=y" >>$(IPROUTE2_DIR)/Config
-endef
 endif
 
 define IPROUTE2_CONFIGURE_CMDS
-	# Use kernel headers
-	rm -rf $(IPROUTE2_DIR)/include/netinet
-	# arpd needs berkeleydb
-	$(SED) "/^TARGETS=/s: arpd : :" $(IPROUTE2_DIR)/misc/Makefile
-	echo "IPT_LIB_DIR:=/usr/lib/xtables" >>$(IPROUTE2_DIR)/Config
-	$(IPROUTE2_WITH_IPTABLES)
+	cd $(@D) && CC="$(TARGET_CC)" CCOPTS="$(TARGET_CFLAGS) -D_GNU_SOURCE" ./configure
 endef
 
 define IPROUTE2_BUILD_CMDS
+	# arpd needs berkeleydb
+	$(SED) "/^TARGETS=/s: arpd : :" $(IPROUTE2_DIR)/misc/Makefile
 	$(SED) 's/$$(CCOPTS)//' $(@D)/netem/Makefile
 	$(MAKE) CC="$(TARGET_CC)" CCOPTS="$(TARGET_CFLAGS) -D_GNU_SOURCE" -C $(@D)
 endef
