@@ -414,14 +414,29 @@ case "$1" in
     # from addrs passed on command line from barebox
 
     if is-ptp; then
+      # set defaults
+      ptp-config -d craft_ipaddr 192.168.1.1/24
+      ptp-config -d vlan_inband 4090
+      ptp-config -d vlan_peer 2000
+      ptp-config -d local_ipaddr 192.168.2.1/24
+      ptp-config -d peer_ipaddr 192.168.2.2/24
+
+      # mac addrs
       set_mac_from_hnvram craft0 MAC_ADDR
       set_mac_from_hnvram eth1 MAC_ADDR_WAN
-      craft_ipaddr=$(ptp-config -g craft_ipaddr)
-      if [ -z "$craft_ipaddr" ]; then
-        ptp-config -s craft_ipaddr 192.168.1.1/24
-      fi
+
+      # craft0 (static ip for UI)
       ptp-config -i craft_ipaddr
       if_up_no_bridging craft0
+
+      # bring up inband vlan (will dhcp)
+      ptp-config -i vlan_inband
+      if_up_no_bridging eth1.inband
+
+      # bring up peer vlan, set our static ip
+      ptp-config -i vlan_peer
+      ptp-config -i local_ipaddr
+      if_up_no_bridging eth1.peer
     fi
 
     if is-spacecast; then
