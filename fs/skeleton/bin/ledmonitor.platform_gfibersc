@@ -35,6 +35,7 @@ APP_RUNNING_FILE="$CONTROL_PATH/app_running"
 TUNER_LOCK_FILE="$CONTROL_PATH/app_tuner_lock"
 DATA_STREAM_FILE="$CONTROL_PATH/app_data"
 APP_INITIALIZING_FILE="$CONTROL_PATH/app_init"
+UPDATE_CHECK_COMPLETE_FILE="$CONTROL_PATH/update_check_complete"
 UPDATING_FILE="$CONTROL_PATH/updating"
 
 # Bit sequences.
@@ -121,6 +122,8 @@ while read f; do
     change_state REG_POLL "$FASTWAIT_LED_ON"
   elif [ ! -f "$BOOTED_FILE" ]; then
     change_state BOOTING "$WAITING_LED_ON"
+  elif [ ! -f "$UPDATE_CHECK_COMPLETE_FILE" ]; then
+    change_state UPDATE_CHECK_FAILED "$NO_INTERNET_LED_ON"
   elif [ ! -f "$TPM_FILE" ]; then
     change_state TPM_NOTENROLLED "$NO_INTERNET_LED_ON"
   elif [ ! -f "$GCD_REG_FILE" ]; then
