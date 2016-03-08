@@ -101,6 +101,13 @@ if experiment CpssNoInit; then
   echo "$0: experiment CpssNoInit enabled, skipping init and 2011 config." >&2
 else
 
+  # disable pager
+  cpss_cmd <<EOF || die "failed to disable pager"
+    debug
+      set print pause disable
+    end
+EOF
+
   # init the switch, check for result
   cpss_cmd <<EOF | grep "Init system returned:0" || die "cpssInitSystem failed"
     cpssInitSystem 19,2,0
