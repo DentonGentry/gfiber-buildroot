@@ -19,7 +19,7 @@ case "$1" in
     ;;
   stop)
     # End the Basil dart server (which will also end its babysitter).
-    pkillwait -f '(dart.*)([b]asil.*\.dart)'
+    pkillwait -f '(dart.*)([b]asil(_nocast)?.*\.dart)'
     pkillwait -f -x '/bin/sh /bin/keep_oregano_nice'
     pkillwait -f -x 'wait-until-created /tmp/renice_oregano'
     rc_pipe_deinit
