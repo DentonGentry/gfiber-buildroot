@@ -15,10 +15,16 @@ start()
 
   echo "starting glaukusd..."
   babysit 60 glaukusd 2>&1 | logos glaukus &
+
+  echo "starting craftui..."
+  babysit 60 craftui 2>&1 | logos craftui &
 }
 
 stop()
 {
+  echo "stopping craftui..."
+  pkillwait -f craftui
+
   echo "stopping jsonpoll..."
   pkillwait -f jsonpoll
 
