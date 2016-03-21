@@ -38,8 +38,14 @@ ifneq ($(findstring $(PLAT_NAME),gfibertv gftv200),)
 # trouble.  This trick removes them.
 BRUNO_CFE_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+# Always install the prod bootloader when building prod images
 _BRUNO_LOADER = cfe_signed_release
+# Don't set the type to prod if building an unsigned image
+ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
+ROOTFS_GINSTALL_TYPE=prod_unsigned
+else
 ROOTFS_GINSTALL_TYPE=prod
+endif
 else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = cfe_signed_openbox
 ROOTFS_GINSTALL_TYPE=openbox
@@ -72,7 +78,11 @@ ifneq ($(findstring $(PLAT_NAME),gftv254),)
 BOLT_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = bolt_signed_release
+ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
+ROOTFS_GINSTALL_TYPE=prod_unsigned
+else
 ROOTFS_GINSTALL_TYPE=prod
+endif
 else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = bolt_signed_openbox
 ROOTFS_GINSTALL_TYPE=openbox
@@ -110,7 +120,11 @@ endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BAREBOX = barebox_signed_release
+ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
+ROOTFS_GINSTALL_TYPE=prod_unsigned
+else
 ROOTFS_GINSTALL_TYPE=prod
+endif
 else
 _BAREBOX = barebox_signed_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
@@ -173,7 +187,11 @@ ifneq ($(findstring $(PLAT_NAME),gfch100),)
 LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = u-boot-spi-prod
+ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
+ROOTFS_GINSTALL_TYPE=prod_unsigned
+else
 ROOTFS_GINSTALL_TYPE=prod
+endif
 else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = u-boot-spi-openbox
 ROOTFS_GINSTALL_TYPE=openbox

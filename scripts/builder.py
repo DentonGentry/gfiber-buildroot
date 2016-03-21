@@ -40,6 +40,7 @@ x,platform-only    Build less stuff into the app (no webkit, netflix, etc.)
 r,production       Use production signing keys and license
 j,jobs=            Number of parallel jobs for make to use (make -j) [12]
 k,key-suffix=      Suffix for signing keys
+u,unsigned         Skip the image signing
 openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 """
@@ -153,6 +154,7 @@ class BuildRootBuilder(object):
     print 'BUILDROOT PATH :', self.top_dir
     print 'BUILD PATH     :', self.base_dir
     print 'KEY SUFFIX     :', self.opt.key_suffix
+    print 'UNSIGNED       :', self.opt.unsigned
     print '=========================================================='
     sys.stdout.flush()
 
@@ -191,7 +193,8 @@ class BuildRootBuilder(object):
   def BuildConfig(self, filename, **extra):
     """Generate a config file for the given set of options."""
     opts = dict(BR2_PACKAGE_GOOGLE_PROD=self.opt.production,
-                BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox)
+                BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox,
+                BR2_PACKAGE_GOOGLE_UNSIGNED=self.opt.unsigned)
     # Disable ccache for production builds.
     if self.opt.production:
       opts['BR2_CCACHE'] = 0
