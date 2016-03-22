@@ -4,7 +4,17 @@
 # Run upload-logs-now to kill this process and make upload-crash-log
 # start immediately (if it isn't already running).
 #
+. /etc/utils.sh
+
 DELAY=$(randint 55 65)
+
+if experiment LogUpload30s; then
+  DELAY=$(randint 25 35)
+elif experiment LogUpload15s; then
+  DELAY=$(randint 10 20)
+elif experiment LogUpload5s; then
+  DELAY=$(randint 3 7)
+fi
 
 sleep "$DELAY" &
 pid=$!
