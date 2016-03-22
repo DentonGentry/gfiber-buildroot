@@ -5,7 +5,6 @@
 
 HONEST_DNS="8.8.4.4 8.8.8.8"
 HONEST_DNS6="2001:4860:4860::8844 2001:4860:4860::8888"
-DEFAULT_ACS="acs.prod.gfsvc.com"
 
 usage() {
 	echo "Check whether an interface is connected to the internet."
@@ -22,7 +21,7 @@ do
 		interface="$OPTARG" ;;
 
 	a)
-		ACS=true ;;
+		USE_ACS=true ;;
 
 	*)
 		usage
@@ -35,11 +34,10 @@ if [ -z "$interface" ]; then
 	exit 99
 fi
 
-if [ $ACS ]; then
-	if ping6 $DEFAULT_ACS -c1 -I "$interface" >/dev/null 2>&1; then exit 0; fi
-	if ping $DEFAULT_ACS -c1 -I "$interface" >/dev/null 2>&1; then exit 0; fi
-
-	exit 1
+if [ $USE_ACS ]; then
+	ACS="$(set-acs print 2>/dev/null | pcregrep -o https:\/\/[^/]+)"
+	curl --interface "$interface" "$ACS/generate_204"
+	exit $?
 fi
 
 for IP in $HONEST_DNS; do
