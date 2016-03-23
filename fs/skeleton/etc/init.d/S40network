@@ -347,7 +347,7 @@ bridge_down() {
 case "$1" in
   start)
     if is-fiberjack; then
-      local lan_port=$(cat /etc/config/lanport)
+      lan_port=$(cat /etc/config/lanport)
       echo "Starting LAN."
       ifup lo
       if [ -n "$lan_port" ]; then
@@ -500,7 +500,7 @@ case "$1" in
   stop)
     if [ ! -e /tmp/NFS ]; then
       if is-fiberjack; then
-        local lan_port=$(cat /etc/config/lanport)
+        lan_port=$(cat /etc/config/lanport)
         echo "Stopping LAN."
         ifdown lo
         if [ -n "$lan_port" ]; then

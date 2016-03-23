@@ -60,7 +60,14 @@ else
   exit 1
 fi
 
-echo -1000 >/proc/$$/oom_score_adj
+if [ -e /proc/$$/oom_score_adj ]; then
+  echo -1000 >/proc/$$/oom_score_adj
+elif [ -e /proc/$$/oom_adj ]; then
+  # Older kernels (e.g. fiberjack) need this to adjust the oom score.
+  echo -1000 >/proc/$$/oom_adj
+else
+  echo "WARNING: Failed to adjust OOM score for pid: $$!"
+fi
 
 write()
 {
@@ -91,6 +98,9 @@ devwatchdog_init()
 
 devwatchdog_setup()
 {
+  if [ ! -e "$file" ]; then
+    echo "watchdog setup failed: $file does not exist!"
+  fi
   exec 9>$file
 }
 
