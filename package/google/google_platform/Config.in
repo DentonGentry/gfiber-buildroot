@@ -68,6 +68,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_JSONPOLL
 	  Include the jsonpoll tool used by PTP devices to poll data
 	  from the modem and radio to be exported via catawampus.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
+	bool "include craftui"
+	help
+	  Include the craftui web server used by PTP devices for
+	  site configuration.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
