@@ -21,7 +21,7 @@ fi
 start()
 {
   for IFNAME in $INTERFACES; do
-    if interface_exists $ifc; then
+    if interface_exists $IFNAME; then
       babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -p -q -d0 2>&1 | logos "ifplugd-$IFNAME" &
     fi
   done
