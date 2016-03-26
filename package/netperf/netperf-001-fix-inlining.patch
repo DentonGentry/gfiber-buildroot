@@ -1,0 +1,27 @@
+--- a/src/netlib.c	2016-04-11 17:16:12.429260405 -0700
++++ b/src/netlib.c.fixed	2016-04-11 17:15:28.112695716 -0700
+@@ -3959,8 +3959,12 @@
+ #ifdef WIN32
+ __forceinline void demo_interval_display(double actual_interval)
+ #else
++#ifdef __GNUC_STDC_INLINE__
++  extern inline void demo_interval_display(double actual_interval)
++#else
+   inline void demo_interval_display(double actual_interval)
+ #endif
++#endif
+ {
+   static int count = 0;
+   struct timeval now;
+@@ -4026,8 +4030,12 @@
+    inline directive has to appear in netlib.h... */
+ void demo_interval_tick(uint32_t units)
+ #else
++#ifdef __GNUC_STDC_INLINE__
++  extern inline void demo_interval_tick(uint32_t units)
++#else
+   inline void demo_interval_tick(uint32_t units)
+ #endif
++#endif
+ {
+   double actual_interval = 0.0;
