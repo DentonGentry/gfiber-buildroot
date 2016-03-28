@@ -62,6 +62,11 @@ define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/bcrypt/libbcrypt.so $1/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
+	if [ $(CPE_25) = y ]; then \
+	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm_tl.so $1/usr/lib/libcmndrm_tl.so; \
+	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC/oemcrypto/lib/arm/liboemcrypto_tl.so $1/usr/lib/liboemcrypto_tl.so; \
+	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/sage/srai/libsrai.so $1/usr/lib/libsrai.so; \
+	fi
 	$(if $(filter $(BCM_ARCH),mips),$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/liboemcrypto.so $1/usr/lib/liboemcrypto.so,)
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
