@@ -1,0 +1,3 @@
+config BR2_PACKAGE_MINIJAIL
+	bool "google_minijail"
+        select BR2_PACKAGE_LIBCAP
