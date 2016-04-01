@@ -64,9 +64,9 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S92monlogpusher\
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S95adb\
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S42adb\
 		$(TARGET_DIR)/etc/init.d/
-	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S99androidserver\
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S42androidserver\
 		$(TARGET_DIR)/etc/init.d/
 	if [ "$(BR2_PACKAGE_GOOGLE_PROD)" = "y" ]; then \
 		$(INSTALL) -D -m 0755 package/google/google_spacecast/prodsysinfo \
