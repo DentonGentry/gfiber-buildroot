@@ -67,7 +67,7 @@ define BCM_NEXUS_INSTALL_LIBS
 	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC/oemcrypto/lib/arm/liboemcrypto_tl.so $1/usr/lib/liboemcrypto_tl.so; \
 	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/sage/srai/libsrai.so $1/usr/lib/libsrai.so; \
 	fi
-	$(if $(filter $(BCM_ARCH),mips),$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/liboemcrypto.so $1/usr/lib/liboemcrypto.so,)
+	$(if $(filter $(BCM_ARCH),mips),$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/nonsage/liboemcrypto.so $1/usr/lib/liboemcrypto.so,)
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
 	$(INSTALL) -D $(@D)/bin/libnexus_client.so $1/usr/lib/libnexus_client.so
