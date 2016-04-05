@@ -202,26 +202,6 @@ wifistats()
       echo "$phy: ath9k-queue: $line"
     done <$queuefile
   fi
-
-  # Aggregation buffers with lots of pending aggregates may indicate
-  # a stuck queue.
-  local f total=0
-  for f in /sys/kernel/debug/ieee80211/$phy/netdev:*/stations/*/agg_status; do
-    [ -e "$f" ] || continue  # if no stations attached, this file won't exist
-    add=$( (
-      read diag_token_line
-      read header_line
-      subtotal=0
-      while read tid rx dtkn ssn tx dtkn pending junk; do
-        if [ "$pending" -gt 5 ]; then
-          subtotal=$(($subtotal + 1))
-        fi
-      done
-      echo "$subtotal"
-    ) <$f || echo 0)
-    total=$(($total + $add))
-  done
-  echo "$phy: agg-pending: $total"
 }
 
 
