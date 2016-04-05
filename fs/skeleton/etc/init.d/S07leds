@@ -2,6 +2,7 @@
 case "$1" in
   start)
     mkdir -p /tmp/gpio/ledcontrol
+    mkdir -p /tmp/conman/status
     # Allow apps to notify activity
     chgrp video /tmp/gpio
     chmod 775 /tmp/gpio

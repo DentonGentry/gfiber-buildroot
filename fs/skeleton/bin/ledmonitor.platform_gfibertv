@@ -152,7 +152,7 @@ while read f; do
     # internet via br0.  Checking br0 is necessary because if conman dies while
     # connected to an open network and then ethernet/MoCa is connected, this is
     # the wrong state.
-    change_state IPV6ACQUIRED "$FAST_BLUE"
+    change_state PROVISIONING "$FAST_BLUE"
   else
     # success!
     change_state ACSCONTACT "$SOLID_BLUE"
