@@ -62,6 +62,14 @@ while read filename; do
     if [ -e "$filepath" ]; then
       interface=${filename#gateway.}
       gateway=$(cat "$filepath")
+      # If this script is running as conman's deathrattle, it is possible that
+      # there is a wifi route up too and also that acs_autoprovisioning is
+      # enabled.  Between deleting and re-adding this default route, traffic
+      # could be routed via wifi, and if autoprovisioning is enabled and the
+      # wifi connection is to a neighbor's RG then the ACS could provision this
+      # device to the neighbor.  Removing the file which enables that
+      # autoprovisioning here prevents that from happening.
+      rm -f /tmp/conman/acs_autoprovisioning
       ip -4 route del default dev "$interface"
       ip -4 route add default via "$gateway" dev "$interface" $initrwnd
     fi
