@@ -9,6 +9,7 @@ define GOOGLE_OREGANO_BUILD_CMDS
 	INCLUDES="-I$(STAGING_DIR)/usr/local/include -I$(STAGING_DIR)/usr/local" \
 	LIBDIRS=-L$(STAGING_DIR)/app/sage/lib \
 	ARCH=$(GOOGLE_PLATFORM_ARCH) \
+	MINICLIENT_PATH=$(GOOGLE_MINICLIENT_DIR) \
 	$(MAKE) -C $(@D)
 endef
 
