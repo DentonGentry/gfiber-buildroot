@@ -1,0 +1,16 @@
+--- a/depmod.c
++++ b/depmod.c
+@@ -1853,6 +1853,13 @@
+ 				MODULE_DIR, version);
+ 		len = strlen(dirname);
+ 		search = add_search(dirname, len, search);
++		free(dirname);
++
++		nofail_asprintf(&dirname, "%s%s%s/backports", basedir,
++				MODULE_DIR, version);
++		len = strlen(dirname);
++		search = add_search(dirname, len, search);
++		free(dirname);
+ 	}
+ 	if (!all) {
+ 		/* Do command line args. */
