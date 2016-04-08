@@ -189,8 +189,8 @@ set_mac_from_hnvram() {
   fi
 }
 
-create_bridge() {
-  echo -n "Creating bridge... "
+create_br0() {
+  echo -n "Creating bridge br0... "
   brctl addbr br0 || exit 1
   brctl setfd br0 1
   if is-ptp || experiment NoSTP; then
@@ -217,6 +217,16 @@ create_bridge() {
   ip link set br0 up  # kernel 3.2.26 bug: fails the first time
 }
 
+create_br1() {
+  echo -n "Creating bridge br1... "
+  brctl addbr br1 || exit 1
+  brctl setfd br1 1
+  brctl stp br1 off
+  echo "done"
+  ip link set br1 up
+  ip link set br1 up  # kernel 3.2.26 bug: fails the first time
+}
+
 configure_moca_vlan() {
   # VLAN tag for MoCA interface
   ip link add link $MOCAIFC name $MOCAIFC.0 type vlan id 0
@@ -227,32 +237,35 @@ configure_moca_vlan() {
 }
 
 add_interfaces_to_bridge() {
-  echo "Adding interfaces... "
-  # Move any existing network info from primary network interfaces to
-  # the bridge.
-  for x in \
-      /sys/class/net/[ea]th[0-9] \
-      /sys/class/net/*.inband \
-      /sys/class/net/lan[0-9] \
-      /sys/class/net/moca[0-9] \
-      /sys/class/net/wlan[0-9]; do
-    x=${x#/sys/class/net/}
+  local bridge=$1
+  shift
+
+  echo "Adding interfaces to $bridge... "
+
+  # Move any existing network info from added network interfaces to the bridge.
+  # Only strictly needed for br0, when NFS booting; this prevents losing the
+  # NFS connection in the middle of the script.
+  for x in "$@"; do
+    [ -e "$x" ] || continue
+
+    local x="${x#/sys/class/net/}"
     echo "Adding interface $x..."
+
     ip link set $x up &&
     ip -o -f inet addr show $x |
     while read a b c ip d brd junk; do
-      ip addr add $ip broadcast $brd dev br0
+      ip addr add $ip broadcast $brd dev $bridge
     done &&
     if [ -n "$MOCAIFC" ] && [ $x = $MOCAIFC ]; then
       x="${MOCAIFC}.0"
     fi &&
-    brctl addif br0 $x &&
+    brctl addif $bridge $x &&
     ip -o -f inet route list dev $x |
     while read dst routeinfo; do
       if [ "$dst" = "default" ]; then
-        echo "Moving route '$dst' from $x to br0" &&
+        echo "Moving route '$dst' from $x to $bridge" &&
         ip route del dev $x $dst $routeinfo &&
-        ip route add dev br0 $dst $routeinfo
+        ip route add dev $bridge $dst $routeinfo
       fi
     done &&
     ip -o -f inet addr show $x |
@@ -302,9 +315,10 @@ if_up_no_bridging() {
 }
 
 bridge_up() {
+  local br="$1"
   echo "Bringing up the bridge..."
-  ip link set br0 up  # kernel 3.16 behavior, sometimes br0 does not come up.
-  ifup br0
+  ip link set dev "$br" up  # kernel 3.16 behavior, sometimes br0 does not come up.
+  ifup "$br"
 }
 
 enable_rx_coalescing() {
@@ -329,17 +343,20 @@ wan0_down() {
 }
 
 bridge_down() {
+  local br="$1"
+
+  if [ -n /sys/class/net/$br/bridge ]; then
+    ifdown $br
+    echo "Shutting down $br interface"
+  fi
+
   for x in $(ls /sys/class/net); do
-    if [ -n /sys/class/net/$x/bridge ]; then
-      ifdown $x
-      echo "Shutting down $x interface"
-    fi
     if [ -e /sys/class/net/$x/device ]; then
-      brctl delif br0 $x
+      brctl delif $br $x
     fi
   done
-  ifdown br0
-  [ -e /sys/class/net/br0 ] && brctl delbr br0
+  ifdown $br
+  [ -e /sys/class/net/$br ] && brctl delbr $br
 }
 
 # encode a string as base64
@@ -450,13 +467,30 @@ case "$1" in
 
       (nohup /sbin/lan0_watchdog 2>&1 > /dev/null) &
     else
-      create_bridge
+      # br0 bridges Ethernet, MoCA, and WiFi AP interfaces
+      create_br0
+
+      # br1 only bridges captive portal WiFi interfaces
+      create_br1
+
       if is-moca-present; then
         configure_moca_vlan
       fi
-      add_interfaces_to_bridge
+
+      add_interfaces_to_bridge br0 \
+        /sys/class/net/[ea]th[0-9] \
+        /sys/class/net/*.inband \
+        /sys/class/net/lan[0-9] \
+        /sys/class/net/moca[0-9] \
+        /sys/class/net/wlan[0-9]
+
+      add_interfaces_to_bridge br1 \
+        /sys/class/net/wlan[0-9]_portal
+
       add_multicast_route
-      bridge_up
+
+      bridge_up br0
+      bridge_up br1
       redistribute_irqs
     fi
 
@@ -522,7 +556,9 @@ case "$1" in
         echo "Shutting down lan0 interface"
       else
         wan0_down
-        bridge_down
+
+        bridge_down br0
+        bridge_down br1
       fi
 
       # Kill mocad and mocactl

@@ -1,0 +1,74 @@
+#!/bin/sh
+. /etc/utils.sh
+
+# Servers used by CPE on the other side of the captive portal.
+IP4_DNS="8.8.8.8 8.8.4.4"
+IP6_DNS="2001:4860:4860::8888 2001:4860:4860::8844"
+# TODO(b/29131559): allow NTP servers to be dynamically updated
+NTP="216.239.32.15 216.239.34.15 216.239.36.15 216.239.38.15"
+
+has_iptables() {
+  runnable iptables && iptables -L 2>/dev/null
+}
+
+flush() {
+  ip46tables -F captive-portal-input
+  ip46tables -F captive-portal-filter
+}
+
+case "$1" in
+  start|restart|reload)
+    if has_iptables; then
+      # Flush existing rules before we do anything else
+      flush
+
+      # Add rules for the captive portal that lives on the bridge interface.
+      # These are only meaningful if the bridge exists and is in use
+
+      # allow access to the local DHCP server(s). /bin/wifi will die without it.
+      ip46tables -A captive-portal-input -p icmp -j ACCEPT
+      ip46tables -A captive-portal-input -p udp --dport 53 -j ACCEPT
+
+      # DHCP4 client
+      iptables -A captive-portal-input -p udp --sport 67:68 --dport 67:68 -j ACCEPT
+      # DHCP6 client
+      ip6tables -A captive-portal-input -p udp --sport 547 --dport 546 -j ACCEPT
+
+      # pings
+      iptables -A captive-portal-input -p icmp --icmp-type echo-request -j ACCEPT
+      ip6tables -A captive-portal-input -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+
+      # IPv6 neighbor discovery
+      ip6tables -A captive-portal-input -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+      ip6tables -A captive-portal-input -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
+
+      for dst in $IP4_DNS; do
+        iptables -A captive-portal-filter -p udp -d $dst --dport domain -j ACCEPT
+        iptables -A captive-portal-filter -p tcp -d $dst --dport domain -j ACCEPT
+
+        # for /bin/connection_check
+        iptables -A captive-portal-filter -p icmp -d $dst --icmp-type echo-request -j ACCEPT
+      done
+
+      for dst in $IP6_DNS; do
+        ip6tables -A captive-portal-filter -p udp -d $dst --dport domain -j ACCEPT
+        ip6tables -A captive-portal-filter -p tcp -d $dst --dport domain -j ACCEPT
+
+        # for /bin/connection_check
+        ip6tables -A captive-portal-filter -p icmpv6 -d $dst --icmpv6-type echo-request -j ACCEPT
+      done
+
+      for dst in $NTP; do
+        iptables -A captive-portal-filter -p udp -d $dst --dport ntp -j ACCEPT
+      done
+    fi
+    ;;
+  stop)
+    if has_iptables br1; then
+      flush
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

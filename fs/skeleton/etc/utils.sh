@@ -241,6 +241,13 @@ interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
 
+ip46tables() {
+  local x y
+  iptables "$@"; x=$?
+  ip6tables "$@"; y=$?
+  return $(($x | $y))
+}
+
 # Used by GFSC100. Starts an app with babysit (specified delay) and also logs.
 babysit_start() {
   local delay="$1"

@@ -1,15 +1,8 @@
 #!/bin/sh
-
 . /etc/utils.sh
 
 register_experiment NoSIPConntrack
 register_experiment McDoleCast
-
-ip46tables()
-{
-  iptables $*
-  ip6tables $*
-}
 
 flush()
 {
@@ -151,23 +144,36 @@ case "$1" in
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
       ip46tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-      ip46tables -t filter -N acs-captive-portal-filter
-      ip46tables -t filter -A FORWARD -j acs-captive-portal-filter
+
+      # captive-portal-filter and captive-portal-input contain rules that should
+      # always be applied to the br1 (captive portal) interface, regardless of
+      # what services we're trying to provide with it.
+      ip46tables -N captive-portal-filter
+      ip46tables -N captive-portal-input
+      ip46tables -N acs-captive-portal-input
+      ip46tables -N sniproxy-input
+      ip46tables -N acs-captive-portal-filter
+      ip46tables -N acsrules-filter-forward
+      ip46tables -N MINIUPNPD
+      ip46tables -N log
+
+      ip46tables -t nat -N acs-captive-portal-nat
+      iptables -t nat -N acsrules-nat-prerouting
+      iptables -t nat -N acsrules-nat-postrouting
+      ip46tables -t nat -N sniproxy-nat
+      iptables -t nat -N MINIUPNPD
+
       ip46tables -A FORWARD -i br0 -j ACCEPT
+      ip46tables -A FORWARD -i br1 -j captive-portal-filter
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
       for ifc in lo br0; do
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
       done
 
-      # allow icmp, DNS, DHCP, and HTTP bouncer on seconrary interfaces.
-      # OUTPUT rules are not needed because OUTPUT chain policy is ACCEPT
-      for ifc in wlan0_portal wlan1_portal; do
-        ip46tables -A INPUT -i "$ifc" -p icmp -j ACCEPT
-        ip46tables -A INPUT -i "$ifc" -p udp --dport 53 -j ACCEPT
-        ip46tables -A INPUT -i "$ifc" -p udp --dport 67:68 -j ACCEPT
-        ip46tables -A INPUT -i "$ifc" -p tcp --dport 8888 -j ACCEPT
-      done
+      ip46tables -A INPUT -i br1 -j captive-portal-input
+      ip46tables -A INPUT -i br1 -j acs-captive-portal-input
+      ip46tables -A INPUT -i br1 -j sniproxy-input
 
       # igmp group membership control
       ip46tables -A INPUT -p igmp -j ACCEPT
@@ -222,23 +228,17 @@ case "$1" in
           -m helper --helper ftp -i wan0+ -p tcp --dport 1024: -j ACCEPT
 
       # add ACS-configured things
-      ip46tables -t filter -N acsrules-filter-forward
-      ip46tables -t filter -A FORWARD -j acsrules-filter-forward
-
-      iptables -t nat -N acs-captive-portal-nat
-      iptables -t nat -A PREROUTING -j acs-captive-portal-nat
-
-      iptables -t nat -N acsrules-nat-prerouting
+      ip46tables -A FORWARD -i br1 -j acs-captive-portal-filter
+      ip46tables -A FORWARD -j acsrules-filter-forward
+      ip46tables -t nat -A PREROUTING -i br1 -j acs-captive-portal-nat
       iptables -t nat -A PREROUTING -j acsrules-nat-prerouting
-
-      iptables -t nat -N acsrules-nat-postrouting
       iptables -t nat -A POSTROUTING -j acsrules-nat-postrouting
 
-      # these are managed by miniupnpd, if running
-      ip46tables -t filter -N MINIUPNPD
-      ip46tables -t filter -A FORWARD -i wan0+ ! -o wan0+ -j MINIUPNPD
+      # these are managed by sniproxy, if running
+      ip46tables -t nat -A PREROUTING -j sniproxy-nat -i br1
 
-      iptables -t nat -N MINIUPNPD
+      # these are managed by miniupnpd, if running
+      ip46tables -A FORWARD -i wan0+ ! -o wan0+ -j MINIUPNPD
       iptables -t nat -A PREROUTING -i wan0+ -j MINIUPNPD
 
       # nat
@@ -253,7 +253,6 @@ case "$1" in
       ip6tables -A INPUT -p udp --sport 547 --dport 546 -j ACCEPT
 
       # Log packets which weren't explicitly accepted by above rules
-      ip46tables -N log
       ip46tables -A log -m pkttype -m limit \
           --pkt-type unicast \
           --limit 1/second \

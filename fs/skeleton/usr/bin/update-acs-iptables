@@ -3,14 +3,9 @@
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 
+. /etc/utils.sh
+
 # refreshes the rules in the acsrules chains based on acs settings
-
-ip46tables()
-{
-  iptables $*
-  ip6tables $*
-}
-
 # wan is wan0/wan0.2 on optimus/gfrg200
 wan=$(activewan)
 wans=wan0+
