@@ -1,6 +1,8 @@
 #!/bin/sh
 case "$1" in
   start)
+    update-mtd-links
+
     PLATFORM=$(sysvar_cmd -g PLATFORM_NAME)
     if [ -z "$PLATFORM" ]; then
       PLATFORM=$(cat /proc/board_type)
