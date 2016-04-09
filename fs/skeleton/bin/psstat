@@ -57,8 +57,10 @@ carriers()
 {
   ip link show | {
     out=
-    while IFS=': ' read n ifc flags smtu mtu sdisc disc sstate state junk; do
-      if [ "$smtu $sdisc $sstate" = "mtu qdisc state" ]; then
+    while IFS=': ' read n ifc flags smtu mtu sdisc disc smaster master sstate state junk; do
+      if [ "$smtu $sdisc $smaster" = "mtu qdisc state" ]; then
+        out="$out$ifc($master) "
+      elif [ "$smtu $sdisc $sstate" = "mtu qdisc state" ]; then
         out="$out$ifc($state) "
       fi
     done
