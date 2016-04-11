@@ -112,7 +112,7 @@ def main():
     # read from stdin and push lines to queue
     if stdin_fd in rready:
       try:
-        data = os.read(stdin_fd, 1024)
+        data = os.read(stdin_fd, 102400)
       except OSError as err:
         print '!!! stdin exception: %s' % str(err)
       if not data:
@@ -127,7 +127,7 @@ def main():
     # read from server and check for prompts
     if s_fd in rready:
       try:
-        data = os.read(s_fd, 1024)
+        data = os.read(s_fd, 102400)
       except OSError as err:
         print '!!! read from server exception: %s' % str(err)
         break
