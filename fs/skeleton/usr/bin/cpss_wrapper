@@ -17,6 +17,16 @@ die()
   exit 1
 }
 
+vlan_inband=$(ptp-config -g vlan_inband)
+vlan_peer=$(ptp-config -g vlan_peer)
+vlan_1g=1001
+vlan_10g=1010
+
+port_poe=0/0
+port_soc=0/4
+port_modem=0/24
+port_sfp=0/25
+
 pci="/sys/bus/pci/devices/0000:01:00.0"
 if [ ! -d $pci ]; then
   die "pci device '$pci' not found"
@@ -128,7 +138,7 @@ EOF
     # configure just the 10G path
     cpss_cmd <<EOF || die "config failed"
       config
-        interface range ethernet 0/24,0/25
+        interface range ethernet $port_modem,$port_sfp
           speed 10000 mode SR_LR
         exit
       end
@@ -138,29 +148,39 @@ EOF
     # configure ports, vlans
     cpss_cmd <<EOF || die "config failed"
       config
-        interface vlan device 0 vid 4090
+        interface vlan device 0 vid $vlan_1g
         exit
-        interface vlan device 0 vid 1001
+        interface vlan device 0 vid $vlan_10g
         exit
-        interface vlan device 0 vid 1002
+        interface vlan device 0 vid $vlan_peer
+        exit
+        interface vlan device 0 vid $vlan_inband
         exit
 
-        interface ethernet 0/0
+        interface ethernet $port_poe
           speed 1000 mode SGMII
-          switchport allowed vlan add 1001 untagged
-          switchport pvid 1001
+          switchport allowed vlan add $vlan_1g untagged
+          switchport pvid $vlan_1g
         exit
-        interface ethernet 0/4
+        interface ethernet $port_soc
           speed 1000 mode 1000Base_X
-          switchport allowed vlan add 1001 untagged
-          switchport allowed vlan add 4090 tagged
-          switchport pvid 1001
+          switchport allowed vlan add $vlan_1g untagged
+          switchport allowed vlan add $vlan_peer tagged
+          switchport allowed vlan add $vlan_inband tagged
+          switchport pvid $vlan_1g
         exit
-        interface range ethernet 0/24,0/25
+        interface ethernet $port_modem
           speed 10000 mode SR_LR
-          switchport allowed vlan add 1002 untagged
-          switchport allowed vlan add 4090 tagged
-          switchport pvid 1002
+          switchport allowed vlan add $vlan_10g untagged
+          switchport allowed vlan add $vlan_peer tagged
+          switchport allowed vlan add $vlan_inband tagged
+          switchport pvid $vlan_10g
+        exit
+        interface ethernet $port_sfp
+          speed 10000 mode SR_LR
+          switchport allowed vlan add $vlan_10g untagged
+          switchport allowed vlan add $vlan_inband tagged
+          switchport pvid $vlan_10g
         exit
       end
 EOF
