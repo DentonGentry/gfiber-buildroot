@@ -7,6 +7,14 @@
 #
 # This will translate those into sysvar_cmd calls.
 
+# If there is an hnvram partition then redirect the hnvram command to the real
+# hnvram binary. This is done in an effort to remove sysvar from the FiberJack
+# and other devices that use it.
+if [ -e /dev/mtd/hnvram ]; then
+  exec /bin/hnvram_binary "$@"
+  exit 1
+fi
+
 SYSVAR_CMD="sysvar_cmd"
 QUIET_MODE=""
 
