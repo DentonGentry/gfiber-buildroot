@@ -279,6 +279,8 @@ case "$1" in
       DRM_FS_BLK_NAME=/dev/mmcblk0p${DRM_FS_MMC_NO}
       DRM_FS_RECOVER_BLK_NAME=/dev/mmcblk0p${DRM_FS_RECOVER_MMC_NO}
       if [ -b ${DRM_FS_BLK_NAME} ]; then
+        # create folder for SAGE usage tables if not present
+        [ ! -d /user/widevine/brcm_sage ] && mkdir -p /user/widevine/brcm_sage && chmod 777 /user/widevine/brcm_sage
         [ ! -d /user/drmfs ] && mkdir -p /user/drmfs
         if ! mount_drmfs_ro ${DRM_FS_BLK_NAME} /user/drmfs; then
           echo "DRMFS is corrupt, attempting to recover keybox..."
