@@ -89,9 +89,9 @@ start_sagesrv() {
 
 
 stop_sagesrv() {
-  pkillwait -f '(babysit.*)(sagesrv)'
+  pkillwait -f '([b]abysit.*)(sagesrv)'
   pkillwait -x 'sagesrv'
-  pkillwait -f '(alivemonitor.*)(sagesrv)'
+  pkillwait -f '([a]livemonitor.*)(sagesrv)'
 }
 
 
@@ -127,9 +127,9 @@ start_adsmgr() {
 
 
 stop_adsmgr() {
-  pkillwait -f '(babysit.*)(adsmgr)'
+  pkillwait -f '([b]abysit.*)(adsmgr)'
   pkillwait -x 'adsmgr'
-  pkillwait -f '(alivemonitor.*)(adsmgr)'
+  pkillwait -f '([a]livemonitor.*)(adsmgr)'
 }
 
 
