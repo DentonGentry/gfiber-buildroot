@@ -20,7 +20,7 @@ set_glaser_port_status() {
   elif [ "$status" = "CONNECTED" ]; then
     echo "Bring up man port"
     ifup man
-    sysvar_cmd -s LASER_CHANNEL $(cat $GLASER_CHANNEL_FILE)
+    hnvram -w LASER_CHANNEL=$(cat $GLASER_CHANNEL_FILE)
   else
     echo "False status"
   fi

@@ -2,7 +2,7 @@
 
 sleep 300
 rm -f /tmp/ADMINMODE_*
-sysvar_cmd -s PRODUCTION_UNIT 1
+hnvram -w PRODUCTION_UNIT=1
 
 # Don't stop if /tmp/DEBUG is still set.
 if [ ! -f /tmp/DEBUG ]; then
