@@ -12,7 +12,7 @@ DELAY="$1"  # if empty, run only once
 format_chrome_comm()
 {
   local shell_type="browser"
-  local pid=$1
+  local pid="$1"
   local type_substring="--type="
 
   # Get rid of the PID, not that it really matters.
@@ -20,7 +20,7 @@ format_chrome_comm()
 
   # Go searching for the type argument.
   for arg in "$@"; do
-    if test "${arg#*$type_substring}" != "${arg}"; then
+    if test "${arg#*$type_substring}" != "$arg"; then
       shell_type=$(echo "$arg" | cut -d '=' -f2)
     fi
   done
@@ -42,7 +42,7 @@ printstat()
     while read val pid comm arg0 arg1 rest; do
       [ "$comm" = "python" ] && comm=${arg1##/*/}  # use the .py script name
       [ "$comm" = "browser_shell" ] && \
-          comm=$(format_chrome_comm ${pid} ${arg1} ${rest})
+          comm=$(format_chrome_comm "$pid" "$arg1" "$rest")
       result="$result $comm($val)"
     done;
     echo "$result"
