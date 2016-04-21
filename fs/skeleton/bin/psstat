@@ -4,20 +4,50 @@
 
 DELAY="$1"  # if empty, run only once
 
+# Provide a more useful 'comm'-like value for our browser_shell. This takes care
+# of two problems:
+#   1. Distinguishing between the browser, renderer, etc. We append a suffix.
+#   2. Distinguishing between webapps. Sadly there is not enough information
+#      in the command-line for this, so we just append the PID.
+format_chrome_comm()
+{
+  local shell_type="browser"
+  local pid=$1
+  local type_substring="--type="
+
+  # Get rid of the PID, not that it really matters.
+  shift
+
+  # Go searching for the type argument.
+  for arg in "$@"; do
+    if test "${arg#*$type_substring}" != "${arg}"; then
+      shell_type=$(echo "$arg" | cut -d '=' -f2)
+    fi
+  done
+
+  # Since we have limited horizontal space, shorten the type to the first
+  # character; this generally works since they are distinct - browser, renderer,
+  # zygote, gpu.
+  shell_type=$(echo "$shell_type" | cut -c1)
+
+  echo "browser_shell_${shell_type}_${pid}"
+}
+
 printstat()
 {
   local result="$1"
   shift
 
   "$@" | sort -rn | head -n 5 | (
-    while read val comm arg0 arg1 junk; do
+    while read val pid comm arg0 arg1 rest; do
       [ "$comm" = "python" ] && comm=${arg1##/*/}  # use the .py script name
+      [ "$comm" = "browser_shell" ] && \
+          comm=$(format_chrome_comm ${pid} ${arg1} ${rest})
       result="$result $comm($val)"
     done;
     echo "$result"
   )
 }
-
 
 freemem()
 {
@@ -216,10 +246,10 @@ while :; do
   # time used by each process, followed by cumulative time (which includes
   # children, including already terminated ones).  Note that the 'cputime'
   # format doesn't work with --cumulative, so we need to use bsdtime instead.
-  printstat "cputop:" ps --no-headers -e -o bsdtime,comm,cmd
-  printstat "ccputop:" ps --no-headers --cumulative -e -o bsdtime,comm,cmd
+  printstat "cputop:" ps --no-headers -e -o bsdtime,pid,comm,cmd
+  printstat "ccputop:" ps --no-headers --cumulative -e -o bsdtime,pid,comm,cmd
 
-  printstat "memtop:" ps --no-headers -e -o rss,comm,cmd
+  printstat "memtop:" ps --no-headers -e -o rss,pid,comm,cmd
   echo "loadavg: $(cat /proc/loadavg)"
   freemem "mem:"
   buddyinfo "buddyinfo:"
