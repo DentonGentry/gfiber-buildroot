@@ -130,10 +130,6 @@ get_wifi_macaddr_param() {
   fi
 }
 
-load_moca_driver() {
-  modprobe bmoca 2>/dev/null
-}
-
 load_wifi_drivers() {
   if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
     # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
@@ -356,9 +352,8 @@ case "$1" in
       exit
     fi
 
-    if is-tv-box || is-storage-box; then
+    if is-moca-present; then
       MOCAIFC=$(get_moca_iface)
-      load_moca_driver
     fi
 
     if ! is-spacecast && ! is-ptp; then
@@ -445,7 +440,7 @@ case "$1" in
       (nohup /sbin/lan0_watchdog 2>&1 > /dev/null) &
     else
       create_bridge
-      if is-tv-box || is-storage-box; then
+      if is-moca-present; then
         configure_moca_vlan
       fi
       add_interfaces_to_bridge
@@ -454,7 +449,7 @@ case "$1" in
       redistribute_irqs
     fi
 
-    if [ -e /dev/bmoca0 ]; then
+    if is-moca-present; then
       echo "starting moca..."
       babysit 30 runmoca 2>&1 | logos mocad &
     fi
@@ -486,7 +481,9 @@ case "$1" in
       # Enable hardware offloads, do this at the end to avoid
       # invalid access caused by powered down core
       enable_hw_offloads eth0
-      enable_hw_offloads $MOCAIFC
+      if is-moca-present; then
+        enable_hw_offloads $MOCAIFC
+      fi
     fi
     if is-tv-box && experiment TVBoxNoGigEthernet; then
       # advertise only 10 & 100 at half and full duplex.
