@@ -1,0 +1,27 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+case "$1" in
+  start)
+    if is-ptp; then
+      # start marvell switch CLI
+      babysit 10 cpss_wrapper 2>&1 | logos cpss &
+    fi
+    ;;
+  stop)
+    # kill cpss and babysitter
+    if is-ptp; then
+      pkillwait -f "babysit.*cpss_wrapper"
+      pkillwait -x cpss_wrapper
+      pkillwait -x cpss
+    fi
+    ;;
+  restart)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

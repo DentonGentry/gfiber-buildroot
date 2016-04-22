@@ -64,6 +64,9 @@ do_vlan() {
   [ "$?" -eq "0" ] || die "Failed to add $vif: $retval."
   retval=$(ifup $vif 2>&1)
   [ "$?" -eq "0" ] || die "Failed to ifup $vif: $retval."
+
+  # restart cpss if running to pick up new vlans
+  pgrep -x cpss && restart cpss
 }
 
 do_ipaddr() {

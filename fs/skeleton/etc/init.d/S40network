@@ -360,11 +360,6 @@ case "$1" in
       load_wifi_drivers
     fi
 
-    if is-ptp; then
-      # start marvell switch CLI
-      babysit 10 cpss_wrapper 2>&1 | logos cpss &
-    fi
-
     # if the file exists and it isn't empty
     if [ -s /config/tcp_congestion_control ]; then
       algorithm=$(cat /config/tcp_congestion_control)
@@ -518,11 +513,6 @@ case "$1" in
       if [ -e /dev/bmoca0 ]; then
         echo -n "mocacfg kill"
         pkillwait mocad
-      fi
-
-      # kill cpss and babysitter
-      if is-ptp; then
-        pkill -f cpss
       fi
     fi
     ;;

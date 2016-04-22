@@ -27,7 +27,18 @@ port_soc=0/4
 port_modem=0/24
 port_sfp=0/25
 
+# take switch out of reset in case it was left that way
+if [ -e /dev/gpio/3236_reset ]; then
+  echo 0 >/dev/gpio/3236_reset/value
+fi
+
 pci="/sys/bus/pci/devices/0000:01:00.0"
+if [ ! -d $pci ]; then
+  # rescan the pci bus in case it was in reset
+  echo 1 >/sys/bus/pci/rescan
+  msleep 200
+fi
+
 if [ ! -d $pci ]; then
   die "pci device '$pci' not found"
 fi
@@ -101,12 +112,26 @@ fi
 # start cpss as persistent server
 pkill -x cpss
 export CMDFS_ROOT=/usr/lib/cpss/scripts
-ptyserver -p 4455 cpss -tty &
+ptyserver -p 4455 cpss -tty 2>&1 | logos cpss_pty &
 
-# wait for Console# prompt
-sleep 1
-echo "" | cpss_cmd || die "no console prompt"
+# check that shell loaded and we get a prompt
+# try a few times; we get one timeout at boot time, don't know why
+success=0
+for n in $(seq 3); do
+  cpss_cmd <<EOF
 
+EOF
+  if [ $? = 0 ]; then
+    success=1
+    break
+  fi
+  echo "$0: still waiting for cpss prompt" >&2
+  sleep 1
+done
+[ $success = 1 ] || die "no cpss prompt"
+echo "$0: got cpss prompt"
+
+# start configuring cpss
 if experiment CpssNoInit; then
   echo "$0: experiment CpssNoInit enabled, skipping init and 2011 config." >&2
 else
