@@ -73,6 +73,13 @@ case "$1" in
         tune2fs -m 0 "$sata_blkdev"1
         mount -o "$FLAGS" -t ext4 "$sata_blkdev"1 /var/media
         failure_media=$?
+
+        if [ -e /var/media/.data ]; then
+          echo "Interrupted factory reset detected. Cleaning up ..."
+          rm -rf /var/media/*
+          mv /var/media/.data /var/media/data
+        fi
+
         if [ -e "$sata_blkdev"20 ]; then
           mount -o "$FLAGS,sync" -t ext4 "$sata_blkdev"20 "$CONFIG_PATH"
           failure_config=$?
