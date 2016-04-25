@@ -16,16 +16,18 @@ BLUEZ_UTILS_CONF_OPT = \
 	--enable-library \
 	--disable-cups \
 	--disable-obex \
-	--disable-client \
+	--enable-client \
 	--enable-experimental \
 	--enable-attrib \
 	--enable-test \
 	--disable-udev \
 	--disable-systemd
+
 HOST_BLUEZ_UTILS_CONF_OPT = $(BLUEZ_UTILS_CONF_OPT) \
 	--prefix=$(HOST_DIR)/usr \
 	--libexecdir=$(HOST_DIR)/usr/bin \
-	--localstatedir=$(HOST_DIR)/user/bluez
+	--localstatedir=$(HOST_DIR)/user/bluez \
+	--disable-client
 
 BLUEZ_UTILS_AUTORECONF = YES
 HOST_BLUEZ_UTILS_AUTORECONF = YES
