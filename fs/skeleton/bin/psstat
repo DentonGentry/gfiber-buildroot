@@ -6,31 +6,81 @@ DELAY="$1"  # if empty, run only once
 
 # Provide a more useful 'comm'-like value for our browser_shell. This takes care
 # of two problems:
-#   1. Distinguishing between the browser, renderer, etc. We append a suffix.
-#   2. Distinguishing between webapps. Sadly there is not enough information
-#      in the command-line for this, so we just append the PID.
+#   1. Distinguishing between the browser, renderer, etc.
+#   2. Distinguishing between webapps.
 format_chrome_comm()
 {
-  local shell_type="browser"
   local pid="$1"
-  local type_substring="--type="
+  local args="$2"
 
-  # Get rid of the PID, not that it really matters.
-  shift
+  local type_and_rest="${args#*--type=}"
+  if test "$type_and_rest" = "$args"; then
+    type_and_rest="browser"
+  fi
 
-  # Go searching for the type argument.
-  for arg in "$@"; do
-    if test "${arg#*$type_substring}" != "$arg"; then
-      shell_type=$(echo "$arg" | cut -d '=' -f2)
-    fi
-  done
+  # Strip any arguments after the shell type off. For the GPU process, reduce
+  # the type from 'gpu-process' to just 'gpu'.
+  local shell_type="${type_and_rest%%[ -]*}"
 
-  # Since we have limited horizontal space, shorten the type to the first
-  # character; this generally works since they are distinct - browser, renderer,
-  # zygote, gpu.
-  shell_type=$(echo "$shell_type" | cut -c1)
+  # Now we need the webapp. This is beautifully hacky; only the browser process
+  # has an actual URL we can mine the webapp from, however the renderer and gpu
+  # processes do have the browser pid as a parameter, so we can read that and
+  # work backwards. For the zygote there's nothing we can do but it usually
+  # isn't important.
+  local web_app
+  case "$shell_type" in
+    browser)
+      web_app=$(get_webapp_for_browser "$args")
+      ;;
+    renderer | gpu)
+      web_app=$(get_webapp_for_channeled_process "$args")
+      ;;
+    *)
+      web_app="unknown"
+      ;;
+  esac
 
-  echo "browser_shell_${shell_type}_${pid}"
+  echo "${shell_type}_${web_app}"
+}
+
+# Given the command-line arguments for the Chromium browser process, extract the
+# webapp if possible.
+get_webapp_for_browser()
+{
+  local args="$1"
+  local youtube_url="youtube.com"
+  local oregano_url="oregano"
+  local webapp="unknown"
+
+  if test "${args#*$youtube_url}" != "$args"; then
+    webapp="youtube"
+  elif test "${args#*$oregano_url}" != "$args"; then
+    webapp="oregano"
+  fi
+
+  echo "$webapp"
+}
+
+# Given the command-line arguments for a channeled Chromium process (e.g. the
+# renderer or gpu), extract the webapp if possible. This does a lookup via the
+# browser process.
+get_webapp_for_channeled_process()
+{
+  local args="$1"
+  local channel_and_rest="${args#*--channel=}"
+  if test "$channel_and_rest" = "$args"; then
+    channel_and_rest = ""
+  fi
+
+  # Strip the non-pid part of the channel and the rest of the args off.
+  local browser_pid="${channel_and_rest%%.*}"
+
+  if test "$browser_pid" = ""; then
+    echo "unknown"
+  else
+    ps_output=$(ps --no-headers -o cmd "$browser_pid")
+    echo $(get_webapp_for_browser "$ps_output")
+  fi
 }
 
 printstat()
@@ -42,7 +92,7 @@ printstat()
     while read val pid comm arg0 arg1 rest; do
       [ "$comm" = "python" ] && comm=${arg1##/*/}  # use the .py script name
       [ "$comm" = "browser_shell" ] && \
-          comm=$(format_chrome_comm "$pid" "$arg1" "$rest")
+          comm=$(format_chrome_comm "$pid" "$arg1 $rest")
       result="$result $comm($val)"
     done;
     echo "$result"
