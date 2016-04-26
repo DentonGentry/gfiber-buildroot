@@ -23,7 +23,9 @@ if [ ! -d /tmp -o ! -d /config ]; then
   exit 0
 fi
 
-mkdir -p /tmp/experiments /config/experiments
+mkdir -p /tmp/experiments /config/experiments && \
+  chmod 777 /tmp/experiments /config/experiments
+
 : >"/tmp/experiments/$expname.available"
 if [ -e "/config/experiments/$expname.requested" ]; then
   echo "Activating experiment '$expname'." >&2
@@ -34,6 +36,3 @@ elif [ -e "/config/experiments/$expname.unrequested" ]; then
   rm -f "/config/experiments/$expname.active" \
         "/config/experiments/$expname.unrequested"
 fi
-
-
-
