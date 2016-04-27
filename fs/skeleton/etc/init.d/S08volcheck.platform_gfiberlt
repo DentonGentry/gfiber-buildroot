@@ -38,7 +38,7 @@ recover_jffs2()
 case "$1" in
   start)
     # Get MTD partition number
-    part_name='"config"'
+    part_name='"data+jffs2"'
     if [ $(cat /etc/platform) = "GFLT110" ]; then
       part_name='"user_data"'
     fi

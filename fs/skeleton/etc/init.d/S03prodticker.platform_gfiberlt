@@ -10,7 +10,7 @@ MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 start() {
 	# Turn it into a production unit.
 	if is-fiberjack; then
-		prod_unit=$(sysvar_cmd -g PRODUCTION_UNIT)
+		prod_unit=$(hnvram -qr PRODUCTION_UNIT)
 		if [ -z "$prod_unit" ]; then
 			setprodflag 2>&1 | logos setprodflag &
 		elif [ "$prod_unit" = "0" ]; then

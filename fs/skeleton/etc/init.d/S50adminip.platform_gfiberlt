@@ -8,7 +8,7 @@ case "$1" in
     if runnable glaser; then
       exit 0
     fi
-    prod=$(sysvar_cmd -g PRODUCTION_UNIT)
+    prod=$(hnvram -qr PRODUCTION_UNIT)
     if [ "$prod" = 0 ] || [ "$prod" = "" ]; then
       touch /tmp/ADMINMODE_IP
       touch /tmp/ADMINMODE_SSHD
