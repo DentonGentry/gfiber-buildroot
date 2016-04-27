@@ -207,6 +207,8 @@ EOF
           switchport allowed vlan add $vlan_inband tagged
           switchport pvid $vlan_10g
         exit
+
+        no counters mac counters reset-on-read all
       end
 EOF
 
