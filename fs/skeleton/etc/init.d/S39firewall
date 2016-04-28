@@ -21,6 +21,11 @@ flush()
 
 case "$1" in
   start|restart|reload)
+    if is-fiberjack; then
+      # no iptables support for this platform.
+      exit 0
+    fi
+
     if ! is-windcharger; then
       modprobe -a \
           iptable_filter \
