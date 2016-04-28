@@ -74,6 +74,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
 	  Include the craftui web server used by PTP devices for
 	  site configuration.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_PRESTERASTATS
+	bool "include presterastats tool"
+	help
+	  Include the presterastats tool used by PTP devices to
+	  extract data from the on-board prestera switch
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
