@@ -23,8 +23,8 @@ if [ ! -d /tmp -o ! -d /config ]; then
   exit 0
 fi
 
-mkdir -p /tmp/experiments /config/experiments && \
-  chmod 777 /tmp/experiments /config/experiments
+mkdir -p /tmp/experiments /config/experiments &&
+  [ -w /config ] && chmod 777 /tmp/experiments /config/experiments
 
 : >"/tmp/experiments/$expname.available"
 if [ -e "/config/experiments/$expname.requested" ]; then
