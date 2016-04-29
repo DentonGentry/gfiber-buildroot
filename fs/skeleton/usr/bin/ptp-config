@@ -96,6 +96,9 @@ do_init() {
     vlan_inband)
       do_vlan "$1" eth1 inband
       ;;
+    vlan_outofband)
+      do_vlan "$1" eth1 outofband
+      ;;
     vlan_peer)
       do_vlan "$1" eth1 peer
       ;;

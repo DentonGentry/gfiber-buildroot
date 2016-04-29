@@ -67,7 +67,7 @@ def main():
   s_fd = s.fileno()
 
   stdin_fd = sys.stdin.fileno()
-  timeout = 5
+  timeout = 15
 
   isatty = os.isatty(sys.stdin.fileno())
 

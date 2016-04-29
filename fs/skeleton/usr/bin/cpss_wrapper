@@ -17,15 +17,17 @@ die()
   exit 1
 }
 
+vlan_outofband=$(ptp-config -g vlan_outofband)
 vlan_inband=$(ptp-config -g vlan_inband)
 vlan_peer=$(ptp-config -g vlan_peer)
-vlan_1g=1001
-vlan_10g=1010
 
 port_poe=0/0
 port_soc=0/4
 port_modem=0/24
 port_sfp=0/25
+
+src_modem=${port_modem##0/}
+src_sfp=${port_sfp##0/}
 
 # take switch out of reset in case it was left that way
 if [ -e /dev/gpio/3236_reset ]; then
@@ -173,43 +175,40 @@ EOF
     # configure ports, vlans
     cpss_cmd <<EOF || die "config failed"
       config
-        interface vlan device 0 vid $vlan_1g
+        no counters mac counters reset-on-read all
+        no interface range vlan device 0 vid 1
+        interface range vlan device 0 vid 1-4095
         exit
-        interface vlan device 0 vid $vlan_10g
+        access-list device 0 pcl-ID 10
+          rule-id 12 action permit source-port $src_sfp redirect-ethernet $port_modem
+          rule-id 18 action permit source-port $src_modem redirect-ethernet $port_sfp
         exit
-        interface vlan device 0 vid $vlan_peer
-        exit
-        interface vlan device 0 vid $vlan_inband
-        exit
-
         interface ethernet $port_poe
           speed 1000 mode SGMII
-          switchport allowed vlan add $vlan_1g untagged
-          switchport pvid $vlan_1g
+          switchport allowed vlan add $vlan_outofband untagged
+          switchport pvid $vlan_outofband
         exit
         interface ethernet $port_soc
           speed 1000 mode 1000Base_X
-          switchport allowed vlan add $vlan_1g untagged
+          switchport allowed vlan add $vlan_outofband tagged
           switchport allowed vlan add $vlan_peer tagged
           switchport allowed vlan add $vlan_inband tagged
-          switchport pvid $vlan_1g
+          switchport pvid $vlan_outofband
         exit
         interface ethernet $port_modem
           speed 10000 mode SR_LR
-          switchport allowed vlan add $vlan_10g untagged
           switchport allowed vlan add $vlan_peer tagged
           switchport allowed vlan add $vlan_inband tagged
-          switchport pvid $vlan_10g
+          service-acl pcl-ID 10 lookup 0
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
-          switchport allowed vlan add $vlan_10g untagged
           switchport allowed vlan add $vlan_inband tagged
-          switchport pvid $vlan_10g
-        exit
-
-        no counters mac counters reset-on-read all
+          service-acl pcl-ID 10 lookup 0
+        end
       end
+      cpss-api call cpssDxChBrgVlanEgressFilteringEnable dev 0 enable false
+      chimera2 pcl_modify_action
 EOF
 
   fi
