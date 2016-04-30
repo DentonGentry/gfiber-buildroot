@@ -9,6 +9,9 @@ start()
   echo 1 >/dev/gpio/mcu_reset/value
   msleep 100
   echo 0 >/dev/gpio/mcu_reset/value
+  sleep 1
+
+  upgrade_atmel
 
   echo "starting glaukusd..."
   babysit 60 glaukusd 2>&1 | logos glaukus &
