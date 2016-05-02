@@ -197,12 +197,14 @@ EOF
         exit
         interface ethernet $port_modem
           speed 10000 mode SR_LR
+          jumbo-frame
           switchport allowed vlan add $vlan_peer tagged
           switchport allowed vlan add $vlan_inband tagged
           service-acl pcl-ID 10 lookup 0
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
+          jumbo-frame
           switchport allowed vlan add $vlan_inband tagged
           service-acl pcl-ID 10 lookup 0
         end
