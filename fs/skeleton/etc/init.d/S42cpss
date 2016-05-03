@@ -7,11 +7,15 @@ case "$1" in
     if is-ptp; then
       # start marvell switch CLI
       babysit 10 cpss_wrapper 2>&1 | logos cpss &
+
+      # save prestera stats for catawampus
+      babysit 60 prestera_periodic 2>&1 | logos prestera &
     fi
     ;;
   stop)
     # kill cpss and babysitter
     if is-ptp; then
+      pkillwait -f prestera_periodic
       pkillwait -f "babysit.*cpss_wrapper"
       pkillwait -x cpss_wrapper
       pkillwait -x cpss
