@@ -8,8 +8,23 @@ if ! is-html-tv-ui; then
   exit 0
 fi
 
+parent_comm=$(ps -o comm= $PPID)
+echo $PPID
+if [ "$parent_comm" = "gsetsid" ]; then
+  # Special case; when something executes '<action> oregano' it goes
+  # via <action> and then gsetsid - but we want the real parent. So
+  # let's head up the chain to the real parent.
+  action_pid=$(cat /proc/$PPID/status | grep PPid | cut -d':' -f2 | sed -r 's/\s+//g')
+  if [ "$action_pid" != "" ]; then
+    real_ppid=$(cat /proc/"$action_pid"/status | grep PPid | cut -d':' -f2 | sed -r 's/\s+//g')
+    real_parent=$(ps -o comm= $real_ppid)
+    parent_comm="$parent_comm ($real_parent)"
+  fi
+fi
+
 case "$1" in
   start)
+    echo "S99oregano: start called by $parent_comm" | logos oregano
     (
       wait-until-created /tmp/nexus_multiprocess
       wait-until-created /tmp/time.synced
@@ -27,6 +42,7 @@ case "$1" in
     ) &
     ;;
   stop)
+    echo "S99oregano: stop called by $parent_comm" | logos oregano
     # If startupvideo is running, it prevents miniclient from starting up.
     pkillwait -x startupvideo &
     # Stop the scripts invoked above due to 'start oregano' (which will also
@@ -43,6 +59,7 @@ case "$1" in
     wait
     ;;
   restart)
+    echo "S99oregano: restart called by $parent_comm" | logos oregano
     $0 stop; $0 start
     ;;
   *)
