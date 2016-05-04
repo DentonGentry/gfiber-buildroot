@@ -30,6 +30,7 @@ global_serve_map = {}
 class ImageHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Handle HTTP requests for images."""
 
+  # pylint:disable=invalid-name
   def do_GET(self):
     """Handle GET requests."""
     f = self.SendHead()
@@ -37,6 +38,7 @@ class ImageHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       shutil.copyfileobj(f, self.wfile)
       f.close()
 
+  # pylint:disable=invalid-name
   def do_HEAD(self):
     """Handle HEAD requests. Required by Handler interface, may not be used."""
     f = self.SendHead()
@@ -120,9 +122,9 @@ def FindImages(basedir):
   latest_map = {}
 
   for image in images:
-    head, tail = os.path.split(image)
+    tail = os.path.basename(image)
     if tail == 'latest.gi':
-      head, tail = os.path.split(os.path.realpath(image))
+      tail = os.path.basename(os.path.realpath(image))
       platform, _ = tail.split('-', 1)
       latest_map[platform] = tail
 
@@ -159,9 +161,13 @@ def main():
       server_ip = GetServerIP(remote_ip)
 
       if opt.image:
-        requested_version = os.path.splitext(opt.image)[0]
+        image_file = os.path.basename(opt.image)
+        requested_version = os.path.splitext(image_file)[0]
         unused_platform, build = requested_version.split('-', 1)
+
         image = '%s-%s.gi' % (host_platform, build)
+        if image not in global_serve_map:
+          global_serve_map[image] = opt.image
       else:
         image = latest_map[host_platform]
 
@@ -171,7 +177,8 @@ def main():
         print >> sys.stderr, 'Run again with --force to override this.'
         continue
 
-      image_url = 'http://%s:%d/%s' % (server_ip, httpd.server_address[1], image)
+      image_url = 'http://%s:%d/%s' % (server_ip, httpd.server_address[1],
+                                       image)
       install_cmd = ('ginstall -t %s && ' % image_url +
                      'echo "Installed image successfully; rebooting" && '
                      '( sleep 1; reboot; ) &')
