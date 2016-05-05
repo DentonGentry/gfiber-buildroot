@@ -4,13 +4,19 @@ if ! runnable glaser; then
   # TODO(apenwarr): /etc should be readonly.
   echo "Switching to GPON mode."
   serial=$(serial)
+  platform=$(cat /etc/platform)
+  gpon_xml=/etc/xml_params/gpon_xml_cfg_file.xml
+  if [ "$platform" = GFLT300 ]; then
+    gpon_xml=/etc/xml_params/gpon3_xml_cfg_file.xml
+  fi
+
   mkdir -p /tmp/xml_params
   if [ ! -z "$serial" ]; then
     # Replace the placeholder serial number with the real serial number.
-    cat /etc/xml_params/gpon_xml_cfg_file.xml | \
+    cat "$gpon_xml" | \
       sed -e "s/SERIALXXYYZZ/$serial/" >/tmp/xml_params/pon_xml_cfg_file.xml
   else
-    cp -f /etc/xml_params/gpon_xml_cfg_file.xml \
+    cp -f "$gpon_xml" \
       /tmp/xml_params/pon_xml_cfg_file.xml
   fi
   cp -f /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
@@ -18,7 +24,6 @@ if ! runnable glaser; then
   cp -f /etc/xml_params/tpm_xml_cfg_file_gpon.xml \
     /tmp/xml_params/tpm_xml_cfg_file.xml
 
-  platform=$(cat /etc/platform)
   version=$(cat /etc/version)
   # Strip off the leading gfltxxx- (leaves the part after the dash)
   # and limit the length of version to 14 characters.
