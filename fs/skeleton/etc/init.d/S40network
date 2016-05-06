@@ -424,7 +424,7 @@ case "$1" in
 
       # bring up inband vlan (will dhcp)
       ptp-config -i vlan_inband
-      if_up_no_bridging eth1.inband
+      # no if_up_no_bridging, inband is in br0
 
       # bring up outofband vlan (will dhcp)
       ptp-config -i vlan_outofband
