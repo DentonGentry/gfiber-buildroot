@@ -13,6 +13,10 @@ mac="$2"
 # ip="$3"
 # hostname="$4"
 
+if [ ! -z "$DNSMASQ_VENDOR_CLASS" ] && runnable dhcpvendortax; then
+  dhcpvendortax -l "$DNSMASQ_MAC" -v "$DNSMASQ_VENDOR_CLASS" | logos taxonomy
+fi
+
 FILE="/config/dhcp.fingerprints"
 
 if [ -z "$mac" ]; then
