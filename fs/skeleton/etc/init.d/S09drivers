@@ -59,7 +59,9 @@ start()
     # Rename eth0 to craft0: This is the interface that the tech will connect to
     # when configuring the device. We want to keep this interface isolated from
     # customer traffic.
+    # rename eth1 so it won't be put in the bridge automatically
     rename_net_device eth0 craft0
+    rename_net_device eth1 sw0
   fi
 
   if is-tv-box; then
