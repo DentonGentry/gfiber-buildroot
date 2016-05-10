@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Useful shell utility functions.
 
 # Atomically rewrite a file by writing to a temp file and then renaming it.
