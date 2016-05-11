@@ -17,6 +17,59 @@ die()
   exit 1
 }
 
+# Given a set of vlan identifiers to exclude, generate the
+# range descriptions that exclude those identifiers.
+vlan_ranges()
+{
+  local result vlans last final curr v dt range
+
+  result=""
+  vlans=$(echo "$@" | sed -e 's/ /\n/g' | sort -nu)
+
+  last=${vlans##.* }
+  final=$(($vlan_end+1))
+  if [ "$last" = $vlan_end ]; then
+    final=
+  fi
+
+  set -- $vlans $final
+  curr=$vlan_start
+  while [ $# -gt 0 ]; do
+    v=$1
+    shift
+    dt=$(($v - $curr))
+    if [ $dt -lt 0 ]; then
+      # silently drop illegal values
+      continue
+    fi
+    if [ $dt -gt 0 ]; then
+       if [ $dt -eq 1 ]; then
+         range=$curr
+       else
+         range=$curr-$(($v-1))
+       fi
+       result="${result} ${range}"
+    fi
+    curr=$(($v + 1))
+  done
+
+  echo ${result}
+}
+
+# Generate the switchport allowed vlan lines with the appropriate
+# ranges when passed a set of vlans to exclude.
+generate_vlan_allow_lines()
+{
+  local range
+
+  for range in $(vlan_ranges "$@"); do
+    echo "switchport allowed vlan add ${range} outer_tag0_inner_tag1"
+  done
+}
+
+vlan_start=1
+vlan_end=4094
+
 vlan_ooband=$(ptp-config -g vlan_ooband)
 vlan_inband=$(ptp-config -g vlan_inband)
 vlan_peer=$(ptp-config -g vlan_peer)
@@ -172,18 +225,16 @@ EOF
 EOF
 
   else
+    modem_allow_vlans=$(generate_vlan_allow_lines $vlan_ooband)
+    sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband)
+
     # configure ports, vlans
     cpss_cmd <<EOF || die "config failed"
+      cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       config
         no counters mac counters reset-on-read all
         no interface range vlan device 0 vid 1
-        interface range vlan device 0 vid 1-4095
-        exit
-        access-list device 0 pcl-ID 10
-          rule-id 6 action permit vid $vlan_inband redirect-vidx $vlan_inband
-          rule-id 12 action permit vid $vlan_peer redirect-vidx $vlan_peer
-          rule-id 24 action permit source-port $src_sfp redirect-ethernet $port_modem
-          rule-id 30 action permit source-port $src_modem redirect-ethernet $port_sfp
+        interface range vlan device 0 vid ${vlan_start}-${vlan_end}
         exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
@@ -200,21 +251,17 @@ EOF
         interface ethernet $port_modem
           speed 10000 mode SR_LR
           jumbo-frame
-          switchport allowed vlan add $vlan_peer tagged
-          switchport allowed vlan add $vlan_inband tagged
-          service-acl pcl-ID 10 lookup 0
+          $modem_allow_vlans
+          switchport pvid 1
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
           jumbo-frame
-          switchport allowed vlan add $vlan_inband tagged
-          service-acl pcl-ID 10 lookup 0
+          $sfp_allow_vlans
+          switchport pvid 1
         end
       end
-      cpss-api call cpssDxChBrgVlanEgressFilteringEnable dev 0 enable false
-      chimera2 pcl_modify_action
 EOF
-
   fi
 fi
 
