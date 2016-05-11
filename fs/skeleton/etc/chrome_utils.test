@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Tests for /etc/chrome_utils.sh
+
+. /etc/chrome_utils.sh
+. /etc/wvtest.sh
+
+OREGANO_BROWSER_CMD="/usr/local/bin/webkitGl3/browser_shell \
+--app-config-path=/usr/local/bin/webkitGl3/fiber_app.conf \
+--disable-setuid-sandbox --enable-cma-media-pipeline \
+--enable-local-file-accesses --mem-check-critical-level-mb=8 \
+--ui-disable-threaded-compositing --ozone-platform=nexus \
+--disable-glsl-translator --ignore-gpu-blacklist --no-wifi \
+--js-flags=--noage-code --trace-gc --expose-gc --gpu-sandbox-start-early \
+--disable-gpu-process-crash-limit --remote-debugging-address=0.0.0.0 \
+--disable-exit-button --skip-shutdown-logic --enable-loudness-management \
+--allow-unsecure-content --disable-web-security \
+--allow-insecure-websocket-from-https-origin \
+file:///app/oregano/startup/connect.html"
+
+YOUTUBE_BROWSER_CMD="/usr/local/bin/webkitGl3/browser_shell \
+--app-config-path=/usr/local/bin/webkitGl3/fiber_app.conf \
+--disable-setuid-sandbox --enable-cma-media-pipeline \
+--enable-local-file-accesses --mem-check-critical-level-mb=8 \
+--ui-disable-threaded-compositing --ozone-platform=nexus \
+--disable-glsl-translator --ignore-gpu-blacklist --no-wifi \
+--js-flags=--noage-code --trace-gc --expose-gc --gpu-sandbox-start-early \
+--disable-gpu-process-crash-limit --remote-debugging-address=0.0.0.0 \
+--fiber-keepalive-file https://www.youtube.com/tv"
+
+UNKNOWN_BROWSER_CMD="/usr/local/bin/webkitGl3/browser_shell \
+--app-config-path=/usr/local/bin/webkitGl3/fiber_app.conf \
+--disable-setuid-sandbox --enable-cma-media-pipeline \
+--enable-local-file-accesses --mem-check-critical-level-mb=8 \
+--ui-disable-threaded-compositing --ozone-platform=nexus \
+--disable-glsl-translator --ignore-gpu-blacklist --no-wifi \
+--js-flags=--noage-code --trace-gc --expose-gc --gpu-sandbox-start-early \
+--disable-gpu-process-crash-limit --remote-debugging-address=0.0.0.0 \
+--allow-unsecure-content https://www.google.com"
+
+OREGANO_RENDERER_CMD="/usr/local/bin/webkitGl3/browser_shell --type=renderer \
+--disable-threaded-compositing --js-flags=--noage-code --trace-gc --expose-gc \
+--use-normal-priority-for-tile-task-worker-threads \
+--enable-deferred-image-decoding --lang=en-US --mem-check-critical-level-mb=8 \
+--enable-cma-media-pipeline --enable-pinch-virtual-viewport \
+--enable-delegated-renderer --num-raster-threads=1 --enable-gpu-rasterization \
+--use-image-texture-target=3553 --channel=1234.1.119715937"
+
+OREGANO_GPU_CMD="/usr/local/bin/webkitGl3/browser_shell --type=gpu-process \
+--channel=1234.0.218445757 --enable-share-group-async-texture-upload \
+--gpu-sandbox-start-early --ozone-platform=nexus --disable-glsl-translator \
+--force-gpu-mem-available-mb=64 --enable-share-group-async-texture-upload \
+--gpu-no-context-lost --mem-check-critical-level-mb=8 \
+--enable-cma-media-pipeline --supports-dual-gpus=false \
+--gpu-driver-bug-workarounds=2,43 --gpu-vendor-id=0x0000 \
+--gpu-device-id=0x0000 --gpu-driver-vendor --gpu-driver-version \
+--mem-check-critical-level-mb=8 --enable-cma-media-pipeline"
+
+OREGANO_ZYGOTE_CMD="/usr/local/bin/webkitGl3/browser_shell --type=zygote \
+--mem-check-critical-level-mb=8 --enable-cma-media-pipeline"
+
+WVSTART "chrome-utils"
+
+# Test get_webapp_for_browser()
+webapp=$(get_webapp_for_browser "$OREGANO_BROWSER_CMD")
+WVPASSEQ "$webapp" "oregano"
+
+webapp=$(get_webapp_for_browser "$YOUTUBE_BROWSER_CMD")
+WVPASSEQ "$webapp" "youtube"
+
+webapp=$(get_webapp_for_browser "$UNKNOWN_BROWSER_CMD")
+WVPASSEQ "$webapp" "unknown"
+
+# Test get_webapp_for_channeled_process().
+# For this test, we fake out 'ps' to return what we want.
+
+ps()
+{
+  # Expected call is:
+  #  ps --no-headers -o cmd "$browser_pid"
+  # This makes the browser_pid the 4th argument.
+  WVPASSEQ "$4" "1234"
+
+  echo "$OREGANO_BROWSER_CMD"
+}
+
+webapp=$(get_webapp_for_channeled_process "$OREGANO_RENDERER_CMD")
+WVPASSEQ "$webapp" "oregano"
+
+webapp=$(get_webapp_for_channeled_process "$OREGANO_GPU_CMD")
+WVPASSEQ "$webapp" "oregano"
+
+# A known deficiency is that we can't get the result for the zygote
+webapp=$(get_webapp_for_channeled_process "$OREGANO_ZYGOTE_CMD")
+WVPASSEQ "$webapp" "unknown"
+
+# Test format_chrome_comm().
+# Again we use the faked out 'ps'.
+
+output=$(format_chrome_comm "1234" "$OREGANO_BROWSER_CMD")
+WVPASSEQ "$output" "browser_oregano"
+
+output=$(format_chrome_comm "1235" "$OREGANO_RENDERER_CMD")
+WVPASSEQ "$output" "renderer_oregano"
+
+output=$(format_chrome_comm "1236" "$OREGANO_GPU_CMD")
+WVPASSEQ "$output" "gpu_oregano"
+
+output=$(format_chrome_comm "1236" "$OREGANO_ZYGOTE_CMD")
+WVPASSEQ "$output" "zygote_unknown"
+
+output=$(format_chrome_comm "4321" "$YOUTUBE_BROWSER_CMD")
+WVPASSEQ "$output" "browser_youtube"
+
+output=$(format_chrome_comm "4321" "$UNKNOWN_BROWSER_CMD")
+WVPASSEQ "$output" "browser_unknown"
