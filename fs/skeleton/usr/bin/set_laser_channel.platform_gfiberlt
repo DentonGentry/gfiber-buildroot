@@ -1,0 +1,65 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+platform=$(cat /etc/platform)
+
+usage() {
+  echo "Usage:"
+  echo
+  echo "  $0 {laser channel num}"
+  echo
+  echo "  Write to the I2C bus to tune the transceiver the specified channel"
+  echo "  number."
+  echo
+  exit 99
+}
+
+if ! startswith "$platform" "GFLT3"; then
+  # not all fiberjacks have tuneable optics.
+  exit 0
+fi
+
+if [ "$#" -ne "1" ]; then
+  usage
+fi
+
+# Make sure we've been given a decimal value.
+if [ -z "${1##*[!0-9]*}" ]; then
+  echo "Need a decimal laser channel value! Got: '$1' instead."
+  exit 1
+fi
+
+# We are directly setting 6 bits of the lower byte (0x91).
+# Make sure that it doesn't spill over into the upper byte 0x90.
+# The PON-ID message format is here: http://go/golong-ponid-ploam-msg
+if [ "$1" -lt "0" ] && [ "$1" -gt "63" ]; then
+  echo "Laser channel is out of range: $1 (range is: 0-63)"
+  exit 1
+fi
+
+# Program the laser channel.
+result=$(i2cset -y 0 0x51 0x91 $1)
+if [ "$?" -ne "0" ]; then
+  echo "Failed to set laser channel! i2cset error: $result"
+  exit 1
+fi
+
+# Something funky is going on with the i2c bus after writing, sleeping for
+# a while seems to allow us to consistently be able to read again.
+sleep 1
+
+result=$(i2cget -y 0 0x51 0x91)
+if [ "$?" -ne "0" ]; then
+  echo "Failed to get the laser channel! i2cget error: $result"
+  exit 1
+fi
+
+# Some early transceiver firmware versions will only accept channel numbers 0
+# through 13 (0xd). The final product uses "AWG absolute channel" numbers 0x05
+# through 0x10 (channels 5 through 16).
+if [ "$(($result))" -ne "$1" ]; then
+  echo "Error verifying laser channel! Laser channel did not stick? " \
+       "Expected: $1, got: $(($result))"
+  exit 1
+fi
