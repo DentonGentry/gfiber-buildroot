@@ -15,6 +15,13 @@ endif
 
 ifeq ($(BR2_PACKAGE_SIMPLERAMFS),y)
 ROOTFS_GINSTALL_DEPENDENCIES += simpleramfs
+ifeq ($(BR2_PACKAGE_SIMPLERAMFS_XZ),y)
+INITRAMFS_IMAGE=initramfs.cpio.xz
+INITRAMFS_COMPRESS_COMMAND='xz -c --check=crc32 --lzma2=dict=1MiB'
+else
+INITRAMFS_IMAGE=initramfs.cpio.gz
+INITRAMFS_COMPRESS_COMMAND='gzip -c'
+endif
 endif
 
 ifeq ($(BR2_TARGET_ROOTFS_INITRAMFS),y)
@@ -156,7 +163,7 @@ OPTIMUS_SIGNING=y
 BUILD_UIMAGE=y
 MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
 MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
-MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz
+MKIMAGE_DATA_FILE=zImage:$(INITRAMFS_IMAGE)
 MKIMAGE_IMAGE_TYPE=multi
 MKIMAGE_COMPRESSION_TYPE=none
 MKIMAGE_EXTRA_FLAGS=
@@ -211,7 +218,7 @@ OPTIMUS_SIGNING=y
 BUILD_UIMAGE=y
 MKIMAGE_KERNEL_LOAD_ADDRESS = 0x04008000
 MKIMAGE_KERNEL_ENTRY_POINT = 0x04008000
-MKIMAGE_DATA_FILE=zImage:initramfs.cpio.gz:gfch100.dtb
+MKIMAGE_DATA_FILE=zImage:$(INITRAMFS_IMAGE):gfch100.dtb
 MKIMAGE_IMAGE_TYPE=multi
 MKIMAGE_COMPRESSION_TYPE=none
 MKIMAGE_EXTRA_FLAGS=
@@ -285,9 +292,9 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
 		ln -f rootfs.squashfs rootfs.img && \
 		if [ '$(BR2_TARGET_ROOTFS_RECOVERYFS)' != 'y' ]; then \
-			gzip -c <simpleramfs.cpio >initramfs.cpio.gz; \
+			$(shell echo $(INITRAMFS_COMPRESS_COMMAND)) <simpleramfs.cpio >$(INITRAMFS_IMAGE); \
 		else \
-			gzip -c <recoveryfs.cpio >initramfs.cpio.gz; \
+			$(shell echo $(INITRAMFS_COMPRESS_COMMAND)) <recoveryfs.cpio >$(INITRAMFS_IMAGE); \
 		fi; \
 	fi && \
 	if [ '$(BUILD_UIMAGE)' = 'y' ]; then \
@@ -359,7 +366,7 @@ define ROOTFS_GINSTALL_CMD_V2
 		); \
 	fi && \
 	cd $(BINARIES_DIR) && \
-	gzip -c <simpleramfs.cpio >simpleramfs.cpio.gz && \
+	$(shell echo $(INITRAMFS_COMPRESS_COMMAND)) <simpleramfs.cpio >$(INITRAMFS_IMAGE) && \
 	tar -cf $(value ROOTFS_GINSTALL_VERSION).gi \
 		version \
 		$(BRUNO_LOADERS_V2) \
