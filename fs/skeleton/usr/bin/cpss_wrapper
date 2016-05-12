@@ -17,7 +17,7 @@ die()
   exit 1
 }
 
-vlan_outofband=$(ptp-config -g vlan_outofband)
+vlan_ooband=$(ptp-config -g vlan_ooband)
 vlan_inband=$(ptp-config -g vlan_inband)
 vlan_peer=$(ptp-config -g vlan_peer)
 
@@ -180,7 +180,6 @@ EOF
         interface range vlan device 0 vid 1-4095
         exit
         access-list device 0 pcl-ID 10
-
           rule-id 6 action permit vid $vlan_inband redirect-vidx $vlan_inband
           rule-id 12 action permit vid $vlan_peer redirect-vidx $vlan_peer
           rule-id 24 action permit source-port $src_sfp redirect-ethernet $port_modem
@@ -188,15 +187,15 @@ EOF
         exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
-          switchport allowed vlan add $vlan_outofband untagged
-          switchport pvid $vlan_outofband
+          switchport allowed vlan add $vlan_ooband untagged
+          switchport pvid $vlan_ooband
         exit
         interface ethernet $port_soc
           speed 1000 mode 1000Base_X
-          switchport allowed vlan add $vlan_outofband tagged
+          switchport allowed vlan add $vlan_ooband tagged
           switchport allowed vlan add $vlan_peer tagged
           switchport allowed vlan add $vlan_inband tagged
-          switchport pvid $vlan_outofband
+          switchport pvid $vlan_ooband
         exit
         interface ethernet $port_modem
           speed 10000 mode SR_LR

@@ -91,16 +91,16 @@ do_init() {
       do_ipaddr "$1" craft0
       ;;
     local_ipaddr)
-      do_ipaddr "$1" eth1.peer
+      do_ipaddr "$1" sw0.peer
       ;;
     vlan_inband)
-      do_vlan "$1" eth1 inband
+      do_vlan "$1" sw0 inband
       ;;
-    vlan_outofband)
-      do_vlan "$1" eth1 outofband
+    vlan_ooband)
+      do_vlan "$1" sw0 ooband
       ;;
     vlan_peer)
-      do_vlan "$1" eth1 peer
+      do_vlan "$1" sw0 peer
       ;;
     *)
       echo "Nothing to initialize for $1" && exit 2

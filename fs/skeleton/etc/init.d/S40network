@@ -231,7 +231,7 @@ add_interfaces_to_bridge() {
   # the bridge.
   for x in \
       /sys/class/net/[ea]th[0-9] \
-      /sys/class/net/[ea]th[0-9].inband \
+      /sys/class/net/*.inband \
       /sys/class/net/lan[0-9] \
       /sys/class/net/moca[0-9] \
       /sys/class/net/wlan[0-9]; do
@@ -408,7 +408,7 @@ case "$1" in
       # set defaults
       ptp-config -d craft_ipaddr 192.168.1.1/24
       ptp-config -d vlan_inband 4090
-      ptp-config -d vlan_outofband 50
+      ptp-config -d vlan_ooband 50
       ptp-config -d vlan_peer 60
       # TODO(edjames) default should depend on hi/lo radio model
       ptp-config -d local_ipaddr 192.168.2.1/24
@@ -416,7 +416,7 @@ case "$1" in
 
       # mac addrs
       set_mac_from_hnvram craft0 MAC_ADDR
-      set_mac_from_hnvram eth1 MAC_ADDR_WAN
+      set_mac_from_hnvram sw0 MAC_ADDR_WAN
 
       # craft0 (static ip for UI)
       ptp-config -i craft_ipaddr
@@ -426,14 +426,14 @@ case "$1" in
       ptp-config -i vlan_inband
       # no if_up_no_bridging, inband is in br0
 
-      # bring up outofband vlan (will dhcp)
-      ptp-config -i vlan_outofband
-      if_up_no_bridging eth1.outofband
+      # bring up ooband vlan (will dhcp)
+      ptp-config -i vlan_ooband
+      if_up_no_bridging sw0.ooband
 
       # bring up peer vlan, set our static ip
       ptp-config -i vlan_peer
       ptp-config -i local_ipaddr
-      if_up_no_bridging eth1.peer
+      if_up_no_bridging sw0.peer
     fi
 
     if is-spacecast; then
