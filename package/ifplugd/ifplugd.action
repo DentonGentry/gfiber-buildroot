@@ -33,7 +33,9 @@ case "$action" in
 
       if [ "$iface" = eth0 ] || [ "$iface" = moca0 ]; then
         run-dhclient br0
-      elif startswith "$iface" wcli; then
+      # TODO(rofrankel):  Remove the second disjunct once we have wcli* Frenzy
+      # interfaces.
+      elif startswith "$iface" wcli || [ "$iface" = "$(get-quantenna-interface)" ]; then
         run-dhclient "$iface"
       fi
     fi
