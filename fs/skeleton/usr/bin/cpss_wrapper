@@ -180,8 +180,11 @@ EOF
         interface range vlan device 0 vid 1-4095
         exit
         access-list device 0 pcl-ID 10
-          rule-id 12 action permit source-port $src_sfp redirect-ethernet $port_modem
-          rule-id 18 action permit source-port $src_modem redirect-ethernet $port_sfp
+
+          rule-id 6 action permit vid $vlan_inband redirect-vidx $vlan_inband
+          rule-id 12 action permit vid $vlan_peer redirect-vidx $vlan_peer
+          rule-id 24 action permit source-port $src_sfp redirect-ethernet $port_modem
+          rule-id 30 action permit source-port $src_modem redirect-ethernet $port_sfp
         exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
