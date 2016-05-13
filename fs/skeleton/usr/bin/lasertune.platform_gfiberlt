@@ -1,0 +1,68 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+laser_channel_file="/sys/devices/platform/gpon/misc/laserChannel"
+platform=$(cat /etc/platform)
+prev_laser_channel=-1
+
+# Initially be very aggressive about acquiring a channel, then back off once
+# we've tuned.
+sleep_timeout=1
+
+log()
+{
+  echo "$@" >&2
+}
+
+log_and_sleep()
+{
+  log "$@"
+  sleep "$sleep_timeout"
+}
+
+if ! startswith "$platform" "GFLT3"; then
+  # not all fiberjacks have a tunable laser.
+  exit 0
+fi
+
+while true; do
+  if [ ! -e "$laser_channel_file" ]; then
+    log_and_sleep "$laser_channel_file is missing."
+    continue
+  fi
+  laser_channel=$(cat "$laser_channel_file")
+  if [ -z "$laser_channel" ]; then
+    log_and_sleep "$laser_channel_file is empty?"
+    continue
+  fi
+  # Valid laser channels start from 0.
+  if [ "$laser_channel" -eq "-1" ]; then
+    prev_laser_channel="-1"
+    sleep_timeout=1
+    log_and_sleep "No PON-ID PLOAM message received yet..."
+    continue
+  fi
+
+  # If the laser channel has not changed since we last ran, then go back to
+  # sleep as there is nothing to do.
+  if [ "$prev_laser_channel" -eq "$laser_channel" ]; then
+    sleep "$sleep_timeout"
+    continue
+  else
+    echo "$0: Laser channel changed: $prev_laser_channel to $laser_channel"
+  fi
+
+  # The laser channel has either changed or its the first time we are running.
+  log "New laser channel discovered: Ch. $laser_channel!"
+  result=$(set_laser_channel $laser_channel)
+  if [ "$?" -ne "0" ]; then
+    log_and_sleep "Failed to set laser channel! Error: $result"
+    continue
+  fi
+
+  log "New laser channel programmed successfully!"
+  prev_laser_channel=$laser_channel
+  sleep_timeout=15
+  sleep $sleep_timeout
+done
