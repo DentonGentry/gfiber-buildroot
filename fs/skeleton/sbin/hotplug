@@ -7,6 +7,21 @@ exec >/dev/kmsg 2>&1
 register_experiment RwFirmware
 
 
+create_client_interface() {
+  local interface="$1"
+  local phy=$(find_phy_for_interface "$interface")
+  local wlan_mac=$(cat /sys/class/net/"$interface"/address)
+  local mac=$(mac_addr_increment "$wlan_mac" 1)
+  # After a firmware reset, phy# may change, so use the
+  # corresponding instance number from ${interface}
+  local instance=$(echo "$interface" | sed -e 's/^[a-z]*//')
+  interface="wcli$instance"
+  if ! interface_exists "$interface"; then
+    iw phy "$phy" interface add "$interface" type station
+    ip link set dev "$interface" address "$mac"
+  fi
+}
+
 load_firmware() {
   echo "Trying firmware '$1'" &&
   [ -r "$1" ] &&
@@ -47,6 +62,15 @@ case "$SUBSYSTEM-$ACTION" in
     fi ||
     load_firmware "/lib/firmware/$FIRMWARE" ||
     echo -1 >/sys/$DEVPATH/loading
+    ;;
+
+  net-add)
+    # At boot or device reset, a net add event is delivered for the primary
+    # interface. Use this event to create a client interface, which is
+    # created in user space unlike the primary interface.
+    if is-wireless-client && startswith "$INTERFACE" "wlan"; then
+      create_client_interface "$INTERFACE"
+    fi
     ;;
 esac
 

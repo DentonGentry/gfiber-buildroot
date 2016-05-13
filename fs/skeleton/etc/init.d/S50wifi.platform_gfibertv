@@ -18,18 +18,6 @@ create_secondary_interface() {
   fi
 }
 
-create_client_interface() {
-  local interface="$1"
-  local phy=$(find_phy_for_interface "$interface")
-  local wlan_mac=$(cat /sys/class/net/$interface/address)
-  local mac=$(mac_addr_increment "$wlan_mac" 1)
-  interface="wcli${phy#phy}"
-  if ! interface_exists $interface; then
-    iw phy "$phy" interface add "$interface" type station
-    ip link set dev "$interface" address "$mac"
-  fi
-}
-
 case "$1" in
   start)
     mkdir -p /tmp/wifi/fingerprints
@@ -40,13 +28,6 @@ case "$1" in
       for interface in wlan0 wlan1; do
         if interface_exists $interface; then
           create_secondary_interface $interface _portal
-        fi
-      done
-    fi
-    if is-wireless-client; then
-      for interface in wlan0 wlan1; do
-        if interface_exists $interface; then
-          create_client_interface $interface
         fi
       done
     fi
@@ -75,7 +56,7 @@ case "$1" in
     pkillwait -f quantenna-kmsgd
     pkillwait -f quantenna-status
     rm -rf /tmp/stations
-    rm /tmp/wifisignal
+    rm -rf /tmp/wifisignal
     ;;
   restart)
     $0 stop; $0 start
