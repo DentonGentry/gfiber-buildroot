@@ -69,6 +69,13 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_JSONPOLL
 	  Include the jsonpoll tool used by PTP devices to poll data
 	  from the modem and radio to be exported via catawampus.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_PHYTOOL
+  bool "include phytool"
+  select BR2_PACKAGE_MV_PHYSDK
+  help
+    Include the phytool tool used by PTP devices to interact with
+    Marvell PHY devices through the Marvell MTD SDK.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
 	bool "include craftui"
 	help
