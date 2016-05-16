@@ -1,0 +1,30 @@
+MV_PHYSDK_SITE = repo://vendor/marvell/3220sdk
+MV_PHYSDK_INSTALL_STAGING = YES
+MV_PHYSDK_INSTALL_TARGET = NO
+MV_PHYSDK_DEPENDENCIES =
+
+MV_PHYSDK_MAKE_ENV =
+MV_PHYSDK_MAKE_FLAGS = \
+	INSTALL=$(INSTALL) \
+	LIBNAME=libmvphysdk.a \
+	LIB_INSTALL_DIR=$(STAGING_DIR)/usr/lib \
+	HDRS_INSTALL_DIR=$(STAGING_DIR)/usr/include/mvphysdk
+MV_PHYSDK_MAKE = $(MV_PHYSDK_MAKE_ENV) $(MAKE) $(MV_PHYSDK_MAKE_FLAGS)
+
+define MV_PHYSDK_BUILD_CMDS
+	$(MV_PHYSDK_MAKE) -C $(@D) build
+endef
+
+define MV_PHYSDK_CLEAN_CMDS
+	$(MV_PHYSDK_MAKE) -C $(@D) clean
+endef
+
+define MV_PHYSDK_INSTALL_STAGING_CMDS
+	$(MV_PHYSDK_MAKE) -C $(@D) install-lib
+endef
+
+define MV_PHYSDK_UNINSTALL_STAGING_CMDS
+	$(MV_PHYSDK_MAKE) -C $(@D) uninstall-lib
+endef
+
+$(eval $(call GENTARGETS))
