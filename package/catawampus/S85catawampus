@@ -8,6 +8,8 @@ fssize()
   echo $size
 }
 
+aux_file=/tmp/gpio/aux1_temperature
+
 case "$1" in
   start)
     mkdir -p /tmp/cwmp/monitoring/dejittering
@@ -17,6 +19,11 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/ts
     mkdir -p /tmp/acs
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/* /tmp/acs
+
+    if runnable get-quantenna-interface && [ -n $(get-quantenna-interface) ]; then
+      touch "$aux_file"
+    fi
+
     if is-storage-box; then
       swimage=/var/media/swimage
     elif [ "$(fssize /user)" -ge 1000000 ]; then
