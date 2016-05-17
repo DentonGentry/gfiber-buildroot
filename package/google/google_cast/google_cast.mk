@@ -43,22 +43,14 @@ else
     GOOGLE_CAST_CCACHE="WEBKITGL_CCACHE=n"
 endif
 
-define GOOGLE_CAST_LOCAL_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) \
-		-C $(@D)/build \
-		BCM_MAKEFLAGS="$(BCM_MAKEFLAGS)" \
-		$(GOOGLE_CAST_CCACHE) \
-		PYTHONDONTOPTIMIZE="0"
-endef
-
 define GOOGLE_CAST_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
+		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
-		BCM_MAKEFLAGS="$(BCM_MAKEFLAGS)" \
+                -f Makefile.oemlibs \
 		$(GOOGLE_CAST_CCACHE) \
 		PYTHONDONTOPTIMIZE="0" \
-		BUILD_DIR=$(BUILD_DIR) \
-		install_oem_libs
+		BUILD_DIR=$(BUILD_DIR)
 endef
 
 define GOOGLE_CAST_BUILD_TEST_CMDS
