@@ -67,7 +67,7 @@ generate_vlan_allow_lines()
   done
 }
 
-vlan_start=1
+vlan_start=2
 vlan_end=4094
 
 vlan_ooband=$(ptp-config -g vlan_ooband)
@@ -233,8 +233,7 @@ EOF
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       config
         no counters mac counters reset-on-read all
-        no interface range vlan device 0 vid 1
-        interface range vlan device 0 vid ${vlan_start}-${vlan_end}
+        interface range vlan device 0 vid 1-${vlan_end}
         exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
@@ -251,12 +250,14 @@ EOF
         interface ethernet $port_modem
           speed 10000 mode SR_LR
           jumbo-frame
+          switchport allowed vlan add 1 untagged
           $modem_allow_vlans
           switchport pvid 1
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
           jumbo-frame
+          switchport allowed vlan add 1 untagged
           $sfp_allow_vlans
           switchport pvid 1
         end
