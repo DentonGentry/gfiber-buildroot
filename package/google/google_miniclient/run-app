@@ -61,6 +61,14 @@ case $appname in
     export sw_picture_decode=y
     chmod 755 /user/netflix/nrd
     verify_drm_state
+    if verify_playready; then
+      echo "Playready state verified."
+    else
+      echo "Playready state invalid, removing files."
+      rm -rf /user/drm
+      mkdir /user/drm
+    fi
+
     FRIENDLYNAME="Google Fiber TV Box"
     if [ -e /config/nickname ]; then
       FRIENDLYNAME="$(cat /config/nickname)"
