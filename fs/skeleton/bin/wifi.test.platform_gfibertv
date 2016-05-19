@@ -9,6 +9,16 @@ hostapd_running() {
   pgrep -f '^hostapd .* /tmp/hostapd.conf.wlan.*'
 }
 
+# conman isn't present on all devices.  QUIET=1 makes stop return 0 if conman
+# isn't found.
+QUIET=1 stop conman
+# Stop returns 1 on failure and 143 on success.
+WVPASSNE 1 $?
+
+stop waveguide
+WVPASSNE 1 $?
+
+
 WVSTART "wifi basics"
 
 WVPASS runnable wifi
