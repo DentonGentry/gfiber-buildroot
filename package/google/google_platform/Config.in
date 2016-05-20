@@ -75,6 +75,15 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
 	  Include the craftui web server used by PTP devices for
 	  site configuration.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_MACSEC
+	bool "include macsec"
+	select BR2_PACKAGE_MV_PHYSDK
+	depends on !BR2_PACKAGE_GOOGLE_OPENBOX
+	help
+	  Macsec abstract layer on top of Marvell's MTD SDK for 88X32xx, 88X33xx, & 88X23xx PHYs, and installs
+	  the library plus the relevant headers into the staging sysroot as /usr/lib/libmacsec.a and in
+	  /usr/include/macsec/, respectively.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_PRESTERASTATS
 	bool "include presterastats tool"
 	help
