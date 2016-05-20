@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/selfclean /bin/sh
 #
 # This script monitors /tmp/conman/command* /tmp/conman/access_point_enabled*
 # and starts or stops access points accordingly.
