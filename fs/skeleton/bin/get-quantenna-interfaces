@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+for interface in $(ls /sys/class/net); do
+  is_quantenna_interface "$interface" && echo "$interface"
+done
+
+exit 0

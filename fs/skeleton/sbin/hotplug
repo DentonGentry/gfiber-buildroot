@@ -9,16 +9,18 @@ register_experiment RwFirmware
 
 create_client_interface() {
   local interface="$1"
-  local phy=$(find_phy_for_interface "$interface")
   local wlan_mac=$(cat /sys/class/net/"$interface"/address)
   local mac=$(mac_addr_increment "$wlan_mac" 1)
-  # After a firmware reset, phy# may change, so use the
-  # corresponding instance number from ${interface}
-  local instance=$(echo "$interface" | sed -e 's/^[a-z]*//')
-  interface="wcli$instance"
-  if ! interface_exists "$interface"; then
-    iw phy "$phy" interface add "$interface" type station
-    ip link set dev "$interface" address "$mac"
+  local client_interface=$(echo "$interface" | sed s/^wlan/wcli/)
+  if ! interface_exists "$client_interface"; then
+    if is_quantenna_interface "$interface"; then
+      ip link add link quantenna name "$client_interface" type vlan id 2
+      mac=$(get_locally_administered_mac_addr "$mac")
+    else
+      local phy=$(find_phy_for_interface "$interface")
+      iw phy "$phy" interface add "$client_interface" type station
+    fi
+    ip link set dev "$client_interface" address "$mac"
   fi
 }
 

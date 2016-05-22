@@ -173,10 +173,7 @@ set_mac_from_hnvram() {
   if [ -h /sys/class/net/$DEV ]; then
     local addr="$(hnvram -qr "$VAR_NAME")"
     if [ -n "$addr" ]; then
-      # If $DEV is a Quantenna device, /bin/wifi will set the MAC address of the
-      # underlying interface instead of the PCIe interface. The PCIe interface
-      # will have the same MAC address with the locally administered bit set.
-      if [ $DEV = "$(get-quantenna-interface)" ]; then
+      if is_quantenna_interface $DEV; then
         addr="$(get_locally_administered_mac_addr "$addr")"
       fi
       echo "Setting $DEV mac address to $addr"
@@ -425,6 +422,19 @@ case "$1" in
 
     # Configure loopback
     ifup lo
+
+    # Quantenna-specific initialization.
+    if interface_exists quantenna; then
+      ip link set dev quantenna up
+      i=0
+      while true; do
+        if ! interface_exists wlan"$i"; then
+          ip link add link quantenna name wlan"$i" type vlan id 3
+          break
+        fi
+        i=$((i+1))
+      done
+    fi
 
     # Set the mac address from values in hnvram.
     if is-windcharger; then

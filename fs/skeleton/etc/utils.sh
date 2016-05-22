@@ -241,6 +241,10 @@ interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
 
+is_quantenna_interface() {
+  [ -e "/sys/class/net/quantenna/upper_$1" ]
+}
+
 ip46tables() {
   local x y
   iptables "$@"; x=$?

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /etc/utils.sh
+
 fssize()
 {
   local size
@@ -21,7 +23,7 @@ case "$1" in
     mkdir -p /tmp/wifi/wifiinfo
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/* /tmp/acs
 
-    if runnable get-quantenna-interface && [ -n $(get-quantenna-interface) ]; then
+    if interface_exists quantenna; then
       touch "$aux_file"
     fi
 

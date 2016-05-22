@@ -9,12 +9,17 @@ get_random_mac() {
 create_secondary_interface() {
   local interface="$1"
   local suffix="$2"
-  local phy=$(find_phy_for_interface "$interface")
   local mac=$(get_random_mac)
-  interface="${interface}${suffix}"
-  if ! interface_exists $interface; then
-    iw phy "$phy" interface add "$interface" type managed
-    ip link set dev "$interface" address "$mac"
+  local secondary_interface="${interface}${suffix}"
+  if ! interface_exists "$secondary_interface"; then
+    if is_quantenna_interface "$interface"; then
+      ip link add link quantenna name "$secondary_interface" type vlan id 4
+      mac=$(get_locally_administered_mac_addr "$mac")
+    else
+      local phy=$(find_phy_for_interface "$interface")
+      iw phy "$phy" interface add "$secondary_interface" type managed
+    fi
+    ip link set dev "$secondary_interface" address "$mac"
   fi
 }
 
@@ -42,7 +47,7 @@ case "$1" in
     if runnable wifi_files; then
       babysit 30 wifi_files 2>&1 | logos wifistatus &
     fi
-    if [ -n "$(get-quantenna-interface)" ]; then
+    if interface_exists quantenna; then
       babysit 30 monitor-bbic-temp 2>&1 | logos bbictemp &
       babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
       babysit 30 quantenna-status 2>&1 | logos quantenna-status &
