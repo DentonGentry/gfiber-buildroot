@@ -82,12 +82,13 @@ port_sfp=0/25
 src_modem=${port_modem##0/}
 src_sfp=${port_sfp##0/}
 
-# take switch out of reset in case it was left that way
+pci="/dev/switch"
+
+# Take switch out of reset in case it was left that way
 if [ -e /dev/gpio/3236_reset ]; then
   echo 0 >/dev/gpio/3236_reset/value
 fi
 
-pci="/sys/bus/pci/devices/0000:01:00.0"
 if [ ! -d $pci ]; then
   # rescan the pci bus in case it was in reset
   echo 1 >/sys/bus/pci/rescan
@@ -95,14 +96,17 @@ if [ ! -d $pci ]; then
 fi
 
 if [ ! -d $pci ]; then
-  die "pci device '$pci' not found"
+  die "PCI device for 3236 switch not found at '$pci'"
 fi
 
+# Check that vendor & device ID have expected values
+vendor_id_expected="0x11ab"
 vendor_id="$(cat ${pci}/vendor)"
+device_id_expected="0xf410"
 device_id="$(cat ${pci}/device)"
-if [ "$vendor_id" != "0x11ab" ] || [ "$device_id" != "0xf410" ]; then
-  die "pci vendor_id (0x11ab != $vendor_id) or" \
-      "device_id (0xf410 != $device_id) mismatch!"
+if [ "$vendor_id" != "$vendor_id_expected" ] || [ "$device_id" != "$device_id_expected" ]; then
+  die "pci vendor_id ($vendor_id != $vendor_id_expected) or" \
+      "device_id ($device_id != $device_id_expected) mismatch!"
 fi
 
 # Resetting the 3236 causes all the PCI BARs to be reset, so we need to remove
