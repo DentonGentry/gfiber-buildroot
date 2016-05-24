@@ -67,12 +67,14 @@ generate_vlan_allow_lines()
   done
 }
 
-vlan_start=2
-vlan_end=4094
+vlan_start=1
+vlan_end=4095
 
 vlan_ooband=$(ptp-config -g vlan_ooband)
 vlan_inband=$(ptp-config -g vlan_inband)
 vlan_peer=$(ptp-config -g vlan_peer)
+# Use vlan 4095 (reserved in 802.1q) for untagged traffic.
+vlan_untagged=4095
 
 port_poe=0/0
 port_soc=0/4
@@ -229,15 +231,16 @@ EOF
 EOF
 
   else
-    modem_allow_vlans=$(generate_vlan_allow_lines $vlan_ooband)
-    sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband)
+    modem_allow_vlans=$(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
+    sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
 
     # configure ports, vlans
     cpss_cmd <<EOF || die "config failed"
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
+      cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
         no counters mac counters reset-on-read all
-        interface range vlan device 0 vid 1-${vlan_end}
+        interface range vlan device 0 vid ${vlan_start}-${vlan_end}
         exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
@@ -254,16 +257,16 @@ EOF
         interface ethernet $port_modem
           speed 10000 mode SR_LR
           jumbo-frame
-          switchport allowed vlan add 1 untagged
           $modem_allow_vlans
-          switchport pvid 1
+          switchport allowed vlan add $vlan_untagged untagged
+          switchport pvid $vlan_untagged
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
           jumbo-frame
-          switchport allowed vlan add 1 untagged
           $sfp_allow_vlans
-          switchport pvid 1
+          switchport allowed vlan add $vlan_untagged untagged
+          switchport pvid $vlan_untagged
         end
       end
 EOF
