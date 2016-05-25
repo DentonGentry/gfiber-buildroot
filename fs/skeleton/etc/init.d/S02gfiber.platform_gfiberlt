@@ -11,7 +11,14 @@ case "$1" in
     if [ -e /dev/mtd/hnvram ]; then
       # This is for the GFLT300 and beyond. The GFLT110 uses legacy sysvar_cmd
       # with SERIAL_NO.
-      SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
+      HNVRAM_SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
+      PARSED_SERIAL=$(parse_sn "$HNVRAM_SERIAL")
+      if [ "$PARSED_SERIAL" = "sn__deadbeef" ]; then
+        echo "$0: Optical link may not come up!" \
+        "Serial number does not match expected format of 4 char prefix" \
+        "with an 8 hex char suffix, got: $HNVRAM_SERIAL"
+        SERIAL=$PARSED_SERIAL
+      fi
     else
       SERIAL=$(hnvram -qr SERIAL_NO)
     fi
