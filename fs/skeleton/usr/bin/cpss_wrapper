@@ -267,7 +267,8 @@ EOF
           $sfp_allow_vlans
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
-        end
+        exit
+        mac address-table aging-mode auto-removal device 0
       end
 EOF
   fi
