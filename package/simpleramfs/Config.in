@@ -19,3 +19,22 @@ config BR2_PACKAGE_SIMPLERAMFS_LINKED_IN
 	depends on BR2_PACKAGE_SIMPLERAMFS
 	help
 	  Turn the simpleramfs into the initramfs compiled into the kernel image.
+
+if BR2_PACKAGE_SIMPLERAMFS
+
+choice
+	prompt "Compression algorithm"
+	default BR2_PACKAGE_SIMPLERAMFS_GZIP
+	depends on !BR2_PACKAGE_SIMPLERAMFS_LINKED_IN
+	help
+	  Select the compression algorithm for the simpleramfs image.
+
+config BR2_PACKAGE_SIMPLERAMFS_GZIP
+	bool "gzip"
+
+config BR2_PACKAGE_SIMPLERAMFS_XZ
+	bool "xz"
+
+endchoice
+
+endif

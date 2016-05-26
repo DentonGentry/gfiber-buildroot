@@ -130,10 +130,6 @@ get_wifi_macaddr_param() {
   fi
 }
 
-load_moca_driver() {
-  modprobe bmoca 2>/dev/null
-}
-
 load_wifi_drivers() {
   if [ "$(kernopt wifical)" != "1" ] && ! experiment SkipBluetoothWifi; then
     # wifical=1 means Litepoint Wifi/Bluetooth calibration. We cannot load
@@ -196,7 +192,7 @@ create_bridge() {
   echo -n "Creating bridge... "
   brctl addbr br0 || exit 1
   brctl setfd br0 1
-  if experiment NoSTP; then
+  if is-ptp || experiment NoSTP; then
     brctl stp br0 off
   else
     brctl stp br0 on
@@ -235,6 +231,7 @@ add_interfaces_to_bridge() {
   # the bridge.
   for x in \
       /sys/class/net/[ea]th[0-9] \
+      /sys/class/net/*.inband \
       /sys/class/net/lan[0-9] \
       /sys/class/net/moca[0-9] \
       /sys/class/net/wlan[0-9]; do
@@ -356,18 +353,12 @@ case "$1" in
       exit
     fi
 
-    if is-tv-box || is-storage-box; then
+    if is-moca-present; then
       MOCAIFC=$(get_moca_iface)
-      load_moca_driver
     fi
 
     if ! is-spacecast && ! is-ptp; then
       load_wifi_drivers
-    fi
-
-    if is-ptp; then
-      # start marvell switch CLI
-      babysit 10 cpss_wrapper 2>&1 | logos cpss &
     fi
 
     # if the file exists and it isn't empty
@@ -417,13 +408,15 @@ case "$1" in
       # set defaults
       ptp-config -d craft_ipaddr 192.168.1.1/24
       ptp-config -d vlan_inband 4090
-      ptp-config -d vlan_peer 2000
+      ptp-config -d vlan_ooband 50
+      ptp-config -d vlan_peer 60
+      # TODO(edjames) default should depend on hi/lo radio model
       ptp-config -d local_ipaddr 192.168.2.1/24
       ptp-config -d peer_ipaddr 192.168.2.2/24
 
       # mac addrs
       set_mac_from_hnvram craft0 MAC_ADDR
-      set_mac_from_hnvram eth1 MAC_ADDR_WAN
+      set_mac_from_hnvram sw0 MAC_ADDR_WAN
 
       # craft0 (static ip for UI)
       ptp-config -i craft_ipaddr
@@ -431,12 +424,16 @@ case "$1" in
 
       # bring up inband vlan (will dhcp)
       ptp-config -i vlan_inband
-      if_up_no_bridging eth1.inband
+      # no if_up_no_bridging, inband is in br0
+
+      # bring up ooband vlan (will dhcp)
+      ptp-config -i vlan_ooband
+      if_up_no_bridging sw0.ooband
 
       # bring up peer vlan, set our static ip
       ptp-config -i vlan_peer
       ptp-config -i local_ipaddr
-      if_up_no_bridging eth1.peer
+      if_up_no_bridging sw0.peer
     fi
 
     if is-spacecast; then
@@ -445,7 +442,7 @@ case "$1" in
       (nohup /sbin/lan0_watchdog 2>&1 > /dev/null) &
     else
       create_bridge
-      if is-tv-box || is-storage-box; then
+      if is-moca-present; then
         configure_moca_vlan
       fi
       add_interfaces_to_bridge
@@ -454,7 +451,7 @@ case "$1" in
       redistribute_irqs
     fi
 
-    if [ -e /dev/bmoca0 ]; then
+    if is-moca-present; then
       echo "starting moca..."
       babysit 30 runmoca 2>&1 | logos mocad &
     fi
@@ -486,7 +483,9 @@ case "$1" in
       # Enable hardware offloads, do this at the end to avoid
       # invalid access caused by powered down core
       enable_hw_offloads eth0
-      enable_hw_offloads $MOCAIFC
+      if is-moca-present; then
+        enable_hw_offloads $MOCAIFC
+      fi
     fi
     if is-tv-box && experiment TVBoxNoGigEthernet; then
       # advertise only 10 & 100 at half and full duplex.
@@ -521,11 +520,6 @@ case "$1" in
       if [ -e /dev/bmoca0 ]; then
         echo -n "mocacfg kill"
         pkillwait mocad
-      fi
-
-      # kill cpss and babysitter
-      if is-ptp; then
-        pkill -f cpss
       fi
     fi
     ;;

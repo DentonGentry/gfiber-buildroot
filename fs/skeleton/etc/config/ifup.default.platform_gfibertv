@@ -6,7 +6,7 @@ if is-network-box; then
     uplink=1
   fi
 elif is-ptp; then
-  if [ "$iface" = br0 ] || [ "$iface" = eth1.inband ]; then
+  if [ "$iface" = br0 ] || [ "$iface" = sw0.ooband ]; then
     uplink=1
   fi
 else

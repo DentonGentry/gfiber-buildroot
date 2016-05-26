@@ -1,0 +1,22 @@
+#! /usr/bin/python
+# Copyright 2016 Google Inc. All Rights Reserved.
+
+"""Parse a serial number string.
+
+Match on 4 character prefix, and 1 to 8 hex character suffix
+Return the prefix and suffix concatenated.
+"""
+__author__ = 'sniderd@google.com (Duane Snider)'
+
+import re
+import sys
+
+sn = sys.argv[1]
+
+regex = re.compile(ur'^(\w{4}).*?([0-9a-fA-F]{1,8})$')
+rc = re.match(regex, sn)
+if not rc:
+  print 'sn__deadbeef'
+  sys.exit(-1)
+
+print '%s%s' % (rc.group(1), rc.group(2))

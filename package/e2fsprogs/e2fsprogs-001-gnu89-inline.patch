@@ -1,0 +1,43 @@
+--- a/lib/ext2fs/bitops.h	2016-03-27 15:51:00.276841004 -0700
++++ b/lib/ext2fs/bitops.h	2016-03-27 15:52:19.105917050 -0700
+@@ -210,7 +210,11 @@
+ #define _INLINE_ extern
+ #else
+ #ifdef __GNUC__
++#ifdef __GNUC_STDC_INLINE__
++#define _INLINE_ extern __inline__ __attribute__((__gnu_inline__))
++#else
+ #define _INLINE_ extern __inline__
++#endif /* __GNUC_STDC_INLINE__ */
+ #else				/* For Watcom C */
+ #define _INLINE_ extern inline
+ #endif
+--- a/lib/ext2fs/ext2fs.h	2011-11-25 16:16:02.000000000 -0800
++++ b/lib/ext2fs/ext2fs.h	2016-03-27 19:39:16.074311866 -0700
+@@ -1467,7 +1467,11 @@
+ #define _INLINE_ extern
+ #else
+ #ifdef __GNUC__
++#ifdef __GNUC_STDC_INLINE__
++#define _INLINE_ extern __inline__ __attribute__((__gnu_inline__))
++#else
+ #define _INLINE_ extern __inline__
++#endif /* __GNUC_STDC_INLINE__ */
+ #else				/* For Watcom C */
+ #define _INLINE_ extern inline
+ #endif
+--- a/e2fsck/jfs_user.h	2011-10-08 10:36:52.000000000 -0700
++++ b/e2fsck/jfs_user.h	2016-03-27 20:25:19.760459506 -0700
+@@ -84,7 +84,11 @@
+ #define _INLINE_ extern
+ #else
+ #ifdef __GNUC__
++#ifdef __GNUC_STDC_INLINE__
++#define _INLINE_ extern __inline__ __attribute__((__gnu_inline__))
++#else
+ #define _INLINE_ extern __inline__
++#endif /* __GNUC_STDC_INLINE__ */
+ #else				/* For Watcom C */
+ #define _INLINE_ extern inline
+ #endif
+

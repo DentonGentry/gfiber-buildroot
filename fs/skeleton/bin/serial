@@ -7,30 +7,15 @@ if [ -n "$serial" ]; then
   exit 0
 fi
 
-if runnable sysvar_cmd; then
-  serial=$(sysvar_cmd --get 1ST_SERIAL_NUMBER 2>/dev/null)
-  if [ -n "$serial" ]; then
-    echo "$serial"
-    exit 0
-  fi
-  serial=$(sysvar_cmd --get SERIAL_NO 2>/dev/null)
-  if [ -n "$serial" ]; then
-    echo "$serial"
-    exit 0
-  fi
+serial=$(hnvram -qr 1ST_SERIAL_NUMBER 2>/dev/null)
+if [ -n "$serial" ]; then
+  echo "$serial"
+  exit 0
 fi
-
-if runnable hnvram; then
-  serial=$(hnvram -br 1ST_SERIAL_NUMBER 2>/dev/null)
-  if [ -n "$serial" ]; then
-    echo "$serial"
-    exit 0
-  fi
-  serial=$(hnvram -br SERIAL_NO 2>/dev/null)
-  if [ -n "$serial" ]; then
-    echo "$serial"
-    exit 0
-  fi
+serial=$(hnvram -qr SERIAL_NO 2>/dev/null)
+if [ -n "$serial" ]; then
+  echo "$serial"
+  exit 0
 fi
 
 exit 1

@@ -6,7 +6,7 @@ GLASER_PATH="/tmp/glaser"
 GLASER_CHANNEL_FILE="$GLASER_PATH/channel"
 
 mkdir -p $GLASER_PATH
-sysvar_cmd -g LASER_CHANNEL > $GLASER_CHANNEL_FILE
+hnvram -qr LASER_CHANNEL > $GLASER_CHANNEL_FILE
 
 case "$1" in
   start)

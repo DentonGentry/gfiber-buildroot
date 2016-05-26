@@ -5,27 +5,8 @@ set -x
 cd /
 export CLISH_PATH=/etc/xml_commands
 
-# pon types: epon=0, gpon=1, p2p=2, none=3
-PON_ID=$(sysvar_cmd -g PON_TYPE)
-if [ -z "$PON_ID" ]; then
-  # default to p2p
-  PON_ID="2"
-fi
-
-if [ "$PON_ID" != 1 ]; then
-  # For gpon there is no need to copy gpon config files over because
-  # that is the default, and the init scripts have
-  # already copied them over.
-
-  # epon/p2p case.  For p2p to work we really do have
-  # to copy over the epon files or the kernel hangs somewhere.
-  cp -f /etc/xml_params/epon_xml_cfg_file.xml \
-    /etc/xml_params/pon_xml_cfg_file.xml
-  cp -f /etc/xml_params/tpm_xml_cfg_file_epon.xml \
-    /etc/xml_params/tpm_xml_cfg_file.xml
-  cp -f /etc/xml_params/pon_type_xml_cfg_file_p2p.xml \
-    /etc/xml_params/pon_type_xml_cfg_file.xml
-fi
+# We now only support gpon, but the previous pon types were as follows:
+# epon=0, gpon=1, p2p=2, none=3
 
 # sycl starts omci binary which uses fw_printenv, and
 # fw_printenv needs a valid fw_env.config.
@@ -40,29 +21,3 @@ else
 fi
 
 sycl &
-
-if [ "$PON_ID" != 1 ]; then
-  # For p2p case we have to program some forwarding info into the tpm,
-  # but wait 15 seconds for the auto-detect to have a chance to work.
-  sleep 15
-
-  # This sets up 3 forwarding rules that are used for the manufacture
-  # throughput testing.
-  # 1. vlan2 from ani -> uni
-  # 2. vlan2 from uni -> ani
-  # 3. anything else from uni -> cpu
-  VLAN_NUM=2
-  ETH_MAC=$(cat /sys/class/net/eth0/address)
-  cd /sys/devices/platform/tpm/cfg_frwd
-  echo frwd_ds 0x40000 1 1500 >frwd_rule_set
-  echo frwd_us 0x00001 1 1500 >frwd_rule_set
-  cd /sys/devices/platform/tpm/cfg_vlan
-  echo vlan_${VLAN_NUM} 0x8100 0xffff ${VLAN_NUM} 0xffff 0 0x00 1 0x00 >vlan_rule_set
-
-  cd /sys/devices/platform/tpm/cfg_l2
-  echo l2_vlan_${VLAN_NUM} vlan_${VLAN_NUM} vlan_empty >l2_key_vlan_rule_set
-  echo mtm_eth0 00:00:00:00:00:00 00:00:00:00:00:00 ${ETH_MAC} FF:FF:FF:FF:FF:FF >l2_key_mac_addr_rule_set
-  echo 1 WAN      0 0x0004 0x0000  0x06 done l2_vlan_${VLAN_NUM} frwd_ds mod_empty 0x0000 >l2_rule_add
-  echo 1 UNI_ANY  1 0x0004 0x0000  0x06 done l2_vlan_${VLAN_NUM} frwd_us mod_empty 0x0000 >l2_rule_add
-  echo 1 UNI_ANY  2 0x0000 0x0000 0x0000 done l2_key_empty  frwd_empty  mod_empty 0x0000 >l2_rule_add
-fi

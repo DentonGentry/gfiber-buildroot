@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Returns true if this device has a moca network interface
+#
+
+[ -e /dev/bmoca0 ] || modprobe bmoca 2>/dev/null
+exit $?
+

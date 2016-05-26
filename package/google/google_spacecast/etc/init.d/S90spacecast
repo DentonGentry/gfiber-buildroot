@@ -25,6 +25,8 @@ case "$1" in
       echo "SpaceCast is already running!"
     else
       (
+        # Check for critical software updates
+        wait-until-created /tmp/gpio/ledcontrol/update_check_complete
         # Bootstrap
         wait-until-created /tmp/gpio/bootstrap
         # Service file

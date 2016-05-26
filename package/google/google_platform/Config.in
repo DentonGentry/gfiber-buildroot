@@ -21,6 +21,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_LIBCARES
 	select BR2_PACKAGE_UTIL_LINUX_SCHEDUTILS
 	select BR2_PACKAGE_LIBJSONCPP
+	select BR2_PACKAGE_GPERF
 	help
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fiber devices.
@@ -74,6 +75,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
 	  Include the craftui web server used by PTP devices for
 	  site configuration.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_PRESTERASTATS
+	bool "include presterastats tool"
+	help
+	  Include the presterastats tool used by PTP devices to
+	  extract data from the on-board prestera switch
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
@@ -88,6 +95,12 @@ config BR2_PACKAGE_GOOGLE_PROD
 	select BR2_PACKAGE_BCM_BOLT_SIGNING if BR2_PACKAGE_BCM_COMMON_PLATFORM = 97439
 	help
 	  Build google production release, using the signed/locked bootloader.
+
+config BR2_PACKAGE_GOOGLE_UNSIGNED
+	bool "Unsigned Release"
+	default n
+	help
+	  Prevent signing workflows from being executed to allow post-build signing.
 
 config BR2_PACKAGE_GOOGLE_KEY_SUFFIX
 	string "Signing key suffix"

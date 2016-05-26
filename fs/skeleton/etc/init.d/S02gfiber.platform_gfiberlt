@@ -1,17 +1,30 @@
 #!/bin/sh
 case "$1" in
   start)
-    PLATFORM=$(sysvar_cmd -g PLATFORM_NAME)
+    PLATFORM=$(hnvram -qr PLATFORM_NAME)
     if [ -z "$PLATFORM" ]; then
       PLATFORM=$(cat /proc/board_type)
     fi
     echo "$PLATFORM" > /etc/platform
     chmod 444 /etc/platform
 
-    SERIAL=$(sysvar_cmd -g SERIAL_NO)
+    if [ -e /dev/mtd/hnvram ]; then
+      # This is for the GFLT300 and beyond. The GFLT110 uses legacy sysvar_cmd
+      # with SERIAL_NO.
+      HNVRAM_SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
+      PARSED_SERIAL=$(parse_sn "$HNVRAM_SERIAL")
+      if [ "$PARSED_SERIAL" = "sn__deadbeef" ]; then
+        echo "$0: Optical link may not come up!" \
+        "Serial number does not match expected format of 4 char prefix" \
+        "with an 8 hex char suffix, got: $HNVRAM_SERIAL"
+        SERIAL=$PARSED_SERIAL
+      fi
+    else
+      SERIAL=$(hnvram -qr SERIAL_NO)
+    fi
     [ -n "$SERIAL" ] &&
-    echo "$SERIAL" >/etc/serial &&
-    chmod 444 /etc/serial
+      echo "$SERIAL" >/etc/serial &&
+      chmod 444 /etc/serial
 
     # Do this before gpio-mailbox
     update-gpio-links

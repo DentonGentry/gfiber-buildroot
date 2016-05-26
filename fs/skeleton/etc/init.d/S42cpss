@@ -1,0 +1,40 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+create_switch_dev_symlink() {
+  # Create a /dev/switch symlink to the PCI device for use in other programs/scripts
+  # Currently use a fixed sysfs pci device path. If hardware changes such that this
+  # path varies, could do a search based on vendor & device ID.
+  ln -sf "/sys/bus/pci/devices/0000:01:00.0" "/dev/switch"
+}
+
+case "$1" in
+  start)
+    if is-ptp; then
+      create_switch_dev_symlink
+
+      # start marvell switch CLI
+      babysit 10 cpss_wrapper 2>&1 | logos cpss &
+
+      # save prestera stats for catawampus
+      babysit 60 prestera_periodic 2>&1 | logos prestera &
+    fi
+    ;;
+  stop)
+    # kill cpss and babysitter
+    if is-ptp; then
+      pkillwait -f prestera_periodic
+      pkillwait -f "babysit.*cpss_wrapper"
+      pkillwait -x cpss_wrapper
+      pkillwait -x cpss
+    fi
+    ;;
+  restart)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

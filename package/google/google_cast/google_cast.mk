@@ -9,7 +9,7 @@
 GOOGLE_CAST_SITE = repo://google_cast
 
 GOOGLE_CAST_DEPENDENCIES=\
-	bcm_bseav bcm_nexus bcm_common bcm_rockford \
+	bcm_bseav bcm_nexus bcm_common bcm_rockford chromium \
 	google_miniclient libpng jpeg zlib freetype expat \
 	libcurl libxml2 libxslt fontconfig boost cairo \
 	avahi libcap libnss host-ninja
@@ -21,10 +21,16 @@ BCM_APPS_DIR=$(abspath $(@D))
 GOOGLE_CAST_INSTALL_STAGING=NO
 GOOGLE_CAST_INSTALL_TARGET=YES
 
+PLATFORM=$(BR2_PACKAGE_BCM_COMMON_PLATFORM)
+BCHP_VER_LOWER=$(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM_REV) | tr A-Z a-z)
+BUILD_TYPE_LOWER=$(shell echo $(BUILD_TYPE) | tr A-Z a-z)
+
 ifdef BR2_mipsel
 BCM_ARCH=mips
+B_REFSW_ARCH=mipsel-linux
 else
 BCM_ARCH=arm
+B_REFSW_ARCH=arm-linux
 endif
 
 define GOOGLE_CAST_CONFIGURE_CMDS
@@ -37,29 +43,22 @@ else
     GOOGLE_CAST_CCACHE="WEBKITGL_CCACHE=n"
 endif
 
-define GOOGLE_CAST_LOCAL_BUILD_CMDS
+define GOOGLE_CAST_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
-		APPLIBS_PROCESS_MODEL=single \
+                -f Makefile.oemlibs \
 		$(GOOGLE_CAST_CCACHE) \
 		PYTHONDONTOPTIMIZE="0" \
-		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
-		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR)
-endef
-
-define GOOGLE_CAST_BUILD_CMDS
+		BUILD_DIR=$(BUILD_DIR)
 endef
 
 define GOOGLE_CAST_BUILD_TEST_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
 		-C $(@D)/build \
-		APPLIBS_PROCESS_MODEL=single \
 		$(GOOGLE_CAST_CCACHE) \
 		PYTHONDONTOPTIMIZE="0" \
-		WEBKITGL_TOOLCHAIN_PATH="${HOST_DIR}/usr/bin" \
-		WEBKITGL_TOOLCHAIN_SYSROOT_PATH=$(STAGING_DIR) \
 		unittests
 endef
 
@@ -71,17 +70,14 @@ define GOOGLE_CAST_INSTALL_TARGET_CMDS
 	# hard-coded in drm_context.cc.
 	ln -sf /user/drm $(TARGET_DIR)/data
 
-	# TODO(sfunkenhauser) : We currently can't build cast binaries for our ARM
-	# platform.  Only copy over cast shell binaries for MIPS for the time being.
-	$(if $(filter $(BCM_ARCH),mips),$(call GOOGLE_CAST_INSTALL_BINARIES),)
+	$(call GOOGLE_CAST_INSTALL_BINARIES)
 endef
 
 define GOOGLE_CAST_INSTALL_BINARIES
-	cp -af $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/logwrapper $(TARGET_DIR)/bin/logwrapper
-
 	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/cast_binaries/* $(TARGET_DIR)/chrome/
-	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_binaries/* $(TARGET_DIR)/chrome/
-	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_libs/* $(TARGET_DIR)/oem_cast_shlib/
+	cp -af $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper
+	cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/chrome/* $(TARGET_DIR)/chrome/
+	cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/
 
 	mv $(TARGET_DIR)/chrome/chrome_sandbox $(TARGET_DIR)/chrome/chrome-sandbox
 

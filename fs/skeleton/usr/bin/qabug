@@ -1,0 +1,25 @@
+#! /bin/sh
+
+run() {
+  echo ---------------------------------------------------------------
+  echo $*
+  "$@"
+}
+
+run date
+run grep . /etc/platform /etc/version /etc/softwaredate /etc/serial
+run ip addr
+run ip -d link
+run grep . /tmp/babysit*
+run ls /config
+
+if is-ptp; then
+  run grep . /config/settings/*
+  run cat /config/glaukus.properties
+  run sh -c "ps agxww | grep glaukus"
+  run sh -c "ps agxww | grep cpss"
+  run curl http://localhost:8080/api/modem
+  run curl http://localhost:8080/api/radio
+fi
+
+

@@ -10,8 +10,10 @@ GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
 			    host-google_keystore_client
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+ifneq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
 ifneq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfsc100")
 GOOGLE_SIGNING_DEPENDENCIES += bcm_signing bcm_bolt_signing host-bcm_signing
+endif
 endif
 endif
 
@@ -25,7 +27,7 @@ KEYSTORE_CONFIG_ID=GFIBER_DRM
 endif
 
 SIGNING_FLAG=""
-ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD)$(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
 	(mkdir -m 700 -p $(SIGNING_DIR); \
 	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem); \
@@ -37,7 +39,7 @@ GOOGLE_KEYSTORE_CLIENT_NEEDS_KEYS += \
 	signing_public_key_signature
 else
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
-	echo "Skip retrieving signing key..."
+	echo 'Skip retrieving signing key...'
 endef
 endif
 
@@ -48,6 +50,7 @@ define HOST_GOOGLE_SIGNING_CLEANUP
 	fi
 endef
 
+ifneq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
 define HOST_GOOGLE_SIGNING_SIGN
 	($(HOST_GOOGLE_SIGNING_RETRIEVE_KEY) && \
 		$(HOST_DIR)/usr/bin/python $(HOST_DIR)/usr/sbin/repack.py \
@@ -75,6 +78,17 @@ define GOOGLE_CODE_SIGN_TOOL_EXECUTE
 		--key_suffix=$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX) \
 		--outfile=$(2);)
 endef
+else
+define HOST_GOOGLE_SIGNING_SIGN
+  echo 'Unsigned build, skipping signer step...'
+endef
+define HOST_BRUNOv2_SIGNING_SIGN
+  echo 'Unsigned build, skipping signer step...'
+endef
+define GOOGLE_CODE_SIGN_TOOL_EXECUTE
+  echo 'Unsigned build, skipping signer step...'
+endef
+endif
 
 # For optimus, developer and production images are always fake-signed, then a
 # real signature is substituted for production builds.

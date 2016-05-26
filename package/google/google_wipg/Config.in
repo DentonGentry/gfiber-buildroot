@@ -1,0 +1,23 @@
+config BR2_PACKAGE_GOOGLE_WIPG
+  bool "Enable Wireless Infrastructure Products Group (WIPG) packages"
+  default n
+
+menu "  WIPG packages"
+  depends on BR2_PACKAGE_GOOGLE_WIPG
+
+config BR2_PACKAGE_GOOGLE_WIPG_MACSEC
+  bool "MACsec abstraction layer"
+  default n
+  select BR2_PACKAGE_MV_PHYSDK
+  help
+    MACsec abstraction layer on top of Marvell's MTD SDK.
+
+config BR2_PACKAGE_GOOGLE_WIPG_PHYTOOL
+  bool "phytool"
+  default n
+  select BR2_PACKAGE_MV_PHYSDK
+  help
+    phytool is used on PTP devices to interact with Marvell PHY chips
+    through the Marvell MTD SDK.
+
+endmenu

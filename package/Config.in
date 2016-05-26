@@ -499,6 +499,7 @@ endif
 source "package/links/Config.in"
 source "package/lrzsz/Config.in"
 source "package/mii-diag/Config.in"
+source "package/minijail/Config.in"
 source "package/minissdpd/Config.in"
 source "package/miniupnpd/Config.in"
 source "package/mrouted/Config.in"
@@ -685,6 +686,7 @@ source "package/art2/Config.in"
 endmenu
 
 menu "Marvell custom build"
+source "package/mv_physdk/Config.in"
 source "package/mv_app/Config.in"
 source "package/mv_cpss/Config.in"
 endmenu

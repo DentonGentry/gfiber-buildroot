@@ -1,0 +1,83 @@
+diff --git a/sdk/runtime/vm/atomic_linux.h b/sdk/runtime/vm/atomic_linux.h
+index 615004a..25fcde7 100644
+--- a/sdk/runtime/vm/atomic_linux.h
++++ b/sdk/runtime/vm/atomic_linux.h
+@@ -27,7 +27,7 @@ inline void AtomicOperations::IncrementBy(intptr_t* p, intptr_t value) {
+ 
+ 
+ inline void AtomicOperations::IncrementInt64By(int64_t* p, int64_t value) {
+-  __sync_fetch_and_add(p, value);
++  __atomic_fetch_add(p, value, __ATOMIC_SEQ_CST);
+ }
+ 
+ 
+diff --git a/sdk/runtime/vm/vm.gypi b/sdk/runtime/vm/vm.gypi
+index a08a1b8..82da0e7 100644
+--- a/sdk/runtime/vm/vm.gypi
++++ b/sdk/runtime/vm/vm.gypi
+@@ -56,7 +56,9 @@
+             'libraries': [
+               '-lpthread',
+               '-lrt',
++              '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -66,6 +68,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -101,6 +104,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -110,6 +114,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -145,6 +150,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -154,6 +160,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -190,6 +197,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],
+@@ -199,6 +207,7 @@
+               '-lpthread',
+               '-lrt',
+               '-ldl',
++              '-latomic',
+             ],
+           },
+         }],

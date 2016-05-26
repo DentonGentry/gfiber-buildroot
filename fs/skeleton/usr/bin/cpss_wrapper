@@ -17,16 +17,98 @@ die()
   exit 1
 }
 
-pci="/sys/bus/pci/devices/0000:01:00.0"
-if [ ! -d $pci ]; then
-  die "pci device '$pci' not found"
+# Given a set of vlan identifiers to exclude, generate the
+# range descriptions that exclude those identifiers.
+vlan_ranges()
+{
+  local result vlans last final curr v dt range
+
+  result=""
+  vlans=$(echo "$@" | sed -e 's/ /\n/g' | sort -nu)
+
+  last=${vlans##.* }
+  final=$(($vlan_end+1))
+  if [ "$last" = $vlan_end ]; then
+    final=
+  fi
+
+  set -- $vlans $final
+  curr=$vlan_start
+  while [ $# -gt 0 ]; do
+    v=$1
+    shift
+    dt=$(($v - $curr))
+    if [ $dt -lt 0 ]; then
+      # silently drop illegal values
+      continue
+    fi
+    if [ $dt -gt 0 ]; then
+       if [ $dt -eq 1 ]; then
+         range=$curr
+       else
+         range=$curr-$(($v-1))
+       fi
+       result="${result} ${range}"
+    fi
+    curr=$(($v + 1))
+  done
+
+  echo ${result}
+}
+
+# Generate the switchport allowed vlan lines with the appropriate
+# ranges when passed a set of vlans to exclude.
+generate_vlan_allow_lines()
+{
+  local range
+
+  for range in $(vlan_ranges "$@"); do
+    echo "switchport allowed vlan add ${range} outer_tag0_inner_tag1"
+  done
+}
+
+vlan_start=1
+vlan_end=4095
+
+vlan_ooband=$(ptp-config -g vlan_ooband)
+vlan_inband=$(ptp-config -g vlan_inband)
+vlan_peer=$(ptp-config -g vlan_peer)
+# Use vlan 4095 (reserved in 802.1q) for untagged traffic.
+vlan_untagged=4095
+
+port_poe=0/0
+port_soc=0/4
+port_modem=0/24
+port_sfp=0/25
+
+src_modem=${port_modem##0/}
+src_sfp=${port_sfp##0/}
+
+pci="/dev/switch"
+
+# Take switch out of reset in case it was left that way
+if [ -e /dev/gpio/3236_reset ]; then
+  echo 0 >/dev/gpio/3236_reset/value
 fi
 
+if [ ! -d $pci ]; then
+  # rescan the pci bus in case it was in reset
+  echo 1 >/sys/bus/pci/rescan
+  msleep 200
+fi
+
+if [ ! -d $pci ]; then
+  die "PCI device for 3236 switch not found at '$pci'"
+fi
+
+# Check that vendor & device ID have expected values
+vendor_id_expected="0x11ab"
 vendor_id="$(cat ${pci}/vendor)"
+device_id_expected="0xf410"
 device_id="$(cat ${pci}/device)"
-if [ "$vendor_id" != "0x11ab" ] || [ "$device_id" != "0xf410" ]; then
-  die "pci vendor_id (0x11ab != $vendor_id) or" \
-      "device_id (0xf410 != $device_id) mismatch!"
+if [ "$vendor_id" != "$vendor_id_expected" ] || [ "$device_id" != "$device_id_expected" ]; then
+  die "pci vendor_id ($vendor_id != $vendor_id_expected) or" \
+      "device_id ($device_id != $device_id_expected) mismatch!"
 fi
 
 # Resetting the 3236 causes all the PCI BARs to be reset, so we need to remove
@@ -91,12 +173,26 @@ fi
 # start cpss as persistent server
 pkill -x cpss
 export CMDFS_ROOT=/usr/lib/cpss/scripts
-ptyserver -p 4455 cpss -tty &
+ptyserver -p 4455 cpss -tty 2>&1 | logos cpss_pty &
 
-# wait for Console# prompt
-sleep 1
-echo "" | cpss_cmd || die "no console prompt"
+# check that shell loaded and we get a prompt
+# try a few times; we get one timeout at boot time, don't know why
+success=0
+for n in $(seq 3); do
+  cpss_cmd <<EOF
 
+EOF
+  if [ $? = 0 ]; then
+    success=1
+    break
+  fi
+  echo "$0: still waiting for cpss prompt" >&2
+  sleep 1
+done
+[ $success = 1 ] || die "no cpss prompt"
+echo "$0: got cpss prompt"
+
+# start configuring cpss
 if experiment CpssNoInit; then
   echo "$0: experiment CpssNoInit enabled, skipping init and 2011 config." >&2
 else
@@ -128,43 +224,53 @@ EOF
     # configure just the 10G path
     cpss_cmd <<EOF || die "config failed"
       config
-        interface range ethernet 0/24,0/25
+        interface range ethernet $port_modem,$port_sfp
           speed 10000 mode SR_LR
         exit
       end
 EOF
 
   else
+    modem_allow_vlans=$(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
+    sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
+
     # configure ports, vlans
     cpss_cmd <<EOF || die "config failed"
+      cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
+      cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
-        interface vlan device 0 vid 4090
+        no counters mac counters reset-on-read all
+        interface range vlan device 0 vid ${vlan_start}-${vlan_end}
         exit
-        interface vlan device 0 vid 1001
-        exit
-        interface vlan device 0 vid 1002
-        exit
-
-        interface ethernet 0/0
+        interface ethernet $port_poe
           speed 1000 mode SGMII
-          switchport allowed vlan add 1001 untagged
-          switchport pvid 1001
+          switchport allowed vlan add $vlan_ooband untagged
+          switchport pvid $vlan_ooband
         exit
-        interface ethernet 0/4
+        interface ethernet $port_soc
           speed 1000 mode 1000Base_X
-          switchport allowed vlan add 1001 untagged
-          switchport allowed vlan add 4090 tagged
-          switchport pvid 1001
+          switchport allowed vlan add $vlan_ooband tagged
+          switchport allowed vlan add $vlan_peer tagged
+          switchport allowed vlan add $vlan_inband tagged
+          switchport pvid $vlan_ooband
         exit
-        interface range ethernet 0/24,0/25
+        interface ethernet $port_modem
           speed 10000 mode SR_LR
-          switchport allowed vlan add 1002 untagged
-          switchport allowed vlan add 4090 tagged
-          switchport pvid 1002
+          jumbo-frame
+          $modem_allow_vlans
+          switchport allowed vlan add $vlan_untagged untagged
+          switchport pvid $vlan_untagged
         exit
+        interface ethernet $port_sfp
+          speed 10000 mode SR_LR
+          jumbo-frame
+          $sfp_allow_vlans
+          switchport allowed vlan add $vlan_untagged untagged
+          switchport pvid $vlan_untagged
+        exit
+        mac address-table aging-mode auto-removal device 0
       end
 EOF
-
   fi
 fi
 

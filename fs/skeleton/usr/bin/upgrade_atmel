@@ -1,0 +1,55 @@
+#! /bin/sh
+
+# use bossa to upgrade the atmel on chimera
+
+fw=/etc/glaukus/firmware/rf-controller.bin
+reset=/dev/gpio/mcu_reset/value
+erase=/dev/gpio/mcu_erase/value
+
+is-ptp || exit 0
+
+atmel_version() {
+  local version label
+  rfctl -c GetVersion | grep 'SW Ver' > /tmp/atmel_version
+  read _ _ _ version _ label < /tmp/atmel_version
+  if [ -z "$label" ]; then
+    label=unknown-atmel-version
+  fi
+  echo $label
+}
+
+toggle_gpio() {
+  local file=$1
+  local delay=$2
+
+  echo 1 > $file
+  sleep $delay
+  echo 0 > $file
+  sleep $delay
+}
+
+# TODO(edjames): use readlink
+label=$(atmel_version)
+if grep -a -q "$label" "$fw"; then
+  echo "$0: $fw is up to date, label=$label"
+  exit 0
+fi
+
+toggle_gpio $erase 1
+toggle_gpio $reset 1
+
+if ! bossac -e -w -v -b "$fw"; then
+  echo "$0: bossa failed to upgrade atmel" >&2
+  exit 1
+fi
+
+toggle_gpio $reset 1
+
+label=$(atmel_version)
+if grep -a -q "$label" "$fw"; then
+  echo "$0: $fw was successfully updated to $label"
+  exit 0
+fi
+
+echo "$0: $fw update failed; new firmware not running." >&2
+exit 1

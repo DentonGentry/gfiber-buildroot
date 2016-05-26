@@ -3,6 +3,7 @@
 . /etc/utils.sh
 
 register_experiment NoSIPConntrack
+register_experiment McDoleCast
 
 ip46tables()
 {
@@ -21,6 +22,11 @@ flush()
 
 case "$1" in
   start|restart|reload)
+    if is-fiberjack; then
+      # no iptables support for this platform.
+      exit 0
+    fi
+
     if ! is-windcharger; then
       modprobe -a \
           iptable_filter \
@@ -196,6 +202,11 @@ case "$1" in
         ip46tables -A INPUT -p udp --dport 4948 -j ACCEPT  # isoping
       fi
 
+      # Open incoming ports for McDoleCast
+      if experiment McDoleCast; then
+        ip46tables -A INPUT -p tcp --dport 31098 -j ACCEPT  # sagesrv
+        ip46tables -A INPUT -p tcp --dport 32825 -j ACCEPT  # marjoram
+      fi
       # cwmpd ACS kick
       ip46tables -A INPUT -p tcp --dport 7547 -j ACCEPT    # cwmpd
       ip6tables -A FORWARD -p tcp --dport 7547 -j ACCEPT  # cwmpd

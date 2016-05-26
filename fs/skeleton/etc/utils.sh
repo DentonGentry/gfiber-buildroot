@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Useful shell utility functions.
 
 # Atomically rewrite a file by writing to a temp file and then renaming it.
@@ -77,25 +77,21 @@ rc_pipe_deinit() {
 
 
 start_sagesrv() {
-  register_experiment SageSrvTx128k
   LD_LIBRARY_PATH=/app/sage:/app/sage/lib
   # Start up native streaming server
   VIDEO_UID=$(id -u video)
   VIDEO_GID=$(id -g video)
-  if experiment SageSrvTx128k; then
-    SET_MAX_BLOCKSIZE="-H 131072"
-  fi
   babysit 10 \
   alivemonitor /tmp/sagesrvalive 80 10 120 \
-  /app/sage/sagesrv -l6 -m5 ${SET_MAX_BLOCKSIZE} \
-      -U $VIDEO_UID -G $VIDEO_GID -f 2>&1 | logos z 0 20000000 &
+  /app/sage/sagesrv -l6 -m5 -U $VIDEO_UID -G $VIDEO_GID -f 2>&1 \
+    | logos z 0 20000000 &
 }
 
 
 stop_sagesrv() {
-  pkillwait -f '(babysit.*)(sagesrv)'
+  pkillwait -f '([b]abysit.*)(sagesrv)'
   pkillwait -x 'sagesrv'
-  pkillwait -f '(alivemonitor.*)(sagesrv)'
+  pkillwait -f '([a]livemonitor.*)(sagesrv)'
 }
 
 
@@ -131,9 +127,9 @@ start_adsmgr() {
 
 
 stop_adsmgr() {
-  pkillwait -f '(babysit.*)(adsmgr)'
+  pkillwait -f '([b]abysit.*)(adsmgr)'
   pkillwait -x 'adsmgr'
-  pkillwait -f '(alivemonitor.*)(adsmgr)'
+  pkillwait -f '([a]livemonitor.*)(adsmgr)'
 }
 
 

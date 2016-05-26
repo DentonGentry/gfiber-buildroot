@@ -209,7 +209,8 @@ check_uclibc_feature = \
 #
 check_uclibc = \
 	SYSROOT_DIR="$(strip $1)"; \
-	if ! test -f $${SYSROOT_DIR}/lib/ld*-uClibc.so.* ; then \
+	if ! test -n "$$(find $${SYSROOT_DIR}/lib/ -maxdepth 1 -name 'ld*-uClibc.so.*' -print -quit)" ; then \
+                find $${SYSROOT_DIR}/lib/ -maxdepth 1 -name 'ld*-uClibc.so.*' -print -quit; \
 		echo "Incorrect selection of the C library"; \
 		exit -1; \
 	fi; \

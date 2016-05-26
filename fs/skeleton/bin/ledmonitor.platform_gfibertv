@@ -54,8 +54,7 @@ is_link_up() {
     # link should never be upstream, so count only the ethernet.
     is_interface_up eth0
   elif is-ptp; then
-    is_interface_up eth0 ||
-    is_interface_up eth1
+    is_interface_up sw0.inband
   else
     echo "Unknown device type; assuming link is down." >&2
     false
@@ -140,6 +139,10 @@ while read f; do
     else
       change_state LINKDOWN "$SLOW_RED"
     fi
+  elif [ -f "$OUT/modem_down" ]; then
+    change_state MODEMDOWN "$SLOW_RED"
+  elif [ -f "$OUT/sfp_down" ]; then
+    change_state SFPDOWN "$SLOW_RED"
   elif [ ! -f "$OUT/ipconnected" ]; then
     # progress: link but no ip
     change_state NOIP "$SLOW_BLUE"

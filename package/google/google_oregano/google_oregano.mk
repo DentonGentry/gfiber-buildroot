@@ -1,14 +1,19 @@
 GOOGLE_OREGANO_SITE=repo://vendor/google/oregano
 GOOGLE_OREGANO_DEPENDENCIES=google_dart_vm google_mcastcapture
 
+ifeq ($(BR2_PACKAGE_GOOGLE_TV_BOX),y)
+GOOGLE_OREGANO_DEPENDENCIES += google_miniclient
+endif
+
 define GOOGLE_OREGANO_BUILD_CMDS
 	TARGET=$(TARGET_CROSS) \
 	CFLAGS="$(TARGET_CFLAGS)" \
 	CXXFLAGS="$(TARGET_CXXFLAGS) \
 	-D__STDC_FORMAT_MACROS" \
-	INCLUDES="-I$(STAGING_DIR)/usr/local/include -I$(STAGING_DIR)/usr/local" \
+	INCLUDES="-I$(STAGING_DIR)/usr/include -I$(STAGING_DIR)/usr/local/include -I$(STAGING_DIR)/usr/local" \
 	LIBDIRS=-L$(STAGING_DIR)/app/sage/lib \
 	ARCH=$(GOOGLE_PLATFORM_ARCH) \
+	MINICLIENT_PATH=$(GOOGLE_MINICLIENT_DIR) \
 	$(MAKE) -C $(@D)
 endef
 

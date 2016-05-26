@@ -1,6 +1,4 @@
 #!/bin/sh
-# Do this early because hnvram needs it.
-update-mtd-links
 
 PLATFORM=$(hnvram -qr PLATFORM_NAME)
 [ -n "$PLATFORM" ] &&
@@ -42,6 +40,7 @@ else
 fi
 
 # Move USB interrupt to core 2.
-echo 2 >/proc/irq/54/smp_affinity
+xhci_irq=$(grep xhci-hcd /proc/interrupts | sed -e s/" \([0-9]\+\):.*/\1/")
+echo 2 >/proc/irq/${xhci_irq}/smp_affinity
 
 echo 8192 > /proc/sys/vm/min_free_kbytes

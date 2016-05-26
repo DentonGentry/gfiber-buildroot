@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MV_PHYSDK
+  bool "mv_physdk"
+  depends on !BR2_PACKAGE_GOOGLE_OPENBOX
+  help
+    Builds Marvell's MTD SDK for 88X32xx, 88X33xx, & 88X23xx PHYs as a static library, and installs
+    the library plus the relevant headers into the staging sysroot as /usr/lib/libmvphysdk.a and in
+    /usr/include/mvphysdk/, respectively.

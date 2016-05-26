@@ -23,6 +23,7 @@ import os
 import struct
 import sys
 import options
+import commands
 
 optspec = """
 input-repeat -f /dev/input/eventX [-d delay] [-p period] [-m max (if supported)]
@@ -36,8 +37,12 @@ m,max=     maximum times to repeat (may not be available)
 
 def get_or_set_rep(efile, delay, period, maxrep):
   """optionally apply changes and display settings."""
-  eviocgrep = 0x40084503
-  eviocsrep = 0x80084503
+  if commands.getoutput("uname -m") == 'mips':
+    eviocgrep = 0x40084503
+    eviocsrep = 0x80084503
+  else:
+    eviocgrep = 0x80084503
+    eviocsrep = 0x40084503
 
   change = (delay is not None or period is not None or maxrep is not None)
   efd = os.open(efile, os.O_RDWR)
