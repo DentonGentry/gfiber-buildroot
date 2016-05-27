@@ -7,6 +7,7 @@
 
 OUT="/tmp/gpio"
 IN="/tmp/gpio/ledcontrol"
+CONMAN="/tmp/conman/status"
 
 # LED sequences
 OFF="0"
@@ -46,7 +47,8 @@ is_link_up() {
     is_interface_up eth0 ||
     is_interface_up eth1 ||
     is_interface_up moca0 ||
-    is_interface_up wcli0
+    is_interface_up wcli0 ||
+    is_interface_up wcli1
   elif is-storage-box; then
     # For storage boxes (the ones that don't have a wan0), the MoCA
     # link should never be upstream, so count only the ethernet.
@@ -79,14 +81,14 @@ is_manufactured_recently() {
   return $is_manufactured_recently_status
 }
 
-{ echo; watch-dir "$IN"; } |
+{ echo; watch-dir "$IN" "$CONMAN"; } |
 while read f; do
   if is_link_up; then
     rm -f "$OUT/link_down"
     if interface_exists wan0; then
       ifs="wan0 wan0.2"
     else
-      ifs="br0"
+      ifs="br0 wcli0 wcli1"
     fi
     success=
     for ifname in $ifs; do
@@ -124,16 +126,38 @@ while read f; do
   elif [ -f "$IN/waitpower" ]; then
     change_state POWEROFF "$OFF"
   elif [ -f "$OUT/link_down" ]; then
-    change_state LINKDOWN "$SLOW_RED"
+    # http://go/wireless-cpe-led-states
+    # If the link is down but this is a wireless client that is currently trying
+    # to join an open network or the user's WLAN, or conman belives it can reach
+    # the ACS if it wants to, we should blink slow blue.
+    if [ -f "$CONMAN/TRYING_OPEN" ]; then
+      change_state TRYING_OPEN_WIFI "$SLOW_BLUE"
+    elif [ -f "$CONMAN/TRYING_WLAN" ]; then
+      change_state TRYING_WLAN "$SLOW_BLUE"
+    elif [ -f "$CONMAN/COULD_REACH_ACS" ]; then
+      change_state COULD_REACH_ACS "$SLOW_BLUE"
+    else
+      change_state LINKDOWN "$SLOW_RED"
+    fi
   elif [ -f "$OUT/modem_down" ]; then
     change_state MODEMDOWN "$SLOW_RED"
   elif [ -f "$OUT/sfp_down" ]; then
     change_state SFPDOWN "$SLOW_RED"
   elif [ ! -f "$OUT/ipconnected" ]; then
-    change_state NOIP "$SLOW_BLUE"           # progress: link but no ip
+    # progress: link but no ip
+    change_state NOIP "$SLOW_BLUE"
   elif [ ! -f "$IN/acsconnected" ]; then
-    change_state IPV6ACQUIRED "$FAST_BLUE"   # progress: ip but no acs
+    # progress: ip but no acs
+    change_state IPV6ACQUIRED "$FAST_BLUE"
+  elif [ -f "$CONMAN/CONNECTED_TO_OPEN" ] && ! connection_check -I br0; then
+    # http://go/wireless-cpe-led-states
+    # progress: acs but connected to a provisioning network, and don't have
+    # internet via br0.  Checking br0 is necessary because if conman dies while
+    # connected to an open network and then ethernet/MoCa is connected, this is
+    # the wrong state.
+    change_state PROVISIONING "$FAST_BLUE"
   else
-    change_state ACSCONTACT "$SOLID_BLUE"    # success!
+    # success!
+    change_state ACSCONTACT "$SOLID_BLUE"
   fi
 done
