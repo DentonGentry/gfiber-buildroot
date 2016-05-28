@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/selfclean sh
 
 # Periodically send queries for hostnames, and store the results in
-# files in /tmp. Most of these utilities are blocking and wait for a
+# files in /tmp. Send queries for taxonomy information, and log the
+# results. Most of these utilities are blocking and wait for a
 # few seconds, and would slow down catawampus to call them directly.
 
 . /etc/utils.sh
@@ -9,7 +10,7 @@
 DNSSD_FILE="/tmp/dnssd_hostnames"
 NETBIOS_FILE="/tmp/netbios_hostnames"
 
-SLEEP=400
+SLEEP=397
 RECENT=512
 
 remove_new_from_old() {
@@ -24,7 +25,7 @@ remove_new_from_old() {
   fi
 }
 
-update_dnssd() {
+update_dnssd_names() {
   if runnable dnssd_hosts; then
     new=$(dnssd_hosts | sort | uniq)
     if [ ! -z "$new" ]; then
@@ -35,7 +36,7 @@ update_dnssd() {
   fi
 }
 
-update_netbios() {
+update_netbios_names() {
   if runnable netbios_hosts; then
     new=$(netbios_hosts | sort | uniq)
     if [ ! -z "$new" ]; then
@@ -46,35 +47,50 @@ update_netbios() {
   fi
 }
 
-update_asus() {
+update_asustax() {
   if runnable asustax; then
-    asustax 2>&1 | logos taxonomy
+    asustax 2>&1 | head -n "$RECENT" | logos taxonomy
   fi
 }
 
-update_ssdp() {
+update_ssdptax() {
   if runnable ssdptax; then
-    ssdptax 2>&1 | logos taxonomy
+    ssdptax 2>&1 | head -n "$RECENT" | logos taxonomy
   fi
 }
 
-update_dnssd
+dnssdmon_sleep() {
+  if runnable dnssdmon; then
+    dnssdmon -t "$1" 2>&1 | head -n "$RECENT" | logos taxonomy
+  else
+    sleep "$1"
+  fi
+
+  # In case dnssdmon crashes we don't want to sit in a loop running it
+  # as fast as we can; also include a short sleep as a rate limiter.
+  sleep 3
+}
+
+update_dnssd_names
 sleep 1
-update_netbios
+update_netbios_names
 sleep 1
-update_asus
+update_asustax
 sleep 1
-update_ssdp
+update_ssdptax
 
 while [ true ]; do
-  sleep $SLEEP
-  update_dnssd
-  sleep $SLEEP
-  update_netbios
-  sleep $SLEEP
-  update_asus
-  sleep $SLEEP
-  update_ssdp
+  dnssdmon_sleep "$SLEEP"
+  update_dnssd_names
+
+  dnssdmon_sleep "$SLEEP"
+  update_netbios_names
+
+  dnssdmon_sleep "$SLEEP"
+  update_asustax
+
+  dnssdmon_sleep "$SLEEP"
+  update_ssdptax
 done
 
 exit 0
