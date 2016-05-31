@@ -342,6 +342,12 @@ bridge_down() {
   [ -e /sys/class/net/br0 ] && brctl delbr br0
 }
 
+# encode a string as base64
+encode()
+{
+  python -c "import base64; print base64.b64encode('$1')"
+}
+
 case "$1" in
   start)
     if is-fiberjack; then
@@ -414,6 +420,8 @@ case "$1" in
       # TODO(edjames) default should depend on hi/lo radio model
       ptp-config -d local_ipaddr 192.168.2.1/24
       ptp-config -d peer_ipaddr 192.168.2.2/24
+      ptp-config -d password_admin $(encode admin)
+      ptp-config -d password_guest $(encode guest)
 
       # mac addrs
       set_mac_from_hnvram craft0 MAC_ADDR
