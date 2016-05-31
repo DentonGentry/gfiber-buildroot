@@ -13,14 +13,14 @@ ifeq ($(BR2_TARGET_ROOTFS_RECOVERYFS),y)
 ROOTFS_GINSTALL_DEPENDENCIES += rootfs-recoveryfs
 endif
 
+INITRAMFS_IMAGE=initramfs.cpio.gz
+INITRAMFS_COMPRESS_COMMAND='gzip -c'
+
 ifeq ($(BR2_PACKAGE_SIMPLERAMFS),y)
 ROOTFS_GINSTALL_DEPENDENCIES += simpleramfs
 ifeq ($(BR2_PACKAGE_SIMPLERAMFS_XZ),y)
 INITRAMFS_IMAGE=initramfs.cpio.xz
 INITRAMFS_COMPRESS_COMMAND='xz -c --check=crc32 --lzma2=dict=1MiB'
-else
-INITRAMFS_IMAGE=initramfs.cpio.gz
-INITRAMFS_COMPRESS_COMMAND='gzip -c'
 endif
 endif
 
