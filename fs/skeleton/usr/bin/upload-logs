@@ -1,15 +1,18 @@
 #!/usr/bin/python
 # Copyright 2011 Google Inc. All Rights Reserved.
 #
-"""A command-line tool for uploading to gfiber-dropbox.appspot.com."""
+"""A command-line tool for uploading to diag.cpe.gfsvc.com."""
 
 __author__ = 'apenwarr@google.com (Avery Pennarun)'
 
 
+import hmac
 import os.path
 import random
+import re
 import signal
 import StringIO
+import struct
 import sys
 import time
 import urllib
@@ -23,6 +26,7 @@ upload-logs [options...] <filenames...>
 s,server=          The server URL [https://diag.cpe.gfsvc.com]
 k,key=             Add a key/value pair (format "-k key=value")
 stdin=             Also upload stdin, with the given virtual filename
+consensus_key=     Use a hard-coded consensus_key
 """
 
 # Initial retry time for the exponential backoff retry loop.
@@ -30,6 +34,14 @@ stdin=             Also upload stdin, with the given virtual filename
 # 30, 60, 120, 240, 480, 480
 RETRY_INIT_DELAY = 30
 RETRY_MAX_DELAY = 480
+
+
+# MAC Address anonymization
+MACADDR_RE = re.compile(r'([0-9a-fA-F]{2}(?:[-:_][0-9a-fA-F]{2}){5})')
+SOFT = 'AEIOUY' 'V'
+HARD = 'BCDFGHJKLMNPQRSTVWXYZ' 'AEIOU'
+CONSENSUS_KEY = ['']
+CONSENSUS_KEY_FILE = '/tmp/waveguide/consensus_key'
 
 
 class HttpError(Exception):
@@ -102,6 +114,50 @@ def HttpDo(method, url, post_data=None, content_type=None):
   raise HttpError(http_status)
 
 
+def Trigraph(num):
+  """Given a value from 0..4095, encode it as a cons+vowel+cons sequence."""
+  ns = len(SOFT)
+  nh = len(HARD)
+  assert nh * ns * nh >= 4096
+  c3 = num % nh
+  c2 = (num / nh) % ns
+  c1 = num / nh / ns
+  return HARD[c1] + SOFT[c2] + HARD[c3]
+
+
+def WordFromBinary(s):
+  """Encode a binary blob into a string of pronounceable syllables."""
+  out = []
+  while s:
+    part = s[:3]
+    s = s[3:]
+    while len(part) < 4:
+      part = '\0' + part
+    bits = struct.unpack('!I', part)[0]
+    out += [(bits >> 12) & 0xfff,
+            (bits >> 0)  & 0xfff]
+  return ''.join(Trigraph(i) for i in out)
+
+
+# Note(apenwarr): There are a few ways to do this.  I elected to go with
+# short human-usable strings (allowing for the small possibility of
+# collisions) since the log messages will probably be "mostly" used by
+# humans.
+#
+# An alternative would be to use "format preserving encryption" (basically
+# a secure 1:1 mapping of unencrypted to anonymized, in the same number of
+# bits) and then produce longer "words" with no possibility of collision.
+# But with our current WordFromBinary() implementation, that would be
+# 12 characters long, which is kind of inconvenient and long.
+#
+def AnonymizeMAC(macmatch):
+  """Anonymize a binary MAC address using the CONSENSUS_KEY."""
+  macstr = macmatch.group(0)
+  assert len(macstr) == 17
+  macbin = ''.join([chr(int(i, 16)) for i in re.split('[:_-]', macstr)])
+  return WordFromBinary(hmac.new(CONSENSUS_KEY[0], macbin).digest())[:6]
+
+
 def UploadFile(url, filename, fileobj, keys):
   """Actually upload the given file to the server."""
   while filename.startswith('/'):
@@ -114,7 +170,8 @@ def UploadFile(url, filename, fileobj, keys):
   splitter = 'foo-splitter-%f' % time.time()
   content_type = 'multipart/form-data; boundary=%s' % splitter
 
-  basecontent = zlib.compress(fileobj.read())
+  filtered = MACADDR_RE.sub(AnonymizeMAC, fileobj.read())
+  basecontent = zlib.compress(filtered)
   attachment = ('--%(splitter)s\r\n'
                 'Content-Disposition: form-data; name="file";'
                 '  filename="%(filename)s"\r\n'
@@ -168,6 +225,14 @@ def main():
   for k, v in flags:
     if k in ('-k', '--key'):
       keys.append(tuple(v.split('=', 1)))
+
+  try:
+    with open(CONSENSUS_KEY_FILE) as f:
+      consensus_key = f.read()
+  except (IOError, OSError) as e:
+    # https://xkcd.com/221/
+    consensus_key = str(time.time())
+  CONSENSUS_KEY[0] = opt.consensus_key or consensus_key
 
   if opt.stdin:
     UploadFile(opt.server, opt.stdin, sys.stdin, keys)

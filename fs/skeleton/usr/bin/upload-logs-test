@@ -1,0 +1,67 @@
+#!/usr/bin/python
+"""Fake loguploader for unit tests.
+
+"""
+
+import BaseHTTPServer
+import cgi
+import socket
+import subprocess
+import sys
+import zlib
+
+
+g = {}
+
+
+class LogHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+  def do_GET(self):
+    self.send_response(200)
+    self.send_header('Content-type','text/plain')
+    self.end_headers()
+    self.wfile.write(g['url'])
+
+  def do_POST(self):
+    form = cgi.FieldStorage(
+        fp=self.rfile,
+        headers=self.headers,
+        environ={'REQUEST_METHOD': 'POST',
+            'CONTENT_TYPE': self.headers['Content-Type'],
+        })
+    post_data = form['file'].file.read()
+    g['post_body'] = zlib.decompress(post_data)
+    self.send_response(302)
+    self.end_headers()
+
+
+def upload_logs(text):
+  s = BaseHTTPServer.HTTPServer(('localhost', 0), LogHandler)
+  sn = s.socket.getsockname()
+  port = sn[1]
+  g['url'] = url = 'http://127.0.0.1:%d/' % port
+
+  up = subprocess.Popen(['./upload-logs', '--consensus_key=ABCDEFG',
+      '--server=' + url, '--stdin=dmesg'], bufsize=8192,
+      stdin=subprocess.PIPE)
+  up.stdin.write(text)
+  up.stdin.close()
+  s.handle_request()
+  s.handle_request()
+  s.server_close()
+  up.wait()
+  return g['post_body']
+
+
+def main():
+  assert('00:11:22:33:44:55' not in upload_logs('foo 00:11:22:33:44:55 bar'))
+  assert('00-11-22-33-44-55' not in upload_logs('foo 00-11-22-33-44-55'))
+  assert('00_11_22_33_44_55' not in upload_logs('00_11_22_33_44_55 bar'))
+  assert('00_11_22_33_44_55' not in upload_logs('00_11_22_33_44_55 foo\n'))
+  assert(upload_logs('00:11:22:33:44:55') == 'XOMWAQ')
+  assert(upload_logs('00-11-22-33-44-55') == 'XOMWAQ')
+  assert(upload_logs('00_11_22_33_44_55') == 'XOMWAQ')
+  assert('not_a_mac_address' in upload_logs('not_a_mac_address'))
+
+
+if __name__ == '__main__':
+  main()
