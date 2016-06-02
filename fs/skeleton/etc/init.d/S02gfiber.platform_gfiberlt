@@ -8,23 +8,25 @@ case "$1" in
     echo "$PLATFORM" > /etc/platform
     chmod 444 /etc/platform
 
+    # GFLT300 and beyond will use hnvram with 1ST_SERIAL_NUMBER variable.
+    # GFLT110 uses legacy sysvar_cmd with SERIAL_NO variable.
     if [ -e /dev/mtd/hnvram ]; then
-      # This is for the GFLT300 and beyond. The GFLT110 uses legacy sysvar_cmd
-      # with SERIAL_NO.
-      HNVRAM_SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
-      PARSED_SERIAL=$(parse_sn "$HNVRAM_SERIAL")
-      if [ "$PARSED_SERIAL" = "sn__deadbeef" ]; then
-        echo "$0: Optical link may not come up!" \
-        "Serial number does not match expected format of 4 char prefix" \
-        "with an 8 hex char suffix, got: $HNVRAM_SERIAL"
-        SERIAL=$PARSED_SERIAL
-      fi
+      SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
     else
       SERIAL=$(hnvram -qr SERIAL_NO)
     fi
     [ -n "$SERIAL" ] &&
       echo "$SERIAL" >/etc/serial &&
       chmod 444 /etc/serial
+
+    # The serial number needs to match the given format, otherwise sycl will
+    # complain.
+    PARSED_SERIAL=$(parse_sn "$SERIAL")
+    if [ "$PARSED_SERIAL" = "sn__deadbeef" ]; then
+      echo "Optical link may not come up! Serial number does not match" \
+        "expected format: 4 char prefix with an 8 hex char suffix, got:" \
+        "'$SERIAL'"
+    fi
 
     # Do this before gpio-mailbox
     update-gpio-links
