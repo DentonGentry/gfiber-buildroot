@@ -29,8 +29,8 @@ endif
 SIGNING_FLAG=""
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD)$(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
 define HOST_GOOGLE_SIGNING_RETRIEVE_KEY
-	(mkdir -m 700 -p $(SIGNING_DIR); \
-	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem); \
+	(mkdir -m 700 -p $(SIGNING_DIR) && \
+	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,signing_private_key,$(SIGNING_DIR)/gfiber_private.pem) && \
 	$(call GOOGLE_KEYSTORE_CLIENT_EXECUTE,gfhd254_key0_private,$(SIGNING_DIR)/gfhd254_private.pem))
 endef
 SIGNING_FLAG="-s"
