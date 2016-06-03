@@ -242,6 +242,9 @@ EOF
         no counters mac counters reset-on-read all
         interface range vlan device 0 vid ${vlan_start}-${vlan_end}
         exit
+        interface range ethernet all
+           switchport allowed vlan remove 1-4095
+        exit
         interface ethernet $port_poe
           speed 1000 mode SGMII
           switchport allowed vlan add $vlan_ooband untagged
