@@ -81,6 +81,11 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_PRESTERASTATS
 	  Include the presterastats tool used by PTP devices to
 	  extract data from the on-board prestera switch
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_LEDPATTERN
+	bool "include ledpattern"
+	help
+	  Include the ledpattern tool.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
