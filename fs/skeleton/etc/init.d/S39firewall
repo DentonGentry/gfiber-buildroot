@@ -13,11 +13,10 @@ ip46tables()
 
 flush()
 {
-  ip46tables -F
-  ip46tables -X
-  # ipv4 only
-  iptables -t nat -F
-  iptables -t nat -X
+  for t in filter mangle nat; do
+    ip46tables -t $t -F
+    ip46tables -t $t -X
+  done
 }
 
 case "$1" in
