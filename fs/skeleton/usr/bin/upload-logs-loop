@@ -17,7 +17,7 @@ case "$PLATFORM" in
     ;;
 esac
 
-FREQ=""
+FREQ="--freq 60"
 if experiment LogUpload30s; then
   FREQ="--freq 30"
 elif experiment LogUpload15s; then
@@ -52,11 +52,9 @@ else
     # If this file doesn't exist, you know a log upload is already in progress.
     rm -f /tmp/logs-uploaded
 
-    nice -n 5 upload-crash-log --logtype="$LOGTYPE"
-
-    # This tells anyone waiting for us that the logs have finished uploading.
-    # It isn't strictly true, since if upload-crash-log fails repeatedly,
-    # we'll create this file anyway.  But at least they know we tried.
+    # /tmp/logs-uploaded tells anyone waiting for us that the logs have
+    # finished uploading.
+    nice -n 5 upload-crash-log --logtype="$LOGTYPE" &&
     : >/tmp/logs-uploaded
 
     log-delay
