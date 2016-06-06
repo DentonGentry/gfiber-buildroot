@@ -35,8 +35,8 @@ def usage():
 
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'h:p:',
-                               ['host=', 'port=', 'block'])
+    opts, args = getopt.getopt(sys.argv[1:], 'h:p:f',
+                               ['host=', 'port=', 'force'])
   except getopt.GetoptError as err:
     print str(err)
     usage()
@@ -44,12 +44,15 @@ def main():
 
   host = def_host
   port = def_port
+  force = False
 
   for o, a in opts:
     if o in ('-h', '--host'):
       host = a
     elif o in ('-p', '--port'):
       port = int(a)
+    elif o in ('-f', '--force'):
+      force = True
     else:
       print 'unknown option: %s' % o
       usage()
@@ -58,6 +61,12 @@ def main():
   if args:
     print 'extra args found'
     usage()
+    sys.exit(1)
+
+  # check for cpss_ready file
+  readyfile = '/tmp/cpss_ready'
+  if not force and not os.path.isfile(readyfile):
+    print '"%s" not found, cpss not ready.  Use -f to bypass.' % readyfile
     sys.exit(1)
 
   print '!!! connecting to %s:%d' % (host, port)

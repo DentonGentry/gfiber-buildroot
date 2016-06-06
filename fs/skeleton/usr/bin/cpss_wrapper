@@ -86,6 +86,9 @@ src_sfp=${port_sfp##0/}
 
 pci="/dev/switch"
 
+ready=/tmp/cpss_ready
+rm -f "$ready"
+
 # Take switch out of reset in case it was left that way
 if [ -e /dev/gpio/3236_reset ]; then
   echo 0 >/dev/gpio/3236_reset/value
@@ -179,7 +182,7 @@ ptyserver -p 4455 cpss -tty 2>&1 | logos cpss_pty &
 # try a few times; we get one timeout at boot time, don't know why
 success=0
 for n in $(seq 3); do
-  cpss_cmd <<EOF
+  cpss_cmd -f <<EOF
 
 EOF
   if [ $? = 0 ]; then
@@ -198,22 +201,23 @@ if experiment CpssNoInit; then
 else
 
   # disable pager
-  cpss_cmd <<EOF || die "failed to disable pager"
+  cpss_cmd -f <<EOF || die "failed to disable pager"
     debug
       set print pause disable
     end
 EOF
 
   # init the switch, check for result
-  cpss_cmd <<EOF | grep "Init system returned:0" || die "cpssInitSystem failed"
+  initOK="Init system returned:0"
+  cpss_cmd -f <<EOF | grep "$initOK" || die "cpssInitSystem failed"
     cpssInitSystem 19,2,0
 EOF
 
   # show cpss version
-  echo show version | cpss_cmd
+  echo show version | cpss_cmd -f
 
   # init 88x2011 (xfi/xaui transceiver)
-  cpss_cmd <<EOF | grep "Successfully" || die "failed to initialize 2011"
+  cpss_cmd -f <<EOF | grep "Successfully" || die "failed to initialize 2011"
     chimera
       init_2011
     end
@@ -222,7 +226,7 @@ EOF
   if experiment Cpss10GOnly; then
     echo "$0: experiment Cpss10GOnly is enabled, skipping vlans." >&2
     # configure just the 10G path
-    cpss_cmd <<EOF || die "config failed"
+    cpss_cmd -f <<EOF || die "config failed"
       config
         interface range ethernet $port_modem,$port_sfp
           speed 10000 mode SR_LR
@@ -235,7 +239,7 @@ EOF
     sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
 
     # configure ports, vlans
-    cpss_cmd <<EOF || die "config failed"
+    cpss_cmd -f <<EOF || die "config failed"
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
@@ -289,8 +293,14 @@ EOF
   fi
 fi
 
+# touch ready-file to let cpss_cmd know
+>"$ready"
+echo "cpss is ready."
+
 # wait on ptyserver
 wait
+
+rm -f $ready
 
 # exit badly to get babysitter to restart
 exit 1
