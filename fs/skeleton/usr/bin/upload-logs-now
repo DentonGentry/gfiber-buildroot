@@ -1,14 +1,28 @@
 #!/bin/sh
 # See log-delay script for explanation.
 #
-# There are two kills to log-delay here.  In the common case log-loop
-# will be waiting in sleep.  In the uncommon case an upload happening,
-# and taking a long time for example if the server is busy.  In tis
-# case we will kill the pending upload, then we wait a bit to make
-# sure that the log loop has gotten to its sleep call, and then we
-# kick the log-loop again to make sure the latest logs are uploaded.
-# Worst case we upload logs 2x.
-pkill -x upload-logs
-pkill -x log-delay
-sleep 1
-pkill -x log-delay
+# In the common case upload-logs-loop will be waiting in sleep.  In the
+# uncommon case an upload is happening, so we have to wait until it
+# finishes, then trigger another one.  upload-logs has its own timeout
+# feature, so we shouldn't have to ever kill it ourselves.
+#
+# If using upload-crash-log2, we have to send it a signal to wake it up.
+# There's no point differentiating between the two types of loguploader;
+# we'll just do both actions in all cases.
+#
+# This script exits before the newly-started upload has finished.
+# If you want to wait, use upload-logs-and-wait instead.
+#
+if pgrep upload-logs-loo >/dev/null && [ ! -e /tmp/logs-uploaded ]; then
+  # log uploader running, and upload currently in progress.
+  # We check that the uploader is running so that we don't accidentally
+  # sleep here indefinitely.
+  wait-until-created /tmp/logs-uploaded
+fi
+rm -f /tmp/logs-uploaded
+# first try v2 uploader; if that doesn't work, try v1.
+if ! pkill -USR1 -f '^[^ ]*upload-crash-log2'; then
+  sleep 1  # give upload-logs-loop time to start log-delay
+  pkill -x log-delay  # kill v1 uploader; auto-restarts
+fi
+exit 0
