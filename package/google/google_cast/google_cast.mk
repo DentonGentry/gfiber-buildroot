@@ -9,10 +9,10 @@
 GOOGLE_CAST_SITE = repo://google_cast
 
 GOOGLE_CAST_DEPENDENCIES=\
-	bcm_bseav bcm_nexus bcm_common bcm_rockford chromium \
+	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient libpng jpeg zlib freetype expat \
 	libcurl libxml2 libxslt fontconfig boost cairo \
-	avahi libcap libnss host-ninja
+	avahi libcap libnss host-gyp host-ninja google_widevine_cenc
 
 # This will result in defining a meaningful APPLIBS_TOP (which is required by
 # the local build).
