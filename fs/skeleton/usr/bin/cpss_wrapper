@@ -6,6 +6,7 @@
 # reset and initialize the marvell parts in chimera
 #
 
+register_experiment NoPhyFWUpgrade
 register_experiment CpssNoStart
 register_experiment CpssNoInit
 register_experiment Cpss10GOnly
@@ -167,6 +168,16 @@ fi
 
 echo "Finally, enabling the switch..."
 echo 1 >$pci/enable
+
+if experiment NoPhyFWUpgrade; then
+  echo "$0: experiment NoPhyFWUpgrade enabled, skipping upgrade check." >&2
+else
+  # Switch now available on PCI bus, can now also talk to 10G PHY through
+  # switch's MDIO bus. Before starting CPSS, check whether the 10G PHY needs
+  # a firmware update.
+  echo "Performing 10G PHY firmware update (if needed)"
+  update-phy-firmware -f 2>&1 | logos update-phy-firmware
+fi
 
 if experiment CpssNoStart; then
   echo "$0: experiment CpssNoStart is enabled, not starting cpss." >&2
