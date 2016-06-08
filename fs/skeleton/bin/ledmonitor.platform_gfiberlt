@@ -7,6 +7,7 @@ MONITOR_PATH="$BASE_PATH/ledcontrol"
 MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
 HALTED_FILE="$MONITOR_PATH/halted"
+HARDWARE_FAILURE="$MONITOR_PATH/hardware_failure"
 NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
 NETWORK_STATUS_DISCONNECTED="DISCONNECTED"
@@ -120,6 +121,8 @@ while [ -z "$led_state" ] || read event; do
   if [ ! -e "$MFG_MODE_FILE" ] ; then
     if [ -e "$HALTED_FILE" ]; then
       set_led_state "$SOLID_MODE" "$RED_LED" "HALTED" "$LEDS_BRIGHTNESS_100P"
+    elif [ -e "$HARDWARE_FAILURE" ]; then
+      set_led_state "$SOLID_MODE" "$RED_LED" "HWFAIL" "$LEDS_BRIGHTNESS_100P"
     elif ! is_interface_up "$PON_IFACE" ; then
       set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_100P"
     elif ! is_provisioned ; then
