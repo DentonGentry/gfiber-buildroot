@@ -1,0 +1,26 @@
+From e8adbab77eb4322a634372dfa4beb4bf1c9fa1bf Mon Sep 17 00:00:00 2001
+From: Shawn Ledbetter <sledbetter@google.com>
+Date: Wed, 8 Jun 2016 18:44:18 -0700
+Subject: Bind to an existing Lua interpreter
+
+---
+ lua/lua.go | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/lua/lua.go b/lua/lua.go
+index 7d0faa8..33eb493 100644
+--- a/lua/lua.go
++++ b/lua/lua.go
+@@ -39,6 +39,9 @@ func newState(L *C.lua_State) *State {
+ 	return newstate
+ }
+ 
++type C_struct_lua_State C.lua_State
++func NewStateFromState(L *C_struct_lua_State) *State { return newState((*C.lua_State)(L)) }
++
+ func (L *State) addFreeIndex(i uint) {
+ 	freelen := len(L.freeIndices)
+ 	//reallocate if necessary
+-- 
+2.8.0.rc3.226.g39d4020
+

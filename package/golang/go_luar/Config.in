@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GO_LUAR
+	bool "go_luar"
+	select BR2_PACKAGE_GO_GOLUA
+	help
+		Simpler Go support for Lua bindings
