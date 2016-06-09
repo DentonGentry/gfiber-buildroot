@@ -41,7 +41,7 @@ print_usage() {
 
 sysvar_read() {
   local OUTPUT="$("$SYSVAR_CMD" --get "$1" 2>/dev/null)"
-  if [ $? -ne 0 ] || [ -z "$OUTPUT" ]; then
+  if [ $? -ne 0 ]; then
     err_log "ERROR: sysvar read failed: '$1'"
     exit 1
   fi
@@ -60,7 +60,7 @@ sysvar_write() {
   echo "$1" | {
     IFS="="
     read KEY VAL
-    if [ -z "$KEY" ] || [ -z "$VAL" ]; then
+    if [ -z "$KEY" ]; then
       err_log "ERROR: Malformed key/value pair: $1"
       exit 1
     fi

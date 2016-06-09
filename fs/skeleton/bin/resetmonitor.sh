@@ -63,7 +63,7 @@ do
         echo 100 >/sys/class/leds/sys-red/brightness
         sleep .1
       done
-      sysvar_cmd -r PRODUCTION_UNIT
+      hnvram -w PRODUCTION_UNIT=""
       reboot
       ;;
     *)
