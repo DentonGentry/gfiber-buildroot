@@ -15,10 +15,10 @@ mac="$2"
 
 if [ "$cmd" = "add" ] || [ "$cmd" = "old" ]; then
   if [ ! -z "$DNSMASQ_VENDOR_CLASS" ] && runnable dhcpvendortax; then
-    dhcpvendortax -l "$DNSMASQ_MAC" -v "$DNSMASQ_VENDOR_CLASS" | logos taxonomy
+    dhcpvendortax -l "$mac" -v "$DNSMASQ_VENDOR_CLASS" | logos taxonomy
   fi
   if [ ! -z "$DNSMASQ_SUPPLIED_HOSTNAME" ] && runnable dhcpnametax; then
-    dhcpnametax -l "$DNSMASQ_MAC" -d "$DNSMASQ_REQUESTED_OPTIONS" \
+    dhcpnametax -l "$mac" -d "$DNSMASQ_REQUESTED_OPTIONS" \
         -h "$DNSMASQ_SUPPLIED_HOSTNAME" | logos taxonomy
   fi
 fi
