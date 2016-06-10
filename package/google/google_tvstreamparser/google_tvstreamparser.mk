@@ -9,6 +9,8 @@ endef
 define GOOGLE_TVSTREAMPARSER_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 $(@D)/tvstreamparser/libtvstreamparser.so \
           $(TARGET_DIR)/app/sage/lib/libtvstreamparser.so
+        $(INSTALL) -D -m 0755 $(@D)/tvstreamparser/filefmt \
+          $(TARGET_DIR)/app/sage/filefmt
 endef
 
 $(eval $(call GENTARGETS))
