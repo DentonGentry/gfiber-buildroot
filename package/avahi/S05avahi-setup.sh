@@ -9,6 +9,9 @@ case "$1" in
 	fi
 	;;
     stop) ;;
+    restart|reload)
+	$0 stop; $0 start
+	;;
     *)
 	echo "Usage: S05avahi-setup.sh {start|stop}" >&2
 	exit 1
