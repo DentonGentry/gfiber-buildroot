@@ -365,6 +365,14 @@ encode()
   python -c "import base64; print base64.b64encode('$1')"
 }
 
+add_firewall_rules_to_vlan_input() {
+  if [ -e /sys/class/net/sw0.peer ]; then
+    # Accept connection for certificate exchanger server for MACsec.
+    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 43210 -j ACCEPT
+  fi
+}
+
+
 case "$1" in
   start)
     if is-fiberjack; then
@@ -460,6 +468,8 @@ case "$1" in
       ptp-config -i vlan_peer
       ptp-config -i local_ipaddr
       if_up_no_bridging sw0.peer
+
+      add_firewall_rules_to_vlan_input
     fi
 
     if is-spacecast; then
