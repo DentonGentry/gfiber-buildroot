@@ -8,6 +8,7 @@ GOOGLE_CHIMERA_DEPENDENCIES = host-protobuf \
 				host-golang \
 				host-go_protobuf \
 				go_grpc \
+				go_net \
 				go_protobuf \
 				mv_physdk \
 				mv_cpss
