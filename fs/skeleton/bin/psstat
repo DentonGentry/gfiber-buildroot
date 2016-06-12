@@ -185,6 +185,21 @@ pings6()
 }
 
 
+extrapings()
+{
+  LOG=$1
+  VER=$2
+  filename="/tmp/extra_ping${VER}_servers"
+  if [ -f "$filename" ]; then
+    out=
+    for ip in $(cat "$filename" | sed -e 's/,/ /g'); do
+      out="$out$ip($(do_ping "$VER" $ip)) "
+    done
+    echo "$LOG $out"
+  fi
+}
+
+
 gstatics()
 {
   gs=$(gstatic)
@@ -212,6 +227,7 @@ wifistats()
 if [ -n "$DELAY" ]; then
   # Stagger startup after a power outage
   sleep $(randint 1 "$DELAY")
+  longping=$(randint 1 3600)
 fi
 
 while :; do
@@ -240,6 +256,15 @@ while :; do
     echo "gstatic: $(gstatics)"
     pings "ping:" "$gs_retval"
     pings6 "ping6:" "$gs_retval"
+
+    if test "$longping" -gt 3600; then
+      if is-network-box || is-storage-box; then
+        extrapings "ping:" ""
+        extrapings "ping6:" "6"
+      fi
+      longping=0
+    fi
+
     runnable find-servers && echo "find-servers: $(find-servers)"
     if is-network-box || is-storage-box; then
       echo "dns: $(dnsck 8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844)"
@@ -254,6 +279,7 @@ while :; do
 
   if [ -n "$DELAY" ]; then
     sleep "$DELAY" || exit 1
+    longping=$((longping + DELAY))
   else
     break
   fi

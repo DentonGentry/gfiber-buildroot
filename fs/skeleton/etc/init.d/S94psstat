@@ -1,7 +1,9 @@
 #!/bin/sh
 case "$1" in
   start)
-    if is-network-box || is-tv-box || is-fiberjack; then
+    want_psstat=1
+    is-spacecast && want_psstat=0
+    if [ "$want_psstat" = 1 ]; then
       nice babysit 60 psstat 60 2>&1 | logos ps &
     fi
     nice babysit 60 irqstat 300 2>&1 | logos irq &
