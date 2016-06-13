@@ -39,14 +39,8 @@ do
       echo 1 >/sys/class/leds/sys-red/brightness
       ;;
     click0)
-      # show provision type
-      # TODO(edjames)
-      echo 0 >/sys/class/leds/sys-red/brightness
-      echo 0 >/sys/class/leds/sys-blue/brightness
-      for n in 0 100 0 100 0 100 0; do
-        echo $n >/sys/class/leds/sys-red/brightness
-        sleep .5
-      done
+      # TODO(cgibson): Make this do something more useful.
+      /bin/ledpattern /tmp/test_pattern demo
       ;;
     click[1-9])
       echo "$0: rebooting"
