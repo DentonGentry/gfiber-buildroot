@@ -1,14 +1,14 @@
 #############################################################
 #
-# golang 1.5.1 - https://go.googlesource.com/go/+/go1.5.1
+# golang 1.6.2 - https://go.googlesource.com/go/+/go1.6.2
 #
 #############################################################
-GOLANG_VERSION = f2e4c8b5fb3660d793b2c545ef207153db0a34b1
+GOLANG_VERSION = 57e459e02b4b01567f92542f92cd9afde209e193
 GOLANG_SITE = https://go.googlesource.com/go
 GOLANG_SITE_METHOD = git
 GOLANG_DEPENDENCIES = host-golang_bootstrap
 
-GOLANG_RELEASE = 1.5.1
+GOLANG_RELEASE = 1.6.2
 GOLANG_GOROOT = $(HOST_DIR)/usr/lib/golang-$(GOLANG_RELEASE)
 
 ifeq ("arm",$(BR2_ARCH))
