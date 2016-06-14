@@ -1,0 +1,13 @@
+#! /bin/sh
+
+#
+# Long-running script that triggers dhcp-rogue check runs.
+#
+
+# Wait a while before actually running the checks.
+sleep 300
+
+while true; do
+  dhcp-rogue -i br0
+  sleep 900
+done

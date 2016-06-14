@@ -1,0 +1,209 @@
+#!/bin/sh
+# Test script for /bin/ipapply
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+WVSTART "ipapply"
+
+STATIC_PATH=/config/ip/static
+DYNAMIC_PATH=/tmp/ip/dynamic
+TMP_CONMAN=/tmp/conman
+
+runnable mktemp &&
+tmpdir=$(mktemp -d ipapplyXXXXXXXXXX) ||
+tmpdir=/tmp/ipapply.$$
+mkdir -p "$tmpdir"
+cleanup() {
+  echo "Temp files:" >&2
+  find "$tmpdir" | while read name; do
+    # skip dumping the test scripts.
+    echo $name | grep "test_bin" >/dev/null && continue
+    [ -f "$name" ] && echo "$name: $(cat $name)" >&2
+  done
+  echo "---" >&2
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+mkdir $tmpdir/test_bin
+cat >$tmpdir/test_bin/is-interface-up <<-EOF
+	#!/bin/sh
+	for interface in \$IIU_TEST_UP_INTERFACES; do
+	  [ "\$interface" = "\$1" ] && exit 0  # up
+	done
+	exit 1  # not up.
+EOF
+
+chmod 777 $tmpdir/test_bin/is-interface-up
+
+cat >$tmpdir/test_bin/ip <<-EOF
+	#!/bin/sh
+	echo test_bin/ip \$@ 1>&2
+	exit 0
+EOF
+chmod 777 $tmpdir/test_bin/ip
+PATH=$tmpdir/test_bin:$PATH
+
+wipe_configs() {
+  rm -rf $tmpdir/$STATIC_PATH
+  rm -rf $tmpdir/$DYNAMIC_PATH
+  rm -rf $tmpdir/$TMP_CONMAN
+
+  mkdir -p $tmpdir/$STATIC_PATH
+  mkdir -p $tmpdir/$DYNAMIC_PATH
+  mkdir -p $tmpdir/$TMP_CONMAN
+}
+
+export IPAPPLY_CONFIG_FILE_BASE="$tmpdir"
+
+wipe_configs
+
+echo
+echo "TEST missing interface parameter"
+WVFAIL ipapply
+
+echo
+echo "TEST basic no configuration"
+WVPASS ipapply nope
+WVPASS ipapply nope uhno
+
+echo
+echo "TEST no configuration files"
+output=$(ipapply nope 2>&1 1>/dev/null)
+echo "${output}" | grep "no available configuration.*nope" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev nope" >/dev/null
+WVPASSEQ $? 0
+
+echo
+echo "TEST static config"
+export IIU_TEST_UP_INTERFACES="iface0"
+mkdir -p $tmpdir/$STATIC_PATH
+cat >$tmpdir/$STATIC_PATH/iface0 <<-EOF
+	{ "iface0": {
+	  "ip": [  { "new_ip_address": "1.1.1.1", "new_subnet_mask": "24" } ]
+	} }
+EOF
+
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+
+
+echo
+echo "TEST static and dynamic config prefers static"
+export IIU_TEST_UP_INTERFACES="iface0"
+mkdir -p $tmpdir/$DYNAMIC_PATH
+cat >$tmpdir/$DYNAMIC_PATH/iface0 <<-EOF
+	{ "iface0": {
+	  "ip": [  { "new_ip_address": "2.2.2.2",
+	             "new_subnet_mask": "24",
+	             "new_routers": "a.b.c.d" } ]
+	} }
+EOF
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+WVPASS [ ! -e $tmpdir/$TMP_CONMAN/gateway.iface0 ]
+
+echo
+echo "TEST dynamic config"
+export IIU_TEST_UP_INTERFACES="iface0"
+ipapply iface0
+rm $tmpdir/$STATIC_PATH/iface0
+
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 2.2.2.2/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+gateway_file=$tmpdir/$TMP_CONMAN/gateway.iface0
+expected_file=$tmpdir/expected_gateway
+WVPASS [ -e $gateway_file ]
+echo "a.b.c.d" >$expected_file
+WVPASS cmp $gateway_file $expected_file
+rm $expected_file
+
+wipe_configs
+
+echo
+echo "TEST br0 - wan0 up takes static"
+export IIU_TEST_UP_INTERFACES="br0 wan0"
+cat >$tmpdir/$STATIC_PATH/br0 <<-EOF
+	{ "br0": {
+	  "ip": [  { "new_ip_address": "1.1.1.1",
+	             "new_subnet_mask": "24",
+	             "new_routers": "nexthop" } ]
+	} }
+EOF
+cat >$tmpdir/$DYNAMIC_PATH/br0 <<-EOF
+	{ "br0": {
+	  "ip": [  { "new_ip_address": "2.2.2.2",
+	             "new_subnet_mask": "24",
+	             "new_routers": "a.b.c.d" } ]
+	} }
+EOF
+mkdir -p $tmpdir/sys/class/net/wan0
+mkdir -p $tmpdir/sys/class/net/br0
+
+output=$(ipapply br0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev br0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev br0" >/dev/null
+WVPASSEQ $? 0
+gateway_file=$tmpdir/$TMP_CONMAN/gateway.br0
+WVPASS [ -e $gateway_file ]
+expected_file=$tmpdir/expected_gateway
+echo "nexthop" >$expected_file
+WVPASS cmp $gateway_file $expected_file
+rm $expected_file
+
+# continuation
+echo
+echo "TEST br0 - wan0 down takes dynamic"
+# now flip wan0 to down
+export IIU_TEST_UP_INTERFACES="br0"
+
+output=$(ipapply br0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev br0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 2.2.2.2/24 dev br0" >/dev/null
+WVPASSEQ $? 0
+gateway_file=$tmpdir/$TMP_CONMAN/gateway.br0
+WVPASS [ -e $gateway_file ]
+expected_file=$tmpdir/expected_gateway
+echo "a.b.c.d" >$expected_file
+WVPASS cmp $gateway_file $expected_file
+rm $expected_file
+
+
+wipe_configs
+
+echo
+echo "TEST down interface gets cleared only"
+unset IIU_TEST_UP_INTERFACES
+mkdir -p $tmpdir/$DYNAMIC_PATH
+cat >$tmpdir/$DYNAMIC_PATH/iface0 <<-EOF
+	{ "iface0": {
+	  "ip": [  { "new_ip_address": "2.2.2.2",
+	             "new_subnet_mask": "24",
+	             "new_routers": "a.b.c.d" } ]
+	} }
+EOF
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "interface 'iface0' down" >/dev/null
+WVPASSEQ $? 0

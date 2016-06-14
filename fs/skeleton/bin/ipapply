@@ -1,0 +1,191 @@
+#!/usr/bin/python
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Apply ip address and default route for a set of network interfaces."""
+
+import errno
+import json
+import os
+import subprocess
+import sys
+import options
+
+optspec = """
+ipapply <interface names>
+--
+"""
+
+# TODO(poist): Add support for alias and mtu.
+
+# Allow test override of configuration file location.
+base_path = os.getenv('IPAPPLY_CONFIG_FILE_BASE', '')
+
+STATIC_IP_CONFIGS_DIR = base_path + '/config/ip/static'
+DYNAMIC_IP_CONFIGS_DIR = base_path + '/tmp/ip/dynamic'
+TMP_CONMAN_DIR = base_path + '/tmp/conman'
+
+
+def Log(s, *args):
+  sys.stdout.flush()
+  if args:
+    sys.stderr.write((s + '\n') % args)
+  else:
+    sys.stderr.write(s + '\n')
+  sys.stderr.flush()
+
+
+def LoadJsonFromFile(path):
+  """Deserializes a JSON file to a Python object.
+
+  Args:
+    path: The path to the JSON file to be converted.
+
+  Returns:
+    Dict containing the JSON data.
+
+  Raises:
+    OSError/IOError: If the JSON data file could not be loaded.
+    ValueError: If the JSON data loaded from the file does not contain the
+                requested key, a ValueError is raised.
+  """
+  if not os.path.exists(path):
+    # It is a valid state that there might not be a JSON data file yet,
+    # so just return without printing an error.
+    return
+
+  with open(path) as f:
+    return json.load(f)
+
+
+def InterfaceExists(iface_name):
+  """Return True if the named network interface exists."""
+  return os.path.isdir(os.path.join(base_path + '/sys/class/net', iface_name))
+
+
+def IsInterfaceUp(iface_name):
+  """Return True if the named network interface is up."""
+  if subprocess.call(['is-interface-up', iface_name]) == 0:
+    return True
+  return False
+
+
+def IsProcessRunning(pid):
+  """Check whether a process is running."""
+  pid = int(pid)
+  if pid <= 0:
+    raise ValueError('invalid pid')
+
+  try:
+    os.kill(pid, 0)
+  except OSError as err:
+    if err.errno == errno.ESRCH:
+      # ESRCH == No such process
+      return False
+    elif err.errno == errno.EPERM:
+      # EPERM clearly means there's a process to deny access to
+      return True
+    else:
+      # According to "man 2 kill" possible error values are
+      # (EINVAL, EPERM, ESRCH)
+      raise
+
+
+def IpFlush(iface_name):
+  """Clear all IPv4 addresses from the named interface."""
+  Log('flush interface %r', iface_name)
+  subprocess.check_call(['ip', '-4', 'addr', 'flush', 'dev', iface_name])
+
+
+def IpAddrAdd(iface_name, ip):
+  """Set an address (with /netmask) on an interface."""
+  Log('add address %r on interface %r', ip, iface_name)
+  subprocess.check_call(['ip', 'addr', 'add', ip, 'dev', iface_name])
+
+
+def DefaultRouteAdd(iface_name, routers):
+  """Set a default route via this interface through apman."""
+  # apman supports only a single route, and installs it as 'default'.
+  # arbitrarily select the first route if multiple provided.
+  path = os.path.join(TMP_CONMAN_DIR, 'gateway.%s' % iface_name)
+  if routers:
+    first_route = routers.split()[0]
+    Log('add default route with routers: %r', first_route)
+    with open(path, 'w') as f:
+      f.write(first_route)
+
+
+def SelectAndApply(iface_name):
+  """Select the config file and apply the contents."""
+  static_config_file = os.path.join(STATIC_IP_CONFIGS_DIR, iface_name)
+  dynamic_config_file = os.path.join(DYNAMIC_IP_CONFIGS_DIR, iface_name)
+
+  # Select the appropriate configuration file.
+  # Normally static configuration takes precedence over dynamic
+  # configuration. If this is a box that may be running in bridge
+  # mode (ie with both a wan [uplink] port, and a lan port), decide
+  # which configuration based on the current state of the wan port.
+  selected_config_file = None
+  if iface_name == 'br0' and InterfaceExists('wan0'):
+    # Device that supports bridge mode, select based on wan link status.
+    if IsInterfaceUp('wan0'):
+      selected_config_file = static_config_file
+    else:
+      selected_config_file = dynamic_config_file
+  elif IsInterfaceUp(iface_name):
+    if os.path.isfile(static_config_file):
+      selected_config_file = static_config_file
+    else:
+      selected_config_file = dynamic_config_file
+  else:
+    Log('interface %r down, clearing config', iface_name)
+
+  IpFlush(iface_name)
+
+  if not selected_config_file or not os.path.isfile(selected_config_file):
+    Log('no available configuration file for interface %r', iface_name)
+    return
+
+  config = LoadJsonFromFile(selected_config_file)
+  if config:
+    config = config[iface_name]
+  if not config:
+    Log('failed to load JSON configuration from %r for interface %r',
+        selected_config_file, iface_name)
+    return
+
+  if 'ip' in config:
+    for ip in config['ip']:
+      if 'new_ip_address' in ip:
+        ip_string = ip['new_ip_address']
+        if 'new_subnet_mask' in ip:
+          ip_string = ip_string + '/' + ip['new_subnet_mask']
+        IpAddrAdd(iface_name, ip_string)
+      if 'new_routers' in ip:
+        DefaultRouteAdd(iface_name, ip['new_routers'])
+
+
+def main():
+  o = options.Options(optspec)
+  (_, _, extra) = o.parse(sys.argv[1:])
+  if not extra:
+    o.fatal('at least one interface name expected')
+
+  # uniquify the set of interface names
+  for iface_name in set(extra):
+    SelectAndApply(iface_name)
+
+
+if __name__ == '__main__':
+  main()

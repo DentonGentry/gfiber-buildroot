@@ -30,7 +30,17 @@ case "$1" in
       babysit 60 /bin/cache_warming/cache_warming.py 2>&1 | logos cachewarming &
     fi
 
+    # Stand-alone bridge mode for network type boxes.
+    # When there is no wan0 link, don't run dnsmasq dhcp server on br0.
+    basic_bridge_dhcp_disable=""
+    if [ -e "/sys/class/net/wan0" -a -e "/sys/class/net/br0" ]; then
+      if ! is-interface-up wan0; then
+        basic_bridge_dhcp_disable="--except-interface br0"
+      fi
+    fi
+
     babysit 60 dnsmasq \
+        $basic_bridge_dhcp_disable \
         --pid-file=/var/run/dnsmasq.pid \
         --conf-file=/etc/dnsmasq.conf \
         --resolv-file=/tmp/resolv.conf.external \

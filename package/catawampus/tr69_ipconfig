@@ -15,19 +15,54 @@ usage()
   exit 1
 }
 
+ip_to_json()
+{
+  local ip mask part_ip part_mask
+
+  # Split ip/mask into ip and mask.
+  IFS='/' read part_ip part_mask <<EOF
+$1
+EOF
+  if [ -z "$part_ip" -o -z "$part_mask" ]; then
+    exit 1
+  fi
+  json="{ "
+  if [ -n "$part_ip" ]; then
+    json="$json \"new_ip_address\": \"$part_ip\""
+    json="$json, \"new_subnet_mask\": \"$part_mask\""
+  fi
+  json="$json }"
+
+  echo "$json"
+}
+
 if [ $# -lt 1 ]; then
   usage
 fi
 
-dev=$1; shift
-cmd="ip -4 addr flush dev $dev"
+dev="$1"; shift
 
+ips_json=
 while [ $# -ge 1 ]; do
-  cmd="$cmd && ip addr add $1 dev $dev"
+  if [ -n "$ips_json" ]; then
+    ips_json="$ips_json,"
+  fi
+  ips=$(ip_to_json "$1")
+  if [ $? -ne 0 ]; then
+    usage
+  fi
+  ips_json="$ips_json $ips"
   shift
 done
 
-atomic /config/staticip/$dev "$cmd"
-. /config/staticip/$dev
+if [ -n "$ips_json" ]; then
+  atomic /config/ip/static/$dev "$(
+    echo "{ \"${dev}\": {"
+    echo "  \"ip\": [ $ips_json ]"
+    echo "} }"
+  )"
+else
+  rm -f "/config/ip/static/$dev"
+fi
 
-exit 0
+ipapply "$dev"
