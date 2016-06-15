@@ -40,7 +40,7 @@ endef
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt all
 	if [ $(CPE_25) = y ]; then \
-		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai install; \
+		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai install && \
 		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/common_drm install; \
 	fi
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs install
@@ -63,8 +63,8 @@ define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/bcrypt/libbcrypt.so $1/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
 	if [ $(CPE_25) = y ]; then \
-	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm_tl.so $1/usr/lib/libcmndrm_tl.so; \
-	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC/oemcrypto/lib/arm/liboemcrypto_tl.so $1/usr/lib/liboemcrypto_tl.so; \
+	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm_tl.so $1/usr/lib/libcmndrm_tl.so && \
+	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/arm/liboemcrypto_tl.so $1/usr/lib/liboemcrypto_tl.so && \
 	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/sage/srai/libsrai.so $1/usr/lib/libsrai.so; \
 	fi
 	$(if $(filter $(BCM_ARCH),mips),$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/nonsage/liboemcrypto.so $1/usr/lib/liboemcrypto.so,)
