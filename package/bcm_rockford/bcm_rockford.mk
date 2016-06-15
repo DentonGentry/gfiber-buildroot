@@ -9,9 +9,9 @@ ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"97439")
 
 # 97252 and ?? chips
 define BCM_ROCKFORD_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/driver -f V3DDriver.mk
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/platform/nexus -f platform_nexus.mk
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/driver -f V3DDriver.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/vc5/platform/nexus -f platform_nexus.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/psip
 	$(BCM_ROCKFORD_BUILD_PLATFORM_SPECIFIC)
 endef
@@ -42,9 +42,9 @@ endef
 endif
 
 define BCM_ROCKFORD_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/driver -f V3DDriver.mk
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/platform/nexus -f platform_nexus.mk
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) USE_NXCLIENT=0 NEXUS_MODE=client $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/driver -f V3DDriver.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/platform/nexus -f platform_nexus.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y NEXUS_MODE=client $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/psip
 	$(BCM_ROCKFORD_BUILD_PLATFORM_SPECIFIC)
 endef
