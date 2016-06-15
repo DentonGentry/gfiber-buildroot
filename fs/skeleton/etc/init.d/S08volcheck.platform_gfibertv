@@ -23,6 +23,7 @@ DATA_UBI_NO=1
 
 # eMMC support
 DATA_MMC_NAME="data+ext4"
+ATV_DATA_MMC_NAME="userdata"
 DRM_FS_NAME="drmfs1"
 DRM_FS_RECOVER_NAME="drmfs2"
 
@@ -218,6 +219,15 @@ mount_ext4fs()
   mount --bind /user/config /config || return 1
 }
 
+mount_atv_ext4fs()
+{
+  mount -t ext4 -o defaults,noatime,discard,data=writeback $1 /atv_userdata || return 1
+  mkdir -p /atv_userdata/gfiber/user
+  mount --bind /atv_userdata/gfiber/user /user || return 1
+  mkdir -p /user/config
+  mount --bind /user/config /config || return 1
+}
+
 recover_ext4fs()
 {
   e2fsck $1 || mkfs.ext4 -E discard -m 2 -L ${DATA_MMC_NAME} $1
@@ -247,9 +257,25 @@ case "$1" in
         recover_volume ${DATA_MTD_NO} ${DATA_UBI_NO}
     else
       DATA_MMC_NO=$(check_mmc ${DATA_MMC_NAME})
-      DATA_BLK_NAME=/dev/mmcblk0p${DATA_MMC_NO}
-      if [ -b ${DATA_BLK_NAME} ]; then
-        mount_ext4fs ${DATA_BLK_NAME} || recover_ext4fs ${DATA_BLK_NAME}
+      if [ -n "${DATA_MMC_NO}" ]; then
+        DATA_BLK_NAME=/dev/mmcblk0p${DATA_MMC_NO}
+        echo "Found non-ATV partition table ${DATA_MMC_NAME} at ${DATA_BLK_NAME}!"
+        if [ -b ${DATA_BLK_NAME} ]; then
+          mount_ext4fs ${DATA_BLK_NAME} || recover_ext4fs ${DATA_BLK_NAME}
+        fi
+      else
+        # try if this is a dual-boot Android TV system
+        ATV_DATA_MMC_NO=$(check_mmc ${ATV_DATA_MMC_NAME})
+        if [ -n "${ATV_DATA_MMC_NO}" ]; then
+          ATV_DATA_BLK_NAME=/dev/mmcblk0p${ATV_DATA_MMC_NO}
+          echo "Found ATV partition table ${ATV_DATA_MMC_NAME} at ${ATV_DATA_BLK_NAME}!"
+          if [ -b ${ATV_DATA_BLK_NAME} ]; then
+            mount_atv_ext4fs ${ATV_DATA_BLK_NAME} || \
+              echo "failed mounting ${ATV_DATA_BLK_NAME}"
+          fi
+        else
+          echo "Error-Could not find either ${DATA_MMC_NAME} or ${ATV_DATA_MMC_NAME}"
+        fi
       fi
     fi
 
