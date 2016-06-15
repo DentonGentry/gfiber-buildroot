@@ -431,7 +431,7 @@ case "$1" in
     if is-ptp; then
       # set defaults
       ptp-config -d craft_ipaddr 192.168.1.1/24
-      ptp-config -d vlan_inband 4090
+      ptp-config -d vlan_inband 4091
       ptp-config -d vlan_ooband 50
       ptp-config -d vlan_peer 60
       # TODO(edjames) default should depend on hi/lo radio model
