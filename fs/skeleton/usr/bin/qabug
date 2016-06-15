@@ -10,8 +10,11 @@ run date
 run grep . /etc/platform /etc/version /etc/softwaredate /etc/serial
 run ip addr
 run ip -d link
+run ls -l  /tmp/babysit*
 run grep . /tmp/babysit*
-run ls /config
+run ls -l /config
+run ls -l /config/experiments
+run cat /rw/startupmods
 
 if is-ptp; then
   run grep . /config/settings/*
