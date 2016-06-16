@@ -1,0 +1,25 @@
+#! /bin/sh
+
+#
+# ping the peer radio each second, and touch a file (up or down)
+#
+
+rm -f /tmp/peer-up /tmp/peer-down
+
+last=
+while sleep 1; do
+  addr=$(ptp-config -g peer_ipaddr)
+  addr=${addr%%/*}
+
+  if ! ping -q -c 1 -w 1 "$addr" 2>&1 >/dev/null; then
+    new=down
+  else
+    new=up
+  fi
+  if [ "$last" != "$new" ]; then
+    rm -f /tmp/peer-up /tmp/peer-down
+    >/tmp/peer-"$new"
+    echo "peer is $new"
+  fi
+  last="$new"
+done

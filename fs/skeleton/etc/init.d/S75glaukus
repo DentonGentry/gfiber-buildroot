@@ -16,6 +16,9 @@ start()
   echo "starting glaukusd..."
   babysit 60 glaukusd 2>&1 | logos glaukus &
 
+  echo "starting peer-pinger..."
+  babysit 60 peer-pinger 2>&1 | logos peer-pinger &
+
   echo "starting jsonpoll..."
   babysit 60 jsonpoll 2>&1 | logos jsonpoll &
 
@@ -30,6 +33,9 @@ stop()
 
   echo "stopping jsonpoll..."
   pkillwait -f jsonpoll
+
+  echo "stopping peer-pinger..."
+  pkillwait -f peer-pinger
 
   echo "stopping glaukusd..."
   pkill -INT glaukusd           # shut down cleanly
