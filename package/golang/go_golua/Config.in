@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GO_GOLUA
+	bool "go_golua"
+	help
+		Go support for Lua bindings

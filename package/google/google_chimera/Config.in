@@ -1,9 +1,12 @@
 config BR2_PACKAGE_GOOGLE_CHIMERA
 	bool "google_chimera"
 	default n
+	select BR2_PACKAGE_GO_GOLUA
 	select BR2_PACKAGE_GO_GRPC
+	select BR2_PACKAGE_GO_LUAR
 	select BR2_PACKAGE_GO_NET
 	select BR2_PACKAGE_GO_PROTOBUF
+	select BR2_PACKAGE_LUA
 	select BR2_PACKAGE_MV_CPSS
 	select BR2_PACKAGE_MV_PHYSDK
 	help

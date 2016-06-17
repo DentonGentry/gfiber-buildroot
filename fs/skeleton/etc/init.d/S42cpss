@@ -2,6 +2,13 @@
 
 . /etc/utils.sh
 
+register_experiment CpssGoMain
+
+cpss_bin="cpss"
+if experiment CpssGoMain; then
+  cpss_bin="cpss.gomain"
+fi
+
 create_switch_dev_symlink() {
   # Create a /dev/switch symlink to the PCI device for use in other programs/scripts
   # Currently use a fixed sysfs pci device path. If hardware changes such that this
@@ -27,7 +34,7 @@ case "$1" in
       pkillwait -f prestera_periodic
       pkillwait -f "babysit.*cpss_wrapper"
       pkillwait -x cpss_wrapper
-      pkillwait -x cpss
+      pkillwait -x $cpss_bin
     fi
     ;;
   restart)

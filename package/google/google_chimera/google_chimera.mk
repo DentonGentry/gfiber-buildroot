@@ -7,9 +7,12 @@ GOOGLE_CHIMERA_SITE = repo://vendor/google/wipg
 GOOGLE_CHIMERA_DEPENDENCIES = host-protobuf \
 				host-golang \
 				host-go_protobuf \
+				go_golua \
 				go_grpc \
+				go_luar \
 				go_net \
 				go_protobuf \
+				lua \
 				mv_physdk \
 				mv_cpss
 HAL:=chimera-hal

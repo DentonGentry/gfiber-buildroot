@@ -1,0 +1,25 @@
+From 7029222ec2b9002ff649624b9bde1731e27d4f14 Mon Sep 17 00:00:00 2001
+From: Shawn Ledbetter <sledbetter@google.com>
+Date: Wed, 8 Jun 2016 18:44:00 -0700
+Subject: Fix flags for cross compile
+
+---
+ lua/lua.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lua/lua.go b/lua/lua.go
+index 19bfb55..7d0faa8 100644
+--- a/lua/lua.go
++++ b/lua/lua.go
+@@ -9,7 +9,7 @@ package lua
+ #cgo CFLAGS: -Ilua
+ #cgo llua LDFLAGS: -llua
+ #cgo luaa LDFLAGS: -llua -lm -ldl
+-#cgo linux,!llua,!luaa LDFLAGS: -llua5.1
++#cgo linux,!llua,!luaa LDFLAGS: -llua -lm -dl
+ #cgo darwin,!luaa pkg-config: lua5.1
+ #cgo freebsd,!luaa LDFLAGS: -llua-5.1
+ 
+-- 
+2.8.0.rc3.226.g39d4020
+

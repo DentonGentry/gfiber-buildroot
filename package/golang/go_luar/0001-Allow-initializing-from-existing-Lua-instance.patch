@@ -1,0 +1,27 @@
+From 4da106e0569576df8037a18fd41f280daece6cb5 Mon Sep 17 00:00:00 2001
+From: Shawn Ledbetter <sledbetter@google.com>
+Date: Wed, 8 Jun 2016 18:41:59 -0700
+Subject: Allow initializing from existing Lua instance
+
+---
+ luar.go | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/luar.go b/luar.go
+index 98c3eb0..a2675eb 100644
+--- a/luar.go
++++ b/luar.go
+@@ -1308,6 +1308,10 @@ end
+ // can be used, Lua 5.2 style.
+ func Init() *lua.State {
+ 	var L = lua.NewState()
++	return InitFromState(L)
++}
++
++func InitFromState(L *lua.State) *lua.State {
+ 	L.OpenLibs()
+ 	initializeProxies(L)
+ 	L.DoString(setup)
+-- 
+2.8.0.rc3.226.g39d4020
+
