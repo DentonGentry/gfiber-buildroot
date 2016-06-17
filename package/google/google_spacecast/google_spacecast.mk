@@ -25,25 +25,19 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				google_widevine_cenc
 
 define GOOGLE_SPACECAST_GOENV
-	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
 	export CGO_ENABLED=1
 endef
 
-define GOOGLE_SPACECAST_PROTOS
-	$(GOOGLE_SPACECAST_GOENV) ; export PATH=$(TARGET_PATH) ; \
-	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk protos
-endef
-
-GOOGLE_SPACECAST_POST_CONFIGURE_HOOKS += GOOGLE_SPACECAST_PROTOS
-
 define GOOGLE_SPACECAST_BUILD_CMDS
-	$(GOOGLE_SPACECAST_GOENV) ; $(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk all
+	export $(GOLANG_ENV) ; \
+	$(GOOGLE_SPACECAST_GOENV); \
+	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk all
 endef
 
 define GOOGLE_SPACECAST_TEST_CMDS
 	export $(HOST_GOLANG_ENV) ; \
-	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
+	$(GOOGLE_SPACECAST_GOENV); \
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk test
 endef
 
