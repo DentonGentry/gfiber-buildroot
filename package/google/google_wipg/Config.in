@@ -2,7 +2,7 @@ config BR2_PACKAGE_GOOGLE_WIPG
   bool "Enable Wireless Infrastructure Products Group (WIPG) packages"
   default n
 
-menu "  WIPG packages"
+menu "WIPG packages"
   depends on BR2_PACKAGE_GOOGLE_WIPG
 
 config BR2_PACKAGE_GOOGLE_WIPG_MACSEC
