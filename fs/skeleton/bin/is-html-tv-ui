@@ -1,8 +1,5 @@
 #!/bin/sh
 #
-# Returns 0 (true) if this device's configuration string indicates it
-# is an HTML TV UI, and 1 (false) otherwise.
+# All devices now run Oregano.
 
-. /etc/utils.sh
-
-[ -f /tmp/ui/uitype ] && filecontains "oregano" /tmp/ui/uitype
+exit 0
