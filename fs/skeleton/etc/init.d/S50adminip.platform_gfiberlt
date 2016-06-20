@@ -5,9 +5,6 @@
 
 case "$1" in
   start)
-    if runnable glaser; then
-      exit 0
-    fi
     prod=$(hnvram -qr PRODUCTION_UNIT)
     if [ "$prod" = 0 ] || [ "$prod" = "" ]; then
       touch /tmp/ADMINMODE_IP

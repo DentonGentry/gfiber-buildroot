@@ -8,7 +8,6 @@ MFG_MODE_FILE="$MONITOR_PATH/mfg_mode"
 ACS_FILE="$MONITOR_PATH/acsconnected"
 HALTED_FILE="$MONITOR_PATH/halted"
 HARDWARE_FAILURE="$MONITOR_PATH/hardware_failure"
-NETWORK_STATUS_FILE="$MONITOR_PATH/glaserstatus"
 NETWORK_STATUS_CONNECTED="CONNECTED"
 NETWORK_STATUS_DISCONNECTED="DISCONNECTED"
 LED_STATE_FILE="$BASE_PATH/ledstate"
@@ -67,13 +66,7 @@ set_led_state() {
 }
 
 is_interface_up() {
-  # This checks for the P2P case.
-  if runnable glaser || [ "$PON_TYPE" != "$PON_TYPE_GPON" ]; then
-    [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
-    return
-  fi
-
-  # For gpon case read the status file.  OPERATION means the link should be up.
+  # Read the gpon status file. 'OPERATION' means the link should be up.
   # The ONU has the following GPON states:
   # 1 INITIAL
   # 2 STANDBY
@@ -88,11 +81,6 @@ is_interface_up() {
 }
 
 is_provisioned() {
-  if runnable glaser ; then
-    [ "$network_status" != "$NETWORK_STATUS_CONNECTED" ]
-    return
-  fi
-
   # The output looks like:
   # [0010]
   # [0312][0313][0314][0315][0320][0321][0322][0323]
@@ -113,11 +101,6 @@ has_ip_address() {
 
 watch-dir $MONITOR_PATH |
 while [ -z "$led_state" ] || read event; do
-  network_status=""
-  if [ -e "$NETWORK_STATUS_FILE" ] ; then
-    network_status="$(cat "$NETWORK_STATUS_FILE")"
-  fi
-
   if [ ! -e "$MFG_MODE_FILE" ] ; then
     if [ -e "$HALTED_FILE" ]; then
       set_led_state "$SOLID_MODE" "$RED_LED" "HALTED" "$LEDS_BRIGHTNESS_100P"

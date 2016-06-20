@@ -7,15 +7,6 @@ start_dhcp() {
   lock=/var/run/dhclient.${iface}.lock
   lockfile-create $lock
   pidfile=/var/run/dhclient.${iface}.pid
-  if runnable glaser; then
-    if [ -e $pidfile ]; then
-      kill $(cat $pidfile) 2>&1 > /dev/null
-      rm -f $pidfile
-    fi
-    /usr/sbin/dhclient $iface -d -pf $pidfile \
-      -lf /var/run/dhclient.${iface}.lease \
-      -cf /etc/dhclient.conf 2>&1 | logos dhclient &
-  fi
   pidfile=/var/run/dhclient-v6.${iface}.pid
   if [ -e $pidfile ]; then
     kill $(cat $pidfile) 2>&1 > /dev/null
@@ -33,10 +24,9 @@ start_dhcp() {
 ip link set dev $iface up
 if [ $(cat /etc/config/wanport) = $iface ]; then
   # start dhcp if no management vlan is assigned.
-  if [ "x$(cat /etc/config/mgmtvlan)" = "x" ]; then
+  if [ -n "$(cat /etc/config/mgmtvlan)" ]; then
     start_dhcp
   fi
 elif [ "man" = "$iface" ]; then
   start_dhcp
 fi
-

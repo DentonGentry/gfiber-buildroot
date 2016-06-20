@@ -2,7 +2,7 @@
 
 case "$1" in
   start)
-    if runnable statpitcher && is-fiberjack && ! runnable glaser; then
+    if runnable statpitcher && is-fiberjack; then
       babysit 60 statpitcher -i pon0 -s "$(serial)" \
         -a /tmp/cwmp/acscontact 2>&1 | logos statpitcher &
     fi
