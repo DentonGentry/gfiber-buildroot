@@ -20,6 +20,8 @@ GOOGLE_CHIMERA_DEPENDENCIES = host-protobuf \
 HAL:=chimera-hal
 
 define GOOGLE_CHIMERA_GOENV
+	export TARGET_CROSS=$(TARGET_CROSS) ; \
+	export STAGING_DIR=$(STAGING_DIR) ; \
 	export $(GOLANG_ENV) ; \
 	export GOPATH=$(@D)/$(HAL)/proto:$(@D)/$(HAL)/go:$(@D)/$(HAL)/gomock:$$GOPATH ; \
 	export CGO_ENABLED=1
