@@ -6,6 +6,7 @@
 GOOGLE_CHIMERA_SITE = repo://vendor/google/wipg
 GOOGLE_CHIMERA_DEPENDENCIES = host-protobuf \
 				host-golang \
+				host-go_mock \
 				host-go_protobuf \
 				go_golua \
 				go_grpc \
