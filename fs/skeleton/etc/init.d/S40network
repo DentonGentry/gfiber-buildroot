@@ -150,6 +150,11 @@ load_wifi_drivers() {
     if contains "GFRG200 GFRG210 GFRG250" "$(cat /etc/platform)"; then
       echo 1 > /sys/bus/pci/rescan
     fi
+    if contains "GFHD254" "$(cat /etc/platform)" && ! startswith "$(uname -r)" "3"; then
+      echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove
+      sleep 1
+      echo 1 > /sys/bus/pci/rescan
+    fi
     modprobe qdpc-host 2>/dev/null
 
     # Enable wifi beacon debug logging.
