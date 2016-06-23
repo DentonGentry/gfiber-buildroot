@@ -18,6 +18,7 @@ case "$1" in
     mkdir -p /tmp/cwmp/monitoring/tcp
     mkdir -p /tmp/cwmp/monitoring/ts
     mkdir -p /tmp/acs
+    mkdir -p /tmp/wifi/wifiinfo
     chmod 777 /tmp/cwmp/monitoring /tmp/cwmp/monitoring/* /tmp/acs
 
     if runnable get-quantenna-interface && [ -n $(get-quantenna-interface) ]; then
