@@ -15,6 +15,18 @@ MINDSPEED_DRIVERS_MAKE_ENV = \
 	INSTALL="$(INSTALL)" \
 	LINUX_MAKE_FLAGS='$(LINUX_MAKE_FLAGS)'
 
+MINDSPEED_DRIVERS_PRE_CONFIGURE_HOOKS += MINDSPEED_DRIVERS_AUTORECONF_HOOK
+
+# mindspeed_drivers is not a real autotools package as per buildroot's
+# definition. Instead, it contains two separate autotools projects in the
+# subdirectories cmm/ and fci/lib/. So instead of running
+# $(HOST_DIR)/usr/bin/autoreconf, we run autoreconf_subdirs which is a shell script
+# that recursively runs autoreconf in these two subdirectories.
+
+define MINDSPEED_DRIVERS_AUTORECONF_HOOK
+	$(subst $(HOST_DIR)/usr/bin/autoreconf,./autoreconf_subdirs $(HOST_DIR)/usr/bin/autoreconf,$(AUTORECONF_HOOK))
+endef
+
 define MINDSPEED_DRIVERS_BUILD_CMDS
 	$(TARGET_MAKE_ENV) $($(PKG)_MAKE_ENV) $($(PKG)_MAKE) $($(PKG)_MAKE_OPT) STAGING_DIR="$(STAGING_DIR)" TARGET_DIR="$(TARGET_DIR)" -C $($(PKG)_SRCDIR)
 	for i in $$(find $(STAGING_DIR)/usr/lib* -name "*.la"); do \
