@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Checks if the system has a secure video path.
+
+platform=$(cat /etc/platform)
+if [ "$platform" = GFHD254 ]; then
+  exit 0
+fi
+
+exit 1
