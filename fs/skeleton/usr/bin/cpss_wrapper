@@ -281,7 +281,7 @@ EOF
         exit
         interface ethernet $port_modem
           speed 10000 mode SR_LR
-          jumbo-frame
+          jumbo-frame 9100
           qos trust vpt
           $modem_allow_vlans
           switchport allowed vlan add $vlan_untagged untagged
@@ -289,7 +289,7 @@ EOF
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
-          jumbo-frame
+          jumbo-frame 9100
           qos trust vpt
           $sfp_allow_vlans
           switchport allowed vlan add $vlan_untagged untagged
@@ -305,6 +305,18 @@ EOF
         qos map vpt-queue device all queue-id 7 vpt 6
         qos map vpt-queue device all queue-id 8 vpt 7
         qos wrr-queue bandwidth device 0 weight 20,20,20,20,10,10,sp,sp
+        interface range vlan device 0 vid 1-1000
+          jumbo-frame 9100
+        exit
+        interface range vlan device 0 vid 1001-2000
+          jumbo-frame 9100
+        exit
+        interface range vlan device 0 vid 2001-3000
+          jumbo-frame 9100
+        exit
+        interface range vlan device 0 vid 3001-4095
+          jumbo-frame 9100
+        exit
       end
 EOF
   fi
