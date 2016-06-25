@@ -61,7 +61,7 @@ update_ssdptax() {
 
 dnssdmon_sleep() {
   if runnable dnssdmon; then
-    dnssdmon -t "$1" 2>&1 | head -n "$RECENT" | logos taxonomy
+    (dnssdmon -t "$1" 2>&1 || sleep "$1") | head -n "$RECENT" | logos taxonomy
   else
     sleep "$1"
   fi
