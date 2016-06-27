@@ -367,8 +367,9 @@ encode()
 
 add_firewall_rules_to_vlan_input() {
   if [ -e /sys/class/net/sw0.peer ]; then
-    # Accept connection for certificate exchanger server for MACsec.
-    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 43210 -j ACCEPT
+    # Open ports used by macsecd for peer communication.
+    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 50000 -j ACCEPT
+    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 50001 -j ACCEPT
   fi
 }
 
