@@ -1,0 +1,30 @@
+#!/bin/sh
+# Command Runner init script.
+. /etc/utils.sh
+
+APP="commandrunner"
+BINARY="/app/spacecast/commandrunner"
+FLAGS="-logtostderr"
+
+running() {
+  [ -n "$(pgrep -f "$BINARY")" ]
+}
+
+case "$1" in
+  start)
+    if running; then
+      echo "Command Runner is already running!"
+    else
+      babysit_start 10 "$APP" "$BINARY" "$FLAGS"
+    fi
+    ;;
+  stop)
+    pkill -f "$BINARY"
+    ;;
+  restart|reload)
+    $0 stop;$0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
