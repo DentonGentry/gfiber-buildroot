@@ -49,6 +49,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		INSTALL="$(INSTALL)" \
 		TARGET_DIR="$(TARGET_DIR)" \
 		STRIPCMD="$(STRIPCMD)"
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80commandrunner \
+		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80statemanager \
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S82scdaemon \
