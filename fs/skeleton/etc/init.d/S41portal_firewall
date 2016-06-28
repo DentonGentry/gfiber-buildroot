@@ -18,7 +18,7 @@ flush() {
 
 case "$1" in
   start|restart|reload)
-    if has_iptables; then
+    if has_iptables && is-network-box; then
       # Flush existing rules before we do anything else
       flush
 
@@ -64,7 +64,7 @@ case "$1" in
     fi
     ;;
   stop)
-    if has_iptables br1; then
+    if has_iptables && is-network-box; then
       flush
     fi
     ;;
