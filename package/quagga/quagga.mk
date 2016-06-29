@@ -5,7 +5,7 @@
 #############################################################
 
 QUAGGA_VERSION = 0.99.20
-QUAGGA_SITE = http://www.quagga.net/download
+QUAGGA_SITE = http://download.savannah.gnu.org/releases/quagga
 
 QUAGGA_DEPENDENCIES = host-gawk
 QUAGGA_CONF_OPT = --program-transform-name='' --enable-netlink
