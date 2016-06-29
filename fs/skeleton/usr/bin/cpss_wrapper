@@ -264,15 +264,14 @@ EOF
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
+        interface range ethernet all
+          switchport allowed vlan remove 1
+          port-mac learning automatic
+          shutdown
+        exit
         no counters mac counters reset-on-read all
         $(for n in $(vlan_ranges); do
             echo interface range vlan device 0 vid $n
-            echo exit
-          done
-        )
-        $(for n in $(vlan_ranges); do
-            echo interface range ethernet all
-            echo   switchport allowed vlan remove $n
             echo exit
           done
         )
@@ -280,6 +279,7 @@ EOF
           speed 1000 mode SGMII
           switchport allowed vlan add $vlan_ooband untagged
           switchport pvid $vlan_ooband
+          no shutdown
         exit
         interface ethernet $port_soc
           speed 1000 mode 1000Base_X
@@ -288,6 +288,7 @@ EOF
           switchport allowed vlan add $vlan_peer tagged
           switchport allowed vlan add $vlan_inband tagged
           switchport pvid $vlan_ooband
+          no shutdown
         exit
         interface ethernet $port_modem
           speed 10000 mode SR_LR
@@ -296,6 +297,7 @@ EOF
           $(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
+          no shutdown
         exit
         interface ethernet $port_sfp
           speed 10000 mode SR_LR
@@ -304,6 +306,10 @@ EOF
           $(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
+          no shutdown
+        exit
+        interface vlan device all vid $vlan_inband
+          vlan-mac learning
         exit
         mac address-table aging-mode auto-removal device 0
         qos map vpt-queue device all queue-id 1 vpt 0
