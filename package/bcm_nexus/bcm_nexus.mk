@@ -38,7 +38,7 @@ define BCM_NEXUS_CONFIGURE_CMDS
 endef
 
 define BCM_NEXUS_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt all
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt install
 	if [ $(CPE_25) = y ]; then \
 		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai install && \
 		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/common_drm install; \
@@ -55,11 +55,14 @@ define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/os
 	cd $(@D)/../BSEAV/lib/playbackdevice && $(BCM_MAKE_ENV) NEXUS=$(BCM_NEXUS_DIR) NEXUS_MGR_DIR=$(@D)/../BSEAV/lib/playbackdevice/nexusMgr/ $(MAKE) $(BCM_MAKEFLAGS) all
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/media/build
+	if [ $(CPE_25) = y ]; then \
+		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21 oemcrypto_tl; \
+	fi
 endef
 
 define BCM_NEXUS_INSTALL_LIBS
 	$(INSTALL) -D $(@D)/../BSEAV/lib/drmrootfs/lib/$(BCM_ARCH)/linuxuser/libdrmrootfs.so $1/usr/lib/libdrmrootfs.so
-	$(INSTALL) -D $(@D)/../BSEAV/lib/playbackdevice/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
+	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/nexus/bin/libPlaybackDevice.so $1/usr/lib/libPlaybackDevice.so
 	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/bcrypt/libbcrypt.so $1/usr/lib/libbcrypt.so
 	$(INSTALL) -D $(@D)/../BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm.so $1/usr/lib/libcmndrm.so
 	if [ $(CPE_25) = y ]; then \
