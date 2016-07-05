@@ -59,18 +59,6 @@ update_ssdptax() {
   fi
 }
 
-dnssdmon_sleep() {
-  if runnable dnssdmon; then
-    (dnssdmon -t "$1" 2>&1 || sleep "$1") | head -n "$RECENT" | logos taxonomy
-  else
-    sleep "$1"
-  fi
-
-  # In case dnssdmon crashes we don't want to sit in a loop running it
-  # as fast as we can; also include a short sleep as a rate limiter.
-  sleep 3
-}
-
 update_dnssd_names
 sleep 1
 update_netbios_names
@@ -80,16 +68,16 @@ sleep 1
 update_ssdptax
 
 while [ true ]; do
-  dnssdmon_sleep "$SLEEP"
+  sleep "$SLEEP"
   update_dnssd_names
 
-  dnssdmon_sleep "$SLEEP"
+  sleep "$SLEEP"
   update_netbios_names
 
-  dnssdmon_sleep "$SLEEP"
+  sleep "$SLEEP"
   update_asustax
 
-  dnssdmon_sleep "$SLEEP"
+  sleep "$SLEEP"
   update_ssdptax
 done
 
