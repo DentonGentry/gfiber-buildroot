@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GOOGLE_GCM
+	bool "google_gcm"
+	default n
+	select BR2_PACKAGE_GO_GLOG
+	help
+	  Google's GCM
