@@ -38,6 +38,8 @@ define S6_RC_INSTALL_TARGET_CMDS
 	# TODO(apenwarr): install only the binaries we actually need.
 	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install
 	ln -sf /tmp/run $(TARGET_DIR)/run
+	$(INSTALL) -m 0755 -D package/s6-rc/S03svscan \
+		$(TARGET_DIR)/etc/init.d/
 endef
 
 define S6_RC_INSTALL_STAGING_CMDS

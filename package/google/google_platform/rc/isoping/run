@@ -1,0 +1,4 @@
+#!/usr/bin/execlineb
+fdmove -c 2 1
+setuid nobody
+isoping -f1
