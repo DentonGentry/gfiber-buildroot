@@ -1,0 +1,34 @@
+From 4c205abe17e131400d48634cd64d134d9c1d4d63 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 6 Jul 2016 02:31:37 -0400
+Subject: [PATCH] Fix configure to work with CC="ccache gcc"
+
+---
+ configure | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure b/configure
+index 85148a3..911444e 100755
+--- a/configure
++++ b/configure
+@@ -79,7 +79,7 @@ cmdexists () {
+ }
+ 
+ trycc () {
+-  test -z "$CC_AUTO" && cmdexists "$1" && CC_AUTO=$1
++  test -z "$CC_AUTO" && cmdexists $1 && CC_AUTO=$1
+ }
+ 
+ stripdir () {
+@@ -255,7 +255,7 @@ else
+   cross=
+ fi
+ echo "checking for C compiler..."
+-trycc ${cross}${CC}
++trycc "${cross}${CC}"
+ trycc ${cross}gcc
+ trycc ${cross}c99
+ trycc ${cross}cc
+-- 
+2.8.0.rc3.226.g39d4020
+

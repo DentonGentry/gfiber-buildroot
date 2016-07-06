@@ -1,0 +1,7 @@
+config BR2_PACKAGE_EXECLINE
+	bool "execline"
+	select BR2_PACKAGE_SKALIBS
+	help
+	  A non-interactive scripting language with trivial syntax.
+
+	  http://skarnet.org/software/execline/

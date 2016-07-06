@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SKALIBS
+	bool "skalibs libraries"
+	help
+	  Libraries needed for skarnet tools (such as s6).
+
+	  http://skarnet.org/software/skalibs/

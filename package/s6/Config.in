@@ -1,0 +1,7 @@
+config BR2_PACKAGE_S6
+	bool "s6 process supervisor suite"
+	select BR2_PACKAGE_EXECLINE
+	help
+	  A supervisor suite similar to djb daemontools.
+
+	  http://skarnet.org/software/s6/
