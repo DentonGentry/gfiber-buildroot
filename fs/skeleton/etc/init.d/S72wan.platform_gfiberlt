@@ -18,15 +18,7 @@ case $1 in
     else
       lan_arg="-l $lan_port"
     fi
-    if runnable glaser; then
-      if [ -z "$mgmt_vlan" ]; then
-        # TODO(apenwarr): we should never rely on arbitrary delays like this.
-        sleep 3 && tpmadm -w "$wan_port" $lan_arg -v
-      else
-        sleep 3 && tpmadm -w "$wan_port" $lan_arg -m "$mgmt_vlan" -v
-        ip link add link "$wan_port" name man type vlan id "$mgmt_vlan"
-      fi
-    elif runnable start_sycl; then
+    if runnable start_sycl; then
       echo "Starting sycl"
       ip link add link pon0 name man type vlan id "$mgmt_vlan"
       ifup man
@@ -55,7 +47,9 @@ case $1 in
     ;;
   powerdown)
     $0 stop
-    ifdown "$lan_port"
+    if [ -n "$lan_port" ]; then
+      ifdown "$lan_port"
+    fi
     #power down GE PHY
     devmem 0xf1072004 32 0x00000800
     #power down GPON;

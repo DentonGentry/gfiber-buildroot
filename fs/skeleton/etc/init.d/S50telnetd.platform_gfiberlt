@@ -7,9 +7,6 @@
 
 case "$1" in
   start)
-    if runnable glaser; then
-      exit 0
-    fi
     if [ -e /tmp/DEBUG ] || [ -e /tmp/ADMINMODE_TELNETD ]; then
       /usr/sbin/inetd 2>&1 | logos inetd
     fi
