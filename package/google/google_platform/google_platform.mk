@@ -19,9 +19,11 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	libcares \
 	libcurl \
 	libjsoncpp \
+	libnl \
 	host-libcares \
 	host-libcurl \
 	host-libjsoncpp \
+	host-libnl \
 	host-gperf
 
 HOST_GOOGLE_PLATFORM_DEPENDENCIES=\
