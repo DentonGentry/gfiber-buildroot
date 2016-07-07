@@ -49,15 +49,21 @@ vlan_ranges()
       # silently drop illegal values
       continue
     fi
-    if [ $dt -gt 0 ]; then
-       if [ $dt -eq 1 ]; then
-         range=$curr
-       else
-         range=$curr-$(($v-1))
-       fi
-       result="${result} ${range}"
-    fi
-    curr=$(($v + 1))
+    # emit in blocks of $max_at_once
+    while [ $dt -gt 0 ]; do
+      if [ $dt -eq 1 ]; then
+        result="${result} $curr"
+        curr=$(($v + 1))
+      elif [ $dt -le $max_at_once ]; then
+        result="${result} $curr-$(($v-1))"
+        curr=$(($v + 1))
+      else
+        v2=$(($curr+$max_at_once))
+        result="${result} $curr-$(($v2-1))"
+        curr=$v2
+      fi
+      dt=$(($v - $curr))
+    done
   done
 
   echo ${result}
@@ -76,6 +82,7 @@ generate_vlan_allow_lines()
 
 vlan_start=1
 vlan_end=4095
+max_at_once=500
 
 vlan_ooband=$(ptp-config -g vlan_ooband)
 vlan_inband=$(ptp-config -g vlan_inband)
@@ -252,20 +259,23 @@ EOF
 EOF
 
   else
-    modem_allow_vlans=$(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
-    sfp_allow_vlans=$(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
-
     # configure ports, vlans
     cpss_cmd -f <<EOF || die "config failed"
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
         no counters mac counters reset-on-read all
-        interface range vlan device 0 vid ${vlan_start}-${vlan_end}
-        exit
-        interface range ethernet all
-           switchport allowed vlan remove 1-4095
-        exit
+        $(for n in $(vlan_ranges); do
+            echo interface range vlan device 0 vid $n
+            echo exit
+          done
+        )
+        $(for n in $(vlan_ranges); do
+            echo interface range ethernet all
+            echo   switchport allowed vlan remove $n
+            echo exit
+          done
+        )
         interface ethernet $port_poe
           speed 1000 mode SGMII
           switchport allowed vlan add $vlan_ooband untagged
@@ -283,7 +293,7 @@ EOF
           speed 10000 mode SR_LR
           jumbo-frame 9100
           qos trust vpt
-          $modem_allow_vlans
+          $(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
         exit
@@ -291,7 +301,7 @@ EOF
           speed 10000 mode SR_LR
           jumbo-frame 9100
           qos trust vpt
-          $sfp_allow_vlans
+          $(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
         exit
@@ -305,18 +315,12 @@ EOF
         qos map vpt-queue device all queue-id 7 vpt 6
         qos map vpt-queue device all queue-id 8 vpt 7
         qos wrr-queue bandwidth device 0 weight 20,20,20,20,10,10,sp,sp
-        interface range vlan device 0 vid 1-1000
-          jumbo-frame 9100
-        exit
-        interface range vlan device 0 vid 1001-2000
-          jumbo-frame 9100
-        exit
-        interface range vlan device 0 vid 2001-3000
-          jumbo-frame 9100
-        exit
-        interface range vlan device 0 vid 3001-4095
-          jumbo-frame 9100
-        exit
+        $(for n in $(vlan_ranges); do
+            echo interface range vlan device 0 vid $n
+            echo   jumbo-frame 9100
+            echo exit
+          done
+        )
       end
 EOF
   fi
