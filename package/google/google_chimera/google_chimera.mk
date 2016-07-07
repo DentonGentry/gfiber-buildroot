@@ -8,6 +8,7 @@ GOOGLE_CHIMERA_DEPENDENCIES = host-protobuf \
 				host-golang \
 				host-go_mock \
 				host-go_protobuf \
+				go_fsnotify \
 				go_glog \
 				go_golua \
 				go_grpc \
