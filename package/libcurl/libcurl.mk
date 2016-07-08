@@ -28,6 +28,11 @@ ifeq ($(BR2_INET_IPV6),y)
 LIBCURL_CONF_OPT += --enable-ipv6
 endif
 
+ifeq ($(BR2_PACKAGE_LIBCARES),y)
+LIBCURL_DEPENDENCIES += libcares
+LIBCURL_CONF_OPT += --enable-ares
+endif
+
 define LIBCURL_TARGET_CLEANUP
 	rm -rf $(TARGET_DIR)/usr/bin/curl-config \
 	       $(if $(BR2_PACKAGE_CURL),,$(TARGET_DIR)/usr/bin/curl)
