@@ -1,0 +1,8 @@
+config BR2_PACKAGE_HARFBUZZ
+	bool "harfbuzz"
+	help
+	  OpenType text shaping engine
+
+	  http://harfbuzz.org
+
+comment "No comment yet"
