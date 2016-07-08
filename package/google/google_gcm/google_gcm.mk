@@ -4,9 +4,12 @@
 #
 #############################################################
 GOOGLE_GCM_SITE = repo://vendor/google/gcm
-GOOGLE_GCM_DEPENDENCIES = 	host-golang \
+GOOGLE_GCM_DEPENDENCIES = 	host-protobuf \
+				host-golang \
+				host-go_protobuf \
 				host-go_mock \
 				go_glog \
+				go_protobuf \
 
 define GOOGLE_GCM_GOENV
 	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
