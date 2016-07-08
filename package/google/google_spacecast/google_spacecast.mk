@@ -67,6 +67,8 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/etc/init.d/
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S42androidserver\
 		$(TARGET_DIR)/etc/init.d/
+	$(INSTALL) -D -m 0755 package/google/google_spacecast/reset_tuner \
+			$(TARGET_DIR)/sbin/
 	if [ "$(BR2_PACKAGE_GOOGLE_PROD)" = "y" ]; then \
 		$(INSTALL) -D -m 0755 package/google/google_spacecast/prodsysinfo \
 			$(TARGET_DIR)/sbin; \
@@ -85,6 +87,7 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	rm -f $(TARGET_DIR)/etc/init.d/S92monlogpusher
 	rm -f $(TARGET_DIR)/etc/init.d/S95adb
 	rm -f $(TARGET_DIR)/etc/init.d/S99androidserver
+	rm -f $(TARGET_DIR)/sbin/reset_tuner
 endef
 
 $(eval $(call GENTARGETS))
