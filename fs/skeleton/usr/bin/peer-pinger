@@ -4,10 +4,16 @@
 # ping the peer radio each second, and touch a file (up or down)
 #
 
+. /etc/utils.sh
+
+# If DoNotGenerateAlarmLogs experiment is present then script will
+# not print ping state periodically.
+register_experiment DoNotGenerateAlarmLogs
+
 rm -f /tmp/peer-up /tmp/peer-down
 
-duration=0
-seconds_since_change=0
+last_print_time=0
+last_change_time=0
 last=
 while sleep 1; do
   addr=$(ptp-config -g peer_ipaddr)
@@ -16,28 +22,33 @@ while sleep 1; do
 
   if ! ping -q -c 1 -w 1 "$addr" 2>&1 >/dev/null; then
     new=down
+    print_every_seconds=30
   else
     new=up
+    print_every_seconds=120
   fi
   if [ "$last" != "$new" ]; then
     rm -f /tmp/peer-up /tmp/peer-down
     >/tmp/peer-"$new"
     log="true"
-    seconds_since_change=0
+    last_change_time=$(date +%s)
   else
-    # print every 2 min since last print
-    if ! ((duration % 120)); then
-      log="true"
+    last_printed=$((now - last_print_time))
+    if [ "$last_printed" -ge "$print_every_seconds" ]; then
+      log="true";
+    fi
+    if experiment DoNotGenerateAlarmLogs; then
+      # never print periodically
+      log="false";
     fi
   fi
 
-  if [ "$log" == "true" ]; then
+  now=$(date +%s)
+  if [ "$log" = "true" ]; then
+    seconds_since_change=$((now - last_change_time))
     echo "peer is $new changed $seconds_since_change seconds ago"
-    duration=0
+    last_print_time=$(date +%s)
   fi
-
-  ((duration++))
-  ((seconds_since_change++))
 
   last="$new"
 done
