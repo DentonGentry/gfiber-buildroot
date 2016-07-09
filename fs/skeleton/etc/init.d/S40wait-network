@@ -1,0 +1,2 @@
+#!/bin/sh
+s6-rc -u change network firewall
