@@ -73,7 +73,7 @@ define SIMPLERAMFS_BUILD_CMDS
 			ln -sf toolbox $(@D)/fs/bin/$$name; \
 		done
 	set -e; \
-	$(TOYBOX_DIR)/instlist | \
+	$(TOYBOX_DIR)/generated/instlist | \
 		while read name; do \
 			echo toybox: $$name; \
 			ln -sf toybox $(@D)/fs/bin/$$name; \
