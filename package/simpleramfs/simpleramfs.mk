@@ -62,6 +62,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		package/simpleramfs/mounts-root \
 		package/simpleramfs/helpers.sh \
 		$(@D)/fs/
+	ln -f package/simpleramfs/fstab $(@D)/fs/etc
 	ln -s lib $(@D)/fs/lib64
 
 	# toolbox/toybox symlinks

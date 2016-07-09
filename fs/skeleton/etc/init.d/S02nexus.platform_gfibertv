@@ -12,10 +12,10 @@ start()
     insmod ${MODULE_PATH}/bcmdriver.ko
     mknod /dev/brcm0 c 30 0
     chmod 666 /dev/brcm0
-  fi
 
-  # Set up space for multiprocess NEXUS unix sockets
-  mount -t tmpfs none /shared
+    # Set up space for multiprocess NEXUS unix sockets
+    mount -t tmpfs none /shared
+  fi
 
   # Populate the platform ID
   PLATFORM=$(hnvram -qr PLATFORM_NAME)
@@ -31,7 +31,7 @@ start()
 
   # Use the serial number to generate hostid
   serialmd5=$(md5sum /etc/serial)
-  python -c "
+  python -Sc "
 import sys
 hexstring = \"$serialmd5\"
 sys.stdout.write(hexstring[:8].decode(\"hex\"))

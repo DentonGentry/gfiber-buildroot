@@ -140,6 +140,7 @@ fi
 
 if [ -n "$NFSROOT" ]; then
   log "Mounting nfs: '$NFSROOT'"
+  wait  # wait for any pending insmods launched by /init
   if [ -n "$IP" ]; then
     # Can't necessarily count on the kernel to do this, in case our
     # ethernet driver is a kernel module instead of built-in.
@@ -152,20 +153,21 @@ if [ -n "$NFSROOT" ]; then
         ifconfig "$device" "$client_ip"
       fi
     }
+    log "  IP initialized."
   fi
   NFSADDR=${NFSROOT%:*}
   NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
-  # 7429 internal PHY takes >1 second to get link.
-  # If the NFS mount fails, wait a while and try again.
-  for s in 2 2 2 0; do \
-    mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs && break
-    log "NFS mount failed, sleeping"
-    sleep $s
-    false
-  done || die "NFS mount failed"
+  # Some PHYs take >1 second to get a link.  Poll the connection with nc
+  # (with a nice short timeout so we cause transmit retries) until it's open,
+  # then move on to the real NFS mount.
+  for s in $(seq 10); do
+    nc -w1 "$NFSADDR" 2049 </dev/null && break
+  done &&
+  mount -o $NFSOPTS -t nfs "$NFSROOT" /rootfs ||
+      die "NFS mount failed"
   log "Mounted nfsroot='$NFSROOT'"
 elif [ -e /rootfs.img ]; then
-  cat /rootfs.img > /dev/ram0
+  cat /rootfs.img >/dev/ram0
   mount -t squashfs -o ro /dev/ram0 /rootfs ||
     die "root='/dev/ram0' mount failed"
   log "Mounted root='/dev/ram0'"
@@ -278,4 +280,4 @@ mount -t tmpfs none /rootfs/tmp
 
 [ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
 
-exit 0
+true
