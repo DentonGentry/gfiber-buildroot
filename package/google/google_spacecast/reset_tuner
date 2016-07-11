@@ -1,0 +1,22 @@
+#!/bin/sh
+
+GPIO=9
+
+# Force a disconnect of the USB device.
+echo 1-1:1.0 > /sys/bus/usb/drivers/sc100/unbind
+sleep 0.1
+
+# Perform a hard reset of the USB bridge.
+
+cd /sys/class/gpio
+
+echo ${GPIO} > export
+
+echo low > gpio${GPIO}/direction
+sleep 0.01
+echo 1 > gpio${GPIO}/value
+
+echo ${GPIO} > unexport
+
+# Wait for DVB device to become available.
+wait-until-created-timeout 10 /sys/class/dvb/dvb0.frontend0/uevent
