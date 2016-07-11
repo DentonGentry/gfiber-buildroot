@@ -23,6 +23,7 @@ endef
 
 define LIBWEAVE_INSTALL_STAGING_CMDS
 	ln -sf "$(@D)/include/weave" "$(STAGING_DIR)/usr/include"
+	ln -sf "$(@D)/third_party" "$(STAGING_DIR)/usr/include/weave"
 	$(INSTALL) -D "$(@D)/out/$(LIBWEAVE_BUILD_MODE)/libweave.so" "$(TARGET_DIR)/usr/lib/libweave.so"
 endef
 
