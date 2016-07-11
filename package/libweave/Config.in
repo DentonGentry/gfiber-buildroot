@@ -1,5 +1,7 @@
 config BR2_PACKAGE_LIBWEAVE
 	bool "libweave"
+	select BR2_PACKAGE_EXPAT
+	select BR2_PACKAGE_GTEST
 	help
 	  LibWeave is the library for device side implementation of the Weave
 	  protocol.
