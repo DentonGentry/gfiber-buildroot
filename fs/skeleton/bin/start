@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# A handy command to start/stop/restart/powerdown daemons using scripts in /etc/init.d.
+# A handy command to start/stop/restart/powerdown daemons using scripts in
+# /etc/init.d or /service.
 #
 mode=$(basename "$0")
 
@@ -20,8 +21,15 @@ endswith() {
 suggestions() {
   local prog="$1" d
   for d in /etc/init.d/S??*; do
-    if { echo "$d"; cat "$d"; } | grep "$prog" >/dev/null; then
+    if { echo "$d"; cat "$d"; } | grep -q "$prog"; then
       echo "${d#/etc/init.d/S??}(${d#/etc/init.d/})"
+    fi
+  done
+  for d in /service/*; do
+    [ "$d" = "/service/s6rc-fdholder" ] && continue
+    endswith "$d" "-log" && continue
+    if { echo "$d"; cat $d/run* 2>/dev/null; } | grep -q "$prog"; then
+      echo "${d#/service/}($d)"
     fi
   done
 }
@@ -35,28 +43,63 @@ esac
 rv=0
 any=
 for prog in "$@"; do
-  prog=$(basename "$prog")
-  prog=${prog#S??}
-  lockfile-create --use-pid /var/run/startstop.$prog
   any=1
+  prog=${prog##*/}
+
+  if [ -z "$prog" ]; then
+    log "Error: invalid program name '$prog'"
+    rv=1
+    continue
+  fi
+
+  # New-style services (s6)
+  if s6-rc-db type "$prog" >/dev/null 2>/dev/null; then
+    # Don't need to worry about lockfile-create/lockfile-remove here;
+    # s6 already ensures services don't start more than once.
+    case "$mode" in
+      start)
+        log "Starting /service/$prog..."
+        s6-rc -v2 -u change "$prog"
+        ;;
+      stop)
+        log "Stopping /service/$prog..."
+        s6-rc -v2 -d change "$prog"
+        ;;
+      restart)
+        log "Restarting /service/$prog..."
+        s6-rc -v2 -d change "$prog" &&
+        s6-rc -v2 -u change "$prog"
+        ;;
+      powerdown)
+        log "Error: powerdown not supported for '/service/$prog'"
+        false
+        ;;
+    esac
+    rv=$?
+    continue  # found a match
+  fi
+
+  # Old-style services (/etc/init.d)
+  prog=${prog#S??}
+  lockfile-create --use-pid "/var/run/startstop.$prog"
   found=
   for script in /etc/init.d/S??$prog /etc/init.d/S??$prog.sh; do
     if [ -x "$script" ]; then
       found=1
-      gsetsid $script $mode || rv=1
+      gsetsid "$script" "$mode" || rv=1
       break
     elif [ -e "$script" ] && endswith "$script" .sh; then
       found=1
-      gsetsid /bin/sh $script $mode || rv=1
+      gsetsid /bin/sh "$script" "$mode" || rv=1
       break
     fi
   done
   if [ -z "$found" ] && [ -z "$QUIET" ]; then
-    log "Error: no /etc/init.d script matches '$prog'" >&2
+    log "Error: no /etc/init.d or /service script matches '$prog'" >&2
     log "Error: suggestion:" $(suggestions "$prog")
     rv=1
   fi
-  lockfile-remove /var/run/startstop.$prog
+  lockfile-remove "/var/run/startstop.$prog"
 done
 
 if [ -z "$any" ]; then
