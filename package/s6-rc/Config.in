@@ -1,0 +1,9 @@
+config BR2_PACKAGE_S6_RC
+	bool "s6-rc service manager suite"
+	select BR2_PACKAGE_S6
+	help
+	  An s6-based service manager with features similar to systemd.
+
+	  (But modular instead of monolithic.)
+
+	  http://skarnet.org/software/s6-rc/

@@ -1,0 +1,26 @@
+From a271b1d867f46e652aff2d76a59170371d8b59fb Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Wed, 6 Jul 2016 04:44:02 -0400
+Subject: [PATCH] Don't try to lock read-only 'compiled' directory.
+
+Instead, create a lock alongside it, in the parent dir.
+---
+ src/libs6rc/s6rc_lock.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libs6rc/s6rc_lock.c b/src/libs6rc/s6rc_lock.c
+index 75a22be..621373e 100644
+--- a/src/libs6rc/s6rc_lock.c
++++ b/src/libs6rc/s6rc_lock.c
+@@ -27,7 +27,7 @@ int s6rc_lock (char const *live, int lwhat, int *llfd, char const *compiled, int
+     unsigned int clen = str_len(compiled) ;
+     char cfn[clen + 6] ;
+     byte_copy(cfn, clen, compiled) ;
+-    byte_copy(cfn + clen, 6, "/lock") ;
++    byte_copy(cfn + clen, 6, ":lock") ;
+     cfd = open_create(cfn) ;
+     if (cfd < 0)
+       if (cwhat > 1 || errno != EROFS) { e = errno ; goto lerr ; }
+-- 
+2.8.0.rc3.226.g39d4020
+

@@ -521,6 +521,9 @@ endif
 ifeq ($(BR2_PACKAGE_PYTHON_PYC_ONLY),y)
 	find $(TARGET_DIR)/usr/lib/ -name '*.py' -print0 | xargs -0 rm -f
 endif
+ifeq ($(BR2_PACKAGE_S6_RC),y)
+	package/s6-rc/finalize-install.sh "$(BASE_DIR)"
+endif
 	find $(TARGET_DIR) -type f -perm +111 '!' -name 'libthread_db*.so*' '!' -name 'libpthread*.so*' -print0 | \
 		xargs -0 -r $(STRIPCMD) 2>&1 | grep -v "File format not recognized" || true
 	find $(TARGET_DIR)/lib/modules -type f -name '*.ko' -print0 | \

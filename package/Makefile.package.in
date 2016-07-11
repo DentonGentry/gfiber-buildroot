@@ -572,6 +572,16 @@ $(BUILD_DIR)/%/.stamp_images_installed:
 $(BUILD_DIR)/%/.stamp_target_installed:
 	@$(call MESSAGE,"Installing to target")
 	+$(Q)$($(PKG)_INSTALL_TARGET_CMDS)
+	$(Q)(rcd="$($(PKG)_DIR_PREFIX)/$(RAWNAME)/rc"; \
+	     ocd="$(STAGING_DIR)/etc/s6-rc/source"; \
+		for d in $$rcd/*; do \
+			mkdir -p "$$ocd" && \
+			if test -d "$$d"; then \
+				rm -rf "$$ocd/$$(basename "$$d")"; \
+				cp -alf "$$d" "$$ocd/"; \
+			fi; \
+		done \
+	)
 	$(foreach hook,$($(PKG)_POST_INSTALL_TARGET_HOOKS),$(call $(hook))$(sep))
 	$(Q)touch $@
 
@@ -953,6 +963,7 @@ $(1)-reconfigure:	$(1)-clean-for-reconfigure all
 # define the PKG variable for all targets, containing the
 # uppercase package variable prefix
 $$($(2)_TARGET_INSTALL_TARGET):		PKG=$(2)
+$$($(2)_TARGET_INSTALL_TARGET):		RAWNAME=$(patsubst host-%,%,$(1))
 $$($(2)_TARGET_INSTALL_STAGING):	PKG=$(2)
 $$($(2)_TARGET_INSTALL_IMAGES):		PKG=$(2)
 $$($(2)_TARGET_INSTALL_HOST):           PKG=$(2)
