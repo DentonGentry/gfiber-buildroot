@@ -43,6 +43,7 @@ k,key-suffix=      Suffix for signing keys
 u,unsigned         Skip the image signing
 openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
+no-source          Don't pre-extract sources
 """
 
 
@@ -234,8 +235,10 @@ class BuildRootBuilder(object):
       self.RemoveStamps()
     if self.opt.build:
       self.Make([], parallel=True)
-    else:
+    elif self.opt.source:
       self.Make(['worldsetup'], parallel=True)
+    else:
+      self.Make(['preworldsetup'], parallel=True)
     self._LogDone('Building app')
 
 
