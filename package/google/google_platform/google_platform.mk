@@ -14,6 +14,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-python-crypto \
 	host-py-mock \
 	python \
+	python-crypto \
 	python-setuptools \
 	host-python-setuptools \
 	libcares \
