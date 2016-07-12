@@ -21,11 +21,11 @@ case "$1" in
     if is-ptp; then
       create_switch_dev_symlink
 
-      # start marvell switch CLI
-      babysit 10 cpss_wrapper 2>&1 | logos cpss &
+      # start marvell switch CLI, allow 100KB/s
+      babysit 10 cpss_wrapper 2>&1 | logos cpss 0 2000000 &
 
-      # save prestera stats for catawampus
-      babysit 60 prestera_periodic 2>&1 | logos prestera &
+      # save prestera stats for catawampus, allow 1000KB/s
+      babysit 60 prestera_periodic --interval 60 2>&1 | logos prestera 0 20000000 &
     fi
     ;;
   stop)
