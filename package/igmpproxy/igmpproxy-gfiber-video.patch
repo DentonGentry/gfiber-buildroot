@@ -24,7 +24,7 @@ diff -ru igmpproxy-0.1.orig/src/rttable.c igmpproxy-0.1/src/rttable.c
      }
 +
 +    if( ! gfiberVideo( ntohl(group) )) {
-+        my_log(LOG_WARNING, 0, "The group address %s is not a gfiber video channel. Table insert failed.",
++        my_log(LOG_INFO, 0, "The group address %s is not a gfiber video channel, not inserted into the table.",
 +            inetFmt(group, s1));
 +        return 0;
 +    }
