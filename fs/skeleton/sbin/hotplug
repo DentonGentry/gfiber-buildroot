@@ -22,6 +22,9 @@ create_client_interface() {
     fi
     ip link set dev "$client_interface" address "$mac"
   fi
+  # Disable IPv6 autoconfiguration of the interface, which breaks gftests.
+  # TODO(rofrankel):  Find a way not to need to disable this.
+  echo 0 > /proc/sys/net/ipv6/conf/wcli0/accept_ra
 }
 
 load_firmware() {
