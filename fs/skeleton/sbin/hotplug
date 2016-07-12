@@ -23,8 +23,12 @@ create_client_interface() {
     ip link set dev "$client_interface" address "$mac"
   fi
   # Disable IPv6 autoconfiguration of the interface, which breaks gftests.
-  # TODO(rofrankel):  Find a way not to need to disable this.
-  echo 0 > /proc/sys/net/ipv6/conf/wcli0/accept_ra
+  # accept_ra means "Accept Router Advertisements, and autoconfigure this
+  # interface with received data."; disabling this prevents the problematic
+  # autoconfiguration of routes.
+  # TODO(rofrankel):  Find a way not to need to disable this, e.g. by making it
+  # so that autoconfigured br0 routes have a lower metric than wcli* routes.
+  echo 0 >/proc/sys/net/ipv6/conf/wcli0/accept_ra
 }
 
 load_firmware() {
