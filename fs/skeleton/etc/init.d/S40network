@@ -369,6 +369,9 @@ encode()
 
 add_firewall_rules_to_vlan_input() {
   if [ -e /sys/class/net/sw0.peer ]; then
+    # open ports for peer to peer configuration control
+    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 80 -j ACCEPT
+    ip46tables -A vlan-input -i sw0.peer -p tcp --dport 443 -j ACCEPT
     # Open ports used by macsecd for peer communication.
     ip46tables -A vlan-input -i sw0.peer -p tcp --dport 50000 -j ACCEPT
     ip46tables -A vlan-input -i sw0.peer -p tcp --dport 50001 -j ACCEPT
