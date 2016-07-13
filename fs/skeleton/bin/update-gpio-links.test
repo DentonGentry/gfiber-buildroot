@@ -1,0 +1,173 @@
+#!/bin/sh
+mydir=$(dirname "$0")
+cd "$mydir"
+. ../etc/wvtest.sh
+PATH=$PATH:.
+
+WVSTART "update-gpio-links"
+
+runnable mktemp &&
+tmpdir=$(mktemp -d update-gpioXXXXXXXXXX) ||
+tmpdir=/tmp/update-gpio.$$
+mkdir -p "$tmpdir"
+cleanup() {
+  echo "Temp files:" >&2
+  find "$tmpdir" | while read name; do
+    [ -f "$name" ] && echo "$name:\n$(cat $name)" >&2
+  done
+  echo "---" >&2
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+
+test_config_file=$tmpdir/gpio-test-config
+
+cat >$test_config_file <<-EOF
+	APlat-      1    gpio_1_         - - -
+	APlat-0     1    gpio_1_0        - - -
+	APlat-1     1    gpio_1_1        - - -
+	APlat-1?    2    gpio_2_1q       - - -
+	APlat-.     3    gpio_3_d        - - -
+	.Plat-.     4    gpio_d4_d       - - -
+	APlat-[123] 5    gpio_5_123      - - -
+	APlat-[23]? 6    gpio_6_23?      - - -
+	APlat-      7    gpio_7_         - - -
+	APlat-0     7    gpio_7_0        - - -
+	APlat-1     7    gpio_7_1        - - -
+	APlat-[12]+ 8    gpio_8_12p      - - -
+	APlat       9    gpio_9          - - -
+EOF
+
+# Configure update-gpio-links for test output only.
+export dryrun=1
+
+# ============================================================
+export PLATFORM_FOR_TEST="APlat"
+export HWVER_FOR_TEST="1"
+file_actual=$tmpdir/A1
+file_expected=$tmpdir/A1.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 1 gpio_1_1
+	dryrun: 2 gpio_2_1q
+	dryrun: 3 gpio_3_d
+	dryrun: 4 gpio_d4_d
+	dryrun: 5 gpio_5_123
+	dryrun: 7 gpio_7_1
+	dryrun: 8 gpio_8_12p
+	dryrun: 9 gpio_9
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="BPlat"
+export HWVER_FOR_TEST="1"
+file_actual=$tmpdir/B1
+file_expected=$tmpdir/B1.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 4 gpio_d4_d
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="APlat"
+export HWVER_FOR_TEST=""
+file_actual=$tmpdir/Anone
+file_expected=$tmpdir/Anone.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 1 gpio_1_
+	dryrun: 2 gpio_2_1q
+	dryrun: 6 gpio_6_23?
+	dryrun: 7 gpio_7_
+	dryrun: 9 gpio_9
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="APlat"
+export HWVER_FOR_TEST="7"
+file_actual=$tmpdir/A7
+file_expected=$tmpdir/A7.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 3 gpio_3_d
+	dryrun: 4 gpio_d4_d
+	dryrun: 9 gpio_9
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="APlat"
+export HWVER_FOR_TEST="222"
+file_actual=$tmpdir/A222
+file_expected=$tmpdir/A222.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 8 gpio_8_12p
+	dryrun: 9 gpio_9
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="APlat"
+export HWVER_FOR_TEST="2"
+file_actual=$tmpdir/A2
+file_expected=$tmpdir/A2.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+	dryrun: 3 gpio_3_d
+	dryrun: 4 gpio_d4_d
+	dryrun: 5 gpio_5_123
+	dryrun: 6 gpio_6_23?
+	dryrun: 8 gpio_8_12p
+	dryrun: 9 gpio_9
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
+
+# ============================================================
+export PLATFORM_FOR_TEST="potato"
+export HWVER_FOR_TEST="2"
+file_actual=$tmpdir/potato
+file_expected=$tmpdir/potato.expected
+update-gpio-links $test_config_file > $file_actual
+
+cat >$file_expected <<-EOF
+EOF
+
+WVPASS cmp $file_actual $file_expected >/dev/null
+if [ $? ]; then
+  rm $file_actual $file_expected
+fi
