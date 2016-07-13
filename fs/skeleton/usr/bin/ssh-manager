@@ -1,0 +1,65 @@
+#!/bin/sh
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Enable or Disable ssh access.
+#
+# By default ssh access is disabled but for debugging purposes
+# we need to have a way to enable/disable it.
+
+usage()
+{
+  echo "Usage:"
+  echo
+  echo "  -h   This help screen"
+  echo "  -e   Enable SSH access"
+  echo "  -d   Disable SSH access"
+}
+
+admin_file="/tmp/ADMINMODE_SSHD"
+
+do_enable() {
+  echo "enabling ssh ..."
+  if [  -f "$admin_file" ]; then
+    echo "ssh was enabled already"
+    exit 1
+  fi
+
+  touch $admin_file
+  start dropbear
+}
+
+do_disable() {
+  echo "disabling ssh ..."
+
+  if [ ! -f "$admin_file" ]; then
+    echo "ssh was not enabled yet"
+    exit 1
+  fi
+
+  stop dropbear
+
+  rm $admin_file
+}
+
+while getopts ":edh" option
+do
+  case "$option" in
+    e)
+      option_found=1 && do_enable
+      ;;
+    d)
+      option_found=1 && do_disable
+      ;;
+    h)
+      option_found=1 && usage
+      ;;
+    \?|:|*)
+      echo "$0: Missing option for -$OPTARG" && echo && usage
+      ;;
+  esac
+done
+
+if [ -z "$option_found" ]; then
+  echo "$0: Unknown options: $@"
+  usage
+fi
