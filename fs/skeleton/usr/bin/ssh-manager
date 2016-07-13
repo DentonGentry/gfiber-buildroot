@@ -21,10 +21,10 @@ do_enable() {
   echo "enabling ssh ..."
   if [  -f "$admin_file" ]; then
     echo "ssh was enabled already"
-    exit 1
+    exit 0
   fi
 
-  touch $admin_file
+  >$admin_file
   start dropbear
 }
 
@@ -33,7 +33,7 @@ do_disable() {
 
   if [ ! -f "$admin_file" ]; then
     echo "ssh was not enabled yet"
-    exit 1
+    exit 0
   fi
 
   stop dropbear
@@ -54,12 +54,13 @@ do
       option_found=1 && usage
       ;;
     \?|:|*)
-      echo "$0: Missing option for -$OPTARG" && echo && usage
+      bad_option=1
       ;;
   esac
 done
 
-if [ -z "$option_found" ]; then
+if [ -z "$option_found" ] || [ -n "$bad_option" ]; then
   echo "$0: Unknown options: $@"
   usage
+  exit 1
 fi
