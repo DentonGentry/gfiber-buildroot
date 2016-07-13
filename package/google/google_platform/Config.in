@@ -52,6 +52,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE
 	help
 	  Waveguide tool for Wi-Fi.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_CACHE_WARMING
+        bool "include cache warming"
+        default n
+        help
+          Periodically fetches top requested hosts.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_LOGUPLOAD
 	bool "include log upload tool"
 	default n

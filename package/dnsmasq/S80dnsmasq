@@ -1,4 +1,8 @@
 #!/bin/sh
+. /etc/utils.sh
+
+register_experiment CacheWarming
+register_experiment DNSTimingLog
 
 case "$1" in
   start)
@@ -21,6 +25,11 @@ case "$1" in
       cp /etc/resolv.conf /tmp/resolv.conf.external ||
       touch /tmp/resolv.conf.external
     fi
+
+    if experiment CacheWarming; then
+      babysit 60 /bin/cache_warming/cache_warming.py | logos /bin/cache_warming/cache_warming.py &
+    fi
+
     babysit 60 dnsmasq \
         --pid-file=/var/run/dnsmasq.pid \
         --conf-file=/etc/dnsmasq.conf \
@@ -30,6 +39,7 @@ case "$1" in
     babysit 60 dnsmasqstats | logos dnsmasqstats &
     ;;
   stop)
+    pkillwait -x cache_warming.py
     pkillwait -x dnsmasq
     pkillwait -x dnsmasqstats
     ;;
