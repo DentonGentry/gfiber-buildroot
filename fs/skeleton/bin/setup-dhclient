@@ -1,12 +1,27 @@
 #!/bin/sh
 
-rm -f /tmp/dhclient.conf
+DHCLIENT_CONF=/tmp/dhclient.conf
 
-cat >/tmp/dhclient.conf <<-EOF
+rm -f $DHCLIENT_CONF
+
+cat >$DHCLIENT_CONF <<-EOF
 	retry 30;
 	request subnet-mask, broadcast-address, routers,
 		domain-name, domain-name-servers, ntp-servers;
 	send host-name "$(hostname)";
-	send dhcp-client-identifier "$(serial)";
 	script "/sbin/dhclient-script";
 EOF
+
+# We don't want to send the client identifier on the tv box wcli0 as that
+# will cause duplicate IP addresses on br0 and wcli0
+if is-tv-box; then
+cat >>$DHCLIENT_CONF <<-EOF
+
+	interface "br0" {
+	  send dhcp-client-identifier "$(serial)";
+	}
+EOF
+else
+	echo "send dhcp-client-identifier \"$(serial)\";" >>$DHCLIENT_CONF
+fi
+
