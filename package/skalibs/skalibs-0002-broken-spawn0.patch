@@ -1,0 +1,25 @@
+From 9f368096f625ba29a4dded8b16cb9886cdf3a841 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Thu, 14 Jul 2016 18:40:40 -0400
+Subject: [PATCH] child_spawn0.c: fix accidental swap of parent vs child code.
+
+---
+ src/libstddjb/child_spawn0.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libstddjb/child_spawn0.c b/src/libstddjb/child_spawn0.c
+index bb8b29e..d1eddba 100644
+--- a/src/libstddjb/child_spawn0.c
++++ b/src/libstddjb/child_spawn0.c
+@@ -64,7 +64,7 @@ pid_t child_spawn0 (char const *prog, char const *const *argv, char const *const
+     errno = e ;
+     return 0 ;
+   }
+-  if (pid)
++  if (!pid)
+   {
+     fd_close(p[0]) ;
+     sig_blocknone() ;
+-- 
+2.8.0.rc3.226.g39d4020
+
