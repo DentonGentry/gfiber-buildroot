@@ -3,8 +3,9 @@ case "$1" in
   start)
     mkdir -p /tmp/service /tmp/run /service/.s6-svscan
     # TODO(apenwarr): maybe actually do something in these
-    ln -sf /bin/true /service/.s6-svscan/finish
-    ln -sf /bin/true /service/.s6-svscan/crash
+    : >/service/.s6-svscan/finish
+    : >/service/.s6-svscan/crash
+    chmod 755 /service/.s6-svscan/finish /service/.s6-svscan/crash
     # We don't run this under a babysitter because it's just too many
     # layers of babysitters.  And s6-svscan tends to return nonzero when
     # you ask it to shut down, even politely, which compounds problems
@@ -18,8 +19,8 @@ case "$1" in
     } 2>&1 | logos svscan &  # exits once all services are started
     ;;
   stop)
-    s6-svscanctl -q /service &&
-    rm -rf /service/* /run/s6-rc /run/s6-rc:*
+    { [ ! -e /service/.s6-svscan/lock ] || s6-svscanctl -q /service; } &&
+    rm -rf /tmp/service /run/s6-rc /run/s6-rc:*
     ;;
   restart|reload)
     ;;
