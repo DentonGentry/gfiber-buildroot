@@ -29,8 +29,6 @@ case "$1" in
         wait-until-created /tmp/gpio/ledcontrol/update_check_complete
         # Bootstrap
         wait-until-created /tmp/gpio/bootstrap
-        # Widevine
-        wait-until-created /config/widevine/private.der
         # Service file
         wait-until-created /config/service_file
         babysit_start 10 "$APP" "$BINARY" "$FLAGS"
