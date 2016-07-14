@@ -75,15 +75,36 @@ set_gpio_prop()
   return 0
 }
 
+# check whether the platform and optional hwver match a model.
+# returns 0 on match.
+model_matches()
+{
+  local model platform hwver
+  model="$1"
+  platform="$2"
+  hwver="$3"
+
+  if [ "$model" = "$platform" ] || \
+      printf "%s\n" "$platform-$hwver" | grep -E -q "^$model$" ; then
+    return 0
+  fi
+
+  return 1
+}
 
 # create links for all gpios in config file
 create_gpio_links()
 {
   local config="$1" linkdir="$2"
-  local platform err="0" line="0" tmp="/tmp/gpios.$$" m hwver
+  local platform real_platform err="0" line="0" tmp="/tmp/gpios.$$"
+  local m hwver real_hwver
 
-  read platform </etc/platform
-  hwver=$(hnvram -r -q HW_VER 2>/dev/null)
+  read real_platform </etc/platform
+  real_hwver=$(hnvram -r -q HW_VER 2>/dev/null)
+
+  # allow override values for testing
+  platform=${PLATFORM_FOR_TEST-$real_platform}
+  hwver=${HWVER_FOR_TEST-$real_hwver}
 
   rm -rf "$linkdir.new" "$linkdir.old"
   mkdir "$linkdir.new" || return 1
@@ -108,7 +129,13 @@ create_gpio_links()
     fi
 
     # skip lines not for this platform
-    if [ "$model" != "$platform" ] && [ "$model" != "$platform-$hwver" ]; then
+    if ! model_matches "$model" "$platform" "$hwver"; then
+      continue
+    fi
+
+    # print the lines that would have been acted upon
+    if [ "$dryrun" != "" ]; then
+      printf "dryrun: %s %s\n" $gpio $name
       continue
     fi
 
