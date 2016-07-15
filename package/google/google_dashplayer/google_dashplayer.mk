@@ -4,44 +4,46 @@
 #
 #############################################################
 
-DASHPLAYER_SITE=repo://vendor/google/dashplayer
-CHROMIUM_DEPENDENCIES=\
-	bcm_bseav bcm_nexus bcm_common bcm_rockford \
-	google_miniclient zlib openssl expat \
-	libcurl libxml2 libxslt host-ninja
+GOOGLE_DASHPLAYER_SITE=repo://vendor/google/dashplayer
+GOOGLE_DASHPLAYER_DEPENDENCIES=\
+	libcurl libxml2 host-ninja
 
-# This will result in defining a meaningful APPLIBS_TOP
-BCM_APPS_DIR=$(abspath $(@D))
+GOOGLE_DASHPLAYER_INSTALL_STAGING=YES
+GOOGLE_DASHPLAYER_INSTALL_TARGET=YES
 
-DASHPLAYER_INSTALL_STAGING=NO
-DASHPLAYER_INSTALL_TARGET=YES
-
-define DASHPLAYER_CONFIGURE_CMDS
-	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
-endef
-
-define DASHPLAYER_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
-		-C $(@D)/build \
-		PYTHONDONTOPTIMIZE="0" \
-		SYSROOT=$(STAGING_DIR) \
-		BUILD_DIR=$(BUILD_DIR)
-endef
-
-define DASHPLAYER_BUILD_TEST_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
-		-C $(@D)/build \
-		$(DASHPLAYER_CCACHE) \
+define GOOGLE_DASHPLAYER_BUILD_CMDS
+	$(DASHPLAYER_MAKE_ENV) $(MAKE) \
+		PATH=${HOST_DIR}/usr/bin:${PATH} -C $(@D)/build \
 		PYTHONDONTOPTIMIZE="0" \
 		SYSROOT=$(STAGING_DIR) \
 		BUILD_DIR=$(BUILD_DIR) \
+		HOST_DIR=$(HOST_DIR) \
+		BR2_mipsel=$(BR2_mipsel) \
+		BR2_arm=$(BR2_arm)
+endef
+
+define GOOGLE_DASHPLAYER_BUILD_TEST_CMDS
+	$(DASHPLAYER_MAKE_ENV) $(MAKE) \
+		PATH=${HOST_DIR}/usr/bin:${PATH} -C $(@D)/build \
+		$(GOOGLE_DASHPLAYER_CCACHE) \
+		PYTHONDONTOPTIMIZE="0" \
+		SYSROOT=$(STAGING_DIR) \
+		BUILD_DIR=$(BUILD_DIR) \
+		HOST_DIR=$(HOST_DIR) \
+		BR2_mipsel=$(BR2_mipsel) \
+		BR2_arm=$(BR2_arm) \
 		unittests
 endef
 
-define DASHPLAYER_INSTALL_TARGET_CMDS
-# TODO
+define GOOGLE_DASHPLAYER_INSTALL_TARGET_CMDS
+	mkdir -p $(TARGET_DIR)/app/client/
+	$(INSTALL) -D -m 0755 $(@D)/src/out/Release/lib/libdashplayer.so $(TARGET_DIR)/app/client/
+	$(STRIPCMD) $(TARGET_DIR)/app/client/libdashplayer.so
+endef
+
+define GOOGLE_DASHPLAYER_INSTALL_STAGING_CMDS
+	$(INSTALL) -D -m 0755 $(@D)/src/out/Release/lib/libdashplayer.so $(STAGING_DIR)/usr/local/lib/
+	$(INSTALL) -D -m 0644 $(@D)/src/dashplayer/dash.h $(STAGING_DIR)/usr/local/include/
 endef
 
 $(eval $(call GENTARGETS))
