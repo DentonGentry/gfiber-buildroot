@@ -24,11 +24,17 @@ define BCM_ROCKFORD_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 644 $(@D)/middleware/vc5/driver/interface/khronos/include/GLES2/*.h $(STAGING_DIR)/usr/include/GLES2/
 	$(INSTALL) -m 644 $(@D)/middleware/vc5/driver/interface/khronos/include/EGL/*.h $(STAGING_DIR)/usr/include/EGL/
 	$(INSTALL) -m 644 -D $(@D)/middleware/vc5/driver/interface/khronos/include/KHR/khrplatform.h $(STAGING_DIR)/usr/include/KHR/khrplatform.h
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(STAGING_DIR)/usr/lib/libv3ddriver.so
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(STAGING_DIR)/usr/lib/libnxpl.so
+	ln -sf $(STAGING_DIR)/usr/lib/libv3ddriver.so $(STAGING_DIR)/usr/lib/libEGL.so
+	ln -sf $(STAGING_DIR)/usr/lib/libv3ddriver.so $(STAGING_DIR)/usr/lib/libGLESv2.so
 endef
 
 define BCM_ROCKFORD_INSTALL_TARGET_CMDS
-	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/usr/local/lib/libv3ddriver.so
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/usr/lib/libv3ddriver.so
 	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(TARGET_DIR)/usr/lib/libnxpl.so
+	ln -sf /usr/lib/libv3ddriver.so $(TARGET_DIR)/usr/lib/libEGL.so
+	ln -sf /usr/lib/libv3ddriver.so $(TARGET_DIR)/usr/lib/libGLESv2.so
 endef
 
 # 97425 and 97428 chips
@@ -57,11 +63,17 @@ define BCM_ROCKFORD_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 644 $(@D)/middleware/v3d/driver/interface/khronos/include/GLES2/*.h $(STAGING_DIR)/usr/include/GLES2/
 	$(INSTALL) -m 644 $(@D)/middleware/v3d/driver/interface/khronos/include/EGL/*.h $(STAGING_DIR)/usr/include/EGL/
 	$(INSTALL) -m 644 -D $(@D)/middleware/v3d/driver/interface/khronos/include/KHR/khrplatform.h $(STAGING_DIR)/usr/include/KHR/khrplatform.h
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(STAGING_DIR)/usr/lib/libv3ddriver.so
+	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(STAGING_DIR)/usr/lib/libnxpl.so
+	ln -sf $(STAGING_DIR)/usr/lib/libv3ddriver.so $(STAGING_DIR)/usr/lib/libEGL.so
+	ln -sf $(STAGING_DIR)/usr/lib/libv3ddriver.so $(STAGING_DIR)/usr/lib/libGLESv2.so
 endef
 
 define BCM_ROCKFORD_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libv3ddriver.so $(TARGET_DIR)/usr/lib/libv3ddriver.so
 	$(INSTALL) -D $(BCM_NEXUS_DIR)/bin/libnxpl.so $(TARGET_DIR)/usr/lib/libnxpl.so
+	ln -sf /usr/lib/libv3ddriver.so $(TARGET_DIR)/usr/lib/libEGL.so
+	ln -sf /usr/lib/libv3ddriver.so $(TARGET_DIR)/usr/lib/libGLESv2.so
 endef
 endif
 
