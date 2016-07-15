@@ -204,9 +204,11 @@ gstatics()
 {
   gs=$(gstatic)
   rv=$?
-  echo "$gs" | while read ip stat; do
-    echo -n "$ip($stat) "
-  done
+  if [ -n "$gs" ]; then
+    echo "$gs" | while read ip stat; do
+      echo -n "$ip($stat) "
+    done
+  fi
   echo
   return $rv
 }
@@ -227,8 +229,8 @@ wifistats()
 if [ -n "$DELAY" ]; then
   # Stagger startup after a power outage
   sleep $(randint 1 "$DELAY")
-  longping=$(randint 1 3600)
 fi
+longping=$(randint 1 3600)
 
 while :; do
   # time used by each process, followed by cumulative time (which includes
@@ -257,7 +259,7 @@ while :; do
     pings "ping:" "$gs_retval"
     pings6 "ping6:" "$gs_retval"
 
-    if test "$longping" -gt 3600; then
+    if [ -z "$DELAY" ] || [ "$longping" -gt 3600 ]; then
       if is-network-box || is-storage-box; then
         extrapings "ping:" ""
         extrapings "ping6:" "6"
@@ -272,8 +274,9 @@ while :; do
     fi
   fi
 
+  # Trigger nexus heap stats, if available
   if [ -e /proc/bcmdriver/debug ]; then
-    echo core > /proc/bcmdriver/debug
+    echo core >/proc/bcmdriver/debug
   fi
 
   if [ -n "$DELAY" ]; then
