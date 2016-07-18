@@ -42,4 +42,10 @@ config BR2_PACKAGE_GPTFDISK_CGDISK
 	  Install the ncurses-based GUID partition table (GPT)
 	  manipulator /usr/sbin/cgdisk.
 
+config BR2_PACKAGE_GPTFDISK_ICU
+        bool "Enable ICU support"
+        depends on BR2_PACKAGE_ICU
+        help
+          build with ICU support
+
 endif
