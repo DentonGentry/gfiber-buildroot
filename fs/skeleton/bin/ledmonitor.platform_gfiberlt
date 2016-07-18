@@ -107,9 +107,9 @@ while [ -z "$led_state" ] || read event; do
     elif [ -e "$HARDWARE_FAILURE" ]; then
       set_led_state "$SOLID_MODE" "$RED_LED" "HWFAIL" "$LEDS_BRIGHTNESS_100P"
     elif ! is_interface_up "$PON_IFACE" ; then
-      set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_100P"
+      set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_10P"
     elif ! is_provisioned ; then
-      set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_100P"
+      set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_10P"
     elif ! has_ip_address "$MAN_IFACE" ; then
       set_led_state "$BLINK_MODE" "$BLUE_LED" "NETCONNECTED" "$LEDS_BRIGHTNESS_10P"
     elif [ ! -e $ACS_FILE ] ; then
