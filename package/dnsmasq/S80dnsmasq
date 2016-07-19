@@ -27,7 +27,7 @@ case "$1" in
     fi
 
     if experiment CacheWarming; then
-      babysit 60 /bin/cache_warming/cache_warming.py | logos /bin/cache_warming/cache_warming.py &
+      babysit 60 /bin/cache_warming/cache_warming.py | logos cachewarming &
     fi
 
     babysit 60 dnsmasq \
