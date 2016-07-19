@@ -12,9 +12,11 @@ GOOGLE_PLATFORM_INSTALL_TARGET=YES
 GOOGLE_PLATFORM_STAGING_PATH=usr/lib/bruno
 GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-python-crypto \
+	host-py-dns \
 	host-py-mock \
 	python \
 	python-crypto \
+	py-dns \
 	python-setuptools \
 	host-python-setuptools \
 	libcares \
