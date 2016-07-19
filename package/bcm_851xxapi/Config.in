@@ -1,0 +1,5 @@
+config BR2_PACKAGE_BCM_851XXAPI
+	bool bcm_851xxapi
+	default n
+	help
+	  BCM_851XXAPI
