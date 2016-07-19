@@ -1,13 +1,16 @@
 #! /bin/sh
 
+exec 2>&1
+
 run() {
   echo ---------------------------------------------------------------
-  echo $*
+  echo "$*"
   "$@"
 }
 
 run date
 run grep . /etc/platform /etc/version /etc/softwaredate /etc/serial
+run sh -c 'grep . /tmp/gpio/* /tmp/gpio/*/*; cd /tmp/gpio/ledcontrol; echo $(pwd): *'
 run ip addr
 run ip -d link
 run ls -l  /tmp/babysit*
@@ -21,8 +24,9 @@ if is-ptp; then
   run cat /config/glaukus.properties
   run sh -c "ps agxww | grep glaukus"
   run sh -c "ps agxww | grep cpss"
-  run curl http://localhost:8080/api/modem
-  run curl http://localhost:8080/api/radio
+  run sh -c 'curl -s http://localhost:8080/api/modem; echo ""'
+  run sh -c 'curl -s http://localhost:8080/api/radio; echo ""'
+  run presterastats
 fi
 
 
