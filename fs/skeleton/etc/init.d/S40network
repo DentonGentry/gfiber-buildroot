@@ -142,7 +142,7 @@ load_wifi_drivers() {
     local mwifi_param=$(get_wifi_macaddr_param)
     modprobe mwifiex $mwifi_param 2>/dev/null
 
-    modprobe -a mwifiex_sdio mwifiex_usb ath9k_htc 2>/dev/null
+    modprobe -a mwifiex_sdio mwifiex_usb mwifiex_pcie ath9k_htc 2>/dev/null
 
     # On GFRG250, the Quantenna PCIe module has not initialized by the time the
     # kernel enumerates PCIe devices. For development, also include GFRG200 and
