@@ -176,19 +176,9 @@ define DOWNLOAD_REPO
 		(cd $(BUILD_DIR)/$($(PKG)_BASE_NAME) && $(GIT) reset --hard) \
 	else \
 		(cd $(BUILD_DIR) && \
-		if [ "$($(PKG)_DL_VERSION)" == "HEAD" ]; then \
-			DL_VERSION="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git show-ref --head HEAD --hash)"; \
-			DL_BRANCH="$$($(GIT) --git-dir=$(TOPDIR)/../$($(PKG)_REPO_PATH)/.git symbolic-ref HEAD 2>/dev/null)"; \
-			[ -n "$$DL_BRANCH" ] && DL_VERSION="$${DL_BRANCH#refs/heads/}"; \
-			echo "DL_VERSION=$$DL_VERSION"; \
-		else \
-			DL_VERSION=$($(PKG)_DL_VERSION); \
-		fi; \
-		rm -rf $($(PKG)_BASE_NAME).tmp/ && \
-		sh /usr/share/doc/git/contrib/workdir/git-new-workdir \
-			$(TOPDIR)/../.repo/projects/$($(PKG)_REPO_PATH).git \
-			$($(PKG)_BASE_NAME).tmp/ $$DL_VERSION && \
-		mv $($(PKG)_BASE_NAME).tmp/ $($(PKG)_BASE_NAME)/ \
+		 rm -rf $($(PKG)_BASE_NAME) && \
+		 cd $(TOPDIR)/../$($(PKG)_REPO_PATH) && \
+		 git worktree add $(BUILD_DIR)/$($(PKG)_BASE_NAME) HEAD; \
 		) \
 	fi
 endef
