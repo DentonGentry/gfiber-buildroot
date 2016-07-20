@@ -27,7 +27,7 @@ case "$1" in
     fi
 
     if experiment CacheWarming; then
-      babysit 60 /bin/cache_warming/cache_warming.py | logos cachewarming &
+      babysit 60 /bin/cache_warming/cache_warming.py 2>&1 | logos cachewarming &
     fi
 
     babysit 60 dnsmasq \
@@ -36,10 +36,10 @@ case "$1" in
         --resolv-file=/tmp/resolv.conf.external \
         --keep-in-foreground \
         --log-facility=- 2>&1 | logos dnsmasq &
-    babysit 60 dnsmasqstats | logos dnsmasqstats &
+    babysit 60 dnsmasqstats 2>&1 | logos dnsmasqstats &
     ;;
   stop)
-    pkillwait -x cache_warming.py
+    pkillwait cache_warming
     pkillwait -x dnsmasq
     pkillwait -x dnsmasqstats
     ;;
