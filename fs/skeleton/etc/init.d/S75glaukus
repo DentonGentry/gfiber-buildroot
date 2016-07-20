@@ -20,7 +20,7 @@ start()
   babysit 60 peer-pinger 2>&1 | logos peer-pinger &
 
   echo "starting jsonpoll..."
-  babysit 60 jsonpoll 2>&1 | logos jsonpoll &
+  babysit 60 jsonpoll -i 60 2>&1 | logos jsonpoll 0 20000000 &
 
   echo "starting craftui..."
   babysit 60 craftui 2>&1 | logos craftui &
