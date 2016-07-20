@@ -424,17 +424,22 @@ depcheck: $(patsubst %,%-depcheck,$(SHUFFLED_TARGETS))
 dirs: prepare
 dependencies: dirs
 
+PREWORLD_STAMP = $O/.stamp.preworld-setup
 WORLD_STAMP = $O/.stamp.world-setup
 
-$(WORLD_STAMP):
-	$(MAKE) $(EXTRAMAKEARGS) depcheck
-	$(MAKE) $(EXTRAMAKEARGS) source
-	$(MAKE) $(EXTRAMAKEARGS) dependencies
+$(PREWORLD_STAMP):
 	$(MAKE) $(EXTRAMAKEARGS) compiler
 	$(MAKE) $(EXTRAMAKEARGS) cross
+	touch $@
+
+$(WORLD_STAMP): $(PREWORLD_STAMP)
+	$(MAKE) $(EXTRAMAKEARGS) depcheck
+	$(MAKE) $(EXTRAMAKEARGS) dependencies
+	$(MAKE) $(EXTRAMAKEARGS) source
 	$(MAKE) $(EXTRAMAKEARGS) patchtargets
 	touch $@
 
+preworldsetup: $(PREWORLD_STAMP)
 worldsetup: $(WORLD_STAMP)
 
 world: worldsetup
@@ -587,7 +592,7 @@ remove-stamps:
 		$(BUILD_DIR)/*/.stamp_coverage_done \
 		$(BUILD_DIR)/*/.stamp_images_installed \
 		$(BUILD_DIR)/*/.stamp_target_installed \
-		$(WORLD_STAMP)
+		$(WORLD_STAMP) $(PREWORLD_STAMP)
 
 else # ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
@@ -716,7 +721,7 @@ endif
 clean:
 	rm -rf $(STAGING_DIR) $(TARGET_DIR) $(BINARIES_DIR) $(HOST_DIR) \
 		$(STAMP_DIR) $(BUILD_DIR) $(TOOLCHAIN_DIR) $(BASE_DIR)/staging \
-		$(WORLD_STAMP)
+		$(WORLD_STAMP) $(PREWORLD_STAMP)
 
 distclean: clean
 ifeq ($(DL_DIR),$(TOPDIR)/dl)
