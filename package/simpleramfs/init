@@ -8,14 +8,14 @@ exec 9>&1 >/dev/kmsg 2>&1
 echo "---- initramfs ('$0')"
 echo "To bypass this script, use rdinit=/bin/sh"
 
+# Mount /dev, /proc, /sys, etc
+/mounts-sys
+
 . /helpers.sh
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 trap 'log FATAL - INIT EXITED - Rebooting.; reboot >&9 2>&1 9>&-' EXIT
 
-
-# Mount /dev, /proc, /sys
-/mounts-sys || die "couldn't mount special purpose directories"
 
 # Initialize any loadable driver modules
 for d in /lib/modules/*.ko /lib/modules/*/*.ko; do
@@ -23,9 +23,9 @@ for d in /lib/modules/*.ko /lib/modules/*/*.ko; do
 done
 
 # Mount /rootfs
-/mounts-root || die "couldn't mount root filesystems"
+. /mounts-root || die "couldn't mount root filesystems"
 
-read_cmdline
+# read_cmdline was run by /mounts-root, possibly setting INIT
 
 log 'Looking for init in rootfs.  To bypass this, use init=/bin/sh'
 for init in "$INIT" /sbin/init /linuxrc /bin/sh; do

@@ -7,21 +7,23 @@ contains() {
   return 1
 }
 
+
 log()
 {
   echo "$*" >&2
 }
 
-# The address we signal back to the bootloader is the
-# same for 7425 and 7429 chips but different for 7252.
-# The register we're using is the last word in
-# SYSTEM_DATA_RAMi_ARRAY_BASE.
-read x y armplatform platform junk </proc/cpuinfo
-if contains "$platform" "BCM742"; then
-  REG_FAILURE_COUNT="0x104083FC"
-fi
 
 signal_failure() {
+  # The address we signal back to the bootloader is the
+  # same for 7425 and 7429 chips but different for 7252.
+  # The register we're using is the last word in
+  # SYSTEM_DATA_RAMi_ARRAY_BASE.
+  read x y armplatform platform junk </proc/cpuinfo
+  if contains "$platform" "BCM742"; then
+    REG_FAILURE_COUNT="0x104083FC"
+  fi
+
   if [ -n "$REG_FAILURE_COUNT" ]; then
     devmem $REG_FAILURE_COUNT 32 1
   fi

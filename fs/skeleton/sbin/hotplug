@@ -77,7 +77,7 @@ case "$SUBSYSTEM-$ACTION" in
     # At boot or device reset, a net add event is delivered for the primary
     # interface. Use this event to create a client interface, which is
     # created in user space unlike the primary interface.
-    if is-wireless-client && startswith "$INTERFACE" "wlan"; then
+    if startswith "$INTERFACE" "wlan" && is-wireless-client; then
       create_client_interface "$INTERFACE"
     fi
     ;;
