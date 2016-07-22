@@ -264,9 +264,11 @@ EOF
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
+        counters egress-queue device all count-drop
         interface range ethernet all
           switchport allowed vlan remove 1
           port-mac learning automatic
+          flow-control off
           shutdown
         exit
         no counters mac counters reset-on-read all
@@ -294,6 +296,7 @@ EOF
           speed 10000 mode SR_LR
           jumbo-frame 9100
           qos trust vpt
+          flow-control on
           $(generate_vlan_allow_lines $vlan_ooband $vlan_untagged)
           switchport allowed vlan add $vlan_untagged untagged
           switchport pvid $vlan_untagged
