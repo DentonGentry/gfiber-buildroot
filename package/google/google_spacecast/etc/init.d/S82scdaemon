@@ -25,6 +25,9 @@ case "$1" in
     if running; then
       echo "SpaceCast daemon is already running!"
     else
+      # Record free disk space in the system log
+      df
+
       babysit_start 10 "$APP" "$BINARY" "$FLAGS"
     fi
     ;;
