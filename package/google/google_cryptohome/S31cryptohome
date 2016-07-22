@@ -66,6 +66,9 @@ mkdir -p "$CONFIG_PATH/shared/lib/buffet" # for mount point
 [ -e "$CONFIG_PATH/cryptohome/lib" ] || ln -sf "$CONFIG_PATH/shared/lib" "$CONFIG_PATH/cryptohome/lib"
 mount_once "$CONFIG_PATH/shared/lib" "/chroot/chromeos/var/lib"
 
+# Delete metrics data. It is not used and can leave /var/config without disk space.
+rm -f "$CONFIG_PATH/shared/lib/metrics/uma-events"
+
 # /etc is needed because we need to access users and groups and /etc/tcsd.conf
 # trousers needs to check that it is running with user and group tss:tss
 mount_once "/etc" "/chroot/chromeos/etc"
