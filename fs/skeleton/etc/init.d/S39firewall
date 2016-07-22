@@ -92,6 +92,7 @@ case "$1" in
       if [ -e /sys/class/net/craft0 ]; then
         ip46tables -A INPUT -i craft0 -p tcp --dport 22 -j ACCEPT
         ip46tables -A INPUT -i craft0 -p tcp --dport 80 -j ACCEPT
+        ip46tables -A INPUT -i craft0 -p tcp --dport 443 -j ACCEPT
         # Reject everything else that comes in on the craft port. Any new rules
         # must be added above the REJECT.
         ip46tables -A INPUT -i craft0 -j REJECT
