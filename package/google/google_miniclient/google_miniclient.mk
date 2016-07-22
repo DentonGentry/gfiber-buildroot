@@ -2,7 +2,7 @@ GOOGLE_MINICLIENT_SITE=repo://vendor/sagetv/miniclient
 GOOGLE_MINICLIENT_DEPENDENCIES=\
 	linux \
 	bcm_nexus bcm_rockford \
-	google_pullreader google_widevine google_hdcp bruno \
+	google_pullreader google_dashplayer google_widevine google_hdcp bruno \
 	openssl libcurl zlib libpng libungif libprojectM libxml2 \
 	google_platform protobuf
 GOOGLE_MINICLIENT_INSTALL_STAGING=YES
@@ -10,7 +10,7 @@ GOOGLE_MINICLIENT_INSTALL_STAGING=YES
 define GOOGLE_MINICLIENT_BUILD_CMDS
         TARGET=$(TARGET_CROSS) \
         HOSTDIR=$(HOST_DIR) \
-        PULLREADER_PATH=$(STAGING_DIR)/usr/local/ \
+        STAGING_PATH=$(STAGING_DIR)/usr/local/ \
         $(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D) -f Makefile.7425 all
 endef
 
