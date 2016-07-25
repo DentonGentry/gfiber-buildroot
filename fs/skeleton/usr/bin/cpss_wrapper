@@ -331,6 +331,10 @@ EOF
           done
         )
       end
+      cpss-api call cpssDxChPortTxTailDropUcEnableSet devNum 0 enable true
+      cpss-api call cpssDxChPortTxBufferTailDropEnableSet devNum 0 enable true
+      cpss-api call cpssDxChPortTxTailDropProfileSet devNum 0 profileSet CPSS_PORT_TX_DROP_PROFILE_1_E enableSharing false portMaxBuffLimit 500 portMaxDescrLimit 500
+      cpss-api call cpssDxChPortTxBindPortToDpSet devNum 0 portNum 24 profileSet CPSS_PORT_TX_DROP_PROFILE_1_E
 EOF
   fi
 fi
