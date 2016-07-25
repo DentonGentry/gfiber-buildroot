@@ -60,14 +60,14 @@ set_gpio_prop()
   gdir=$(gpio_dir "$gpio")
   keyfile="$gdir/$key"
 
-  if [ ! -f "$keyfile" ]; then
-    echo "set_gpio_prop: '$keyfile' not found" >&2
-    return 1
-  fi
-
   # allow "" and "-" as noop values
   if [ -z "$value" ] || [ "$value" = "-" ]; then
     return 0
+  fi
+
+  if [ ! -f "$keyfile" ]; then
+    echo "set_gpio_prop: '$keyfile' not found" >&2
+    return 1
   fi
 
   echo "$value" >"$keyfile" || return 1

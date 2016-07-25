@@ -23,6 +23,12 @@ start()
   echo "$PLATFORM" >/etc/platform &&
   chmod 444 /etc/platform
 
+  # Populate the hardware version
+  HWVER=$(hnvram -qr HW_VER)
+  [ -n "$HWVER" ] &&
+  echo "$HWVER" >/etc/hw_ver &&
+  chmod 444 /etc/hw_ver
+
   # Populate the serial number file.
   SERIAL=$(hnvram -br 1st_serial_number)
   [ -n "$SERIAL" ] &&
@@ -43,6 +49,17 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
   [ -n "$GPN" ] &&
   echo "$GPN" >/tmp/gpn &&
   chmod 444 /tmp/gpn
+
+  # install driver modules needed early in order to setup GPIOs
+  if is-ptp -a has_i2c_expander; then
+    modprobe i2c_mux_pca954x
+    modprobe gpio_pca953x
+
+    echo pca9548 0x70 >/sys/bus/i2c/devices/i2c-0/new_device
+    echo pca9546 0x70 >/sys/bus/i2c/devices/i2c-1/new_device
+    echo tca6408 0x20 >/sys/bus/i2c/devices/i2c-9/new_device
+    echo tca6408 0x20 >/sys/bus/i2c/devices/i2c-4/new_device
+  fi
 
   # Do this before gpio-mailbox
   update-gpio-links
