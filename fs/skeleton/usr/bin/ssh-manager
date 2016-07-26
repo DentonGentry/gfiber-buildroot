@@ -17,6 +17,45 @@ usage()
 
 admin_file="/tmp/ADMINMODE_SSHD"
 
+if_ssh_mounted() {
+  if [ ! -z "$(cat /proc/mounts | grep '.ssh')" ]; then
+    return 1
+  fi
+  return 0
+}
+
+do_mount() {
+  echo "mounting .ssh ..."
+
+  if_ssh_mounted
+  if [ $? -ne 0 ]; then
+    echo "already mounted"
+    exit 1
+  fi
+
+  mkdir /tmp/.ssh
+  mount --bind /tmp/.ssh ~/.ssh
+  if [ $? -ne 0 ]; then
+    echo "mounting .ssh failed"
+    exit 1
+  fi
+}
+
+do_unmount() {
+  echo "unmounting .ssh ..."
+  rm -f /tmp/.ssh/authorized_keys
+  if_ssh_mounted
+  while [ $? -ne 0 ]; do
+    umount ~/.ssh
+    if [ $? -ne 0 ]; then
+      echo "failed to unmount"
+      exit 1
+    fi
+    if_ssh_mounted
+  done
+  rm -rf /tmp/.ssh
+}
+
 do_enable() {
   echo "enabling ssh ..."
   if [  -f "$admin_file" ]; then
@@ -24,6 +63,7 @@ do_enable() {
     exit 0
   fi
 
+  do_mount
   >$admin_file
   start dropbear
 }
@@ -38,7 +78,9 @@ do_disable() {
 
   stop dropbear
 
-  rm $admin_file
+  rm -f $admin_file
+
+  do_unmount
 }
 
 while getopts ":edh" option
