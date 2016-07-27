@@ -58,6 +58,7 @@ define BCM_NEXUS_BUILD_CMDS
 	if [ $(CPE_25) = y ]; then \
 		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21 oemcrypto_tl; \
 	fi
+	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/common_drm prep_folder playready
 endef
 
 define BCM_NEXUS_INSTALL_LIBS
@@ -68,8 +69,12 @@ define BCM_NEXUS_INSTALL_LIBS
 	if [ $(CPE_25) = y ]; then \
 	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/common_drm/lib/$(BCM_CMNDRM_DIR)/debug/libcmndrm_tl.so $1/usr/lib/libcmndrm_tl.so && \
 	  $(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/arm/liboemcrypto_tl.so $1/usr/lib/liboemcrypto_tl.so && \
-	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/sage/srai/libsrai.so $1/usr/lib/libsrai.so; \
+	  $(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/sage/srai/libsrai.so $1/usr/lib/libsrai.so && \
+	  $(INSTALL) -D $(@D)/../BSEAV/lib/playready/2.5/bin/$(BCM_ARCH)/lib/libplayreadypk_host.so $1/usr/lib/libplayreadypk_host.so; \
+	else \
+	  $(INSTALL) -D $(@D)/../BSEAV/lib/playready/2.5/bin/$(BCM_ARCH)/lib/libplayreadypk.so $1/usr/lib/libplayreadypk.so; \
 	fi
+	$(INSTALL) -D $(@D)/obj.$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/BSEAV/lib/security/common_drm/libcmndrmprdy.so $1/usr/lib/libcmndrmprdy.so
 	$(if $(filter $(BCM_ARCH),mips),$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/nonsage/liboemcrypto.so $1/usr/lib/liboemcrypto.so,)
 	$(INSTALL) -D $(@D)/bin/libb_os.so $1/usr/lib/libb_os.so
 	$(INSTALL) -D $(@D)/bin/libnexus.so $1/usr/lib/libnexus.so
