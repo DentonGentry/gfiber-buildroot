@@ -1,0 +1,5 @@
+config BR2_PACKAGE_GOOGLE_OREGANO_NATIVE
+	bool "google_oregano_native"
+	select BR2_PACKAGE_GOOGLE_DART_VM
+	help
+	  Native extensions for Oregano projects.
