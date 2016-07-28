@@ -2,12 +2,7 @@
 
 . /etc/utils.sh
 
-register_experiment CpssGoMain
-
-cpss_bin="cpss"
-if experiment CpssGoMain; then
-  cpss_bin="cpss.gomain"
-fi
+cpss_bin="cpss.gomain"
 
 create_switch_dev_symlink() {
   # Create a /dev/switch symlink to the PCI device for use in other programs/scripts

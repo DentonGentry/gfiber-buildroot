@@ -10,12 +10,8 @@ register_experiment NoPhyFWUpgrade
 register_experiment CpssNoStart
 register_experiment CpssNoInit
 register_experiment Cpss10GOnly
-register_experiment CpssGoMain
 
-cpss_bin="cpss"
-if experiment CpssGoMain; then
-  cpss_bin="cpss.gomain"
-fi
+cpss_bin="cpss.gomain"
 
 die()
 {
@@ -200,7 +196,7 @@ fi
 # start cpss as persistent server
 pkill -x $cpss_bin
 export CMDFS_ROOT=/usr/lib/cpss/scripts
-ptyserver -p 4455 $cpss_bin -tty 2>&1 | logos cpss_pty &
+ptyserver -p 4455 $cpss_bin -tty -logtostderr 2>&1 | logos cpss_pty &
 
 # check that shell loaded and we get a prompt
 # try a few times; we get one timeout at boot time, don't know why
