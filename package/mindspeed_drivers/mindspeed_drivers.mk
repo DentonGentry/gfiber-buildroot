@@ -36,7 +36,6 @@ define MINDSPEED_DRIVERS_BUILD_CMDS
 endef
 
 define MINDSPEED_DRIVERS_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 0755 -D package/mindspeed_drivers/S45cmm $(TARGET_DIR)/etc/init.d
 	$(INSTALL) -m 0644 -D package/mindspeed_drivers/fastforward.config \
 		$(TARGET_DIR)/etc
 endef

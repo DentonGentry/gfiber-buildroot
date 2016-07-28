@@ -193,7 +193,6 @@ set_mac_from_hnvram() {
 
 create_br0() {
   echo -n "Creating bridge br0... "
-  brctl addbr br0 || exit 1
   brctl setfd br0 1
   if is-ptp || experiment NoSTP; then
     brctl stp br0 off
@@ -221,7 +220,6 @@ create_br0() {
 
 create_br1() {
   echo -n "Creating bridge br1... "
-  brctl addbr br1 || exit 1
   brctl setfd br1 1
   brctl stp br1 off
   echo "done"
