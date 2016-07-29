@@ -274,6 +274,14 @@ while :; do
     fi
   fi
 
+  if runnable castcheck; then
+    echo "castcheck: $(castcheck)"
+  fi
+
+  if runnable dialcheck; then
+    echo "dialcheck: $(dialcheck)"
+  fi
+
   # Trigger nexus heap stats, if available
   if [ -e /proc/bcmdriver/debug ]; then
     echo core >/proc/bcmdriver/debug
