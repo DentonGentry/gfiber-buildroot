@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GO_GOCZMQ
+        bool "go_goczmq"
+        select BR2_PACKAGE_CZMQ
+        select BR2_PACKAGE_LIBSODIUM
+        help
+          CZMQ bindings for Go

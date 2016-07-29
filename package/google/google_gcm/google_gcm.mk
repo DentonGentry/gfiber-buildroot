@@ -10,6 +10,7 @@ GOOGLE_GCM_DEPENDENCIES = 	host-protobuf \
 				host-go_mock \
 				go_glog \
 				go_protobuf \
+				go_goczmq \
 
 define GOOGLE_GCM_GOENV
 	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
@@ -31,6 +32,7 @@ define GOOGLE_GCM_TEST_CMDS
 endef
 
 define GOOGLE_GCM_INSTALL_TARGET_CMDS
+	export $(GOLANG_ENV) ; \
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f gcm.mk install_target \
 		INSTALL="$(INSTALL)" \
 		TARGET_DIR="$(TARGET_DIR)" \
