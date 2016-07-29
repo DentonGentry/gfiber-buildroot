@@ -1,8 +1,0 @@
-#!/bin/sh
-exec 2>&1
-. /etc/utils.sh
-
-megs=$(platform_megs_ram)
-if [ "$megs" -gt 768 ]; then
-  exec supernice memwatcher
-fi
