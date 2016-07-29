@@ -311,15 +311,12 @@ EOF
           vlan-mac learning
         exit
         mac address-table aging-mode auto-removal device 0
-        qos map vpt-queue device all queue-id 1 vpt 0
-        qos map vpt-queue device all queue-id 2 vpt 1
-        qos map vpt-queue device all queue-id 3 vpt 2
-        qos map vpt-queue device all queue-id 4 vpt 3
-        qos map vpt-queue device all queue-id 5 vpt 4
-        qos map vpt-queue device all queue-id 6 vpt 5
+        qos map vpt-queue device all queue-id 4 vpt 0,1,5
+        qos map vpt-queue device all queue-id 5 vpt 2
+        qos map vpt-queue device all queue-id 6 vpt 3,4
         qos map vpt-queue device all queue-id 7 vpt 6
         qos map vpt-queue device all queue-id 8 vpt 7
-        qos wrr-queue bandwidth device 0 weight 20,20,20,20,10,10,sp,sp
+        qos wrr-queue bandwidth device 0 weight 0,0,0,1,30,60,10,sp
         $(for n in $(vlan_ranges); do
             echo interface range vlan device 0 vid $n
             echo   jumbo-frame 9100
