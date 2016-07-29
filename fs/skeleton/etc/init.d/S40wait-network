@@ -1,2 +1,14 @@
 #!/bin/sh
-s6-rc -u change network firewall
+case "$1" in
+  start)
+    s6-rc -u change network firewall
+    ;;
+  stop)
+    ;;
+  restart)
+    stop; start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

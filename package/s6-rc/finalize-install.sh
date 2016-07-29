@@ -63,16 +63,17 @@ BUILDROOT_DIR="$(dirname "$0")/../.."
 
 # Auto-create a bundle containing all available (non-auto) services.
 (
-  cd "$STAGING_DIR/etc/s6-rc" &&
+  S="$STAGING_DIR/etc/s6-rc" &&
   echo "generating 'all' bundle..." >&2 &&
-  rm -rf auto &&
-  mkdir -p auto/all &&
-  echo bundle >auto/all/type &&
-  for d in source/*; do
+  rm -rf "$S/auto" &&
+  mkdir -p "$S/auto/all" &&
+  echo bundle >$S/auto/all/type &&
+  for d in $BUILDROOT_DIR/fs/rc/source/* $S/source/*; do
     if [ -e "$d/type" ]; then
       echo "$(basename "$d")"
     fi
-  done >"auto/all/contents" || die "failed to create 'all' bundle"
+  done >"$S/auto/all/contents" ||
+      die "failed to create 'all' bundle"
 ) &&
 
 # Auto-create "virtual" services for all init scripts in /etc/init.d.
@@ -91,7 +92,7 @@ BUILDROOT_DIR="$(dirname "$0")/../.."
       chmod a+x "auto/$d/up" || die "failed to create '$d' virtual service"
     done
   ) || die "failed to create virtual services"
-)
+) || die "failed to initialize services"
 
 rm -rf "$TARGET_DIR/etc/s6-rc/compiled" &&
 mkdir -p "$TARGET_DIR/etc/s6-rc" &&
