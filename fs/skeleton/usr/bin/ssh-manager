@@ -34,7 +34,7 @@ do_mount() {
   fi
 
   mkdir /tmp/.ssh
-  mount --bind /tmp/.ssh ~/.ssh
+  mount --bind /tmp/.ssh /root/.ssh
   if [ $? -ne 0 ]; then
     echo "mounting .ssh failed"
     exit 1
@@ -46,7 +46,7 @@ do_unmount() {
   rm -f /tmp/.ssh/authorized_keys
   if_ssh_mounted
   while [ $? -ne 0 ]; do
-    umount ~/.ssh
+    umount /root/.ssh
     if [ $? -ne 0 ]; then
       echo "failed to unmount"
       exit 1
