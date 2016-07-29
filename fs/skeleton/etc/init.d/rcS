@@ -65,9 +65,6 @@ for i in /etc/init.d/S[0-9]?*; do
       $i start
       ;;
   esac
-
-  # Mark init script as done, so s6-rc services can depend on it.
-  : >/tmp/run/${i##*/}.init
 done
 
 echo

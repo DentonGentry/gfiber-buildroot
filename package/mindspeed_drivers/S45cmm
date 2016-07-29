@@ -1,0 +1,30 @@
+#!/bin/sh
+. /etc/utils.sh
+
+register_experiment NoFastForwarding
+
+case "$1" in
+  start)
+    if is-network-box && runnable cmm && ! experiment NoFastForwarding; then
+      echo "Starting cmm."
+      modprobe -a nfnetlink fci auto_bridge
+      MAJOR=$(grep vwd /proc/devices | while read a b c; do echo $a; done)
+      [ -c /dev/vwd0 ] || mknod /dev/vwd0 c $MAJOR 0
+      echo 1 >/sys/devices/platform/pfe.0/vwd_fast_path_enable
+      babysit 30 cmm -F -f /etc/fastforward.config 2>&1 | logos cmm &
+    fi
+    ;;
+  stop)
+    if is-network-box && runnable cmm; then
+      pkillwait -x cmm
+      grep -q fci /proc/modules && rmmod fci
+    fi
+    ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac

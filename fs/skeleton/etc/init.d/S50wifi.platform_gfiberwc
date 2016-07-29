@@ -1,0 +1,51 @@
+#!/bin/sh
+. /etc/utils.sh
+
+get_random_mac() {
+  echo -n "AA"
+  randomdata 0 5 | hexdump -e '5/1 ":%02X"'
+}
+
+create_secondary_interface() {
+  local interface="$1"
+  local suffix="$2"
+  local phy=$(find_phy_for_interface "$interface")
+  local mac=$(get_random_mac)
+  interface="${interface}${suffix}"
+  if ! interface_exists $interface; then
+    iw phy "$phy" interface add "$interface" type managed
+    ip link set dev "$interface" address "$mac"
+  fi
+}
+
+case "$1" in
+  start)
+    mkdir -p /tmp/wifi/fingerprints
+    mkdir -p /tmp/wifi/wifiblaster
+    mkdir -p /tmp/wifi/wifiinfo
+    mkdir -p /tmp/stations
+    if is-network-box; then
+      for interface in wlan0 wlan1; do
+        if interface_exists $interface; then
+          create_secondary_interface $interface _portal
+        fi
+      done
+    fi
+    if runnable wifi_files; then
+      babysit 30 wifi_files 2>&1 | logos wifistatus &
+    fi
+    wifi -b 2.4 restore
+    ;;
+  stop)
+    wifi -b 2.4 stop
+    pkillwait -f wifi_files
+    rm -rf /tmp/stations
+    rm /tmp/wifisignal
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
