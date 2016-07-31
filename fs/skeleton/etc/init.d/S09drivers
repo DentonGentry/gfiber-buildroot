@@ -56,12 +56,27 @@ start()
   fi
 
   if is-ptp; then
+
     # Rename eth0 to craft0: This is the interface that the tech will connect to
     # when configuring the device. We want to keep this interface isolated from
     # customer traffic.
     # rename eth1 so it won't be put in the bridge automatically
     rename_net_device eth0 craft0
     rename_net_device eth1 sw0
+
+    if [ -f /etc/hw_ver ]; then
+      local CHIMERA_1_2A_HW_VER
+      CHIMERA_1_2A_HW_VER=2
+      hwver=$(hnvram -rq HW_VER)
+      if [ "$hwver" = "$CHIMERA_1_2A_HW_VER" ]; then
+        modprobe at24
+        modprobe tmp421
+        modprobe ltc2990
+
+        echo 24c02 0x50 >/sys/bus/i2c/devices/i2c-3/new_device
+        echo tmp423 0x4c >/sys/bus/i2c/devices/i2c-7/new_device
+      fi
+    fi
   fi
 
   if is-tv-box; then

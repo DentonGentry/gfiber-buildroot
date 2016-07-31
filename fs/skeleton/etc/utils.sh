@@ -273,3 +273,35 @@ platform_megs_ram() {
   n=$(grep MemTotal /proc/meminfo | sed -e 's/MemTotal: *//' -e 's/ kB$//')
   echo $((n / 1024))
 }
+
+# Determine whether I2C IO expanders are present based on platform and HW Ver.
+# returns 1 if IO expanders are present, 0 if not.
+has_i2c_expander() {
+  platform=$(cat /etc/platform)
+  if [ "$platform" = "GFCH100" ]; then
+    if [ -f /etc/hw_ver ]; then
+      local CHIMERA_1_2A_HW_VER
+      CHIMERA_1_2A_HW_VER=2
+      hwver=$(cat /etc/hw_ver)
+      if [ $hwver = $CHIMERA_1_2A_HW_VER ]; then
+        return 1
+      fi
+    fi
+  fi
+  return 0
+}
+
+num_sfp_ports() {
+  platform=$(cat /etc/platform)
+  if [ "$platform" = "GFCH100" ]; then
+    if [ -f /etc/hw_ver ]; then
+      local CHIMERA_1_2A_HW_VER
+      CHIMERA_1_2A_HW_VER=2
+      hwver=$(cat /etc/hw_ver)
+      if [ $hwver -ge $CHIMERA_1_2A_HW_VER ]; then
+        return 2
+      fi
+    fi
+  fi
+  return 1
+}
