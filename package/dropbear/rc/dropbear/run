@@ -1,0 +1,37 @@
+#!/bin/sh
+exec 2>&1
+
+# only run dropbear if /tmp/DEBUG or gflt110 reset (for RMA)
+if [ ! -e /tmp/DEBUG ] && [ ! -e /tmp/ADMINMODE_SSHD ]; then
+	exit 0
+fi
+
+# Make sure dropbear directory exists.
+#  /etc/dropbear links to /tmp/dropbear, which we can write to.
+if mkdir -p /config/dropbear; then
+	ln -sf /config/dropbear /tmp
+else
+	mkdir -p /tmp/dropbear
+fi
+
+# Check for the dropbear keys
+umask 077
+K1=/etc/dropbear/dropbear_rsa_host_key
+K2=/etc/dropbear/dropbear_dss_host_key
+
+# make keys in in parallel
+if ! dropbearkey -y -f $K1 >/dev/null 2>&1; then
+	[ -e "$K1" ] && echo "BUG: $K1 existed, but invalid!"
+	rm -f $K1
+	dropbearkey -t rsa -f $K1 &
+	newkey=1
+fi
+if ! dropbearkey -y -f $K2 >/dev/null 2>&1; then
+	[ -e "$K2" ] && echo "BUG: $K2 existed, but invalid!"
+	rm -f $K2
+	dropbearkey -t dss -f $K2 &
+	newkey=1
+fi
+wait
+
+exec dropbear -a -s -F -E -W 100000

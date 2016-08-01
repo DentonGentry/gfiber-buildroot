@@ -1,0 +1,2 @@
+#!/bin/sh
+grep -q fci /proc/modules && rmmod fci

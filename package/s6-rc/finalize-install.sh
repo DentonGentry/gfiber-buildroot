@@ -63,23 +63,43 @@ BUILDROOT_DIR="$(dirname "$0")/../.."
 
 # Auto-create a bundle containing all available (non-auto) services.
 (
-  cd "$STAGING_DIR/etc/s6-rc" &&
+  S="$STAGING_DIR/etc/s6-rc" &&
   echo "generating 'all' bundle..." >&2 &&
-  rm -rf auto &&
-  mkdir -p auto/all &&
-  echo bundle >auto/all/type &&
-  for d in source/*; do
+  rm -rf "$S/auto" &&
+  mkdir -p "$S/auto/all" &&
+  echo bundle >$S/auto/all/type &&
+  for d in $BUILDROOT_DIR/fs/rc/source/* $S/source/*; do
     if [ -e "$d/type" ]; then
       echo "$(basename "$d")"
     fi
-  done >"auto/all/contents" || die "failed to create 'all' bundle"
+  done >"$S/auto/all/contents" ||
+      die "failed to create 'all' bundle"
 ) &&
+
+# Auto-create "virtual" services for all init scripts in /etc/init.d.
+(
+  for d in $TARGET_DIR/etc/init.d/S*; do
+    endswith "$d" "~" && continue
+    echo "$(basename "$d")"
+  done | (
+    cd "$STAGING_DIR/etc/s6-rc" &&
+    echo "creating init.d virtual services..." >&2 &&
+    while read d; do
+      mkdir -p "auto/$d" &&
+      echo oneshot >"auto/$d/type" &&
+      printf "#!/usr/bin/execlineb\nwait-until-created /tmp/run/$d.init\n" \
+          >"auto/$d/up" &&
+      chmod a+x "auto/$d/up" || die "failed to create '$d' virtual service"
+    done
+  ) || die "failed to create virtual services"
+) || die "failed to initialize services"
 
 rm -rf "$TARGET_DIR/etc/s6-rc/compiled" &&
 mkdir -p "$TARGET_DIR/etc/s6-rc" &&
 mkdir -p "$STAGING_DIR/etc/s6-rc/source" &&
 "$HOST_DIR/usr/bin/s6-rc-compile" -v2 \
     "$TARGET_DIR/etc/s6-rc/compiled" \
+    "$BUILDROOT_DIR/fs/rc/source" \
     "$STAGING_DIR/etc/s6-rc/source" \
     "$STAGING_DIR/etc/s6-rc/autologs" \
     "$STAGING_DIR/etc/s6-rc/auto" ||
