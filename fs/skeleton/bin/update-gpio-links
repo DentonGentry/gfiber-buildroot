@@ -100,7 +100,7 @@ create_gpio_links()
   local m hwver real_hwver
 
   read real_platform </etc/platform
-  real_hwver=$(hnvram -r -q HW_VER 2>/dev/null)
+  read real_hwver </etc/hw_ver
 
   # allow override values for testing
   platform=${PLATFORM_FOR_TEST-$real_platform}

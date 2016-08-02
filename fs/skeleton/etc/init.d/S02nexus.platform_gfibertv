@@ -25,6 +25,9 @@ start()
 
   # Populate the hardware version
   HWVER=$(hnvram -qr HW_VER)
+  # Chimera yellow board does not set HW_VER, it should be 1.
+  [ "$PLATFORM" = "GFCH100" ] && [ -z "$HWVER" ] && HWVER=1
+
   [ -n "$HWVER" ] &&
   echo "$HWVER" >/etc/hw_ver &&
   chmod 444 /etc/hw_ver

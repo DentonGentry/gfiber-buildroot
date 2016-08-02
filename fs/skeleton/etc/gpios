@@ -28,6 +28,16 @@
 #   V1.2b + 85100      hnvram -w HW_VER=3
 #   V1.2b + 85110      hnvram -w HW_VER=4
 #
+# /etc/hw_ver is populated with the proper value on all board versions:
+# GFCH100 versions     /etc/hw_ver
+#   V1.0 proto (red)   0
+#   V1.0 evt (yellow)  1
+#   V1.2a + 85110      2
+#   V1.2b + 85100      3
+#   V1.2b + 85110      4
+#
+# This file is using the values as returned by /etc/hw_ver
+#
 # Examples:
 #
 # configure but don't change value
@@ -51,33 +61,33 @@
 
 #model[-hwver]   gpio name           act_low edge   direction/value
 GFCH100-0        6    tpm_int        1       rising -
-GFCH100-         6    3236_ready     0       rising -
-GFCH100-0?       7    mcu_gpio1      -       -      -
+GFCH100-1        6    3236_ready     0       rising -
+GFCH100-[01]     7    mcu_gpio1      -       -      -
 GFCH100-[234]    7    mcu_gpio2      0       -      low
 GFCH100          9    mcu_gpio3      -       -      -
 GFCH100-[234]    10   tpm_reset      0       -      out
-GFCH100-[034]?   11   1322_int       1       rising -
+GFCH100-[0134]   11   1322_int       1       rising -
 GFCH100-2        11   pwrseq_int     1       rising -
-GFCH100-0?       12   pcie0_reset    1       -      high
+GFCH100-[01]     12   pcie0_reset    1       -      high
 GFCH100-2        12   cpu_i2c_reset  1       -      high
 GFCH100-[34]     12   i2c_sfp_reset  1       -      out
-GFCH100-[034]?   13   3220_int       1       rising -
+GFCH100-[0134]   13   3220_int       1       rising -
 GFCH100-2        13   poe_good       -       -      -
-GFCH100-0?       14   k60_i2c_int    1       rising -
+GFCH100-[01]     14   k60_i2c_int    1       rising -
 GFCH100-[234]    14   i2c_exp_int    1       rising -
 GFCH100          15   k60_gpio       -       -      -
 GFCH100          16   85100_int      1       rising -
 GFCH100          17   1322_reset     1       -      high
 GFCH100          18   mcu_erase      0       -      low
-GFCH100-[034]?   19   2011_int       1       rising -
+GFCH100-[0134]   19   2011_int       1       rising -
 GFCH100-2        19   i2c_expb_int   1       rising -
 GFCH100          20   mcu_reset      1       -      high
-GFCH100-0?       29   3220_reset     1       -      high
+GFCH100-[01]     29   3220_reset     1       -      high
 GFCH100-2        29   led_red        0       -      low
 GFCH100-[34]     29   poe_good       -       -      -
-GFCH100-[02]?    30   led_activity   1       -      high
+GFCH100-[012]    30   led_activity   1       -      high
 GFCH100-[34]     30   3220_reset     1       -      out
-GFCH100-0?       31   led_red        1       -      low
+GFCH100-[01]     31   led_red        1       -      low
 GFCH100-2        31   io_expa_reset  1       -      high
 GFCH100-[34]     31   i2c_io_reset   1       -      out
 GFCH100          32   2011_reset     1       -      high
@@ -85,15 +95,15 @@ GFCH100-[234]    34   3236_ready     0       rising -
 GFCH100-2        35   3220_reset     1       -      out
 GFCH100-[34]     35   i2c_sw_reset   1       -      out
 GFCH100-2        36   io_expb_reset  1       -      high
-GFCH100-0?       37   sfp_mod_abs    -       -      -
+GFCH100-[01]     37   sfp_mod_abs    -       -      -
 GFCH100-[234]    37   factory_reset  -       -      -
-GFCH100-0?       38   sfp_tx_disable -       -      -
-GFCH100-0?       39   sfp_tx_fault   -       -      -
+GFCH100-[01]     38   sfp_tx_disable -       -      -
+GFCH100-[01]     39   sfp_tx_fault   -       -      -
 GFCH100-[34]     39   led_red        0       -      low
-GFCH100-0?       40   sfp_rx_los     -       -      -
-GFCH100-[234]?   43   k60_reset      0       -      low
+GFCH100-[01]     40   sfp_rx_los     -       -      -
+GFCH100-[1234]   43   k60_reset      0       -      low
 GFCH100-0        44   k60_reset      1       -      high
-GFCH100-[234]?   44   3236_reset     1       -      high
+GFCH100-[1234]   44   3236_reset     1       -      high
 GFCH100          45   k60_spi_ready  0       rising in
 GFCH100          46   k60_spi_int    1       rising -
 GFCH100          47   sd_reset       1       -      high
