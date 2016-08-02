@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# TODO(danielhira): Check HWVER to determine port number.
+# These ports correspond to any valid ports on the switch that we can query.
+# They can be a arbitrary, but valid, ports because we only want to verify that
+# we can retrieve the version number of the firmware on the PHYs. A sane return
+# value is interpreted as functioning hardware.
+PORT_NUMBER_1G=7
+
+# Counters for the number of tests ran, and number of failures encountered.
+num_checks=0
+num_failures=0
+
+# Concatenate all of the error messages into one string for printing at the end.
+failure_strings=""
+
+echo "Checking status of devices..."
+
+# Check the 1G PHY.
+phy_version="$(echo "fw-version $PORT_NUMBER_1G" | phytool 2>&1)"
+if [ "$?" -ne 0 ]; then
+  failure_strings=$failure_strings' 1G PHY test failed\n'
+  num_failures=$(( $num_failures+1 ))
+fi
+num_checks=$(( $num_checks+1 ))
+
+# Check the Prestera switch.
+cpss_command="$(echo "do show version" | cpss_cmd)"
+cpss_version="$(echo $cpss_command |
+              grep "CPSS version [0-9]\+\.[0-9]\+\.[0-9]\+" 2>&1)"
+if [ "$?" -ne 0 ]; then
+  failure_strings=$failure_strings' Switch test failed\n'
+  num_failures=$(( $num_failures+1 ))
+fi
+num_checks=$(( $num_checks+1 ))
+
+
+# TODO(danielhira): Add tests for: modem (via glaukus), 10G phy, xaui phy, k60,
+# and soc.
+
+
+# Print results
+tests_result_string=""
+if [ "$failure_strings" ]; then
+  tests_result_string="found $num_failures failures."
+else
+  tests_result_string="all tests passed."
+fi
+
+echo "Ran $num_checks tests, $tests_result_string"
+echo "$failure_strings"
