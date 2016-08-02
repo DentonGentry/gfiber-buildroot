@@ -19,13 +19,14 @@ OVERTEMP_FILE="$CONTROL_PATH/overtemperature"
 HDPAIRING_FILE="$CONTROL_PATH/hdd_bad_pair"
 HDMOUNT_FILE="$CONTROL_PATH/hdd_mount_err"
 BADBLOCK_FILE="$CONTROL_PATH/flash_bad_blocks"
+TPM_ERROR_FILE="$CONTROL_PATH/tpm_err"
 TUNER_FILE="$CONTROL_PATH/tuner_err"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 IP_FILE="$BASE_PATH/ipconnected"
 REGPOLL_FILE="$CONTROL_PATH/regpoll"
 BOOTED_FILE="$CONTROL_PATH/booted"
-TPM_FILE="$CONTROL_PATH/tpm_enroll"
+TPM_ENROLL_FILE="$CONTROL_PATH/tpm_enroll"
 GCD_REG_FILE="$CONTROL_PATH/gcd_registered"
 MONLOG_CREDS_FILE="$CONTROL_PATH/monlog_creds"
 PARAMS_FILE="$CONTROL_PATH/has_params"
@@ -110,6 +111,8 @@ while read f; do
     change_state HDMOUNT_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$BADBLOCK_FILE" ]; then
     change_state BADBLOCK "$HW_FAIL_LED_ON"
+  elif [ -f "$TPM_ERROR_FILE" ]; then
+    change_state TPM_ERROR "$HW_FAIL_LED_ON"
   elif [ -f "$TUNER_FILE" ]; then
     change_state TUNER_FAIL "$HW_FAIL_LED_ON"
   elif [ -f "$WAITPOWER_FILE" ]; then
@@ -124,7 +127,7 @@ while read f; do
     change_state BOOTING "$WAITING_LED_ON"
   elif [ ! -f "$UPDATE_CHECK_COMPLETE_FILE" ]; then
     change_state UPDATE_CHECK_FAILED "$NO_INTERNET_LED_ON"
-  elif [ ! -f "$TPM_FILE" ]; then
+  elif [ ! -f "$TPM_ENROLL_FILE" ]; then
     change_state TPM_NOTENROLLED "$NO_INTERNET_LED_ON"
   elif [ ! -f "$GCD_REG_FILE" ]; then
     change_state GCD_UNREGISTERED "$NO_INTERNET_LED_ON"
