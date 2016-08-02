@@ -60,7 +60,9 @@ case $appname in
     export PATH=$PWD:$PATH
     export sw_picture_decode=y
     chmod 755 /user/netflix/nrd
-    verify_drm_state
+    if ! has-secure-video-path; then
+      verify_drm_state
+    fi
     if verify_playready; then
       echo "Playready state verified."
     else
