@@ -8,7 +8,8 @@ create_switch_dev_symlink() {
   # Create a /dev/switch symlink to the PCI device for use in other programs/scripts
   # Currently use a fixed sysfs pci device path. If hardware changes such that this
   # path varies, could do a search based on vendor & device ID.
-  ln -sf "/sys/bus/pci/devices/0000:01:00.0" "/dev/switch"
+  rm -f "/dev/switch"
+  ln -s "/sys/bus/pci/devices/0000:01:00.0" "/dev/switch"
 }
 
 case "$1" in
