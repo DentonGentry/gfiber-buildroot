@@ -66,7 +66,8 @@ case "$1" in
         sleep 60
         smartctl -l selftest "$sata_blkdev"
       ) 2>&1 | logos smartctl &
-      hdparm -q -B255 "$sata_blkdev"  # disable power saving
+      # Disable power saving; not support by Seagate drive
+      hdparm -I "$sata_blkdev" | grep -q ST4000 || hdparm -q -B255 "$sata_blkdev"
       check_pairing
       echo "Mounting SATA device."
       if [ -e "$sata_blkdev"1 ]; then
