@@ -3,7 +3,7 @@
 # go_google_api
 #
 #############################################################
-GO_GOOGLE_API_VERSION = 9a9ac72c034413761ee433e6de44f5163626b7b8
+GO_GOOGLE_API_VERSION = 82700a6837e5a35e4399ae2a57f1bd702a022f46
 GO_GOOGLE_API_SITE = https://github.com/google/google-api-go-client
 GO_GOOGLE_API_SITE_METHOD = git
 GO_GOOGLE_API_DEPENDENCIES = host-golang
