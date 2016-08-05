@@ -24,6 +24,7 @@ TUNER_FILE="$CONTROL_PATH/tuner_err"
 WAITPOWER_FILE="$CONTROL_PATH/waitpower"
 LINK_DOWN_FILE="$BASE_PATH/link_down"
 IP_FILE="$BASE_PATH/ipconnected"
+REGERR_FILE="$CONTROL_PATH/reg_err"
 REGPOLL_FILE="$CONTROL_PATH/regpoll"
 BOOTED_FILE="$CONTROL_PATH/booted"
 TPM_ENROLL_FILE="$CONTROL_PATH/tpm_enroll"
@@ -121,6 +122,8 @@ while read f; do
     change_state LINKDOWN "$LINK_DOWN_LED_ON"
   elif [ ! -f "$IP_FILE" ]; then
     change_state NOIP "$NO_IP_LED_ON"
+  elif [ -f "$REGERR_FILE" ]; then
+    change_state REG_ERROR "$SW_FAIL_LED_ON"
   elif [ -f "$REGPOLL_FILE" ]; then
     change_state REG_POLL "$FASTWAIT_LED_ON"
   elif [ ! -f "$BOOTED_FILE" ]; then
