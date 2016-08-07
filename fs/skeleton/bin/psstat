@@ -255,7 +255,6 @@ while :; do
   # these can cause network activity, so /tmp/disable_pings is a way to
   # stop it if it's getting annoying or causing trouble.
   if [ ! -e /tmp/disable_pings ]; then
-    echo "gstatic: $(gstatics)"
     pings "ping:" "$gs_retval"
     pings6 "ping6:" "$gs_retval"
 
@@ -263,6 +262,7 @@ while :; do
       if is-network-box || is-storage-box; then
         extrapings "ping:" ""
         extrapings "ping6:" "6"
+        echo "gstatic: $(gstatics)"
       fi
       longping=0
     fi
