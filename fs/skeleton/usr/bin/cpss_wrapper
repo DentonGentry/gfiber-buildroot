@@ -99,6 +99,12 @@ port_sfp2=0/26
 src_modem=${port_modem##0/}
 src_sfp=${port_sfp##0/}
 
+# There are 6128 available buffers, each buffer is 256 bytes.
+# Increasing buffers allocated to modem port as this is where
+# congestion is likely to occur.
+port_modem_buffers=4000
+port_modem_tc_buffers=$(($port_modem_buffers/8))
+
 pci="/dev/switch"
 
 ready=/tmp/cpss_ready
@@ -335,12 +341,6 @@ EOF
           vlan-mac learning
         exit
         mac address-table aging-mode auto-removal device 0
-        qos map vpt-queue device all queue-id 4 vpt 0,1,5
-        qos map vpt-queue device all queue-id 5 vpt 2
-        qos map vpt-queue device all queue-id 6 vpt 3,4
-        qos map vpt-queue device all queue-id 7 vpt 6
-        qos map vpt-queue device all queue-id 8 vpt 7
-        qos wrr-queue bandwidth device 0 weight 0,0,0,1,30,60,10,sp
         $(for n in $(vlan_ranges); do
             echo interface range vlan device 0 vid $n
             echo   jumbo-frame 9100
@@ -348,10 +348,35 @@ EOF
           done
         )
       end
+EOF
+    # QOS scheduling related configuration.
+    cpss_cmd -f <<EOF || die "QOS scheduling config failed"
+      configure
+        qos map vpt-queue device all queue-id 4 vpt 0,1,5
+        qos map vpt-queue device all queue-id 5 vpt 2
+        qos map vpt-queue device all queue-id 6 vpt 3,4
+        qos map vpt-queue device all queue-id 7 vpt 6
+        qos map vpt-queue device all queue-id 8 vpt 7
+        qos wrr-queue bandwidth device 0 weight 0,0,0,1,30,60,10,sp
+        interface range ethernet all
+          qos default-up 0
+        exit
+      end
+EOF
+    # QOS buffer management related configuration.
+    cpss_cmd -f <<EOF || die "QOS buffer managment config failed"
       cpss-api call cpssDxChPortTxTailDropUcEnableSet devNum 0 enable true
       cpss-api call cpssDxChPortTxBufferTailDropEnableSet devNum 0 enable true
-      cpss-api call cpssDxChPortTxTailDropProfileSet devNum 0 profileSet CPSS_PORT_TX_DROP_PROFILE_1_E enableSharing false portMaxBuffLimit 500 portMaxDescrLimit 500
-      cpss-api call cpssDxChPortTxBindPortToDpSet devNum 0 portNum 24 profileSet CPSS_PORT_TX_DROP_PROFILE_1_E
+      cpss-api call cpssDxChPortTxBindPortToDpSet devNum 0 portNum $src_modem profileSet CPSS_PORT_TX_DROP_PROFILE_1_E
+      configure
+        interface ethernet $port_modem
+          tail-drop buffer-limit $port_modem_buffers
+          tail-drop packet-limit $port_modem_buffers
+          tail-drop-queue queue all dp all buffer-limit $port_modem_tc_buffers
+          tail-drop-queue queue all dp all packet-limit $port_modem_tc_buffers
+        end
+      end
+    end
 EOF
   fi
   cpss_cmd -f </tmp/cpss_config || die "config failed"
