@@ -1,11 +1,39 @@
 #!/bin/sh
 
-sleep 30
+# Make sure link is up for at least 30 seconds.
+wait_for_link_up() {
+  DOWN=true
+  while [ "$DOWN" = "true" ]; do
+    LINK_STATE=$(cat /sys/class/net/lan0/operstate)
+    if [ "$LINK_STATE" = "up" ]; then
+      DOWN=false
+      for N in $(seq 1 30); do
+        sleep 1
+        LINK_STATE=$(cat /sys/class/net/lan0/operstate)
+        if [ "$LINK_STATE" = "down" ]; then
+          DOWN=true
+          break
+        fi
+      done
+    else
+      sleep 1
+    fi
+  done
+}
 
-TX_PACKETS=$(cat /sys/class/net/lan0/statistics/tx_packets)
-echo "lan0: TX packets = ${TX_PACKETS}" > /dev/kmsg
+# Tx_packets is always 0 if link was never up.
+# Reboot if no TX packet after link is up for 30 seconds;
+# assume ethernet controller is stuck.
+reboot_if_no_tx() {
+  TX_PACKETS=$(cat /sys/class/net/lan0/statistics/tx_packets)
+  echo "lan0: TX packets = ${TX_PACKETS}" > /dev/kmsg
 
-if [ "${TX_PACKETS}" = "0" ]; then
-  echo "lan0: TX broken, reboot to recover" > /dev/kmsg
-  reboot
-fi
+  if [ "${TX_PACKETS}" = "0" ]; then
+    echo "lan0: TX broken, reboot to recover" > /dev/kmsg
+    reboot
+  fi
+}
+
+wait_for_link_up
+
+reboot_if_no_tx
