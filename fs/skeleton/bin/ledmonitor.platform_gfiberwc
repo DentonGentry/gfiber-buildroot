@@ -53,10 +53,6 @@ does_interface_exist() {
   [ -e "/sys/class/net/$1" ]
 }
 
-is_interface_up() {
-  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
-}
-
 has_ip_address() {
   [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
     [ -n "$(ip -f inet addr show dev $1 scope global)" ]
@@ -67,10 +63,10 @@ is_link_up() {
   # Otherwise for TV Boxes, check MoCA and Ethernet
   # and for Storage Boxes check only Ethernet
   if does_interface_exist wan0; then
-    is_interface_up wan0
+    is-interface-up wan0
     return $?
   fi
-  is_interface_up eth1
+  is-interface-up eth1
 }
 
 watch-dir $CONTROL_PATH |

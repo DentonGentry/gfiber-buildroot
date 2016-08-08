@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Returns 0 (true) if the provided interface is "up".
+#
+if [ -z "$1" ]; then
+  echo "Usage: $0 interface" >&2
+  exit 1
+fi
+
+if [ ! -e "/sys/class/net/$1" ]; then
+  exit 1
+fi
+
+# Overrides for test.
+#  interface_name=up|down semicolon separated.
+#  Example: IIU_TEST_OVERRIDE="wan0=up;br0=down"
+if [ ! -z "${IIU_TEST_OVERRIDE}" ]; then
+  while [ "${IIU_TEST_OVERRIDE}" ]; do
+    segment=${IIU_TEST_OVERRIDE%%;*}
+    if [ "$segment" = "$1=up" ]; then
+      exit 0
+    elif [ "$segment" = "$1=down" ]; then
+      exit 1
+    fi
+
+    if [ "$IIU_TEST_OVERRIDE" = "$segment" ]; then
+        IIU_TEST_OVERRIDE=
+    else
+        IIU_TEST_OVERRIDE="${IIU_TEST_OVERRIDE#*;}"
+    fi
+  done
+fi
+
+ip link show dev "$1" | grep -q LOWER_UP
+

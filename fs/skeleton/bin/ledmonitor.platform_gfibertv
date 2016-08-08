@@ -29,10 +29,6 @@ change_state() {
   fi
 }
 
-is_interface_up() {
-  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
-}
-
 has_ip_address() {
   [ -n "$(ip -f inet6 addr show dev $1 scope global 2>/dev/null)" ] ||
     [ -n "$(ip -f inet addr show dev $1 scope global 2>/dev/null)" ]
@@ -41,20 +37,20 @@ has_ip_address() {
 is_link_up() {
   if interface_exists wan0; then
     # If there is an explicit WAN link, use that.
-    is_interface_up wan0
+    is-interface-up wan0
   elif is-tv-box; then
     # Otherwise for TV Boxes, any interface could be upstream.
-    is_interface_up eth0 ||
-    is_interface_up eth1 ||
-    is_interface_up moca0 ||
-    is_interface_up wcli0 ||
-    is_interface_up wcli1
+    is-interface-up eth0 ||
+    is-interface-up eth1 ||
+    is-interface-up moca0 ||
+    is-interface-up wcli0 ||
+    is-interface-up wcli1
   elif is-storage-box; then
     # For storage boxes (the ones that don't have a wan0), the MoCA
     # link should never be upstream, so count only the ethernet.
-    is_interface_up eth0
+    is-interface-up eth0
   elif is-ptp; then
-    is_interface_up sw0.inband
+    is-interface-up sw0.inband
   else
     echo "Unknown device type; assuming link is down." >&2
     false

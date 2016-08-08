@@ -11,7 +11,7 @@ case "$1" in
       suitable=0
     fi
     if [ $suitable -eq 0 ] && runnable dhcp-rogue && interface_exists br0; then
-      babysit 60 sh -c "sleep 300; while [ 1 ]; do dhcp-rogue -i br0; sleep 900; done" | logos dhcprogue &
+      babysit 60 run-dhcp-rogue | logos dhcprogue &
     fi
     ;;
   stop)

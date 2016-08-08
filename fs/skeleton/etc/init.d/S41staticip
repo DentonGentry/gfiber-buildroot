@@ -1,10 +1,18 @@
 #!/bin/sh
+STATIC_PATH=/config/ip/static
+DYNAMIC_PATH=/tmp/ip/dynamic
+
 case "$1" in
   start)
-    mkdir -p /config/staticip
-    for f in /config/staticip/*; do
-      [ -e $f ] && . $f
-    done
+    mkdir -p $STATIC_PATH
+    mkdir -p $DYNAMIC_PATH
+
+    # Collect all of the interface names.
+    # This variable may contain duplicates.
+    # ipapply will unique-ify and run once for each interface.
+    interfaces="$(ls -A $STATIC_PATH) $(ls -A $DYNAMIC_PATH)"
+
+    ipapply $interfaces
     ;;
   stop)
     ;;

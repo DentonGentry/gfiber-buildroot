@@ -71,7 +71,7 @@ options attempts:3
 merge_resolv_conf() {
     local confs=""
 
-    if [ -e "/tmp/resolv.conf.dhclient" ] ; then
+    if [ -e "/tmp/resolv.conf.dhclient" ]; then
         confs="$confs /tmp/resolv.conf.dhclient"
     fi
 
@@ -79,10 +79,10 @@ merge_resolv_conf() {
         confs="$confs /tmp/resolv.conf.dhclient6"
     fi
 
-    if [ -n "$confs" ] ; then
+    if [ -n "$confs" ]; then
         atomic /tmp/resolv.conf.external "$(cat $confs)"
         log_file_contents /tmp/resolv.conf.external
-        if [ -e "/config/allowdns" ] ; then
+        if [ -e "/config/allowdns" ]; then
             ln -sf /tmp/resolv.conf.external /tmp/resolv.conf
         else
             atomic /tmp/resolv.conf "$internal_resolv_conf"
@@ -116,7 +116,7 @@ make_resolv_conf() {
       done
     )"
     merge_resolv_conf
-  elif [ -n "$new_dhcp6_name_servers" ] ; then
+  elif [ -n "$new_dhcp6_name_servers" ]; then
     atomic /tmp/resolv.conf.dhclient6 "$(
       if [ -n "$new_dhcp6_domain_search" ]; then
         echo search $new_dhcp6_domain_search
@@ -186,6 +186,25 @@ write_ntp_conf_new()
   fname=$1
   atomic "$fname" "$new_ntp_servers"
   log_file_contents "$fname"
+}
+
+# Write a JSON encoded blob containing the data needed
+# to configure ipv4 on the interface.
+make_v4_dynamic_config() {
+  atomic "/tmp/ip/dynamic/$interface" "$(
+    echo "{ \"$interface\": {"
+    echo "  \"ip\": [ {"
+    [ -n "${new_ip_address}" ] && \
+        echo "    \"new_ip_address\": \"$new_ip_address\","
+    [ -n "${new_subnet_mask}" ] && \
+        echo "    \"new_subnet_mask\": \"$new_subnet_mask\","
+    [ -n "$new_interface_mtu" ] && \
+        echo "    \"new_interface_mtu\": \"$new_interface_mtu\","
+    [ -n "$new_routers" ] && echo "    \"new_routers\": \"$new_routers\","
+    echo "    \"stuffing\": \"filling\" } ],"
+    echo "  \"dynamic_pid\": $PPID"
+    echo "} }"
+  )"
 }
 
 ip6_prefix_to_addr() {
@@ -324,10 +343,6 @@ if [ x$reason = xMEDIUM ]; then
 fi
 
 if [ x$reason = xPREINIT ]; then
-  if [ x$alias_ip_address != x ]; then
-    # Bring down alias interface. Its routes will disappear too.
-    $ip -4 addr flush dev ${interface} label ${interface}:0
-  fi
   $ip link set dev ${interface} up
 
   # We need to give the kernel some time to get the interface up.
@@ -343,50 +358,34 @@ fi
 if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
    [ x$reason = xREBIND ] || [ x$reason = xREBOOT ]; then
 
-  if [ x$old_ip_address != x ] && [ x$alias_ip_address != x ] && \
-                [ x$alias_ip_address != x$old_ip_address ]; then
-    # Possible new alias. Remove old alias.
-    $ip -4 addr flush dev ${interface} label ${interface}:0
-  fi
-  if [ x$old_ip_address != x ] && [ x$old_ip_address != x$new_ip_address ]; then
-    # IP address changed. Bringing down the interface will delete all routes,
-    # and clear the ARP cache.
-    $ip -4 addr flush dev ${interface} label ${interface}
-
-  fi
   if [ x$old_ip_address = x ] || [ x$old_ip_address != x$new_ip_address ] || \
      [ x$reason = xBOUND ] || [ x$reason = xREBOOT ]; then
 
-    $ip -4 addr add ${new_ip_address}${new_mask} ${new_broadcast_arg} \
-                dev ${interface} label ${interface} 2>/dev/null
+    make_v4_dynamic_config
+
     addr_added=1
-    if [ -n "$new_interface_mtu" ]; then
-      # set MTU
-      $ip link set dev ${interface} mtu ${new_interface_mtu}
-    fi
+  fi
+
+  ipapply ${interface}
+
+  if [ "$addr_added" = 1 ]; then
     # Add a network route to the computed network address.
     if routable_ifc; then
-      if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ] ; then
+      if [ x$new_routers != x ] && [ x$new_routers != x$old_routers ]; then
          # if we've changed routers delete the old and add the new.
         for router in $old_routers; do
           $ip -4 route del via $router
         done
       fi
       for router in $new_routers; do
-        if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
+        if [ "x$new_subnet_mask" = "x255.255.255.255" ]; then
           $ip -4 route add ${router} dev $interface
         fi
-        echo "$router" >"$CONMAN_DIR/gateway.$interface"
+        # ipapply will handle the normal router case.
       done
     fi
   fi
-  if [ x$new_ip_address != x$alias_ip_address ] && [ x$alias_ip_address != x ];
-   then
-    $ip -4 addr flush dev ${interface} label ${interface}:0
-    $ip -4 addr add ${alias_ip_address}${alias_mask} \
-        dev ${interface} label ${interface}:0
-    $ip -4 route add ${alias_ip_address} dev ${interface}
-  fi
+
   make_resolv_conf
   make_cwmp_files
   make_etc_hosts
@@ -396,52 +395,14 @@ fi
 
 if [ x$reason = xFAIL ] || [ x$reason = xRELEASE ] \
    || [ x$reason = xSTOP ] || [ x$reason = xEXPIRE ]; then
-  if [ x$alias_ip_address != x ]; then
-    # Turn off alias interface.
-    $ip -4 addr flush dev ${interface} label ${interface}:0
-  fi
-  if [ x$old_ip_address != x ]; then
-    # Shut down interface, which will delete routes and clear arp cache.
-    $ip -4 addr flush dev ${interface} label ${interface}
-  fi
-  if [ x$alias_ip_address != x ]; then
-    $ip -4 addr add ${alias_ip_address}${alias_network_arg} \
-        dev ${interface} label ${interface}:0
-    $ip -4 route add ${alias_ip_address} dev ${interface}
-  fi
+  rm -f "/tmp/ip/dynamic/${interface}"
+  ipapply "${interface}"
   exit_with_hooks 0
 fi
 
 if [ x$reason = xTIMEOUT ]; then
-  if [ x$alias_ip_address != x ]; then
-    $ip -4 addr flush dev ${interface} label ${interface}:0
-  fi
-  $ip -4 addr add ${new_ip_address}${new_mask} ${new_broadcast_arg} \
-            dev ${interface} label ${interface}
-  if [ -n "$new_interface_mtu" ]; then
-    # set MTU
-    ip link set dev ${interface} mtu ${new_interface_mtu}
-  fi
-  set $new_routers
-  if routable_ifc && ping -q -c 1 $1; then
-    if [ x$new_ip_address != x$alias_ip_address ] && \
-                        [ x$alias_ip_address != x ]; then
-      $ip -4 addr add ${alias_ip_address}${alias_mask} \
-            dev ${interface} label ${interface}:0
-      $ip -4 route add ${alias_ip_address} dev ${interface}
-    fi
-    for router in $new_routers; do
-      if [ "x$new_subnet_mask" = "x255.255.255.255" ] ; then
-        $ip -4 route add ${router} dev $interface
-      fi
-      echo "$router" >"$CONMAN_DIR/gateway.$interface"
-    done
-    make_resolv_conf
-    make_cwmp_files
-    make_etc_hosts
-    exit_with_hooks 0
-  fi
-  $ip -4 addr flush dev ${interface}
+  rm -f "/tmp/ip/dynamic/${interface}"
+  ifapply "${interface}"
   exit_with_hooks 1
 fi
 
@@ -449,7 +410,7 @@ fi
 ### DHCPv6 Handlers
 ###
 
-if [ x$reason = xPREINIT6 ] ; then
+if [ x$reason = xPREINIT6 ]; then
   # Ensure interface is up.
   $ip link set ${interface} up
 
@@ -459,14 +420,14 @@ if [ x$reason = xPREINIT6 ] ; then
   exit_with_hooks 0
 fi
 
-if [ x${old_ip6_prefix} != x ] || [ x${new_ip6_prefix} != x ] ; then
+if [ x${old_ip6_prefix} != x ] || [ x${new_ip6_prefix} != x ]; then
     echo Prefix ${reason} old=${old_ip6_prefix} new=${new_ip6_prefix}
 
     exit_with_hooks 0
 fi
 
-if [ x$reason = xBOUND6 ] ; then
-  if [ x${new_ip6_address} = x ] || [ x${new_ip6_prefixlen} = x ] ; then
+if [ x$reason = xBOUND6 ]; then
+  if [ x${new_ip6_address} = x ] || [ x${new_ip6_prefixlen} = x ]; then
     exit_with_hooks 2;
   fi
 
@@ -485,7 +446,7 @@ has_new_ip6_address() {
   [ -n "$output" ]
 }
 
-if [ x$reason = xRENEW6 ] || [ x$reason = xREBIND6 ] ; then
+if [ x$reason = xRENEW6 ] || [ x$reason = xREBIND6 ]; then
   # Part of the DHCPv6 spec says that a RENEW6 can send a new and
   # different address.
   if [ -n "${new_ip6_address}" ] && [ "${new_max_life}" != 0 ] && \
@@ -502,24 +463,24 @@ if [ x$reason = xRENEW6 ] || [ x$reason = xREBIND6 ] ; then
 
   # Nameservers/domains/etc.
   if [ "x${new_dhcp6_name_servers}" != "x${old_dhcp6_name_servers}" ] ||
-     [ "x${new_dhcp6_domain_search}" != "x${old_dhcp6_domain_search}" ] ; then
+     [ "x${new_dhcp6_domain_search}" != "x${old_dhcp6_domain_search}" ]; then
     make_resolv_conf
   fi
 
   if [ "x${new_cwmp_acs_url}" != "x${old_cwmp_acs_url}" ] ||
      [ "x${new_cwmp_provisioning_code}" != "x${old_cwmp_provisioning_code}" ] ||
      [ "x${new_cwmp_retry_minimum_wait_interval}" != "x${old_cwmp_retry_minimum_wait_interval}" ] ||
-     [ "x${new_cwmp_retry_interval_multiplier}" != "x${old_cwmp_retry_interval_multiplier}" ] ; then
+     [ "x${new_cwmp_retry_interval_multiplier}" != "x${old_cwmp_retry_interval_multiplier}" ]; then
     make_cwmp_files
   fi
 
   exit_with_hooks 0
 fi
 
-if [ x$reason = xDEPREF6 ] ; then
+if [ x$reason = xDEPREF6 ]; then
   # If cur_ip_prefixlen is not set then call exit_with_hooks with 2
   # to indicate an error.
-  if [ x${cur_ip6_prefixlen} = x ] ; then
+  if [ x${cur_ip6_prefixlen} = x ]; then
     exit_with_hooks 2;
   fi
 
@@ -539,8 +500,8 @@ if [ x$reason = xDEPREF6 ] ; then
   exit_with_hooks 0
 fi
 
-if [ x$reason = xRELEASE6 -o x$reason = xSTOP6 -o x$reason = xEXPIRE6 ] ; then
-  if [ x${old_ip6_address} = x ] || [ x${old_ip6_prefixlen} = x ] ; then
+if [ x$reason = xRELEASE6 -o x$reason = xSTOP6 -o x$reason = xEXPIRE6 ]; then
+  if [ x${old_ip6_address} = x ] || [ x${old_ip6_prefixlen} = x ]; then
     exit_with_hooks 2;
   fi
 

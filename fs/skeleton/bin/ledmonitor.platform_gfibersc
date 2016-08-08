@@ -69,10 +69,6 @@ does_interface_exist() {
   [ -e "/sys/class/net/$1" ]
 }
 
-is_interface_up() {
-  [ -n "$(ip link show $1 2>/dev/null | grep LOWER_UP)" ]
-}
-
 has_ip_address() {
   # FIXME TODO(efirst): The line below is commented out until we support IPv6.
   # [ -n "$(ip -f inet6 addr show dev $1 scope global)" ] ||
@@ -80,7 +76,7 @@ has_ip_address() {
 }
 
 is_link_up() {
-  is_interface_up "$IFNAME"
+  is-interface-up "$IFNAME"
 }
 
 watch-dir $CONTROL_PATH |

@@ -12,6 +12,8 @@ elif is-spacecast; then
 elif is-network-box; then
   INTERFACES="wan0"
   APIMODE="--api-mode=iff"
+  # Initialize to the down state.
+  /etc/ifplugd/ifplugd.action wan0 down
 elif is-wireless-client; then
   INTERFACES="eth0 wcli0 wcli1"
   APIMODE="--api-mode=iff"
@@ -22,7 +24,7 @@ start()
 {
   for IFNAME in $INTERFACES; do
     if interface_exists $IFNAME; then
-      babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -p -q -d0 2>&1 | logos "ifplugd-$IFNAME" &
+      babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -q -d0 2>&1 | logos "ifplugd-$IFNAME" &
     fi
   done
 }

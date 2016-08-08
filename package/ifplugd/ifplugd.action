@@ -9,7 +9,6 @@ action="$2"
 
 CONMAN_STATUS_DIR=/tmp/conman/interfaces
 
-
 case "$action" in
   up)
     if [ "$iface" = pon0 ]; then
@@ -23,13 +22,19 @@ case "$action" in
     fi
     if [ "$iface" = wan0 ]; then
       # Network Box
+      # Start dhclient on the wan interfaces.
       run-dhclient "$iface"
       if interface_exists wan0.2; then
         run-dhclient wan0.2
       fi
+
+      if [ -e "/sys/class/net/br0" ]; then
+        # Bridge mode might require br0 to switch address config.
+        ipapply br0
+      fi
     fi
     if is-wireless-client; then
-      echo 1 > "$CONMAN_STATUS_DIR/$iface"
+      echo 1 >"$CONMAN_STATUS_DIR/$iface"
 
       if [ "$iface" = eth0 ] || [ "$iface" = moca0 ]; then
         run-dhclient br0
@@ -39,14 +44,28 @@ case "$action" in
         run-dhclient "$iface"
       fi
     fi
+
+    # Update ipv4 address on $iface
+    ipapply "$iface"
+    QUIET=1 restart dnsmasq
     ;;
   down)
     if [ "$iface" = pon0 ]; then
       ethtool -r eth0
     fi
     if is-wireless-client; then
-      echo 0 > "$CONMAN_STATUS_DIR/$iface"
+      echo 0 >"$CONMAN_STATUS_DIR/$iface"
     fi
+    if [ "$iface" = "wan0" -a -e /sys/class/net/br0 ]; then
+      # Run dhclient for bridge mode, ipapply will select the
+      # appropriate configuration (static vs dynamic).
+      run-dhclient br0
+      ipapply br0
+    fi
+
+    # Update ipv4 address on $iface
+    ipapply "$iface"
+    QUIET=1 restart dnsmasq
     ;;
   *)
     echo "$0: unknown action '$action'"
