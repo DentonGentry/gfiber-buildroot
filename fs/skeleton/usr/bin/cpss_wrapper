@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 . /etc/utils.sh
 
@@ -12,6 +12,9 @@ register_experiment CpssNoInit
 register_experiment Cpss10GOnly
 
 cpss_bin="cpss.gomain"
+
+# Switch configuration written to this file and then loaded into switch.
+CPSS_CONFIG="/tmp/cpss_config"
 
 die()
 {
@@ -90,6 +93,8 @@ port_poe=0/0
 port_soc=0/4
 port_modem=0/24
 port_sfp=0/25
+# 2nd SFP port available only on 1.2 boards
+port_sfp2=0/26
 
 src_modem=${port_modem##0/}
 src_sfp=${port_sfp##0/}
@@ -243,10 +248,12 @@ EOF
     end
 EOF
 
+  rm -rf $CPSS_CONFIG
+
   if experiment Cpss10GOnly; then
     echo "$0: experiment Cpss10GOnly is enabled, skipping vlans." >&2
     # configure just the 10G path
-    cpss_cmd -f <<EOF || die "config failed"
+    cat >> $CPSS_CONFIG <<EOF
       config
         interface range ethernet $port_modem,$port_sfp
           speed 10000 mode SR_LR
@@ -256,7 +263,7 @@ EOF
 
   else
     # configure ports, vlans
-    cpss_cmd -f <<EOF || die "config failed"
+    cat >> $CPSS_CONFIG <<EOF
       cpss-api call cpssDxChBrgVlanRemoveVlanTag1IfZeroModeSet devNum 0 mode CPSS_DXCH_BRG_VLAN_REMOVE_TAG1_IF_ZERO_E
       cpss-api call cpssDxChBrgVlanRangeSet devNum 0 vidRange 4095
       config
@@ -307,6 +314,23 @@ EOF
           switchport pvid $vlan_untagged
           no shutdown
         exit
+EOF
+    num_sfp_ports
+    num_sfps=$?
+    if [ $num_sfps -eq 2 ]; then
+      cat >> $CPSS_CONFIG <<EOF
+        interface ethernet $port_sfp2
+          speed 10000 mode SR_LR
+          jumbo-frame 9100
+          qos trust vpt
+          $(generate_vlan_allow_lines $vlan_peer $vlan_ooband $vlan_untagged)
+          switchport allowed vlan add $vlan_untagged untagged
+          switchport pvid $vlan_untagged
+          no shutdown
+          exit
+EOF
+    fi
+    cat >> $CPSS_CONFIG <<EOF
         interface vlan device all vid $vlan_inband
           vlan-mac learning
         exit
@@ -330,6 +354,7 @@ EOF
       cpss-api call cpssDxChPortTxBindPortToDpSet devNum 0 portNum 24 profileSet CPSS_PORT_TX_DROP_PROFILE_1_E
 EOF
   fi
+  cpss_cmd -f </tmp/cpss_config || die "config failed"
 fi
 
 # touch ready-file to let cpss_cmd know
