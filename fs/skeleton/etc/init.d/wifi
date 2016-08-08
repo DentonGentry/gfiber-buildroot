@@ -53,6 +53,7 @@ case "$1" in
       babysit 30 quantenna-status 2>&1 | logos quantenna-status &
     fi
     wifi restore
+    exit 0
     ;;
   stop)
     wifi stop

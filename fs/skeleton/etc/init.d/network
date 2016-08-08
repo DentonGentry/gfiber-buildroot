@@ -386,7 +386,7 @@ case "$1" in
       if [ -n "$lan_port" ]; then
         ifup $lan_port
       fi
-      exit
+      exit 0
     fi
 
     if is-moca-present; then
@@ -575,7 +575,7 @@ case "$1" in
         if [ -n "$lan_port" ]; then
           ifdown $lan_port
         fi
-        exit
+        exit 0
       fi
 
       if is-spacecast; then
@@ -594,6 +594,7 @@ case "$1" in
         pkillwait mocad
       fi
     fi
+    exit 0
     ;;
   restart|reload)
     "$0" stop
