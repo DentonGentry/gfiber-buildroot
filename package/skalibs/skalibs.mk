@@ -8,12 +8,14 @@ HOST_SKALIBS_DEPENDENCIES =
 SKALIBS_CONFIGURE_OPTS = \
 	--prefix=/usr \
 	--enable-force-devr \
+	--enable-clock --enable-monotonic \
 	--with-default-path=/sbin:/usr/sbin:/bin:/usr/bin \
 	--disable-static --enable-shared --disable-allstatic
 
 HOST_SKALIBS_CONFIGURE_OPTS = \
 	--prefix=/usr \
 	--enable-force-devr \
+	--enable-clock --enable-monotonic \
 	--with-default-path=/sbin:/usr/sbin:/bin:/usr/bin
 
 define SKALIBS_CONFIGURE_CMDS
