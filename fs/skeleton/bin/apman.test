@@ -7,6 +7,13 @@ PATH=$PATH:.
 
 . /etc/utils.sh
 
+runnable mktemp &&
+tmpdir="$(mktemp -d ipapplyXXXXXXXXXX)" ||
+tmpdir="/tmp/ipapply.$$"
+tmpbindir="$tmpdir/test_bin"
+mkdir -p "$tmpdir" && echo "using temp dir $tmpdir"
+mkdir "$tmpbindir"
+
 hostapd_running() {
   pgrep -f '^hostapd .* /tmp/hostapd.conf.wlan.*' >/dev/null
 }
@@ -40,12 +47,13 @@ hostapd_wait_check_running() {
   fi
 }
 
-wait_route_created() {
-  local interface="$1"
-  local gateway="$2"
+wait_route_changed() {
+  local operation="$1"
+  local route="$2"
+  local interface="$3"
 
-  for x in $(seq 20); do
-    if grep "default" | grep "dev $interface" | grep "via $gateway"; then
+  for x in $(seq 50); do
+    if grep "$operation $route" "$ip_out" | grep "dev $interface"; then
       return 0
     fi
     sleep 0.1
@@ -55,11 +63,24 @@ wait_route_created() {
 }
 
 
+ip_out="$tmpdir/ip.out"
+cat >"$tmpbindir/ip" <<-EOF
+	#!/bin/sh
+	echo test_bin/ip \$@ >>$ip_out
+	if [ "x\$3" = "xshow" -a -e $tmpdir/ip_route_show ]; then
+	  cat $tmpdir/ip_route_show
+	fi
+	exit 0
+EOF
+chmod 777 "$tmpbindir/ip"
+PATH="$tmpbindir:$PATH"
+
+
 echo "Setting up"
 wifi stop
 pkill "apman$"
-rm /config/conman/command*
-rm /config/conman/access_point*
+rm -f /config/conman/command*
+rm -f /config/conman/access_point*
 # Creating wlan0_apmantest sometimes fails if we don't reset wlan0.
 wlan0mac=$(cat /sys/class/net/wlan0/address)
 mac=$(mac_addr_increment $wlan0mac 100)
@@ -70,8 +91,10 @@ WVPASS ip link set dev wlan0 address "$wlan0mac"
 WVPASS iw phy phy0 interface add wlan0_apmantest type __ap
 WVPASS ip link set dev wlan0_apmantest address "$mac"
 
-WVSTART "apman"
+# Start apman.
 apman&
+
+WVSTART "access points"
 WVFAIL hostapd_running
 
 touch /config/conman/access_point.5
@@ -96,14 +119,27 @@ hostapd_wait_check_running false
 echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /config/conman/command._apmantest.2.4
 hostapd_wait_check_running true
 
+WVSTART "route management"
+echo "192.168.1.1" > /tmp/conman/gateway.wlan0_apmantest
+echo "192.168.1.0/24" > /tmp/conman/subnet.wlan0_apmantest
+WVPASS wait_route_changed "add" "default via 192.168.1.1" "wlan0_apmantest"
+WVPASS wait_route_changed "add" "192.168.1.0/24" "wlan0_apmantest"
+
+echo "default via 192.168.1.1 dev wlan0_apmantest" > $tmpdir/ip_route_show
+echo "192.168.1.0/24 dev wlan0_apmantest" >> $tmpdir/ip_route_show
+
+echo "192.168.1.0/16" > /tmp/conman/subnet.wlan0_apmantest
+WVPASS wait_route_changed "del" "default" "wlan0_apmantest"
+WVPASS wait_route_changed "add" "default via 192.168.1.1" "wlan0_apmantest"
+WVPASS wait_route_changed "del" "192.168.1.0/24" "wlan0_apmantest"
+WVPASS wait_route_changed "add" "192.168.1.0/16" "wlan0_apmantest"
+
 
 echo "Cleaning up"
 WVPASS iw dev wlan0_apmantest del
 pkill "apman$"
 wifi off
-rm /config/conman/command*
-rm /config/conman/access_point*
+rm -f /config/conman/command*
+rm -f /config/conman/access_point*
 rm -f /tmp/conman/gateway.br0
-if [ -n "$original_br0_route" ]; then
-  echo "$original_br0_route" | xargs ip route add
-fi
+rm -rf $tmpdir

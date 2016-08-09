@@ -134,16 +134,22 @@ def IpAddrDel(iface_name, ip):
   subprocess.check_call(['ip', 'addr', 'del', ip, 'dev', iface_name])
 
 
-def DefaultRouteAdd(iface_name, routers):
+def RouteAdd(iface_name, routers=None, subnet=None):
   """Set a default route via this interface through apman."""
   # apman supports only a single route, and installs it as 'default'.
   # arbitrarily select the first route if multiple provided.
-  path = os.path.join(TMP_CONMAN_DIR, 'gateway.%s' % iface_name)
+  subnet_path = os.path.join(TMP_CONMAN_DIR, 'subnet.%s' % iface_name)
+  gateway_path = os.path.join(TMP_CONMAN_DIR, 'gateway.%s' % iface_name)
   if routers:
     first_route = routers.split()[0]
     Log('add default route with routers: %r', first_route)
-    with open(path, 'w') as f:
+    with open(gateway_path, 'w') as f:
       f.write(first_route)
+
+  if subnet:
+    Log('add subnet route: %r', subnet)
+    with open(subnet_path, 'w') as f:
+      f.write(subnet)
 
 
 def SelectAndApply(iface_name):
@@ -185,28 +191,61 @@ def SelectAndApply(iface_name):
   new_ips = set()
   for ip in config.get('ip', []):
     if 'new_ip_address' in ip:
-      ip_string = ip['new_ip_address']
-      netmask = '32'
-      if 'new_subnet_mask' in ip:
-        netmask = NormalizeNetmask(ip['new_subnet_mask'])
-      ip_string = ip_string + '/' + netmask
+      ip_string = ip['new_ip_address'] + '/32'
       new_ips.add(ip_string)
 
   IpAddrUpdate(iface_name, new_ips)
 
   for ip in config.get('ip', []):
-    if 'new_routers' in ip:
-      DefaultRouteAdd(iface_name, ip['new_routers'])
+    subnet = None
+    if 'new_ip_address' in ip and 'new_subnet_mask' in ip:
+      mask = str(NormalizeNetmask(ip['new_subnet_mask']))
+      subnet = ''.join((ApplyNetmask(ip['new_ip_address'], mask), '/', mask))
+    RouteAdd(iface_name, routers=ip.get('new_routers', None), subnet=subnet)
+
+
+
+def IpToInt(ip):
+  return struct.unpack('!I', socket.inet_pton(socket.AF_INET, ip))[0]
+
+
+def IntToIp(ip):
+  return socket.inet_ntop(socket.AF_INET, struct.pack('!I', ip))
 
 
 def NormalizeNetmask(netmask):
-  if '.' not in netmask:
-    return netmask
+  """Convert a netmask to 'bits', e.g. 24, if it isn't already."""
+  if not isinstance(netmask, basestring):
+    raise ValueError('NormalizeNetmask expects a string')
+
+  if '.' in netmask:
+    return NetmaskToBits(netmask)
+
+  # If we got an invalid string, i.e. one that isn't an IP string (handled
+  # above) or an integer, it will be detected here and a ValueError will be
+  # raised.
+  x = int(netmask)
+  if not 0 <= x <= 32:
+    raise ValueError('Netmask bits should be between 0 and 32')
+
+  return x
+
+
+def NetmaskToBits(netmask):
+  """255.255.255.0' -> 24"""
 
   # '255.255.255.0' -> '11111111111111111111111100000000'
-  netmask_bitstring = bin(struct.unpack('!I', socket.inet_pton(socket.AF_INET,
-                                                               netmask))[0])[2:]
-  return str(len(netmask_bitstring.split('0')[0]))
+  netmask_bitstring = bin(IpToInt(netmask))[2:]
+
+  # '11111111111111111111111100000000' -> 24
+  return len(netmask_bitstring.split('0')[0])
+
+
+def ApplyNetmask(ip, netmask):
+  int_ip = IpToInt(ip)
+  netmask = int(NormalizeNetmask(netmask))
+  int_netmask = (2**netmask - 1) << (32 - netmask)
+  return IntToIp(int_ip & int_netmask)
 
 
 def main():
