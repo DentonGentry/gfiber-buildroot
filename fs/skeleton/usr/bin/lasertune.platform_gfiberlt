@@ -56,7 +56,9 @@ while true; do
   # The laser channel has either changed or its the first time we are running.
   log "New laser channel discovered: Ch. $laser_channel!"
   result=$(set_laser_channel $laser_channel)
-  if [ "$?" -ne "0" ]; then
+  exit_status="$?"
+  echo "$exit_status" >/tmp/laser_i2c_status
+  if [ "$exit_status" -ne "0" ]; then
     log_and_sleep "Failed to set laser channel! Error: $result"
     continue
   fi
