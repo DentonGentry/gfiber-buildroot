@@ -2,6 +2,7 @@ config BR2_PACKAGE_GOOGLE_GCM
 	bool "google_gcm"
 	default n
 	select BR2_PACKAGE_GO_GLOG
+	select BR2_PACKAGE_GO_GOCZMQ
 	select BR2_PACKAGE_GO_PROTOBUF
 	help
 	  Google's GCM
