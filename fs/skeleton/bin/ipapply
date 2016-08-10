@@ -151,6 +151,8 @@ def SelectAndApply(iface_name):
   else:
     Log('interface %r down, clearing config', iface_name)
 
+  # TODO(apenwarr): apply only deltas, don't always flush-then-add routes.
+  #   It's unsafe to delete routes, especially when using NFS root.
   IpFlush(iface_name)
 
   if not selected_config_file or not os.path.isfile(selected_config_file):
