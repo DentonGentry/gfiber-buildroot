@@ -402,7 +402,7 @@ fi
 
 if [ x$reason = xTIMEOUT ]; then
   rm -f "/tmp/ip/dynamic/${interface}"
-  ifapply "${interface}"
+  ipapply "${interface}"
   exit_with_hooks 1
 fi
 

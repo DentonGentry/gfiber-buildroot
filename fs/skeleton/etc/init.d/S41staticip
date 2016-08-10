@@ -12,7 +12,9 @@ case "$1" in
     # ipapply will unique-ify and run once for each interface.
     interfaces="$(ls -A $STATIC_PATH) $(ls -A $DYNAMIC_PATH)"
 
-    ipapply $interfaces
+    if [ -n $interfaces ]; then
+      ipapply $interfaces
+    fi
     ;;
   stop)
     ;;
