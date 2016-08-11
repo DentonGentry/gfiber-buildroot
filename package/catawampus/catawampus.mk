@@ -8,8 +8,10 @@ CATAWAMPUS_INSTALL_TARGET=YES
 CATAWAMPUS_DEPENDENCIES=\
 	python \
 	py-curl \
+	py-tornado \
 	host-py-mox \
 	host-python \
+	host-py-tornado \
 	host-py-yaml \
 	python-netifaces
 
