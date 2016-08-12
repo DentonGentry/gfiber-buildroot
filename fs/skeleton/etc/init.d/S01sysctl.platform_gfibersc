@@ -1,6 +1,17 @@
 #!/bin/sh
 case "$1" in
   start)
+    # Decrease tcp keep alive time, probing intervals and number of probes
+    # because of the high instability of our customers' networks.
+    # The default values are:
+    #   net.ipv4.tcp_keepalive_time = 7200
+    #   net.ipv4.tcp_keepalive_intvl = 75
+    #   net.ipv4.tcp_keepalive_probes = 9
+    sysctl net.ipv4.tcp_keepalive_time=600 #10min
+    # Interval between probes.
+    sysctl net.ipv4.tcp_keepalive_intvl=30 #30s
+    # Number of consecutive probing failures before dropping the connection.
+    sysctl net.ipv4.tcp_keepalive_probes=3
     # TODO(erdi): Disable IPv6 until it is fully supported in App.
     sysctl net.ipv6.conf.all.disable_ipv6=1
     # SpaceCast receives packets from a 60Mbps multicast UDP stream.
