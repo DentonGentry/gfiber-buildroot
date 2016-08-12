@@ -40,7 +40,6 @@ while true; do
   if [ "$laser_channel" -eq "-1" ]; then
     prev_laser_channel="-1"
     sleep_timeout=1
-    log_and_sleep "No PON-ID PLOAM message received yet..."
     continue
   fi
 
