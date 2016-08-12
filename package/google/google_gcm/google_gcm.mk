@@ -27,6 +27,7 @@ define GOOGLE_GCM_TEST_CMDS
 	export $(HOST_GOLANG_ENV) ; \
 	$(GOOGLE_GCM_GOENV); \
 	export CGO_CXXFLAGS="$(HOST_CXXFLAGS)" ; \
+	export CGO_CFLAGS="$(HOST_CFLAGS)" ; \
 	export CGO_LDFLAGS="$(HOST_LDFLAGS)" ; \
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f gcm.mk test
 endef
