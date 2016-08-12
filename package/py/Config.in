@@ -29,6 +29,11 @@ config BR2_PACKAGE_PY_CURL
 	select BR2_PACKAGE_LIBCURL
 	select BR2_PACKAGE_PYTHON_SETUPTOOLS
 
+config BR2_PACKAGE_PY_TORNADO
+	bool "py-tornado"
+	select BR2_PACKAGE_PYTHON_SETUPTOOLS
+	select BR2_PACKAGE_PY_CURL
+
 config BR2_PACKAGE_PY_WPACTRL
 	bool "wpa_supplicant control interface bindings"
 	select BR2_PACKAGE_PYTHON_SETUPTOOLS
