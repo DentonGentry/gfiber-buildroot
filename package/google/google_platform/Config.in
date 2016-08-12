@@ -23,6 +23,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_UTIL_LINUX_SCHEDUTILS
 	select BR2_PACKAGE_LIBJSONCPP
 	select BR2_PACKAGE_GPERF
+	select BR2_PACKAGE_PY_TORNADO
 	help
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fiber devices.
@@ -78,6 +79,7 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_JSONPOLL
 
 config BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI
 	bool "include craftui"
+	select BR2_PACKAGE_CATAWAMPUS
 	help
 	  Include the craftui web server used by PTP devices for
 	  site configuration.
