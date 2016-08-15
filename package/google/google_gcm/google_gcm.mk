@@ -38,6 +38,8 @@ define GOOGLE_GCM_INSTALL_TARGET_CMDS
 		INSTALL="$(INSTALL)" \
 		TARGET_DIR="$(TARGET_DIR)" \
 		STRIPCMD="$(STRIPCMD)"
+	$(INSTALL) -m 0755 -D package/google/google_gcm/S94gfcm \
+		$(TARGET_DIR)/etc/init.d/S94gfcm
 endef
 
 define GOOGLE_GCM_CLEAN_CMDS
