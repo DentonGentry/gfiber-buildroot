@@ -1,5 +1,5 @@
 GOOGLE_OREGANO_SITE=repo://vendor/google/oregano
-GOOGLE_OREGANO_DEPENDENCIES=google_dart_vm google_mcastcapture
+GOOGLE_OREGANO_DEPENDENCIES=google_dart_vm google_mcastcapture google_oregano_native
 
 ifeq ($(BR2_PACKAGE_GOOGLE_TV_BOX),y)
 GOOGLE_OREGANO_DEPENDENCIES += google_cast google_miniclient
