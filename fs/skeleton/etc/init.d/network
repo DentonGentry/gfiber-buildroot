@@ -157,11 +157,6 @@ load_wifi_drivers() {
     fi
     modprobe qdpc-host 2>/dev/null
 
-    # Enable wifi beacon debug logging.
-    if [ -e /sys/module/ath10k_core/parameters/debug_mask ]; then
-      echo 0x10000000 >/sys/module/ath10k_core/parameters/debug_mask
-    fi
-
     # Enable wifi beacon and fatal debug logging.
     if [ -e /sys/module/ath9k/parameters/debug ]; then
       echo 0x00004400 >/sys/module/ath9k/parameters/debug
