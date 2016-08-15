@@ -17,6 +17,7 @@ fi
 
 SYSVAR_CMD="sysvar_cmd"
 QUIET_MODE=""
+CAN_ADD_VARS=""
 
 err_log() {
   echo "$@" >&2
@@ -24,23 +25,26 @@ err_log() {
 
 print_usage() {
   local PROGNAME="$(basename "$0")"
-  err_log "Usage: $PROGNAME [-w key1=val1 key2=val2 ... | -[q]r key]"
+  err_log "Usage: $PROGNAME [[-n] -w key1=val1 key2=val2 ... | -[q]r key]"
   err_log
   err_log "hnvram wrapper with $SYSVAR_CMD backend"
   err_log
   err_log "Options:"
   err_log "-h          Print this message and exit."
-  err_log "-w KEY=VAL"
+  err_log "[-n] -w KEY=VAL"
   err_log "            Variable to write to sysvar.  Must be formatted as KEY=VAL."
-  err_log "            Can be declared multiple times."
+  err_log "            Can be declared multiple times. -n allows creation of new keys"
   err_log "[-q] -r KEY"
   err_log "            Attempt to read the key from sysvar (must declare once)."
   err_log "            With -q, print value without KEY= prefix."
+  err_log "-k KEY"
+  err_log "            Remove key from sysvar. Can only declare once."
   exit 1
 }
 
 sysvar_read() {
-  local OUTPUT="$("$SYSVAR_CMD" --get "$1" 2>/dev/null)"
+  local OUTPUT # Needed in seperate statement to capture errors with $?
+  OUTPUT=$("$SYSVAR_CMD" --get "$1" 2>/dev/null)
   if [ $? -ne 0 ]; then
     err_log "ERROR: sysvar read failed: '$1'"
     exit 1
@@ -64,6 +68,15 @@ sysvar_write() {
       err_log "ERROR: Malformed key/value pair: $1"
       exit 1
     fi
+
+    if [ -z "$CAN_ADD_VARS" ]; then
+      "$SYSVAR_CMD" --get "$KEY" 1>/dev/null 2>/dev/null
+      if [ $? -ne 0 ]; then
+        err_log "ERROR: sysvar failed to write: $KEY not found. Use -n if new"
+        exit 1
+      fi
+    fi
+
     "$SYSVAR_CMD" --set "$KEY" "$VAL" 2>/dev/null
     if [ $? -ne 0 ]; then
       err_log "ERROR: sysvar failed to write: $1"
@@ -72,10 +85,24 @@ sysvar_write() {
   }
 }
 
+sysvar_clear() {
+  local OUTPUT
+  local EXITCODE
+  OUTPUT=$("$SYSVAR_CMD" --remove "$1" 2>/dev/null)
+  EXITCODE=$?
+  # No need to throw error if variable already cleared
+  # sysvar_cmd returns -14 in this scenario, which is converted
+  # to 8-bit unsigned int as 242
+  if [ $EXITCODE -ne 0 ] && [ $EXITCODE -ne 242 ]; then
+    err_log "ERROR: sysvar clear failed: '$1'"
+    exit 1
+  fi
+}
+
 main() {
   local WRITE_ARR=""
   local READ_KEY=""
-  while getopts ":w:qr:dbh" OPT; do
+  while getopts ":nw:qr:k:dbh" OPT; do
     case "$OPT" in
       w)
         if [ -n "$WRITE_ARR" ]; then
@@ -90,8 +117,17 @@ main() {
         fi
         READ_KEY="$OPTARG"
         ;;
+      k)
+        if [ ! -z $CLEAR_KEY ]; then
+          print_usage
+        fi
+        CLEAR_KEY="$OPTARG"
+        ;;
       q)
         QUIET_MODE="true"
+        ;;
+      n)
+        CAN_ADD_VARS="true"
         ;;
       d|b)
         :
@@ -111,22 +147,24 @@ main() {
     esac
   done
 
-  if [ -z "$READ_KEY" ] && [ -z "$WRITE_ARR" ]; then
-    err_log "ERROR: Must either write or read something."
+  if [ -z "$READ_KEY" ] && [ -z "$WRITE_ARR" ] && [ -z "$CLEAR_KEY" ]; then
+    err_log "ERROR: Must read, write or remove something."
     print_usage
   fi
 
-  if [ -n "$READ_KEY" ] && [ -n "$WRITE_ARR" ]; then
-    err_log "ERROR: Can either read or write.  Not both."
+  if [ -n "$READ_KEY" ] && [ -n "$WRITE_ARR" ] && [ -n "$CLEAR_KEY" ]; then
+    err_log "ERROR: Can only do one operation at a time. Read, Write, or Remove"
     print_usage
   fi
 
-  if [ -z "$READ_KEY" ]; then
+  if [ -n "$WRITE_ARR" ]; then
     for KEYVAL in "$WRITE_ARR"; do
       sysvar_write "$KEYVAL"
     done
-  else
+  elif [ -n "$READ_KEY" ]; then
     sysvar_read "$READ_KEY"
+  elif [ -n "$CLEAR_KEY" ]; then
+    sysvar_clear "$CLEAR_KEY"
   fi
 }
 
