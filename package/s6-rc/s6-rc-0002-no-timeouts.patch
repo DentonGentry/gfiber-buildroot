@@ -1,0 +1,37 @@
+From 22cac8581b514366525237f84da02dbd33d1b72e Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Mon, 15 Aug 2016 12:23:22 -0400
+Subject: [PATCH] s6-rc: don't use -t and -T parameters to s6-sudoc.
+
+These set up unnecessarily short (2000ms) timeouts when talking to s6-sudod.
+On our embedded system, especially during boot, those timeouts are so short
+that they can often be missed.
+
+It doesn't really make too much sense to put timeouts on boot scripts.  If
+they freeze, everything that depends on them can be expected to fail anyway
+(that's what dependencies mean) so just carrying on doesn't help.  (Normal
+init.d scripts also don't try to use timeouts.)
+---
+ src/s6-rc/s6-rc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/s6-rc/s6-rc.c b/src/s6-rc/s6-rc.c
+index 5758175..f8d634e 100644
+--- a/src/s6-rc/s6-rc.c
++++ b/src/s6-rc/s6-rc.c
+@@ -108,10 +108,12 @@ static pid_t start_oneshot (unsigned int i, int h)
+   }
+   newargv[m++] = S6_EXTBINPREFIX "s6-sudo" ;
+   newargv[m++] = verbosity >= 3 ? "-vel0" : "-el0" ;
++#if 0  /* timeouts create unpredictable behaviour.  avoid them! */
+   newargv[m++] = "-t" ;
+   newargv[m++] = "2000" ;
+   newargv[m++] = "-T" ;
+   newargv[m++] = tfmt ;
++#endif
+   newargv[m++] = "--" ;
+   newargv[m++] = socketfn ;
+   newargv[m++] = h ? "up" : "down" ;
+-- 
+2.8.0.rc3.226.g39d4020
+
