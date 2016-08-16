@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device has libandroid.so, which we
+# are using to detect if we are running on Android. Returns 1
+# (false) otherwise.
+#
+if [ -e "/system/lib/libandroid.so" ]; then
+  exit 0
+fi
+
+exit 1
