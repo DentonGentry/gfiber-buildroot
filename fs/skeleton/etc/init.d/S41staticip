@@ -11,8 +11,7 @@ case "$1" in
     # This variable may contain duplicates.
     # ipapply will unique-ify and run once for each interface.
     interfaces="$(ls -A $STATIC_PATH) $(ls -A $DYNAMIC_PATH)"
-
-    if [ -n "$interfaces" ]; then
+    if [ -n "$interfaces" -a "$interfaces" != " " ]; then
       ipapply $interfaces
     fi
     ;;
