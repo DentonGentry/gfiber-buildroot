@@ -14,9 +14,11 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 	host-python-crypto \
 	host-py-dns \
 	host-py-mock \
+	host-py-tornado \
 	python \
 	python-crypto \
 	py-dns \
+	py-tornado \
 	python-setuptools \
 	host-python-setuptools \
 	libcares \
@@ -30,8 +32,6 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 HOST_GOOGLE_PLATFORM_DEPENDENCIES=\
 	$(GOOGLE_PLATFORM_DEPENDENCIES) \
 	host-gtest \
-	host-libcurl \
-	host-libcares \
 	host-protobuf \
 	host-libpcap
 
@@ -126,6 +126,9 @@ endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_CRAFTUI),y)
 BUILD_CRAFTUI=y
+# for tr/vendor/curtain, used for HTTP Digest auth
+GOOGLE_PLATFORM_DEPENDENCIES += catawampus
+HOST_GOOGLE_PLATFORM_DEPENDENCIES += host-catawampus
 endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_PRESTERASTATS),y)
