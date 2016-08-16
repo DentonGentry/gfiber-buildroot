@@ -18,6 +18,9 @@
 import errno
 import json
 import os
+import re
+import socket
+import struct
 import subprocess
 import sys
 import options
@@ -102,16 +105,33 @@ def IsProcessRunning(pid):
       raise
 
 
-def IpFlush(iface_name):
-  """Clear all IPv4 addresses from the named interface."""
-  Log('flush interface %r', iface_name)
-  subprocess.check_call(['ip', '-4', 'addr', 'flush', 'dev', iface_name])
+def IpAddrUpdate(iface_name, new_ips):
+  """Add new address (with /netmask) on an interface, and remove old ones."""
+  ip_show = subprocess.check_output(['ip', 'addr', 'show', 'dev', iface_name])
+  current_ips = set()
+
+  pattern = r'\s*inet\s+(?P<ip>(\d{1,3}\.?){4})(?P<netmask>\/\d{1,2})?'
+  regex = re.compile(pattern)
+  for line in ip_show.splitlines():
+    match = re.match(pattern, line)
+    if match:
+      current_ips.add(match.group('ip') + (match.group('netmask') or '/32'))
+
+  for new_ip in new_ips - current_ips:
+    IpAddrAdd(iface_name, new_ip)
+
+  for old_ip in current_ips - new_ips:
+    IpAddrDel(iface_name, old_ip)
 
 
 def IpAddrAdd(iface_name, ip):
-  """Set an address (with /netmask) on an interface."""
-  Log('add address %r on interface %r', ip, iface_name)
+  Log('Adding address %r on interface %r', ip, iface_name)
   subprocess.check_call(['ip', 'addr', 'add', ip, 'dev', iface_name])
+
+
+def IpAddrDel(iface_name, ip):
+  Log('Deleting address %r on interface %r', ip, iface_name)
+  subprocess.check_call(['ip', 'addr', 'del', ip, 'dev', iface_name])
 
 
 def DefaultRouteAdd(iface_name, routers):
@@ -151,31 +171,42 @@ def SelectAndApply(iface_name):
   else:
     Log('interface %r down, clearing config', iface_name)
 
-  # TODO(apenwarr): apply only deltas, don't always flush-then-add routes.
-  #   It's unsafe to delete routes, especially when using NFS root.
-  IpFlush(iface_name)
-
   if not selected_config_file or not os.path.isfile(selected_config_file):
     Log('no available configuration file for interface %r', iface_name)
-    return
+    config = {}
+  else:
+    config = LoadJsonFromFile(selected_config_file)
+    if config:
+      config = config[iface_name]
+    else:
+      Log('failed to load JSON configuration from %r for interface %r',
+          selected_config_file, iface_name)
 
-  config = LoadJsonFromFile(selected_config_file)
-  if config:
-    config = config[iface_name]
-  if not config:
-    Log('failed to load JSON configuration from %r for interface %r',
-        selected_config_file, iface_name)
-    return
+  new_ips = set()
+  for ip in config.get('ip', []):
+    if 'new_ip_address' in ip:
+      ip_string = ip['new_ip_address']
+      netmask = '32'
+      if 'new_subnet_mask' in ip:
+        netmask = NormalizeNetmask(ip['new_subnet_mask'])
+      ip_string = ip_string + '/' + netmask
+      new_ips.add(ip_string)
 
-  if 'ip' in config:
-    for ip in config['ip']:
-      if 'new_ip_address' in ip:
-        ip_string = ip['new_ip_address']
-        if 'new_subnet_mask' in ip:
-          ip_string = ip_string + '/' + ip['new_subnet_mask']
-        IpAddrAdd(iface_name, ip_string)
-      if 'new_routers' in ip:
-        DefaultRouteAdd(iface_name, ip['new_routers'])
+  IpAddrUpdate(iface_name, new_ips)
+
+  for ip in config.get('ip', []):
+    if 'new_routers' in ip:
+      DefaultRouteAdd(iface_name, ip['new_routers'])
+
+
+def NormalizeNetmask(netmask):
+  if '.' not in netmask:
+    return netmask
+
+  # '255.255.255.0' -> '11111111111111111111111100000000'
+  netmask_bitstring = bin(struct.unpack('!I', socket.inet_pton(socket.AF_INET,
+                                                               netmask))[0])[2:]
+  return str(len(netmask_bitstring.split('0')[0]))
 
 
 def main():
