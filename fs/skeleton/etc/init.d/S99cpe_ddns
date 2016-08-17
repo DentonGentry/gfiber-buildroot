@@ -1,0 +1,40 @@
+#!/bin/sh
+# Start dynamic DNS for CPE equipement
+# Only runs on developer machines (tmp/DEBUG)
+
+. /etc/utils.sh
+
+if ! [ -f "/tmp/DEBUG" ]; then
+  exit 0;
+fi
+
+register_experiment CPE_DYNAMIC_DNS;
+
+# Temporary until stable
+if ! experiment CPE_DYNAMIC_DNS; then
+  echo "cpe_ddns experiment not enabled"
+  exit 0;
+fi
+
+
+# fiber jack data sent from local network box instead
+is-fiberjack && exit 0
+
+case "$1" in
+  start)
+    echo "starting CPE DDNS"
+    babysit 60 python cpe_ddns.py 2>&1 | logos cpe_ddns &
+    ;;
+  stop)
+    echo "stopping CPE DDNS"
+    pkillwait -f 'babysit 60 python cpe_ddns.py'
+    pkillwait -f 'python cpe_ddns.py'
+    ;;
+  restart)
+    "$0" stop
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
