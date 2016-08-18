@@ -310,7 +310,7 @@ case "$1" in
       # 25:30   DSCP value for reply connection (if bit 24 = 1)
       # 31      0: use bits 0-15 for reply connection
       #         1: use bits 16-30 for reply connection
-      iptables -A POSTROUTING -t mangle -o wan0.2 -j CONNMARK --set-mark 0x8040
+      ip46tables -A POSTROUTING -t mangle -o wan0.2 -j CONNMARK --set-mark 0x8040
     fi
     ;;
   stop)
