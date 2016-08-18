@@ -10,7 +10,7 @@
 
 # Processes the output of the reset click handler.
 # <1s click means: show provisioning info
-# 1-9s click means: reboot device
+# 3-9s click means: reboot device
 # 10+s:  Remove PRODUCTION_MODE and reboot (factory reset)
 
 DISABLE_FILE="/tmp/gpio/disable"
@@ -38,11 +38,10 @@ do
       sleep .2
       echo 1 >/sys/class/leds/sys-red/brightness
       ;;
-    click0)
-      # TODO(cgibson): Make this do something more useful.
-      /bin/ledpattern /tmp/test_pattern demo
+    click[0-2])
+      ledtapcode
       ;;
-    click[1-9])
+    click[3-9])
       echo "$0: rebooting"
       reboot
       ;;
