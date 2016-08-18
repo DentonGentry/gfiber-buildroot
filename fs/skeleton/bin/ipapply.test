@@ -41,6 +41,9 @@ chmod 777 $tmpdir/test_bin/is-interface-up
 cat >$tmpdir/test_bin/ip <<-EOF
 	#!/bin/sh
 	echo test_bin/ip \$@ 1>&2
+	if [ "x\$2" = "xshow" -a -e $tmpdir/ip_addr_show ]; then
+	  cat $tmpdir/ip_addr_show
+	fi
 	exit 0
 EOF
 chmod 777 $tmpdir/test_bin/ip
@@ -74,8 +77,6 @@ echo "TEST no configuration files"
 output=$(ipapply nope 2>&1 1>/dev/null)
 echo "${output}" | grep "no available configuration.*nope" >/dev/null
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev nope" >/dev/null
-WVPASSEQ $? 0
 
 echo
 echo "TEST static config"
@@ -89,7 +90,55 @@ EOF
 
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+
+
+echo "TEST deltas"
+echo "   inet 1.1.1.1/24 brd 255.255.255.0 scope global iface0" >"$tmpdir/ip_addr_show"
+echo "   inet 1.1.1.32/32 brd 255.255.255.255 scope global iface0" >>"$tmpdir/ip_addr_show"
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSNE $? 0
+echo "${output}" | grep "ip addr add 1.1.1.32/32 dev iface0" >/dev/null
+WVPASSNE $? 0
+
+cat >$tmpdir/$STATIC_PATH/iface0 <<-EOF
+	{ "iface0": {
+	  "ip": [  { "new_ip_address": "1.1.1.1", "new_subnet_mask": "24" },
+	           { "new_ip_address": "1.1.1.2", "new_subnet_mask": "24" },
+	           { "new_ip_address": "1.1.1.32" } ]
+	} }
+EOF
+echo "   inet 1.1.1.3/24 brd 255.255.255.0 scope global iface0" >>"$tmpdir/ip_addr_show"
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSNE $? 0
+echo "${output}" | grep "ip addr add 1.1.1.2/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr del 1.1.1.3/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr del 1.1.1.32/32 dev iface0" >/dev/null
+WVPASSEQ $? 1
+
+
+rm -f $tmpdir/ip_addr_show
+
+
+echo
+echo "TEST static config with long form netmask"
+export IIU_TEST_UP_INTERFACES="iface0"
+mkdir -p $tmpdir/$STATIC_PATH
+cat >$tmpdir/$STATIC_PATH/iface0 <<-EOF
+	{ "iface0": {
+	  "ip": [  { "new_ip_address": "1.1.1.1",
+	             "new_subnet_mask": "255.255.255.0" } ]
+	} }
+EOF
+
+output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
 WVPASSEQ $? 0
@@ -108,8 +157,6 @@ cat >$tmpdir/$DYNAMIC_PATH/iface0 <<-EOF
 EOF
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
 WVPASSEQ $? 0
 WVPASS [ ! -e $tmpdir/$TMP_CONMAN/gateway.iface0 ]
@@ -122,14 +169,12 @@ rm $tmpdir/$STATIC_PATH/iface0
 
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 2.2.2.2/24 dev iface0" >/dev/null
 WVPASSEQ $? 0
 gateway_file=$tmpdir/$TMP_CONMAN/gateway.iface0
 expected_file=$tmpdir/expected_gateway
 WVPASS [ -e $gateway_file ]
-echo "a.b.c.d" >$expected_file
+echo -n "a.b.c.d" >$expected_file
 WVPASS cmp $gateway_file $expected_file
 rm $expected_file
 
@@ -157,14 +202,12 @@ mkdir -p $tmpdir/sys/class/net/br0
 
 output=$(ipapply br0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev br0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 1.1.1.1/24 dev br0" >/dev/null
 WVPASSEQ $? 0
 gateway_file=$tmpdir/$TMP_CONMAN/gateway.br0
 WVPASS [ -e $gateway_file ]
 expected_file=$tmpdir/expected_gateway
-echo "nexthop" >$expected_file
+echo -n "nexthop" >$expected_file
 WVPASS cmp $gateway_file $expected_file
 rm $expected_file
 
@@ -176,14 +219,12 @@ export IIU_TEST_UP_INTERFACES="br0"
 
 output=$(ipapply br0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev br0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 2.2.2.2/24 dev br0" >/dev/null
 WVPASSEQ $? 0
 gateway_file=$tmpdir/$TMP_CONMAN/gateway.br0
 WVPASS [ -e $gateway_file ]
 expected_file=$tmpdir/expected_gateway
-echo "a.b.c.d" >$expected_file
+echo -n "a.b.c.d" >$expected_file
 WVPASS cmp $gateway_file $expected_file
 rm $expected_file
 
@@ -201,9 +242,10 @@ cat >$tmpdir/$DYNAMIC_PATH/iface0 <<-EOF
 	             "new_routers": "a.b.c.d" } ]
 	} }
 EOF
+echo "   inet 2.2.2.2/24 brd 255.255.255.0 scope global iface0" >"$tmpdir/ip_addr_show"
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip -4 addr flush dev iface0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "interface 'iface0' down" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr del 2.2.2.2/24 dev iface0" >/dev/null
 WVPASSEQ $? 0
