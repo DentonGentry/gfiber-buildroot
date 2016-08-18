@@ -173,18 +173,8 @@ endif # gfrg200 gfsc100 gjcb100
 # Arc/uboot - GFEX250 (skids, frenzy)
 #
 ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy),)
-# This is really for compressing the kernel image rather than the rootfs, but
-# it is a convenient way to specify the dependency.
-ROOTFS_GINSTALL_DEPENDENCIES += host-lzma
-BUILD_UIMAGE=y
-
-ROOTFS_GINSTALL_KERNEL_FILE=Image
-MKIMAGE_KERNEL_LOAD_ADDRESS = 0x84938000
-MKIMAGE_KERNEL_ENTRY_POINT = 0x84938000
-MKIMAGE_DATA_FILE = $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma
-MKIMAGE_IMAGE_TYPE = kernel
-MKIMAGE_COMPRESSION_TYPE = lzma
-MKIMAGE_EXTRA_FLAGS = -Q 0x1
+# lzma compressed uImage is already built in kernel/skids
+ROOTFS_GINSTALL_KERNEL_FILE=uImage
 endif # gfex250 gffrenzy
 
 #
@@ -257,10 +247,6 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
-	if [ $(BR2_ARCH) = 'arc' ]; then \
-		rm -rf $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE).lzma && \
-		$(LZMA) -k --best $(BINARIES_DIR)/$(ROOTFS_GINSTALL_KERNEL_FILE); \
-	fi && \
 	if [ '$(BRUNO_SIGNING)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \

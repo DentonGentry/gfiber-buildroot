@@ -88,17 +88,11 @@ LINUX_IMAGE_NAME=vmImage
 else
 LINUX_IMAGE_NAME=uImage
 endif
-LINUX_DEPENDENCIES+=host-uboot-tools
+LINUX_DEPENDENCIES+=host-uboot-tools host-lzma
 else ifeq ($(BR2_LINUX_KERNEL_BZIMAGE),y)
 LINUX_IMAGE_NAME=bzImage
 else ifeq ($(BR2_LINUX_KERNEL_ZIMAGE),y)
-ifeq ($(KERNEL_ARCH),arc)
-# The Skids kernel has no zImage target, so we just make Image and then compress
-# it in ginstall.
-LINUX_IMAGE_NAME=Image
-else
 LINUX_IMAGE_NAME=zImage
-endif  # arc
 else ifeq ($(BR2_LINUX_KERNEL_APPENDED_ZIMAGE),y)
 LINUX_IMAGE_NAME = zImage
 else ifeq ($(BR2_LINUX_KERNEL_VMLINUX_BIN),y)
