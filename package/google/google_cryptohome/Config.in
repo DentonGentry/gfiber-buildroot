@@ -1,5 +1,6 @@
 config BR2_PACKAGE_GOOGLE_CRYPTOHOME
        bool "google_cryptohome"
        default n
+       select BR2_PACKAGE_GOOGLE_BUFFET
        help
          Google's Cryptohome
