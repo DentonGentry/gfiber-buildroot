@@ -277,6 +277,8 @@ endif
 source "package/ruby/Config.in"
 source "package/tcl/Config.in"
 source "package/openjdk-bin/Config.in"
+source "package/micropython/Config.in"
+source "package/micropython-lib/Config.in"
 endmenu
 
 menu "Libraries"

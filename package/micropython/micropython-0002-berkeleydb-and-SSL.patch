@@ -1,0 +1,36 @@
+From 65f052600b657f77bdc28a937bf331fb8b2192fe Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 20 Aug 2016 01:08:50 -0700
+Subject: [PATCH] Disable berkeleydb and SSL.
+
+---
+ unix/mpconfigport.mk | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/unix/mpconfigport.mk b/unix/mpconfigport.mk
+index f791214..8a94a2c 100644
+--- a/unix/mpconfigport.mk
++++ b/unix/mpconfigport.mk
+@@ -12,7 +12,7 @@ MICROPY_USE_READLINE = 1
+ MICROPY_FATFS = 1
+ 
+ # btree module using Berkeley DB 1.xx
+-MICROPY_PY_BTREE = 1
++MICROPY_PY_BTREE = 0
+ 
+ # _thread module using pthreads
+ MICROPY_PY_THREAD = 1
+@@ -27,8 +27,8 @@ MICROPY_PY_SOCKET = 1
+ MICROPY_PY_FFI = 1
+ 
+ # ussl module requires axtls
+-MICROPY_PY_USSL = 1
+-MICROPY_SSL_AXTLS = 1
++MICROPY_PY_USSL = 0
++MICROPY_SSL_AXTLS = 0
+ 
+ # jni module requires JVM/JNI
+ MICROPY_PY_JNI = 0
+-- 
+2.8.0.rc3.226.g39d4020
+

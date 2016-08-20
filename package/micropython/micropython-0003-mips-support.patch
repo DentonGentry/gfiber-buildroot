@@ -1,0 +1,25 @@
+From 98f42fab5b4743b8e35a8532f5c79789067f8b7d Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Sat, 20 Aug 2016 08:44:19 -0700
+Subject: [PATCH] Add mips support for mp_raw_code_load_file.
+
+---
+ py/emitglue.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/py/emitglue.c b/py/emitglue.c
+index 1b9992b..140f343 100644
+--- a/py/emitglue.c
++++ b/py/emitglue.c
+@@ -381,7 +381,7 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
+ // here we define mp_raw_code_load_file depending on the port
+ // TODO abstract this away properly
+ 
+-#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || (defined(__arm__) && (defined(__unix__)))
++#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || (defined(__arm__) && (defined(__unix__))) || (defined(__mips__) && (defined(__unix__)))
+ // unix file reader
+ 
+ #include <sys/stat.h>
+-- 
+2.8.0.rc3.226.g39d4020
+
