@@ -170,12 +170,12 @@ MKIMAGE_EXTRA_FLAGS=
 endif # gfrg200 gfsc100 gjcb100
 
 #
-# Arc/uboot - GFEX250 (skids, frenzy)
+# Arc/uboot - Frenzy, Skids, Prowl
 #
-ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy),)
-# lzma compressed uImage is already built in kernel/skids
+ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy gfrg240),)
+# lzma compressed uImage is already available from the kernel build
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
-endif # gfex250 gffrenzy
+endif # gfex250 gffrenzy gfrg240
 
 #
 # Armada/uboot - GFCH100 (chimera)
