@@ -79,6 +79,11 @@ case "$1" in
 
     # Start BlueZ stack
     (
+      if runnable ti-rcu-audio; then
+        echo "$0: starting ti-rcu-audio"
+        setuid appclient:video ti-rcu-audio | logos tiaudio &
+      fi
+
       echo "$0: Starting btmon"
       babysit 30 btmon -A -t 2>&1 | logos btmon &
       sleep 1

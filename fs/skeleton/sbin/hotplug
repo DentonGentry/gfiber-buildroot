@@ -60,14 +60,15 @@ print_ath10k_cal_hash() {
   rm -f "$ath10k_cal_tmp"
 }
 
+echo "$SUBSYSTEM-$ACTION $DEVNAME" | logos hotplug
 case "$SUBSYSTEM-$ACTION" in
   input-add)
     # BlueZ: adjust repeat speed on remotes
     if [ -c "/dev/$DEVNAME" ]; then
       echo "hotplug: setting autorepeat on $DEVNAME"
-      input-repeat -f /dev/$DEVNAME -d 600
+      input-repeat -f "/dev/$DEVNAME" -d 600
       # Allow user to access input device
-      chmod 666 /dev/$DEVNAME
+      chmod 666 "/dev/$DEVNAME"
     fi
     ;;
 
@@ -77,6 +78,18 @@ case "$SUBSYSTEM-$ACTION" in
     if [ "$hcidev" = "hci0" ]; then
       echo "hotplug: configuring $hcidev"
       hciconfig "$hcidev" lm ACCEPT,MASTER
+    fi
+    ;;
+
+  hidraw-add)
+    if [ -c "/dev/$DEVNAME" ]; then
+      echo "Trying gfrm100-rcu-audio for $DEVNAME"
+      # Allow user to access input device
+      chmod 666 "/dev/$DEVNAME"
+      # gfrm100-rcu-audio will exit if not a GFRM100 or daemonize itself
+      # if it is, so we run it in the foreground. The timeout is for
+      # safety to not hang the hotplug script, just in case.
+      timeout 5 setuid appclient:video gfrm100-rcu-audio "/dev/$DEVNAME" 2>&1 | logos "gfrm100_audio"
     fi
     ;;
 
@@ -90,7 +103,7 @@ case "$SUBSYSTEM-$ACTION" in
       false  # fall back
     fi ||
     load_firmware "/lib/firmware/$FIRMWARE" ||
-    echo -1 >/sys/$DEVPATH/loading
+    echo -1 >"/sys/$DEVPATH/loading"
     ;;
 
   net-add)
