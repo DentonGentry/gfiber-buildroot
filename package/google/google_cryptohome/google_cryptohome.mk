@@ -6,6 +6,7 @@
 
 CRYPTOHOME_CHROMEOS_VERSION = R44-7077.134
 GOOGLE_CRYPTOHOME_SITE = repo://vendor/google/tarballs
+GOOGLE_CRYPTOHOME_DEPENDENCIES = google_buffet
 
 define GOOGLE_CRYPTOHOME_INSTALL_TARGET_CMDS
 	# Untar and place the chromeos rootdir under /chroot
