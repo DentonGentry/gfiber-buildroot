@@ -154,6 +154,7 @@ case "$1" in
       # captive-portal-filter and captive-portal-input contain rules that should
       # always be applied to the br1 (captive portal) interface, regardless of
       # what services we're trying to provide with it.
+      ip46tables -N captive-portal-guests
       ip46tables -N captive-portal-filter
       ip46tables -N captive-portal-input
       ip46tables -N acs-captive-portal-input
@@ -170,6 +171,7 @@ case "$1" in
       iptables -t nat -N MINIUPNPD
 
       ip46tables -A FORWARD -i br0 -j ACCEPT
+      ip46tables -A FORWARD -i br1 -j captive-portal-guests
       ip46tables -A FORWARD -i br1 -j captive-portal-filter
 
       # I wanted to use '!wan0' here but, it doesn't work as documented.
