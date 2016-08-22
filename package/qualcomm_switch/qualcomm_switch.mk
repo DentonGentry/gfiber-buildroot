@@ -35,6 +35,10 @@ define QUALCOMM_SWITCH_BUILD_CMDS
 		CFLAGS="$(TARGET_CFLAGS) -fPIC -DHSL_STANDALONG -I$(STAGING_DIR)/usr/include/python2.7 \
 		    -I$(@D)/include -I$(LINUX_DIR)/include -L$(@D)/build/bin" \
 		$(HOST_DIR)/usr/bin/python setup.py build
+
+	CC="$(TARGET_CC)" \
+		CFLAGS="$(TARGET_CFLAGS) -DHSL_STANDALONG -I$(@D)/include -I$(LINUX_DIR)/include -L$(@D)/build/bin" \
+		$(MAKE) -C $(@D)/google/qca83XXd
 endef
 
 define QUALCOMM_SWITCH_INSTALL_STAGING_CMDS
