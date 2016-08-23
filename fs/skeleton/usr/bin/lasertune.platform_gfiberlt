@@ -15,12 +15,6 @@ log()
   echo "$@" >&2
 }
 
-log_and_sleep()
-{
-  log "$@"
-  sleep "$sleep_timeout"
-}
-
 if ! startswith "$platform" "GFLT3"; then
   # not all fiberjacks have a tunable laser.
   exit 0
@@ -28,18 +22,21 @@ fi
 
 while true; do
   if [ ! -e "$laser_channel_file" ]; then
-    log_and_sleep "$laser_channel_file is missing."
+    log "$laser_channel_file is missing."
+    sleep $sleep_timeout
     continue
   fi
   laser_channel=$(cat "$laser_channel_file")
   if [ -z "$laser_channel" ]; then
-    log_and_sleep "$laser_channel_file is empty?"
+    log "$laser_channel_file is empty?"
+    sleep $sleep_timeout
     continue
   fi
   # Valid laser channels start from 0.
   if [ "$laser_channel" -eq "-1" ]; then
     prev_laser_channel="-1"
     sleep_timeout=1
+    sleep $sleep_timeout
     continue
   fi
 
@@ -58,7 +55,8 @@ while true; do
   exit_status="$?"
   echo "$exit_status" >/tmp/laser_i2c_status
   if [ "$exit_status" -ne "0" ]; then
-    log_and_sleep "Failed to set laser channel! Error: $result"
+    log "Failed to set laser channel! Error: $result"
+    sleep $sleep_timeout
     continue
   fi
 
