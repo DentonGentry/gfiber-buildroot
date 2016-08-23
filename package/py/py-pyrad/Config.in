@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PY_PYRAD
+	bool "py-pyrad"
+	depends on BR2_PACKAGE_PYTHON
+	help
+	  py-pyrad is an implementation of a RADIUS client as described in RFC2865.
