@@ -43,8 +43,9 @@ config BR2_PACKAGE_PY_WPACTRL
 source "package/py/py-dns/Config.in"
 source "package/py/py-inotify/Config.in"
 source "package/py/py-monotime/Config.in"
-source "package/py/py-yaml/Config.in"
 source "package/py/py-numpy/Config.in"
 source "package/py/py-pympler/Config.in"
+source "package/py/py-pyrad/Config.in"
+source "package/py/py-yaml/Config.in"
 
 endmenu
