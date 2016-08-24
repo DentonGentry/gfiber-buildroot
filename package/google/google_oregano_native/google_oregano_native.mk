@@ -2,7 +2,7 @@ GOOGLE_OREGANO_NATIVE_SITE=repo://vendor/google/oregano-native
 GOOGLE_OREGANO_NATIVE_DEPENDENCIES=google_dart_vm google_mcastcapture
 
 ifeq ($(BR2_PACKAGE_GOOGLE_TV_BOX),y)
-GOOGLE_OREGANO_NATIVE_DEPENDENCIES += google_cast google_miniclient
+GOOGLE_OREGANO_NATIVE_DEPENDENCIES += google_miniclient
 endif
 
 define GOOGLE_OREGANO_NATIVE_BUILD_CMDS
