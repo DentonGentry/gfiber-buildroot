@@ -12,5 +12,6 @@ buffet:x:103:106::/var/run/buffet:/dev/null
 tss:x:104:107::/:/dev/null
 sc-core:x:107:107::/:/dev/null
 sc-svc:x:108:108::/:/dev/null
+quagga:x:109:109::/:/dev/null
 video:x:200:200:Video User:/var/media:/dev/nul
 nfsnobody:x:65534:65534:Anonymous NFS User:/var/tmp:/dev/null
