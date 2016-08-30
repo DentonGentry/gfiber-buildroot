@@ -1,0 +1,8 @@
+config BR2_PACKAGE_GOOGLE_STYLEGUIDE
+	bool "Google styleguide (and CppLint)"
+	default y
+	help
+	  Googles language styleguide repository.
+
+	  Mostly useful for the cpplint tool contained within it, though other tools
+	  may be added over time
