@@ -72,11 +72,6 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
   mkdir -p /tmp/gpio/ledcontrol
   leds 4 0  # blink activity while booting
   echo 30 >/tmp/gpio/fanpercent  # low fan at first
-  if is-secure-boot; then
-    : >/tmp/gpio/ledcontrol/secure_boot
-  else
-    rm -f /tmp/gpio/ledcontrol/secure_boot
-  fi
   ulimit -c 49152
   if runnable gpio-mailbox; then
     reboot-if-fail gpio-mailbox 2>&1 | logos gpio-mailbox &

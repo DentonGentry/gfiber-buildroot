@@ -13,6 +13,11 @@ case "$1" in
       export SAGEBIN_PATH=/usr/lib/sage_firmware
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
       wait-until-created /tmp/nexus_multiprocess
+      if is-secure-boot; then
+        : >/tmp/gpio/ledcontrol/secure_boot
+      else
+        rm -f /tmp/gpio/ledcontrol/secure_boot
+      fi
       nice babysit 60 irmon 2>&1 | logos irmon &
     ) &
     ;;
