@@ -53,4 +53,5 @@ source "package/google/google_gl_dart/Config.in"
 source "package/google/google_media/Config.in"
 source "package/google/google_wipg/Config.in"
 source "package/google/google_gcm/Config.in"
+source "package/google/google_styleguide/Config.in"
 endmenu
