@@ -4,5 +4,6 @@ config BR2_PACKAGE_GOOGLE_MCASTCAPTURE
         select BR2_PACKAGE_OPENSSL
         select BR2_PACKAGE_LIBCURL
         select BR2_PACKAGE_PROTOBUF
+        select BR2_PACKAGE_LIBEVENT
         help
           Builds the mcastcapture sagesrv binary and libptsindex.so library
