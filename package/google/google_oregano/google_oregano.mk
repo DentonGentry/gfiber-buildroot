@@ -33,6 +33,10 @@ define GOOGLE_OREGANO_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D $(@D)/upgradecheck $(TARGET_DIR)/usr/bin/upgradecheck
 	cp -af $(@D)/* $(TARGET_DIR)/app/oregano/
 	mv $(TARGET_DIR)/app/oregano/startup/assets/fonts/* $(TARGET_DIR)/usr/local/share/fonts/
+
+	# We call into the google_oregano-native makefile to make sure the native
+	# libraries are installed. See b/31031158#comment7 .
+	$(call GOOGLE_OREGANO_NATIVE_INSTALL_NATIVE_LIBS,"$(GOOGLE_OREGANO_NATIVE_DIR)")
 endef
 
 $(eval $(call GENTARGETS))

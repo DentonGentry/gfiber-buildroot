@@ -18,8 +18,11 @@ define GOOGLE_OREGANO_NATIVE_BUILD_CMDS
 		build
 endef
 
-define GOOGLE_OREGANO_NATIVE_INSTALL_TARGET_CMDS
-	$(MAKE) -C "$(@D)" \
+# The google_oregano package also installs our libraries to ensure that the
+# native libaries are always installed. (See b/31031158#comment7). Therefore,
+# we define our install step as a method that can be called by anyone.
+define GOOGLE_OREGANO_NATIVE_INSTALL_NATIVE_LIBS
+	$(MAKE) -C "$(1)" \
 		CROSS_PREFIX="$(TARGET_CROSS)" \
 		ARCH="$(GOOGLE_PLATFORM_ARCH)" \
 		DESTDIR="$(TARGET_DIR)" \
@@ -27,6 +30,10 @@ define GOOGLE_OREGANO_NATIVE_INSTALL_TARGET_CMDS
 		IS_TV_BOX="$(BR2_PACKAGE_GOOGLE_TV_BOX)" \
 		IS_STORAGE_BOX="$(BR2_PACKAGE_GOOGLE_STORAGE_BOX)" \
 		install
+endef
+
+define GOOGLE_OREGANO_NATIVE_INSTALL_CMDS
+	$(call GOOGLE_OREGANO_NATIVE_INSTALL_NATIVE_LIBS,"$(@D)")
 endef
 
 $(eval $(call GENTARGETS))
