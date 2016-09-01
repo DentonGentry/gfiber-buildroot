@@ -1,0 +1,125 @@
+diff -r -U 10 a/src/tcsd/Makefile.am b/src/tcsd/Makefile.am
+--- a/src/tcsd/Makefile.am	2016-08-10 07:50:21.000000000 -0700
++++ b/src/tcsd/Makefile.am	2016-08-31 21:03:45.044116933 -0700
+@@ -1,16 +1,16 @@
+ sbin_PROGRAMS=tcsd
+ 
+ BASE_VER ?= 307740
+ 
+ tcsd_CFLAGS=-DAPPID=\"TCSD\" -DVAR_PREFIX=\"@localstatedir@\" -DETC_PREFIX=\"@sysconfdir@\" -I${top_srcdir}/src/include -fPIE -DPIE
+-tcsd_LDADD=${top_builddir}/src/tcs/libtcs.a ${top_builddir}/src/tddl/libtddl.a -lpthread @CRYPTOLIB@ -lmetrics-$(BASE_VER)
++tcsd_LDADD=${top_builddir}/src/tcs/libtcs.a ${top_builddir}/src/tddl/libtddl.a -lpthread @CRYPTOLIB@
+ tcsd_LDFLAGS=-pie -Wl,-z,relro -Wl,-z,now
+ 
+ tcsd_SOURCES=svrside.c tcsd_conf.c tcsd_threads.c platform.c
+ 
+ if TSS_BUILD_PS
+ tcsd_CFLAGS+=-DTSS_BUILD_PS
+ endif
+ if TSS_BUILD_PCR_EVENTS
+ tcsd_CFLAGS+=-DTSS_BUILD_PCR_EVENTS
+ endif
+diff -r -U 10 a/src/tddl/tddl.c b/src/tddl/tddl.c
+--- a/src/tddl/tddl.c	2016-08-10 07:50:21.000000000 -0700
++++ b/src/tddl/tddl.c	2016-08-31 21:06:48.839232975 -0700
+@@ -12,22 +12,20 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <errno.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
+ 
+ #include "trousers/tss.h"
+ #include "trousers_types.h"
+ #include "linux/tpm.h"
+-#include "metrics/c_metrics_library.h"
+-#include "tcs_utils.h"
+ #include "tcslog.h"
+ #include "tddl.h"
+ 
+ struct tpm_device_node tpm_device_nodes[] = {
+ 	{"/dev/tpm0", TDDL_UNDEF, TDDL_UNDEF},
+ 	{"/udev/tpm0", TDDL_UNDEF, TDDL_UNDEF},
+ 	{"/dev/tpm", TDDL_UNDEF, TDDL_UNDEF},
+ 	{NULL, 0, 0}
+ };
+ 
+@@ -156,37 +154,28 @@
+ 	opened_device = NULL;
+ 
+ 	return TSS_SUCCESS;
+ }
+ 
+ TSS_RESULT
+ Tddli_TransmitData(BYTE * pTransmitBuf, UINT32 TransmitBufLen, BYTE * pReceiveBuf,
+ 		   UINT32 * pReceiveBufLen)
+ {
+ 	int sizeResult;
+-	UINT16 request_tag;
+-	TSS_RESULT result;
+-	static CMetricsLibrary metrics_library_handle = NULL;
+-	TSS_BOOL is_auth;
+ 
+ 	if (TransmitBufLen > TDDL_TXBUF_SIZE) {
+ 		LogError("buffer size handed to TDDL is too large! (%u bytes)", TransmitBufLen);
+ 		return TDDLERR(TDDL_E_FAIL);
+ 	}
+ 
+ 	memcpy(txBuffer, pTransmitBuf, TransmitBufLen);
+ 	LogDebug("Calling write to driver");
+-	/* Low-level intercept of errors returned by the TPM for
+-	 * statistical purposes.
+-	 */
+-	request_tag = Decode_UINT16(txBuffer);
+-	is_auth = (request_tag == 0xc2) || (request_tag == 0xc3);
+ 
+ 	if (use_in_socket) {
+ 		Tddli_Close();
+ 		if (Tddli_Open())
+ 			return TDDLERR(TDDL_E_IOERROR);
+ 	}
+ 
+ 	switch (opened_device->transmit) {
+ 		case TDDL_UNDEF:
+ 			/* fall through */
+@@ -234,39 +223,20 @@
+ 
+ 	if ((unsigned)sizeResult > *pReceiveBufLen) {
+ 		LogError("read %d bytes from device %s, (only room for %d)", sizeResult,
+ 				opened_device->path, *pReceiveBufLen);
+ 		return TDDLERR(TDDL_E_INSUFFICIENT_BUFFER);
+ 	}
+ 
+ 	*pReceiveBufLen = sizeResult;
+ 
+ 	memcpy(pReceiveBuf, txBuffer, *pReceiveBufLen);
+-	/* TPM returned a valid response packet into txBuffer.  Extract result
+-	 * code and ship stats.
+-	 */
+-	result = Decode_UINT32(pReceiveBuf + 6);
+-	if (metrics_library_handle == NULL) {
+-		metrics_library_handle = CMetricsLibraryNew();
+-		if (metrics_library_handle != NULL)
+-			CMetricsLibraryInit(metrics_library_handle);
+-	}
+-	if (metrics_library_handle != NULL) {
+-		CMetricsLibrarySendSparseToUMA(metrics_library_handle,
+-					       "Platform.TPM.ErrorCode",
+-					       result);
+-		if (is_auth)
+-			CMetricsLibrarySendSparseToUMA(
+-				metrics_library_handle,
+-				"Platform.TPM.AuthErrorCode",
+-				result);
+-	}
+ 	return TSS_SUCCESS;
+ }
+ 
+ TSS_RESULT
+ Tddli_GetStatus(UINT32 ReqStatusType, UINT32 *pStatus)
+ {
+ 	return TDDLERR(TSS_E_NOTIMPL);
+ }
+ 
+ TSS_RESULT
