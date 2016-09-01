@@ -56,6 +56,12 @@ LIBGLIB2_CONF_OPT = \
 		--disable-man \
 		--disable-gtk-doc
 
+ifeq ($(ARCH),arc)
+# ARC requires an external library for atomic operations.
+# ARC toolchain is extra picky about -Wformat=2, so disable warnings.
+LIBGLIB2_CONF_OPT += LDFLAGS=-latomic --disable-compile-warnings
+endif
+
 LIBGLIB2_DEPENDENCIES = host-pkg-config host-libglib2 libffi zlib $(if $(BR2_NEEDS_GETTEXT),gettext libintl)
 
 HOST_LIBGLIB2_DEPENDENCIES = host-pkg-config host-python host-libffi host-zlib
