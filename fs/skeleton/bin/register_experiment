@@ -1,5 +1,5 @@
-#! /bin/sh
-
+#!/bin/sh
+#
 # Tell the experiment subsystem that we support the named system-level
 # (as opposed to catawampus-internal) experiment.
 #
@@ -17,9 +17,14 @@
 # Otherwise the results of A/B tests will end up partially lying, where
 # cwmpd's periodic stats say an experiment is active even though we are using
 # the non-experimental behaviour.
+#
 expname="$1"
-if [ ! -d /tmp -o ! -d /config ]; then
-  # if /tmp or /config is nonexistent then just bail out early.
+if [ ! -w /tmp ]; then
+  echo "WARNING: /tmp not writable: experiment '$expname' cannot activate."
+  exit 0
+fi
+if [ ! -w /config ]; then
+  echo "WARNING: /config not writable: experiment '$expname' cannot activate."
   exit 0
 fi
 
