@@ -24,6 +24,7 @@ DATA_UBI_NO=1
 # eMMC support
 DATA_MMC_NAME="data+ext4"
 ATV_DATA_MMC_NAME="userdata"
+ATV_HWCFG_MMC_NAME="hwcfg"
 DRM_FS_NAME="drmfs1"
 DRM_FS_RECOVER_NAME="drmfs2"
 
@@ -195,6 +196,11 @@ mount_drmfs_ro()
   mount -t ext4 -o rw,defaults $1 $2 || return 1
 }
 
+mount_hwcfg_ro()
+{
+  mount -t cramfs -o ro,relatime,barrier=1 $1 $2 || return 1
+}
+
 # $1 : primary drmfs
 # $2 : secondary drmfs
 recover_drmfs()
@@ -300,18 +306,33 @@ case "$1" in
     [ ! -d /tmp/oprofile ] && mkdir -p /tmp/oprofile
 
     if has-drm-fs; then
-      DRM_FS_MMC_NO=$(check_mmc ${DRM_FS_NAME})
-      DRM_FS_RECOVER_MMC_NO=$(check_mmc ${DRM_FS_RECOVER_NAME})
-      DRM_FS_BLK_NAME=/dev/mmcblk0p${DRM_FS_MMC_NO}
-      DRM_FS_RECOVER_BLK_NAME=/dev/mmcblk0p${DRM_FS_RECOVER_MMC_NO}
-      if [ -b ${DRM_FS_BLK_NAME} ]; then
-        # create folder for SAGE usage tables if not present
-        [ ! -d /user/widevine/brcm_sage ] && mkdir -p /user/widevine/brcm_sage && chmod 777 /user/widevine/brcm_sage
-        [ ! -d /user/drmfs ] && mkdir -p /user/drmfs
-        if ! mount_drmfs_ro ${DRM_FS_BLK_NAME} /user/drmfs; then
-          echo "DRMFS is corrupt, attempting to recover keybox..."
-          if ! recover_drmfs ${DRM_FS_BLK_NAME} ${DRM_FS_RECOVER_BLK_NAME}; then
-            echo "DRMFS is corrupted and not recoverable."
+      # create folder for SAGE usage tables if not present
+      [ ! -d /user/widevine/brcm_sage ] && mkdir -p /user/widevine/brcm_sage && chmod 777 /user/widevine/brcm_sage
+      [ ! -d /user/drmfs ] && mkdir -p /user/drmfs
+      ATV_HWCFG_MMC_NO=$(check_mmc ${ATV_HWCFG_MMC_NAME})
+      DRMFS_MOUNTED=0 # not mounted yet
+      if [ -n "${ATV_HWCFG_MMC_NO}" ]; then
+        ATV_HWCFG_BLK_NAME=/dev/mmcblk0p${ATV_HWCFG_MMC_NO}
+        echo "Found ATV partition table ${ATV_HWCFG_MMC_NAME} at ${ATV_HWCFG_BLK_NAME}!"
+        if [ -b ${ATV_HWCFG_BLK_NAME} ]; then
+          if mount_hwcfg_ro ${ATV_HWCFG_BLK_NAME} /user/drmfs; then
+            DRMFS_MOUNTED=1
+          else
+            echo "failed mounting ${ATV_HWCFG_BLK_NAME}"
+          fi
+        fi
+      fi
+      if [ ${DRMFS_MOUNTED} -eq 0 ]; then
+        DRM_FS_MMC_NO=$(check_mmc ${DRM_FS_NAME})
+        DRM_FS_RECOVER_MMC_NO=$(check_mmc ${DRM_FS_RECOVER_NAME})
+        DRM_FS_BLK_NAME=/dev/mmcblk0p${DRM_FS_MMC_NO}
+        DRM_FS_RECOVER_BLK_NAME=/dev/mmcblk0p${DRM_FS_RECOVER_MMC_NO}
+        if [ -b ${DRM_FS_BLK_NAME} ]; then
+          if ! mount_drmfs_ro ${DRM_FS_BLK_NAME} /user/drmfs; then
+            echo "DRMFS is corrupt, attempting to recover keybox..."
+            if ! recover_drmfs ${DRM_FS_BLK_NAME} ${DRM_FS_RECOVER_BLK_NAME}; then
+              echo "DRMFS is corrupted and not recoverable."
+            fi
           fi
         fi
       fi
