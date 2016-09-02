@@ -1,0 +1,24 @@
+--- a/longlong.h	2016-09-01 16:07:44.441547780 -0700
++++ b/longlong.h	2016-09-01 16:11:44.573385451 -0700
+@@ -410,17 +410,17 @@
+ 	   : "=r" (sh),							\
+ 	     "=&r" (sl)							\
+ 	   : "r"  ((USItype) (ah)),					\
+-	     "rIJ" ((USItype) (bh)),					\
++	     "r"  ((USItype) (bh)),					\
+ 	     "%r" ((USItype) (al)),					\
+-	     "rIJ" ((USItype) (bl)))
++	     "r"  ((USItype) (bl)))
+ #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
+   __asm__ ("sub.f\t%1, %4, %5\n\tsbc\t%0, %2, %3"			\
+ 	   : "=r" (sh),							\
+ 	     "=&r" (sl)							\
+ 	   : "r" ((USItype) (ah)),					\
+-	     "rIJ" ((USItype) (bh)),					\
++	     "r" ((USItype) (bh)),					\
+ 	     "r" ((USItype) (al)),					\
+-	     "rIJ" ((USItype) (bl)))
++	     "r" ((USItype) (bl)))
+ #endif
+ 
+ #if defined (__arm__) && W_TYPE_SIZE == 32
