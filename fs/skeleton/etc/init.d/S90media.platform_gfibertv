@@ -16,18 +16,6 @@ case "$1" in
       # remove detritus from manufacturing
       rm -f /var/media/ManufacturingBurnin.mov
     fi
-    if [ -w /var/media ] && [ ! -f /var/media/.mfgmedia2 ]; then
-      mkdir -p /var/media/pictures/Landscapes
-      cd /usr/lib/media/landscapes/
-      for file in *
-      do
-        cp "$file" /var/media/pictures/Landscapes
-        chown video.video /var/media/pictures/Landscapes/"$file"
-        chmod 666 /var/media/pictures/Landscapes/"$file"
-      done
-
-      echo done >/var/media/.mfgmedia2
-    fi
     ;;
   stop)
     ;;
