@@ -1,0 +1,28 @@
+From 0fbe056f9c65cbcf73da96453de97f50b829bfa5 Mon Sep 17 00:00:00 2001
+From: Richard Frankel <rofrankel@google.com>
+Date: Thu, 11 Aug 2016 20:14:23 -0400
+Subject: [PATCH] Remove toolbox ifconfig symlink.
+
+toybox creates /sbin/ifconfig and toolbox creates /bin/ifconfig.  We
+want the toybox one.
+
+Change-Id: Ic98cb37f8ae794477f351c1840e22592786f6d87
+---
+ Makefile | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index d533563..ad1875a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -11,7 +11,6 @@ TOOLS := \
+ 	insmod \
+ 	rmmod \
+ 	lsmod \
+-	ifconfig \
+ 	setconsole \
+ 	rm \
+ 	mkdir \
+-- 
+2.8.0.rc3.226.g39d4020
+

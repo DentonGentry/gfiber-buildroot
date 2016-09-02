@@ -53,25 +53,56 @@ stopap() {
 
 # Check all existing command and gateway files, then monitor those as well as
 # access_point files for changes.
-{ cd "$TMP_DIR" && ls gateway.* command.*;
+{ cd "$TMP_DIR" && ls gateway.* command.* subnet.*;
   cd "$CONFIG_DIR" && ls command.*;
   watch-dir $TMP_DIR $CONFIG_DIR; } |
 while read filename; do
+  route_type=
+  if startswith "$filename" "subnet."; then
+    route_type="subnet"
+  fi
   if startswith "$filename" "gateway."; then
+    route_type="gateway"
+  fi
+  if [ "$route_type" != "" ]; then
     filepath="$TMP_DIR/$filename"
     if [ -e "$filepath" ]; then
-      interface=${filename#gateway.}
-      gateway=$(cat "$filepath")
-      # If this script is running as conman's deathrattle, it is possible that
-      # there is a wifi route up too and also that acs_autoprovisioning is
-      # enabled.  Between deleting and re-adding this default route, traffic
-      # could be routed via wifi, and if autoprovisioning is enabled and the
-      # wifi connection is to a neighbor's RG then the ACS could provision this
-      # device to the neighbor.  Removing the file which enables that
-      # autoprovisioning here prevents that from happening.
-      rm -f /tmp/conman/acs_autoprovisioning
-      ip -4 route del default dev "$interface"
-      ip -4 route add default via "$gateway" dev "$interface" $initrwnd
+      interface=${filename#${route_type}.}
+      # Trying to add a default route without a subnet route fails, because
+      # there is no route to the gateway.  So just always update the subnet
+      # route first, and then update the default route if we know the gateway.
+      subnet_filepath="$TMP_DIR/subnet.$interface"
+      if [ -e "$subnet_filepath" ]; then
+        subnet=$(cat "$subnet_filepath")
+        # If this script is running as conman's deathrattle, it is possible that
+        # there is a wifi route up too and also that acs_autoprovisioning is
+        # enabled.  Between deleting and re-adding this default route, traffic
+        # could be routed via wifi, and if autoprovisioning is enabled and the
+        # wifi connection is to a neighbor's RG then the ACS could provision this
+        # device to the neighbor.  Removing the file which enables that
+        # autoprovisioning here prevents that from happening.
+        rm -f /tmp/conman/acs_autoprovisioning
+
+        # Remove all subnet routes on $interface except default, with 'scope
+        # link', then recreate the desired subnet route.
+        ip -4 route show dev "$interface" |
+        while read route junk; do
+          # Ignore the RFC2365 multicast route.
+          if ! startswith "$route" "239"; then
+            if contains "$route" "/"; then
+              ip -4 route del "$route" dev "$interface"
+            fi
+          fi
+        done
+        ip -4 route add "$subnet" dev "$interface" $initrwnd
+
+        gateway_filepath="$TMP_DIR/gateway.$interface"
+        if [ -e "$gateway_filepath" ]; then
+          gateway=$(cat "$gateway_filepath")
+          ip -4 route del default dev "$interface"
+          ip -4 route add default via "$gateway" dev "$interface" $initrwnd
+        fi
+      fi
     fi
     continue
   fi

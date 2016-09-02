@@ -327,12 +327,6 @@ fi
 if [ x$old_broadcast_address != x ]; then
   old_broadcast_arg="broadcast $old_broadcast_address"
 fi
-if [ -n "$new_subnet_mask" ]; then
-    new_mask="/$new_subnet_mask"
-fi
-if [ -n "$alias_subnet_mask" ]; then
-    alias_mask="/$alias_subnet_mask"
-fi
 if [ x$IF_METRIC != x ]; then
   metric_arg="metric $IF_METRIC"
 fi

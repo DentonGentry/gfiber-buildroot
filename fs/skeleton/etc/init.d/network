@@ -257,11 +257,8 @@ add_interfaces_to_bridge() {
     brctl addif $bridge $x &&
     ip -o -f inet route list dev $x |
     while read dst routeinfo; do
-      if [ "$dst" = "default" ]; then
-        echo "Moving route '$dst' from $x to $bridge" &&
-        ip route del dev $x $dst $routeinfo &&
-        ip route add dev $bridge $dst $routeinfo
-      fi
+      ip route add dev $bridge $dst $routeinfo metric 1 &&
+      ip route del dev $x $dst $routeinfo
     done &&
     ip -o -f inet addr show $x |
     while read a b c ip junk; do

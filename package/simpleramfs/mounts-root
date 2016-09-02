@@ -150,7 +150,8 @@ if [ -n "$NFSROOT" ]; then
               autoconf dns0_ip dns1_ip junk
       [ -z "$device" ] && device=eth0
       if [ "$ip" != "auto" ]; then
-        ifconfig "$device" "$client_ip"
+        ifconfig "$device" "$client_ip" netmask 255.255.255.255
+        route add -net "$gw_ip" netmask 255.255.255.255 dev "$device"
       fi
     }
     log "  IP initialized."
