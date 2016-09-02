@@ -80,7 +80,7 @@ case "$1" in
     # Start BlueZ stack
     (
       echo "$0: Starting btmon"
-      babysit 30 btmon -t 2>&1 | logos btmon &
+      babysit 30 btmon -A -t 2>&1 | logos btmon &
       sleep 1
 
       echo "$0: Starting bluetoothd"
