@@ -76,7 +76,16 @@ rc_pipe_deinit() {
 }
 
 
+setup_mcastcapture_settings() {
+  mkdir -p /rw/sagesrv
+  chmod 770 /rw/sagesrv
+  chown video.video /rw/sagesrv
+  chown video.video /rw/sagesrv/*
+}
+
+
 start_sagesrv() {
+  setup_mcastcapture_settings
   LD_LIBRARY_PATH=/app/sage:/app/sage/lib
   # Start up native streaming server
   VIDEO_UID=$(id -u video)
@@ -96,10 +105,7 @@ stop_sagesrv() {
 
 
 setup_ads() {
-  mkdir -p /rw/sagesrv
-  chmod 770 /rw/sagesrv
-  chown video.video /rw/sagesrv
-  chown video.video /rw/sagesrv/*
+  setup_mcastcapture_settings
   mkdir -p /var/media/ads
   chmod 770 /var/media/ads
   chown video.video /var/media/ads
