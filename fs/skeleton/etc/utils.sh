@@ -139,6 +139,24 @@ stop_adsmgr() {
 }
 
 
+start_adscale() {
+  setup_mcastcapture_settings
+  VIDEO_UID=$(id -u video)
+  VIDEO_GID=$(id -g video)
+  # Start up native adscale manager
+  babysit 60 \
+  alivemonitor /tmp/adscalealive 80 10 120 \
+  /app/sage/adscale -U $VIDEO_UID -G $VIDEO_GID 2>&1 | logos adscale 0 20000000 &
+}
+
+
+stop_adscale() {
+  pkillwait -f '([b]abysit.*)(adscale)'
+  pkillwait -x 'adscale'
+  pkillwait -f '([a]livemonitor.*)(adscale)'
+}
+
+
 mac_addr_increment() {
   echo "$1" | (
     IFS=: read m1 m2 m3 m4 m5 m6

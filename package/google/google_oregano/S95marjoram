@@ -30,6 +30,7 @@ case "$1" in
     pkillwait -x chsrv &
     stop_sagesrv
     stop_adsmgr
+    stop_adscale
     wait
     ;;
   restart)

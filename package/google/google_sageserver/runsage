@@ -50,6 +50,7 @@ ulimit -c 49152
 if [ "$MODE" = "server" ]; then
   start_sagesrv
   start_adsmgr
+  start_adscale
 
   # Cleanup any Oregano files if they switched
   /app/oregano/dogcatcher.sh &
