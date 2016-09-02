@@ -1,0 +1,34 @@
+#! /bin/sh
+
+start_gfcm() {
+  # start up client router of gcm
+  GCM_ID_DIR=/tmp/gfcm
+  if [ ! -d ${GCM_ID_DIR} ]; then
+    mkdir -p ${GCM_ID_DIR}
+  fi
+
+  babysit 60 /app/gcm/clientrouter \
+    --gcmIdsPath=${GCM_ID_DIR}/gcmIds 2>&1 | logos gfcm 0 20000000 &
+}
+
+stop_gfcm() {
+  # stop client router of gcm
+  pkillwait -f '([b]abysit.*)(clientrouter)'
+  pkillwait -x 'clientrouter'
+}
+
+case "$1" in
+  start)
+    start_gfcm
+    ;;
+  stop)
+    stop_gfcm
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
