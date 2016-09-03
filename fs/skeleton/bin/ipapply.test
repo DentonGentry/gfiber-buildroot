@@ -91,7 +91,7 @@ EOF
 
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip addr add 1.1.1.1/32 dev iface0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
 WVPASSEQ $? 0
 
 
@@ -115,12 +115,12 @@ EOF
 echo "   inet 1.1.1.3/32 brd 255.255.255.0 scope global iface0" >>"$tmpdir/ip_addr_show"
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip addr add 1.1.1.1/32 dev iface0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr del 1.1.1.1/32 dev iface0" >/dev/null
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 1.1.1.2/24 dev iface0" >/dev/null
 WVPASSNE $? 0
-echo "${output}" | grep "ip addr add 1.1.1.2/32 dev iface0" >/dev/null
-WVPASSEQ $? 0
-echo "${output}" | grep "ip addr del 1.1.1.2/24 dev iface0" >/dev/null
-WVPASSEQ $? 0
 echo "${output}" | grep "ip addr del 1.1.1.3/32 dev iface0" >/dev/null
 WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 1.1.1.4/32 dev iface0" >/dev/null
@@ -151,7 +151,7 @@ EOF
 
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip addr add 1.1.1.100/32 dev iface0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.100/16 dev iface0" >/dev/null
 WVPASSEQ $? 0
 
 
@@ -168,7 +168,7 @@ cat >$tmpdir/$DYNAMIC_PATH/iface0 <<-EOF
 EOF
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip addr add 1.1.1.100/32 dev iface0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.100/16 dev iface0" >/dev/null
 WVPASSEQ $? 0
 subnet_file=$tmpdir/$TMP_CONMAN/subnet.iface0
 WVPASS [ -e $subnet_file ]
@@ -226,7 +226,7 @@ mkdir -p $tmpdir/sys/class/net/br0
 
 output=$(ipapply br0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
-echo "${output}" | grep "ip addr add 1.1.1.2/32 dev br0" >/dev/null
+echo "${output}" | grep "ip addr add 1.1.1.2/24 dev br0" >/dev/null
 WVPASSEQ $? 0
 subnet_file=$tmpdir/$TMP_CONMAN/subnet.br0
 WVPASS [ -e $subnet_file ]

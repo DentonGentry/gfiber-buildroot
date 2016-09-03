@@ -191,7 +191,11 @@ def SelectAndApply(iface_name):
   new_ips = set()
   for ip in config.get('ip', []):
     if 'new_ip_address' in ip:
-      ip_string = ip['new_ip_address'] + '/32'
+      ip_string = ip['new_ip_address']
+      netmask = '32'
+      if selected_config_file == static_config_file and 'new_subnet_mask' in ip:
+        netmask = str(NormalizeNetmask(ip['new_subnet_mask']))
+      ip_string = ip_string + '/' + netmask
       new_ips.add(ip_string)
 
   IpAddrUpdate(iface_name, new_ips)
