@@ -20,4 +20,9 @@ define GOOGLE_PULLREADER_INSTALL_STAGING_CMDS
         $(INSTALL) -D -m 0644 $(@D)/lib/pullreader.h $(STAGING_DIR)/usr/local/include/
 endef
 
+define HOST_GOOGLE_PULLREADER_INSTALL_CMDS
+	$(INSTALL) -D -m 0644 $(@D)/lib/pullreader.h $(HOST_DIR)/usr/include/
+endef
+
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
