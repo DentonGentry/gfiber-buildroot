@@ -1,0 +1,71 @@
+#!/bin/sh
+
+running() {
+  [ -n "$(pgrep -f $1)" ]
+}
+
+write_configs() {
+  AREA=1
+  IPADDR=$(ip addr show lan0 | grep "^    inet " | sed -e 's/^    inet // ; s/ .*$//')
+
+  cat > /tmp/zebra.conf <<EOF
+EOF
+  chown quagga:quagga /tmp/zebra.conf
+  chmod 600 /tmp/zebra.conf
+
+  cat > /tmp/ospfd.conf <<EOF
+router ospf
+  network ${IPADDR} area ${AREA}
+  redistribute connected
+  passive-interface lo
+!
+log stdout
+EOF
+  chown quagga:quagga /tmp/ospfd.conf
+  chmod 600 /tmp/ospfd.conf
+}
+
+start() {
+  if running zebra || running ospfd ; then
+    exit 0
+  fi
+
+  CFGFILE=/config/spacecast/SpacecastAnycast.json
+  # Exit if anycast is not enabled.
+  if [ ! -f $CFGFILE ] || grep -qv ENABLE_ANYCAST $CFGFILE ; then
+    exit 0
+  fi
+
+  write_configs
+  babysit 60 zebra -f /tmp/zebra.conf 2>&1 | logos "zebra" &
+  babysit 60 ospfd -f /tmp/ospfd.conf 2>&1 | logos "ospfd" &
+}
+
+stop() {
+  pkillwait -x zebra
+  pkillwait -x ospfd
+  rm -f /tmp/ospfd.conf
+  rm -f /tmp/zebra.conf
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  sleep)
+    sleep 60
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0
