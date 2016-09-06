@@ -24,8 +24,6 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_BASE
 	select BR2_PACKAGE_LIBJSONCPP
 	select BR2_PACKAGE_GPERF
 	select BR2_PACKAGE_PY_TORNADO
-	select BR2_PACKAGE_MICROPYTHON
-	select BR2_PACKAGE_MICROPYTHON_LIB
 	help
 	  This package is a placeholder that depends on other packages needed
 	  to run the Google Fiber devices.
