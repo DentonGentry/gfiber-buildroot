@@ -4,7 +4,7 @@ GOOGLE_MINICLIENT_DEPENDENCIES=\
 	bcm_nexus bcm_rockford \
 	google_pullreader google_dashplayer google_widevine google_hdcp bruno \
 	openssl libcurl zlib libpng libungif libprojectM libxml2 \
-	google_platform protobuf
+	google_platform protobuf jpeg
 GOOGLE_MINICLIENT_INSTALL_STAGING=YES
 
 define GOOGLE_MINICLIENT_BUILD_CMDS

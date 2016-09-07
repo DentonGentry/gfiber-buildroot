@@ -7,5 +7,6 @@ config BR2_PACKAGE_GOOGLE_MINICLIENT
 	select BR2_PACKAGE_LIBXML2
 	select BR2_PACKAGE_LIBCURL
 	select BR2_PACKAGE_LIBUNGIF
+	select BR2_PACKAGE_JPEG
 	help
           Builds the SageTV miniclient
