@@ -6,7 +6,7 @@
 
 GOOGLE_DASHPLAYER_SITE=repo://vendor/google/dashplayer
 GOOGLE_DASHPLAYER_DEPENDENCIES=\
-	libcurl libxml2 host-ninja
+	libcurl libxml2 google_pullreader host-ninja
 
 GOOGLE_DASHPLAYER_INSTALL_STAGING=YES
 GOOGLE_DASHPLAYER_INSTALL_TARGET=YES
