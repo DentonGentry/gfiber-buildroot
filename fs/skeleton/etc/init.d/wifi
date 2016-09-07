@@ -20,6 +20,7 @@ create_secondary_interface() {
       iw phy "$phy" interface add "$secondary_interface" type managed
     fi
     ip link set dev "$secondary_interface" address "$mac"
+    brctl addif br1 "$secondary_interface"
   fi
 }
 

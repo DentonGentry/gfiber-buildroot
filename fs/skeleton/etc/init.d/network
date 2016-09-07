@@ -503,9 +503,6 @@ case "$1" in
         /sys/class/net/moca[0-9] \
         /sys/class/net/wlan[0-9]
 
-      add_interfaces_to_bridge br1 \
-        /sys/class/net/wlan[0-9]_portal
-
       add_multicast_route
 
       bridge_up br0
