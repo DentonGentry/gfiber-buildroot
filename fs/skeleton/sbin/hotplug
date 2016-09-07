@@ -4,7 +4,6 @@
 exec >/dev/kmsg 2>&1
 
 . /etc/utils.sh
-register_experiment RwFirmware
 
 
 create_client_interface() {
@@ -83,6 +82,7 @@ case "$SUBSYSTEM-$ACTION" in
 
   firmware-add)
     echo "hotplug: sys=$SUBSYSTEM act=$ACTION fw=$FIRMWARE dev=$DEVPATH"
+    register_experiment RwFirmware
     if experiment RwFirmware; then
       load_firmware "/rw/firmware/$FIRMWARE" ||
       load_firmware "/rw/firmware/$(basename "$FIRMWARE")"
