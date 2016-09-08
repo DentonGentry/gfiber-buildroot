@@ -178,6 +178,7 @@ define DOWNLOAD_REPO
 		(cd $(BUILD_DIR) && \
 		 rm -rf $($(PKG)_BASE_NAME) && \
 		 cd $(TOPDIR)/../$($(PKG)_REPO_PATH) && \
+		 git worktree prune && \
 		 git worktree add -f $(BUILD_DIR)/$($(PKG)_BASE_NAME) \
 			"$$(git rev-parse --abbrev-ref HEAD)"; \
 		) \
