@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+SNIPROXY_CONFIG_FILE=/tmp/sniproxy.conf
+SNIPROXY_PIDFILE=/tmp/run/sniproxy.pid
 SNIPROXY_PORT=8443
 
 start_iptables () {
@@ -16,11 +18,17 @@ stop_iptables () {
 
 case "$1" in
   start)
-    babysit 60 setuid nobody sniproxy -f 2>&1 | logos sniproxy &
+    if [ -e "$SNIPROXY_CONFIG_FILE" ]; then
+      babysit 60 startpid "$SNIPROXY_PIDFILE" setuid nobody \
+        sniproxy -c "$SNIPROXY_CONFIG_FILE" -f 2>&1 | logos sniproxy &
+    else
+      babysit 60 startpid "$SNIPROXY_PIDFILE" setuid nobody \
+        sniproxy -f 2>&1 | logos sniproxy &
+    fi
     start_iptables
     ;;
   stop)
-    pkillwait -f "\bsniproxy"
+    killpid "$SNIPROXY_PIDFILE"
     stop_iptables
     ;;
   restart)
