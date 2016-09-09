@@ -6,6 +6,11 @@ TLSDATE_DEPENDENCIES = host-pkg-config openssl libevent
 TLSDATE_PRE_CONFIGURE_HOOKS += TLSDATE_AUTOGEN
 TLSDATE_CONF_OPT = --disable-hardened-checks
 
+ifeq ($(ARCH),arc)
+# ARC doesn't have seccomp support.
+TLSDATE_CONF_OPT += --disable-seccomp-filter
+endif
+
 ifeq ($(BR2_PACKAGE_DBUS),y)
 TLSDATE_DEPENDENCIES += dbus
 TLSDATE_CONF_OPT += --enable-dbus
