@@ -9,6 +9,8 @@ action="$2"
 
 CONMAN_STATUS_DIR=/tmp/conman/interfaces
 
+echo "ifplugd: $iface is $action"
+
 case "$action" in
   up)
     if [ "$iface" = pon0 ]; then
