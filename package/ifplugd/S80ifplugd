@@ -1,16 +1,6 @@
 #!/bin/sh
-. /etc/utils.sh
 
-# When booting over NFS, don't mess with interfaces or we could lose our NFS
-# connection.
-# TODO(apenwarr): remove this when ipapply is fixed.
-#   Right now, it flushes all routes before reapplying them, which breaks NFS.
-#   If we fixed that, then it's clear that the NFS interface should always be
-#   up, which means its route should stay around even if ipapply is asked to
-#   re-check it.
-if [ -e /tmp/NFS ]; then
-  exit 0
-fi
+. /etc/utils.sh
 
 INTERFACES=
 APIMODE=
