@@ -30,11 +30,12 @@ if [ -z "${1##*[!0-9]*}" ]; then
   exit 1
 fi
 
-# We are directly setting 6 bits of the lower byte (0x91).
+# We are directly setting 4 bits of the lower byte (0x91).
 # Make sure that it doesn't spill over into the upper byte 0x90.
 # The PON-ID message format is here: http://go/golong-ponid-ploam-msg
-if [ "$1" -lt "0" ] && [ "$1" -gt "63" ]; then
-  echo "Laser channel is out of range: $1 (range is: 0-63)"
+# GFLT3 will only accept a channel inbetween 0-15
+if [ "$1" -lt "0" ] && [ "$1" -gt "15" ]; then
+  echo "Laser channel is out of range: $1 (range is: 0-15)"
   exit 1
 fi
 
