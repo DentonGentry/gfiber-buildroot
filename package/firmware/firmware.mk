@@ -9,7 +9,7 @@ define FIRMWARE_INSTALL_TARGET_CMDS
 	  for dd in $(@D)/$$d; do \
 	    dir=$$(dirname "$(TARGET_DIR)/lib/firmware/$$d"); \
 	    mkdir -p "$$dir"; \
-	    cp "$$dd" "$$dir/"; \
+	    cp -P "$$dd" "$$dir/"; \
 	  done; \
 	done
 endef
