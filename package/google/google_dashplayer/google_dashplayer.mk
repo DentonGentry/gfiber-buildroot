@@ -7,6 +7,10 @@
 GOOGLE_DASHPLAYER_SITE=repo://vendor/google/dashplayer
 GOOGLE_DASHPLAYER_DEPENDENCIES=\
 	libcurl libxml2 google_pullreader host-ninja
+HOST_GOOGLE_DASHPLAYER_DEPENDENCIES=\
+	$(GOOGLE_DASHPLAYER_DEPENDENCIES) \
+	host-libxml2 \
+	host-google_pullreader
 
 GOOGLE_DASHPLAYER_INSTALL_STAGING=YES
 GOOGLE_DASHPLAYER_INSTALL_TARGET=YES
@@ -46,4 +50,14 @@ define GOOGLE_DASHPLAYER_INSTALL_STAGING_CMDS
 	$(INSTALL) -D -m 0644 $(@D)/src/dashplayer/dash.h $(STAGING_DIR)/usr/local/include/
 endef
 
+define HOST_GOOGLE_DASHPLAYER_TEST_CMDS
+	$(DASHPLAYER_MAKE_ENV) $(MAKE) -C $(@D)/build \
+		PATH=${HOST_DIR}/usr/bin:${PATH} \
+		BUILD_DIR=$(BUILD_DIR) \
+		HOST_DIR=$(HOST_DIR) \
+		IS_HOST_BUILD=y \
+		run_unittests
+endef
+
 $(eval $(call GENTARGETS))
+$(eval $(call GENTARGETS,host))
