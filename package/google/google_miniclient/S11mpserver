@@ -7,12 +7,20 @@
 case "$1" in
   start)
     (
-      wait-until-created /tmp/startupvideo.done
       # mcnmp_server playback code needs widevine and pullreader .so
       export LD_LIBRARY_PATH=/app/client
       export SAGEBIN_PATH=/usr/lib/sage_firmware
+      rm -f /tmp/nexus_multiprocess
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
       wait-until-created /tmp/nexus_multiprocess
+      # This waits will we can connect to the mcnmp_server.
+      mcnmp_retries=0
+      while [ "$mcnmp_retries" -lt "60" ] && \
+          ! ( nc 127.0.0.1 6167 < /dev/null ) ; do
+        sleep 1
+        mcnmp_retries=$((mcnmp_retries+1))
+      done
+      touch /tmp/mcnmp_ready
       if is-secure-boot; then
         : >/tmp/gpio/ledcontrol/secure_boot
       else
