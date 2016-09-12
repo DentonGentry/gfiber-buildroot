@@ -53,6 +53,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_WAVEGUIDE
 	help
 	  Waveguide tool for Wi-Fi.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_BOUNCER
+	bool "include advanced http_bouncer"
+	default n
+	help
+	  HTTP Bouncer with support for guest networks.
+
 config BR2_PACKAGE_GOOGLE_PLATFORM_CACHE_WARMING
         bool "include cache warming"
         default n
