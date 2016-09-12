@@ -7,7 +7,7 @@
 DMVERITY_SITE = http://git.chromium.org/chromiumos/platform/dm-verity.git
 DMVERITY_SITE_METHOD = git
 DMVERITY_VERSION = release-R19-2046.B
-HOST_DMVERITY_DEPENDENCIES = host-gtest host-gmock
+HOST_DMVERITY_DEPENDENCIES = host-googletest
 
 define HOST_DMVERITY_CONFIGURE_CMDS
 	ln -sf $(@D) $(@D)/../verity

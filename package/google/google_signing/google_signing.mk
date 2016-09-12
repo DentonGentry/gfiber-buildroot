@@ -4,7 +4,7 @@
 #
 #############################################################
 GOOGLE_SIGNING_SITE_METHOD=null
-GOOGLE_SIGNING_DEPENDENCIES=host-gtest host-py-openssl \
+GOOGLE_SIGNING_DEPENDENCIES=host-googletest host-py-openssl \
 			    google_platform \
 			    host-google_platform \
 			    host-google_keystore_client

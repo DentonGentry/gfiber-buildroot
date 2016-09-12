@@ -31,7 +31,7 @@ GOOGLE_PLATFORM_DEPENDENCIES=\
 
 HOST_GOOGLE_PLATFORM_DEPENDENCIES=\
 	$(GOOGLE_PLATFORM_DEPENDENCIES) \
-	host-gtest \
+	host-googletest \
 	host-protobuf \
 	host-libpcap
 

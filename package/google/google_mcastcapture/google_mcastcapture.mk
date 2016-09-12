@@ -2,7 +2,7 @@ GOOGLE_MCASTCAPTURE_SITE=repo://vendor/google/mcastcapture
 GOOGLE_MCASTCAPTURE_DEPENDENCIES=openssl libcurl protobuf zlib google_platform \
 	google_libgep libevent
 GOOGLE_MCASTCAPTURE_INSTALL_STAGING = YES
-HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-gtest host-gmock host-openssl \
+HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-googletest host-openssl \
 	host-libcurl host-protobuf host-zlib host-google_platform \
 	host-libevent host-google_libgep
 
