@@ -55,5 +55,11 @@ define HOST_GOOGLE_DASHPLAYER_TEST_CMDS
 		run_unittests
 endef
 
+define HOST_GOOGLE_DASHPLAYER_COVERAGE_CMDS
+	$(GOOGLE_DASHPLAYER_MAKE_CMD) \
+		IS_HOST_BUILD=y \
+		run_coverage
+endef
+
 $(eval $(call GENTARGETS))
 $(eval $(call GENTARGETS,host))
