@@ -1,0 +1,23 @@
+#!/bin/sh
+
+. /etc/utils.sh
+platform=$(cat /etc/platform)
+
+case "$1" in
+  start)
+    if startswith "$platform" "GFLT3"; then
+      echo "Enabling Dying Gasp..."
+      enable_dying_gasp 2>&1 | logos dyinggasp
+    fi
+    ;;
+  stop)
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
