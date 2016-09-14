@@ -19,3 +19,5 @@ rm -f $TARGET_DIR/usr/lib/python2.7/encodings/gb*
 # Remove setuptools
 rm -f $TARGET_DIR/usr/lib/python2.7/site-packages/setuptools*
 
+# Remove internationalization messages
+rm -rf $TARGET_DIR/usr/share/locale/*

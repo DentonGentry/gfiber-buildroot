@@ -151,6 +151,9 @@ BUILD_SPEEDTEST=n
 else ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfch100")
 # Avanta toolchain doesn't support -std=c++11
 BUILD_SPEEDTEST=n
+else ifeq ($(BR2_TARGET_GENERIC_PLATFORM_NAME),"gfrg240")
+# Prowl toolchain doesn't support -std=c++11
+BUILD_SPEEDTEST=n
 endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_CONNECTION_MANAGER),y)
