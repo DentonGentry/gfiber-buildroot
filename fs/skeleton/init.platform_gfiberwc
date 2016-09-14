@@ -1,24 +1,48 @@
 #!/bin/sh
 
-mount -rw -t proc none /proc
-mount -rw -t tmpfs none /tmp
-mount -rw -t sysfs none /sys
-mkdir /dev/pts && mount -rw -t devpts none /dev/pts
+log()
+{
+  echo "$*" >&2
+}
+
+read_cmdline()
+{
+  DEBUG=
+  set $(cat /proc/cmdline)
+  for i in "$@"; do
+    key=${i%%=*}
+    value=${i#*=}
+    case "$key" in
+      debug) if [ "$value" != "0" ]; then DEBUG=1; fi;;
+    esac
+  done
+}
+
+mount -t devtmpfs none /dev
+exec >/dev/kmsg 2>&1
+
+echo "---- initramfs ('$0')"
+mount -t proc none /proc && log "mounted /proc"
+mount -t tmpfs none /tmp && log "mounted /tmp"
+mount -t sysfs none /sys && log "mounted /sys"
+mkdir /dev/pts /dev/shm
+mount -t devpts none /dev/pts && log "mounted /dev/pts"
+mount -t tmpfs none /dev/shm && log "mounted /dev/shm"
 
 ##
 ## Put the names of the interfaces in the environmental variables
 ## (They can be board unique)
 ##
-
 export WAN_IF=eth0
 export LAN_IF=eth1
 
 ifconfig $LAN_IF up
 ifconfig $WAN_IF up
 
-[ "$(kernopt debug)" = 1 ] && echo DEBUG > /tmp/DEBUG
-
 touch /tmp/disable_pings
+
+read_cmdline
+[ -n "$DEBUG" ] && echo DEBUG >/tmp/DEBUG
 
 #We want to limit RSS to be around 30M, however, ulimit -m
 #is not working for linux 2.6.30+.
@@ -26,4 +50,4 @@ touch /tmp/disable_pings
 #RSS 30M, the number below is from estimate.
 ulimit -v 40960
 
-exec /sbin/init --init </dev/console >/dev/console 2>&1
+exec /sbin/init --init $* </dev/console >/dev/console 2>&1
