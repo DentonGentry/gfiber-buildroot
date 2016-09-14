@@ -87,4 +87,10 @@ else
 QUAGGA_CONF_OPT+=--disable-opaque-lsa
 endif
 
+define QUAGGA_COPY_INIT_SCRIPT
+        $(INSTALL) -D -m 0755 package/quagga/S99quagga $(TARGET_DIR)/etc/init.d/
+endef
+
+QUAGGA_POST_INSTALL_TARGET_HOOKS += QUAGGA_COPY_INIT_SCRIPT
+
 $(eval $(call AUTOTARGETS))
