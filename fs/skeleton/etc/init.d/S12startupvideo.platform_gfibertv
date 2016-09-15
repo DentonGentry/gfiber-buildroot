@@ -11,7 +11,6 @@ case "$1" in
 
         # sv monitor process
         (
-          wait-until-created /var/run/gpio-mailbox
           # Sleep and then write svpipe to terminate startupvideo, if we haven't
           # been killed.
           sleep 7200
@@ -26,41 +25,28 @@ case "$1" in
         alarm=$!
 
         (
-         wait-until-created /var/run/gpio-mailbox
-
-         # TODO(jnewlin):  startupvideo currently broken on gfhd254, put this
-         # back when startupvideo is fixed.  CSP#999394
-         platform=$(cat /etc/platform)
-         if [ "$platform" != GFHD254 ]; then
-           startupvideo /tmp/svpipe \
+          wait-until-created /tmp/mcnmp_ready
+          startupvideo /tmp/svpipe \
              /usr/sv/fiber-logo-animation.ts 2 0 256 257 0 \
              /usr/sv/connecting.ts 2 0 256 0 1
-         fi
 
-         # in case sv crashes early, make sure ntp is synced
-         wait-until-created /tmp/time.synced
+          # in case sv crashes early, make sure ntp is synced
+          wait-until-created /tmp/time.synced
 
-         if [ -d /proc/"$alarm" ] && [ "$alarm" -gt 1 ]; then
-           # If the alarm process is still alive, sv exits within timeout
-           # (normal case). We need to clean it up.
-           kill -TERM "$alarm"
-         fi
-         echo : >/tmp/startupvideo.done
+          if [ -d /proc/"$alarm" ] && [ "$alarm" -gt 1 ]; then
+            # If the alarm process is still alive, sv exits within timeout
+            # (normal case). We need to clean it up.
+            kill -TERM "$alarm"
+          fi
+          echo : >/tmp/startupvideo.done
        ) &
 
        (
-         wait-until-created /var/run/gpio-mailbox
          wait-until-created /tmp/time.synced
          echo y >/tmp/svpipe
        ) &
      else
        (
-         # non-TV boxes don't use the startupvideo, which opens nexus,
-         # and so theoretically we don't need to wait for gpio-mailbox
-         # to be ready (since it also opens nexus).  However, people
-         # use the startupvideo.done flag to mean "nexus has been released"
-         # so let's make sure that remains true.
-         wait-until-created /var/run/gpio-mailbox
          wait-until-created /tmp/time.synced
          echo : >/tmp/startupvideo.done
        ) &
