@@ -164,6 +164,7 @@ case "$1" in
       ip46tables -N MINIUPNPD
       ip46tables -N log
 
+      ip46tables -t nat -N captive-portal-guests-nat
       ip46tables -t nat -N acs-captive-portal-nat
       iptables -t nat -N acsrules-nat-prerouting
       iptables -t nat -N acsrules-nat-postrouting
@@ -238,6 +239,7 @@ case "$1" in
       # add ACS-configured things
       ip46tables -A FORWARD -i br1 -j acs-captive-portal-filter
       ip46tables -A FORWARD -j acsrules-filter-forward
+      ip46tables -t nat -A PREROUTING -i br1 -j captive-portal-guests-nat
       ip46tables -t nat -A PREROUTING -i br1 -j acs-captive-portal-nat
       iptables -t nat -A PREROUTING -j acsrules-nat-prerouting
       iptables -t nat -A POSTROUTING -j acsrules-nat-postrouting

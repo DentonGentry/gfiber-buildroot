@@ -57,7 +57,6 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D package/catawampus/cwmp_monitor $(TARGET_DIR)/bin
 	$(INSTALL) -m 0755 -D package/catawampus/tr69_ipconfig $(TARGET_DIR)/bin
 	$(INSTALL) -m 0755 -D package/catawampus/tr69_reboot $(TARGET_DIR)/bin
-	$(INSTALL) -m 0755 -D package/catawampus/http_bouncer $(TARGET_DIR)/bin
 	$(INSTALL) -m 0755 -D package/catawampus/poll_hostnames $(TARGET_DIR)/bin
 endef
 
