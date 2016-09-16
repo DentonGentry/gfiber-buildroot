@@ -253,6 +253,8 @@ define GOOGLE_PLATFORM_BUILD_CMDS
 endef
 
 define HOST_GOOGLE_PLATFORM_TEST_CMDS
+	PYTHONPATH=$(HOST_PYTHONPATH) \
+	PYTHON=$(HOST_DIR)/usr/bin/python \
 	$(HOST_GPLAT_MAKE) -C $(@D) test
 endef
 
