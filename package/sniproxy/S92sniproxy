@@ -18,13 +18,10 @@ stop_iptables () {
 
 case "$1" in
   start)
-    if [ -e "$SNIPROXY_CONFIG_FILE" ]; then
-      babysit 60 startpid "$SNIPROXY_PIDFILE" setuid nobody \
-        sniproxy -c "$SNIPROXY_CONFIG_FILE" -f 2>&1 | logos sniproxy &
-    else
-      babysit 60 startpid "$SNIPROXY_PIDFILE" setuid nobody \
-        sniproxy -f 2>&1 | logos sniproxy &
-    fi
+    # If $SNIPROXY_CONFIG_FILE is missing, use the system default config.
+    ln -s /etc/sniproxy.conf "$SNIPROXY_CONFIG_FILE"
+    babysit 60 startpid "$SNIPROXY_PIDFILE" setuid nobody \
+      sniproxy -c "$SNIPROXY_CONFIG_FILE" -f 2>&1 | logos sniproxy &
     start_iptables
     ;;
   stop)
