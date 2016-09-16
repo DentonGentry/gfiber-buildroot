@@ -193,7 +193,8 @@ def SelectAndApply(iface_name):
     if 'new_ip_address' in ip:
       ip_string = ip['new_ip_address']
       netmask = '32'
-      if selected_config_file == static_config_file and 'new_subnet_mask' in ip:
+      if ((selected_config_file == static_config_file or not IsWirelessClient())
+          and 'new_subnet_mask' in ip):
         netmask = str(NormalizeNetmask(ip['new_subnet_mask']))
       ip_string = ip_string + '/' + netmask
       new_ips.add(ip_string)
@@ -207,6 +208,9 @@ def SelectAndApply(iface_name):
       subnet = ''.join((ApplyNetmask(ip['new_ip_address'], mask), '/', mask))
     RouteAdd(iface_name, routers=ip.get('new_routers', None), subnet=subnet)
 
+
+def IsWirelessClient():
+  return subprocess.call(['is-wireless-client']) == 0
 
 
 def IpToInt(ip):

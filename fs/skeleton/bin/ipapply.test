@@ -36,7 +36,6 @@ cat >$tmpdir/test_bin/is-interface-up <<-EOF
 	done
 	exit 1  # not up.
 EOF
-
 chmod 777 $tmpdir/test_bin/is-interface-up
 
 cat >$tmpdir/test_bin/ip <<-EOF
@@ -48,6 +47,13 @@ cat >$tmpdir/test_bin/ip <<-EOF
 	exit 0
 EOF
 chmod 777 $tmpdir/test_bin/ip
+
+cat >$tmpdir/test_bin/is-wireless-client <<-EOF
+	#!/bin/sh
+	[ -e $tmpdir/is_wireless_client ]
+EOF
+chmod 777 $tmpdir/test_bin/is-wireless-client
+
 PATH=$tmpdir/test_bin:$PATH
 
 wipe_configs() {
@@ -63,6 +69,10 @@ wipe_configs() {
 export IPAPPLY_CONFIG_FILE_BASE="$tmpdir"
 
 wipe_configs
+
+# We'll explicitly remove this to simulate non-wireless devices, e.g. Spacecast,
+# later in the test.
+touch $tmpdir/is_wireless_client
 
 echo
 echo "TEST missing interface parameter"
@@ -201,6 +211,17 @@ WVPASS cmp $subnet_file $expected_file
 echo -n "2.2.2.1" >$expected_file
 WVPASS cmp $gateway_file $expected_file
 rm $expected_file
+
+echo
+echo "TEST dynamic config, not wireless client"
+rm -f $tmpdir/is_wireless_client
+ipapply iface0
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "ip addr add 2.2.2.2/24 dev iface0" >/dev/null
+WVPASSEQ $? 0
+touch $tmpdir/is_wireless_client
+
 
 wipe_configs
 
