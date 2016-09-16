@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Initialize loopback, this is done here to allow other programs in the startup
+# scripts to bind to it.
+
+case "$1" in
+  start)
+    # Configure loopback
+    ifup lo
+    ;;
+  stop)
+    # Leave lo up
+    ;;
+  restart)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
