@@ -1,0 +1,79 @@
+From abcd487fe47b9c0ee7f4010a6b43c960cd4fd1d4 Mon Sep 17 00:00:00 2001
+From: Richard Frankel <rofrankel@google.com>
+Date: Mon, 19 Sep 2016 19:08:31 -0400
+Subject: [PATCH] Use errnos for wpa_supplicant API failures.
+
+---
+ wpactrl.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/wpactrl.c b/wpactrl.c
+index 4c8c5e7..a82e062 100755
+--- a/wpactrl.c
++++ b/wpactrl.c
+@@ -97,7 +97,7 @@ static int WPACtrl_open(WPACtrl* self, PyObject* args, UNUSED PyObject* kargs)
+ 	self->ctrl_iface = wpa_ctrl_open(self->ctrl_iface_path);
+ 
+ 	if (!self->ctrl_iface) {
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_open failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_open_failed");
+ 		return -1;
+ 	}
+ 
+@@ -126,7 +126,7 @@ static PyObject* WPACtrl_request(WPACtrl* self, PyObject* args, UNUSED PyObject*
+ 		buf[buflen] = '\0';
+ 		return Py_BuildValue("s", buf);
+ 	case -1:
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_request failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_request failed");
+ 		break;
+ 	case -2:
+ 		PyErr_SetString(WPACtrl_error, "wpa_ctrl_request timed out");
+@@ -154,7 +154,7 @@ static PyObject* WPACtrl_attach(WPACtrl* self)
+ 		self->attached = 1;
+ 		Py_RETURN_NONE;
+ 	case -1:
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_attach failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_attach failed");
+ 		break;
+ 	case -2:
+ 		PyErr_SetString(WPACtrl_error, "wpa_ctrl_attach timed out");
+@@ -182,7 +182,7 @@ static PyObject* WPACtrl_detach(WPACtrl* self)
+ 		self->attached = 0;
+ 		Py_RETURN_NONE;
+ 	case -1:
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_detach failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_detach failed");
+ 		break;
+ 	case -2:
+ 		PyErr_SetString(WPACtrl_error, "wpa_ctrl_detach timed out");
+@@ -208,7 +208,7 @@ static PyObject* WPACtrl_pending(WPACtrl* self)
+ 	case 0:
+ 		Py_RETURN_FALSE;
+ 	case -1:
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_pending failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_pending failed");
+ 		break;
+ 	default:
+ 		PyErr_SetString(WPACtrl_error, "wpa_ctrl_pending returned unknown error");
+@@ -234,7 +234,7 @@ static PyObject* WPACtrl_recv(WPACtrl* self)
+ 		buf[buflen] = '\0';
+ 		return Py_BuildValue("s", buf);
+ 	case -1:
+-		PyErr_SetString(WPACtrl_error, "wpa_ctrl_recv failed");
++		PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_recv failed");
+ 		break;
+ 	default:
+ 		PyErr_SetString(WPACtrl_error, "wpa_ctrl_recv returned unknown error");
+@@ -266,7 +266,7 @@ static PyObject* WPACtrl_scanresults(WPACtrl* self)
+ 			buf[buflen] = '\0';
+ 			break;
+ 		case -1:
+-			PyErr_SetString(WPACtrl_error, "wpa_ctrl_request failed");
++			PyErr_SetFromErrnoWithFilename(PyExc_OSError, "wpa_ctrl_request failed");
+ 			return NULL;
+ 		case -2:
+ 			PyErr_SetString(WPACtrl_error, "wpa_ctrl_request timed out");
+-- 
+2.8.0.rc3.226.g39d4020
+
