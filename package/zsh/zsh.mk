@@ -12,6 +12,9 @@ endif
 ifeq ($(BR2_PACKAGE_NCURSES),y)
 ZSH_DEPENDENCIES += ncurses
 endif
+ifeq ($(BR2_PACKAGE_LIBCAP),y)
+ZSH_DEPENDENCIES += libcap
+endif
 
 
 $(eval $(call AUTOTARGETS))
