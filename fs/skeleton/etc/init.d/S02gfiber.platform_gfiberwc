@@ -1,34 +1,35 @@
 #!/bin/sh
 
-# TODO(allanzhang): read PLATFORM_NAME, two SNs from sysvar
-# and persist to etc. Pending sysvar tool porting.
-echo "GFMN100" >/etc/platform &&
-chmod 444 /etc/platform
-
-# Populate the serial number file.
-SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
-[ -n "$SERIAL" ] &&
-echo "$SERIAL" >/etc/serial &&
-chmod 444 /etc/serial
-
-hostname WindCharger
-
-# debugfs isn't mounted automatically because this device doesn't use
-# simpleramfs.
-mount -t debugfs none /sys/kernel/debug
-
-# Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
-echo "Starting gpio-mailbox"
-mkdir -p /tmp/gpio/ledcontrol
-leds 4 0  # blink activity while booting
-ulimit -c 49152
-
 case "$1" in
   start)
+    PLATFORM=$(hnvram -qr PLATFORM_NAME)
+    if [ -z "$PLATFORM" ]; then
+      PLATFORM="GFMN100"
+    fi
+    echo "$PLATFORM" >/etc/platform && chmod 444 /etc/platform
+
+    # Populate the serial number file.
+    SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
+    [ -n "$SERIAL" ] &&
+      echo "$SERIAL" >/etc/serial &&
+      chmod 444 /etc/serial
+
+    hostname WindCharger
+
     # Do this before gpio-mailbox
     update-gpio-links
 
-    babysit 1 gpio-mailbox 2>&1 | logos gpio-mailbox &
+    # debugfs isn't mounted automatically because this device doesn't use
+    # simpleramfs.
+    mount -t debugfs none /sys/kernel/debug
+
+    # Start the gpio mailbox ASAP, since it blinks the LEDs to show boot progress.
+    echo "Starting gpio-mailbox"
+    mkdir -p /tmp/gpio/ledcontrol
+    leds 4 0  # blink activity while booting
+    ulimit -c 49152
+
+    babysit 60 gpio-mailbox 2>&1 | logos gpio-mailbox &
     wait-until-created /var/run/gpio-mailbox
     pid_gpio_mailbox=$(pidof gpio-mailbox)
     if [ -n "$pid_gpio_mailbox" ]; then
