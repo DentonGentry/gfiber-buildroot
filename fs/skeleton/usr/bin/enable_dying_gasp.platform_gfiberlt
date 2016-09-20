@@ -7,7 +7,7 @@ __author__ = 'Chris Gibson <cgibson@google.com>'
 import subprocess
 import sys
 
-DYING_GASP_ENABLED_BIT = '0x00000001'
+DYING_GASP_ENABLED_BIT = '0x00000003'
 
 
 def DevMem(command):
@@ -42,7 +42,7 @@ if exitcode != 0:
   sys.stderr.write('Failed to set dying gasp threshold.\n')
   sys.exit(1)
 
-# Disable Dying Gasp and set the polarity to active low.
+# Disable Dying Gasp.
 stdout, exitcode = DevMem('devmem 0xf101870 32 0')
 if exitcode != 0:
   sys.stderr.write('Failed to disable dying gasp and set to active low.\n')
@@ -54,8 +54,8 @@ if exitcode != 0:
   sys.stderr.write('Failed to route dying gasp pin.\n')
   sys.exit(1)
 
-# Enable Dying Gasp.
-stdout, exitcode = DevMem('devmem 0xf101870 32 0x1')
+# Enable Dying Gasp and set to active high.
+stdout, exitcode = DevMem('devmem 0xf101870 32 0x3')
 if exitcode != 0:
   sys.stderr.write('Failed to enable dying gasp!\n')
   sys.exit(1)
