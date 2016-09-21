@@ -23,7 +23,8 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				go_shanemhansen_gossl \
 				go_sys \
 				go_tpm \
-				google_widevine_cenc
+				google_widevine_cenc \
+				trousers
 
 define GOOGLE_SPACECAST_GOENV
 	export GOPATH=$(@D)/proto:$(@D)/go:$(@D)/gomock:$$GOPATH ; \
