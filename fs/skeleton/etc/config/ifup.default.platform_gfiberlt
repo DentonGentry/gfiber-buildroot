@@ -24,7 +24,7 @@ start_dhcp() {
 ip link set dev $iface up
 if [ $(cat /etc/config/wanport) = $iface ]; then
   # start dhcp if no management vlan is assigned.
-  if [ -n "$(cat /etc/config/mgmtvlan)" ]; then
+  if [ -z "$(cat /etc/config/mgmtvlan)" ]; then
     start_dhcp
   fi
 elif [ "man" = "$iface" ]; then
