@@ -11,7 +11,9 @@ HARDWARE_FAILURE="$MONITOR_PATH/hardware_failure"
 NETWORK_STATUS_CONNECTED="CONNECTED"
 NETWORK_STATUS_DISCONNECTED="DISCONNECTED"
 LED_STATE_FILE="$BASE_PATH/ledstate"
-#color is used by gpio-mailbox, 1 is red LED, 2 is blue LED.
+# color is used by gpio-mailbox. 1 is red LED, 2 is blue LED, 3 is both LEDs on
+# at the same time (purple).
+PURPLE_LED="3"
 BLUE_LED="2"
 RED_LED="1"
 SOLID_MODE="solid"
@@ -99,38 +101,37 @@ has_ip_address() {
     [ -n "$(ip -f inet addr show dev $1 scope global 2>/dev/null)" ]
 }
 
+
 watch-dir $MONITOR_PATH |
 while [ -z "$led_state" ] || read event; do
-  if [ ! -e "$MFG_MODE_FILE" ] ; then
-    if [ -e "$HALTED_FILE" ]; then
-      set_led_state "$SOLID_MODE" "$RED_LED" "HALTED" "$LEDS_BRIGHTNESS_100P"
-    elif [ -e "$HARDWARE_FAILURE" ]; then
-      set_led_state "$SOLID_MODE" "$RED_LED" "HWFAIL" "$LEDS_BRIGHTNESS_100P"
-    elif ! is_interface_up "$PON_IFACE" ; then
-      set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_10P"
-    elif ! is_provisioned ; then
-      set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_10P"
-    elif ! has_ip_address "$MAN_IFACE" ; then
-      set_led_state "$BLINK_MODE" "$BLUE_LED" "NETCONNECTED" "$LEDS_BRIGHTNESS_10P"
-    elif [ ! -e $ACS_FILE ] ; then
-      set_led_state "$FAST_MODE" "$BLUE_LED" "IPV6ACQUIRED" "$LEDS_BRIGHTNESS_10P"
-    else
-      set_led_state "$SOLID_MODE" "$BLUE_LED" "ACSCONTACT" "$LEDS_BRIGHTNESS_10P"
-    fi
-  else
-    # This is manufacture mode.  We have two states.
-    # The pon interface is up, we blink slow and pon
-    # interface is down we blink fast.
+  if [ -e "$MFG_MODE_FILE" ]; then
+    # This is manufacture mode. We have two states: The pon interface is up, we
+    # blink slow purple. Otherwise, pon interface is down we blink fast purple.
+    # This should never happen for an installer, if it does they'll know
+    # something is wrong.
     if ! is_interface_up "$PON_IFACE" ; then
-      # Override the led to to blink super fast if we're in manufacture mode.
-      # This should never happen for an installer, if it does then they'll know
-      # something is wrong.
-      blink_led "x1 3@$LEDS_BRIGHTNESS_100P 0"
+      # Override the led to blink slow if we're in manufacture mode and the pon
+      # interface is not up.
+      set_led_state "$FAST_MODE" "$PURPLE_LED" "MFGMODE" "$LEDS_BRIGHTNESS_100P"
     else
-      # Override the led to to blink super fast if we're in manufacture mode.
-      # This should never happen for an installer, if it does then they'll know
-      # something is wrong.
-      blink_led "x2 3@${LEDS_BRIGHTNESS_100P}x7 0"
+      # Override the led to blink fast if we're in manufacture mode and the pon
+      # interface is up.
+      set_led_state "$BLINK_MODE" "$PURPLE_LED" "MFGMODE" "$LEDS_BRIGHTNESS_100P"
     fi
+  elif [ -e "$HALTED_FILE" ]; then
+    set_led_state "$SOLID_MODE" "$RED_LED" "HALTED" "$LEDS_BRIGHTNESS_100P"
+  elif [ -e "$HARDWARE_FAILURE" ]; then
+    set_led_state "$SOLID_MODE" "$RED_LED" "HWFAIL" "$LEDS_BRIGHTNESS_100P"
+  elif ! is_interface_up "$PON_IFACE" ; then
+    set_led_state "$BLINK_MODE" "$RED_LED" "LINKDOWN" "$LEDS_BRIGHTNESS_10P"
+  elif ! is_provisioned ; then
+    set_led_state "$FAST_MODE" "$RED_LED" "NETCONNECTING" "$LEDS_BRIGHTNESS_10P"
+  elif ! has_ip_address "$MAN_IFACE" ; then
+    set_led_state "$BLINK_MODE" "$BLUE_LED" "NETCONNECTED" "$LEDS_BRIGHTNESS_10P"
+  elif [ ! -e $ACS_FILE ] ; then
+    set_led_state "$FAST_MODE" "$BLUE_LED" "IPV6ACQUIRED" "$LEDS_BRIGHTNESS_10P"
+  else
+    set_led_state "$SOLID_MODE" "$BLUE_LED" "ACSCONTACT" "$LEDS_BRIGHTNESS_10P"
   fi
+  if [ -z "$led_state" ]; then sleep .5; fi
 done
