@@ -60,7 +60,6 @@ print_ath10k_cal_hash() {
   rm -f "$ath10k_cal_tmp"
 }
 
-echo "$SUBSYSTEM-$ACTION $DEVNAME" | logos hotplug
 case "$SUBSYSTEM-$ACTION" in
   input-add)
     # BlueZ: adjust repeat speed on remotes
