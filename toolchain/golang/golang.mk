@@ -56,6 +56,7 @@ define HOST_GOLANG_INSTALL_CMDS
 	$(INSTALL) -d -m 0755 "$(GOLANG_GOROOT)"
 	cp -a "$(@D)"/* "$(GOLANG_GOROOT)/"
 	ln -sfT "../lib/golang-$(GOLANG_RELEASE)/bin/go" "$(HOST_DIR)/usr/bin/go"
+	ln -sfT "../lib/golang-$(GOLANG_RELEASE)/bin/gofmt" "$(HOST_DIR)/usr/bin/gofmt"
 endef
 
 define HOST_GOLANG_CLEAN_CMDS
