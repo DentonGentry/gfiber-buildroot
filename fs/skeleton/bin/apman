@@ -19,6 +19,11 @@ CONFIG_DIR="/config/conman"
 mkdir -p $TMP_DIR
 mkdir -p $CONFIG_DIR
 
+iplog() {
+  echo "running: ip" "$@" >&2
+  ip "$@"
+}
+
 # extension is either "interface_suffix.band" or just "band"
 stopap() {
   local extension="$1"
@@ -85,22 +90,22 @@ while read filename; do
 
         # Remove all subnet routes on $interface except default, with 'scope
         # link', then recreate the desired subnet route.
-        ip -4 route show dev "$interface" |
+        iplog -4 route show dev "$interface" |
         while read route junk; do
           # Ignore the RFC2365 multicast route.
           if ! startswith "$route" "239"; then
             if contains "$route" "/"; then
-              ip -4 route del "$route" dev "$interface"
+              iplog -4 route del "$route" dev "$interface"
             fi
           fi
         done
-        ip -4 route add "$subnet" dev "$interface" $initrwnd
+        iplog -4 route add "$subnet" dev "$interface" $initrwnd
 
         gateway_filepath="$TMP_DIR/gateway.$interface"
         if [ -e "$gateway_filepath" ]; then
           gateway=$(cat "$gateway_filepath")
-          ip -4 route del default dev "$interface"
-          ip -4 route add default via "$gateway" dev "$interface" $initrwnd
+          iplog -4 route del default dev "$interface"
+          iplog -4 route add default via "$gateway" dev "$interface" $initrwnd
         fi
       fi
     fi

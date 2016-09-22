@@ -42,10 +42,11 @@ TMP_CONMAN_DIR = base_path + '/tmp/conman'
 
 def Log(s, *args):
   sys.stdout.flush()
+  ss = 'ipapply: %s\n' % (s,)
   if args:
-    sys.stderr.write((s + '\n') % args)
+    sys.stderr.write(ss % args)
   else:
-    sys.stderr.write(s + '\n')
+    sys.stderr.write(ss)
   sys.stderr.flush()
 
 
@@ -142,12 +143,13 @@ def RouteAdd(iface_name, routers=None, subnet=None):
   gateway_path = os.path.join(TMP_CONMAN_DIR, 'gateway.%s' % iface_name)
   if routers:
     first_route = routers.split()[0]
-    Log('add default route with routers: %r', first_route)
+    Log('add default route on dev %r with routers: %r',
+        iface_name, first_route)
     with open(gateway_path, 'w') as f:
       f.write(first_route)
 
   if subnet:
-    Log('add subnet route: %r', subnet)
+    Log('add subnet route: %r on dev %r', subnet, iface_name)
     with open(subnet_path, 'w') as f:
       f.write(subnet)
 
