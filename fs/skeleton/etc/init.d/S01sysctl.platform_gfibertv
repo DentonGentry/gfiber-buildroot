@@ -13,29 +13,6 @@ case "$1" in
     sysctl net.core.wmem_max=1572864
     # Panic everytime there is a kernel oops
     sysctl -q kernel.panic_on_oops=1
-
-    register_experiment AggressiveTCP
-    register_experiment BigSocketBuffers
-    if experiment AggressiveTCP; then
-      # technically only needed for server
-      echo 1 >/proc/sys/net/ipv4/tcp_thin_linear_timeouts
-      echo 1 >/proc/sys/net/ipv4/tcp_thin_dupack
-      if [ -e "/proc/sys/net/ipv4/tcp_min_rtt_wlen" ]; then
-        # Only on more recent kernels
-        echo 10 >/proc/sys/net/ipv4/tcp_min_rtt_wlen
-        echo 4 >/proc/sys/net/ipv4/tcp_early_retrans
-      fi
-
-      # technically only needed for client
-      echo 0 >/proc/sys/net/ipv4/tcp_moderate_rcvbuf
-    fi
-    if experiment BigSocketBuffers; then
-      # technically only rbuf increase needed on receiver, and only wbuf
-      # on sender, but for simplicity just do it everywhere for now.
-      n=8000000
-      echo $n $n $n | tee /proc/sys/net/ipv4/tcp_?mem >/dev/null
-      echo $n | tee /proc/sys/net/core/?mem_* >/dev/null
-    fi
     ;;
   stop)
     ;;

@@ -5,6 +5,8 @@ register_experiment BigInitRwnd
 register_experiment NoSTP
 register_experiment TVBoxNoGigEthernet
 register_experiment TcpWmem1Meg
+register_experiment AggressiveTCP
+register_experiment BigSocketBuffers
 
 
 irq_affinity() {
@@ -553,6 +555,26 @@ case "$1" in
     if is-storage-box && experiment TcpWmem1Meg; then
       # Values from GFRG210, applied to all Storage Boxes.
       echo "4096 16384 1019904" >/proc/sys/net/ipv4/tcp_wmem
+    fi
+    if experiment AggressiveTCP; then
+      # technically only needed for server
+      echo 1 >/proc/sys/net/ipv4/tcp_thin_linear_timeouts
+      echo 1 >/proc/sys/net/ipv4/tcp_thin_dupack
+      if [ -e "/proc/sys/net/ipv4/tcp_min_rtt_wlen" ]; then
+        # Only on more recent kernels
+        echo 10 >/proc/sys/net/ipv4/tcp_min_rtt_wlen
+        echo 4 >/proc/sys/net/ipv4/tcp_early_retrans
+      fi
+
+      # technically only needed for client
+      echo 0 >/proc/sys/net/ipv4/tcp_moderate_rcvbuf
+    fi
+    if experiment BigSocketBuffers; then
+      # technically only rbuf increase needed on receiver, and only wbuf
+      # on sender, but for simplicity just do it everywhere for now.
+      n=8000000
+      echo $n $n $n | tee /proc/sys/net/ipv4/tcp_?mem >/dev/null
+      echo $n | tee /proc/sys/net/core/?mem_* >/dev/null
     fi
     ;;
   stop)
