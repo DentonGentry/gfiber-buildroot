@@ -35,7 +35,7 @@ endif
 ROOTFS_GINSTALL_VERSION = $(shell cat $(BINARIES_DIR)/version)
 ROOTFS_GINSTALL_PLATFORMS = $(shell echo $(BR2_TARGET_GENERIC_PLATFORMS_SUPPORTED) | sed 's/[, ][, ]*/, /g' | tr a-z A-Z)
 
-PLAT_NAME=$(shell echo $(BR2_TARGET_GENERIC_PLATFORM_NAME))
+PLAT_NAME=$(call qstrip,$(BR2_TARGET_GENERIC_PLATFORM_NAME))
 
 #
 # Broadcom/CFE - GFHD100 (thin bruno), GFMS100 (fat bruno), GFHD200 (camaro)
@@ -43,7 +43,7 @@ PLAT_NAME=$(shell echo $(BR2_TARGET_GENERIC_PLATFORM_NAME))
 ifneq ($(findstring $(PLAT_NAME),gfibertv gftv200),)
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
-BRUNO_CFE_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+BRUNO_CFE_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 # Always install the prod bootloader when building prod images
 _BRUNO_LOADER = cfe_signed_release
@@ -82,7 +82,7 @@ endif  # gfibertv gftv200
 # Broadcom/Bolt - GFHD254 (Lockdown)
 #
 ifneq ($(findstring $(PLAT_NAME),gftv254),)
-BOLT_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+BOLT_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = bolt_signed_release
 ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
@@ -120,9 +120,9 @@ ifneq ($(findstring $(PLAT_NAME),gfrg200 gfsc100 gjcb100),)
 ifeq ($(BR2_PACKAGE_GOOGLE_KEY_SUFFIX),"")
 # Config strings have quotes around them for some reason, which causes
 # trouble.  This trick removes them.
-LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+LOADER_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 else
-LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
+LOADER_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR)/$(BR2_PACKAGE_GOOGLE_KEY_SUFFIX))
 endif
 
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
@@ -173,6 +173,28 @@ endif # gfrg200 gfsc100 gjcb100
 # Arc/uboot - Frenzy, Skids, Prowl
 #
 ifneq ($(findstring $(PLAT_NAME),gfex250 gffrenzy gfrg240),)
+
+# Include a u-boot image if it exists.
+ifeq ($(PLAT_NAME),gfrg240)
+LOADER_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
+_BRUNO_LOADER = u-boot-prod
+ROOTFS_GINSTALL_TYPE=prod
+else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
+_BRUNO_LOADER = u-boot-openbox
+ROOTFS_GINSTALL_TYPE=openbox
+else
+_BRUNO_LOADER = u-boot-dev
+ROOTFS_GINSTALL_TYPE=unlocked
+endif
+
+BRUNO_LOADER     := $(wildcard $(LOADER_DIR)/$(_BRUNO_LOADER).bin)
+BRUNO_LOADER_SIG := $(wildcard $(LOADER_DIR)/$(_BRUNO_LOADER).sig)
+ifneq ($(BRUNO_LOADER),)
+BRUNO_LOADERS_V3_V4 := loader.img loader.sig
+endif
+endif # gfrg240
+
 # lzma compressed uImage is already available from the kernel build
 ROOTFS_GINSTALL_KERNEL_FILE=uImage
 endif # gfex250 gffrenzy gfrg240
@@ -181,7 +203,7 @@ endif # gfex250 gffrenzy gfrg240
 # Armada/uboot - GFCH100 (chimera)
 #
 ifneq ($(findstring $(PLAT_NAME),gfch100),)
-LOADER_DIR = $(shell echo $(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
+LOADER_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
 _BRUNO_LOADER = u-boot-spi-prod
 ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
@@ -223,6 +245,10 @@ $(error ROOTFS_GINSTALL_KERNEL_FILE is not defined for platform '$(PLAT_NAME)')
 endif
 endif
 
+ifeq ($(BR2_TARGET_ROOTFS_SQUASHFS),y)
+ROOTFS_GINSTALL_FILESYSTEM_FILE := rootfs.img
+endif
+
 # v3 and v4 image formats contain a manifest file, which describes the image
 # and supported platforms.
 #
@@ -247,32 +273,26 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 	echo 'image_type: $(ROOTFS_GINSTALL_TYPE)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'version: $(value ROOTFS_GINSTALL_VERSION)' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
 	echo 'platforms: [ $(ROOTFS_GINSTALL_PLATFORMS) ]' >>$(BINARIES_DIR)/$(ROOTFS_GINSTALL_MANIFEST) && \
+	if [ -e '$(BAREBOX)' ]; then \
+		cp $(BAREBOX) $(BINARIES_DIR)/loader.img && \
+		cp $(BAREBOX_SIG) $(BINARIES_DIR)/loader.sig; \
+	fi && \
+	if [ -e '$(ULOADER)' ]; then \
+		cp $(ULOADER) $(BINARIES_DIR)/uloader.img && \
+		cp $(ULOADER_SIG) $(BINARIES_DIR)/uloader.sig; \
+	fi && \
+	if [ -e '$(BRUNO_LOADER)' ]; then \
+		cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
+		cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
+	fi && \
 	if [ '$(BRUNO_SIGNING)' = 'y' ]; then \
 		gzip -c <$(BINARIES_DIR)/vmlinux \
 			>$(BINARIES_DIR)/vmlinuz_unsigned && \
 		chmod 0644 $(BINARIES_DIR)/vmlinuz_unsigned && \
-		if [ -e '$(BRUNO_LOADER)' ]; then \
-			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
-			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
-		fi && \
 		cp $(BINARIES_DIR)/vmlinuz_unsigned $(BINARIES_DIR)/vmlinuz && \
 		( \
 			export LD_PRELOAD=; $(call HOST_GOOGLE_SIGNING_SIGN); \
 		); \
-	fi && \
-	if [ '$(BR2_LINUX_KERNEL_ZIMAGE)$(BR2_LINUX_KERNEL_APPENDED_ZIMAGE)' = 'y' ]; then \
-		if [ -e '$(BAREBOX)' ]; then \
-			cp $(BAREBOX) $(BINARIES_DIR)/loader.img && \
-			cp $(BAREBOX_SIG) $(BINARIES_DIR)/loader.sig; \
-		fi && \
-		if [ -e '$(ULOADER)' ]; then \
-			cp $(ULOADER) $(BINARIES_DIR)/uloader.img && \
-			cp $(ULOADER_SIG) $(BINARIES_DIR)/uloader.sig; \
-		fi && \
-		if [ -e '$(BRUNO_LOADER)' ]; then \
-			cp -f $(BRUNO_LOADER) $(BINARIES_DIR)/loader.img && \
-			cp -f $(BRUNO_LOADER_SIG) $(BINARIES_DIR)/loader.sig; \
-		fi; \
 	fi && \
 	cd $(BINARIES_DIR) && \
 	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
@@ -317,20 +337,21 @@ define ROOTFS_GINSTALL_CMD_V3_V4
 		); \
 	fi && \
 	ln -f $(ROOTFS_GINSTALL_KERNEL_FILE) kernel.img && \
-	if [ '$(BR2_TARGET_ROOTFS_SQUASHFS)' = 'y' ]; then \
-		(echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40 && \
-		 echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
-		 if [ -e '$(BRUNO_LOADER)' ]; then \
-		   echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
-		   echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
-		 fi ) >>$(ROOTFS_GINSTALL_MANIFEST) && \
-		tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
-			$(ROOTFS_GINSTALL_MANIFEST) \
-			$(BRUNO_LOADERS_V3_V4) \
-			kernel.img \
-			rootfs.img && \
-		ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi; \
-	fi
+	( \
+		if [ -n '$(ROOTFS_GINSTALL_FILESYSTEM_FILE)' ]; then \
+			echo -n 'rootfs.img-sha1: ' && sha1sum rootfs.img | cut -c1-40; \
+		fi; \
+		echo -n 'kernel.img-sha1: ' && sha1sum kernel.img | cut -c1-40 && \
+		if [ -n '$(BRUNO_LOADER)' ]; then \
+		  echo -n 'loader.img-sha1: ' && sha1sum loader.img | cut -c1-40 && \
+		  echo -n 'loader.sig-sha1: ' && sha1sum loader.sig | cut -c1-40; \
+		fi ) >>$(ROOTFS_GINSTALL_MANIFEST) && \
+	tar -cf '$(value ROOTFS_GINSTALL_VERSION).gi' \
+		$(ROOTFS_GINSTALL_MANIFEST) \
+		$(BRUNO_LOADERS_V3_V4) \
+		kernel.img \
+		$(ROOTFS_GINSTALL_FILESYSTEM_FILE) && \
+	ln -sf '$(value ROOTFS_GINSTALL_VERSION).gi' latest.gi;
 endef
 
 # v2 image format was used at launch of GFiber TV devices.
