@@ -37,7 +37,7 @@ die()
 
   # rebooting from the alternate boot image
   signal_failure
-  reboot
+  exit 1  # kernel will auto-reboot if process#1 dies
 }
 
 
