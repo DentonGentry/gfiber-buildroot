@@ -48,12 +48,6 @@ if exitcode != 0:
   sys.stderr.write('Failed to disable dying gasp and set to active low.\n')
   sys.exit(1)
 
-# Set the MPP_Control_Register_32_37 to MPP33 for Dying Gasp.
-stdout, exitcode = DevMem('devmem 0xf1018010 32 0x20')
-if exitcode != 0:
-  sys.stderr.write('Failed to route dying gasp pin.\n')
-  sys.exit(1)
-
 # Enable Dying Gasp and set to active high.
 stdout, exitcode = DevMem('devmem 0xf101870 32 0x3')
 if exitcode != 0:
