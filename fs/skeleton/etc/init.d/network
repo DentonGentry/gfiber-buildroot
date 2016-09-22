@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+trap ": >/tmp/run/network.init" EXIT
+
 register_experiment BigInitRwnd
 register_experiment NoSTP
 register_experiment TVBoxNoGigEthernet
@@ -310,7 +312,7 @@ if_up_no_bridging() {
 
 bridge_up() {
   local br="$1"
-  echo "Bringing up the bridge..."
+  echo "Bringing up the bridge $br..."
   ip link set dev "$br" up  # kernel 3.16 behavior, sometimes br0 does not come up.
   ifup "$br"
 }

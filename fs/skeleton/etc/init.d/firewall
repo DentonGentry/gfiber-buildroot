@@ -1,6 +1,8 @@
 #!/bin/sh
 . /etc/utils.sh
 
+trap ": >/tmp/run/firewall.init" EXIT
+
 register_experiment NoSIPConntrack
 register_experiment McDoleCast
 
@@ -316,6 +318,7 @@ case "$1" in
       #         1: use bits 16-30 for reply connection
       ip46tables -A POSTROUTING -t mangle -o wan0.2 -j CONNMARK --set-mark 0x8040
     fi
+    exit 0
     ;;
   stop)
     if [ -e /proc/sys/net/netfilter -a -e /sys/class/net/wan0 ]; then

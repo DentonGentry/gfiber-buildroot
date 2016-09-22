@@ -1,7 +1,21 @@
 #!/bin/sh
 case "$1" in
   start)
-    s6-rc -u change network firewall
+    # NOTE(apenwarr): Can't call 's6-rc -u change' here due to locking.
+    # s6-rc apparently holds a global lock across all its executions.
+    # The S03svscan script starts 'all', and holds the lock the whole
+    # time, which makes an s6-rc call to wait for only these early scripts
+    # actually end up waiting for *everything* to finish starting.
+    # Instead, let's just manually create some stamp files that we'll wait
+    # on.  Eventually this can go away when we finish retiring old-style
+    # init scripts.
+    if [ ! -e /tmp/run/S03svscan.init ]; then
+      echo "FATAL: svscan not running. Not waiting for network/firewall."
+      exit 1
+    fi
+    echo "Waiting for network+firewall init to finish..."
+    wait-until-created /tmp/run/network.init
+    wait-until-created /tmp/run/firewall.init
     ;;
   stop)
     ;;
