@@ -264,9 +264,14 @@ def main():
   if not extra:
     o.fatal('at least one interface name expected')
 
+  # if using NFS root, don't mess with interfaces other than
+  # wireless, or we could break the NFS connection.
+  is_nfs = os.path.exists('/tmp/NFS')
+
   # uniquify the set of interface names
   for iface_name in set(extra):
-    SelectAndApply(iface_name)
+    if iface_name.startswith('wcli') or not is_nfs:
+      SelectAndApply(iface_name)
 
 
 if __name__ == '__main__':
