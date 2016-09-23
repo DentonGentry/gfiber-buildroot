@@ -141,6 +141,8 @@ fi
 if [ -n "$NFSROOT" ]; then
   log "Mounting nfs: '$NFSROOT'"
   wait  # wait for any pending insmods launched by /init
+  NFSADDR=${NFSROOT%:*}
+  NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
   if [ -n "$IP" ]; then
     # Can't necessarily count on the kernel to do this, in case our
     # ethernet driver is a kernel module instead of built-in.
@@ -151,13 +153,21 @@ if [ -n "$NFSROOT" ]; then
       [ -z "$device" ] && device=eth0
       if [ "$ip" != "auto" ]; then
         ifconfig "$device" "$client_ip" netmask 255.255.255.255
+      fi
+      if [ -n "$gw_ip" ]; then
         route add -net "$gw_ip" netmask 255.255.255.255 dev "$device"
+      fi
+      if [ "$NFSADDR" != "$gw_ip" ]; then
+        if [ -n "$gw_ip" ]; then
+          route add -net "$NFSADDR" netmask 255.255.255.255 gw "$gw_ip" \
+              dev "$device"
+        else
+          route add -net "$NFSADDR" netmask 255.255.255.255 dev "$device"
+        fi
       fi
     }
     log "  IP initialized."
   fi
-  NFSADDR=${NFSROOT%:*}
-  NFSOPTS="nolock,proto=tcp,mountproto=tcp,vers=3,mountvers=3,addr=$NFSADDR"
   # Some PHYs take >1 second to get a link.  Poll the connection with nc
   # (with a nice short timeout so we cause transmit retries) until it's open,
   # then move on to the real NFS mount.
