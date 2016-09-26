@@ -1,0 +1,15 @@
+--- a/sdk/runtime/bin/secure_socket_boringssl.cc	2016-10-17 14:25:12.000000000 -0700
++++ b/sdk/runtime/bin/secure_socket_boringssl.cc	2016-10-17 14:25:24.000000000 -0700
+@@ -891,6 +891,12 @@
+     return;
+   }
+ 
++  const char* bundle_fiber = "/etc/ssl/certs/ca-certificates.crt"; // codefu@
++  if (File::Exists(bundle_fiber)) {
++    LoadRootCertFile(context, bundle_fiber);
++    return;
++  }
++
+   if (Directory::Exists(cachedir) == Directory::EXISTS) {
+     LoadRootCertCache(context, cachedir);
+     return;
