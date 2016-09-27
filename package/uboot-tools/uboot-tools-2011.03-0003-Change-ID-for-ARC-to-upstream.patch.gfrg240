@@ -1,0 +1,34 @@
+From 653e2a5d3aa2b629ef2d776acc638644eeb508df Mon Sep 17 00:00:00 2001
+From: Aaron Germuth <aagermuth@gmail.com>
+Date: Thu, 1 Sep 2016 18:06:07 -0700
+Subject: [PATCH] Changing architecture id for ARC to match upstream
+
+A previous patch was applied to add support for ARC to our
+version of u-boot-tools. This patch matched quantenna by
+assigning an ID of 19. However, when upstream u-boot-tools
+added support for ARC, an id of 23 was given.
+
+We switch to upstream's value so that:
+1) One step closer to upstream u-boot tools
+2) We can now distinguish whether images were made from a
+quantenna or upstream mkimage
+---
+ include/image.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/image.h b/include/image.h
+index 12746e7..bd5ebfc 100644
+--- a/include/image.h
++++ b/include/image.h
+@@ -106,7 +106,7 @@
+ #define IH_ARCH_BLACKFIN	16	/* Blackfin	*/
+ #define IH_ARCH_AVR32		17	/* AVR32	*/
+ #define IH_ARCH_ST200	        18	/* STMicroelectronics ST200  */
+-#define IH_ARCH_ARC		19	/* ARC */
++#define IH_ARCH_ARC		23	/* ARC (mirrors upstream u-boot */
+ 
+ /*
+  * Image Types
+-- 
+2.8.0.rc3.226.g39d4020
+
