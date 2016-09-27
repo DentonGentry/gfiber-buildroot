@@ -14,7 +14,7 @@
         <!--  tcont reset on fiber disconnect: 0 = FALSE, 1 = TRUE    -->
         <PON_tcont_reset>1</PON_tcont_reset>
         <!--  PON Dying Gasp polarity: 0 = low, 1 = high    -->
-        <PON_DG_polarity>0</PON_DG_polarity>
+        <PON_DG_polarity>1</PON_DG_polarity>
         <!--  PON XVR Burst Enable Polarity: 0 - high; 1 - low    -->
         <PON_XVR_burst_enable_polarity>1</PON_XVR_burst_enable_polarity>
         <!--  PON XVR Polarity: 0 - high; 1 - low    -->
