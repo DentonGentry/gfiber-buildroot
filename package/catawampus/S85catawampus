@@ -53,6 +53,8 @@ case "$1" in
       DIAGUI="--diagui"
       TECHUI="--techui"
     fi
+    LICENSEUI="--licenseui"
+
     if [ -e /tmp/factory_status ]; then
       FACTORY="--factory"
     fi
@@ -63,7 +65,7 @@ case "$1" in
     # Set the alivemonitor to somewhat longer than that.
     supernice babysit 60 \
       alivemonitor /tmp/cwmp/acscontact 300 180 7200 \
-      cwmpd $DIAGUI $TECHUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
+      cwmpd $DIAGUI $TECHUI $LICENSEUI $FACTORY 2>&1 | logos cwmpd 0 20000000 &
 
     if is-network-box || is-storage-box; then
       poll_hostnames | logos hostnames &

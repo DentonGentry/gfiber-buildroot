@@ -58,6 +58,9 @@ define CATAWAMPUS_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D package/catawampus/tr69_ipconfig $(TARGET_DIR)/bin
 	$(INSTALL) -m 0755 -D package/catawampus/tr69_reboot $(TARGET_DIR)/bin
 	$(INSTALL) -m 0755 -D package/catawampus/poll_hostnames $(TARGET_DIR)/bin
+
+	# Store compressed copy for web server (licenceui)
+	zip -j $(TARGET_DIR)/usr/share/LICENSES.zip $(TARGET_DIR)/usr/share/LICENSES
 endef
 
 define CATAWAMPUS_TEST_CMDS
