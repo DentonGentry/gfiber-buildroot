@@ -18,6 +18,7 @@ run grep . /tmp/babysit*
 run ls -l /config
 run ls -l /config/experiments
 run cat /rw/startupmods
+run hnvram -d
 
 if is-ptp; then
   run grep . /config/settings/*
@@ -29,4 +30,12 @@ if is-ptp; then
   run presterastats
 fi
 
-
+if is-fiberjack; then
+  run pgrep sycl
+  run cat /sys/devices/platform/gpon/info/alarmGpon
+  run cat /sys/devices/platform/gpon/info/infoGpon
+  run cat /sys/devices/platform/gpon/misc/laserChannel
+  run i2cdetect -y 0
+  run i2cdump -y 0 0x50
+  run i2cdump -y 0 0x51
+fi
