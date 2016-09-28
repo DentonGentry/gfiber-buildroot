@@ -11,6 +11,12 @@ CONMAN_STATUS_DIR=/tmp/conman/interfaces
 
 case "$action" in
   up)
+    # Clear any existing dynamic IP config.
+    rm -f "/tmp/ip/dynamic/$iface"
+
+    # Update ipv4 address on $iface
+    ipapply "$iface"
+
     if [ "$iface" = pon0 ]; then
       # Fiber Jack
       ethtool -r eth0
@@ -38,18 +44,17 @@ case "$action" in
 
       if [ "$iface" = eth0 ] || [ "$iface" = moca0 ]; then
         run-dhclient br0
-      # TODO(rofrankel):  Remove the second disjunct once we have wcli* Frenzy
-      # interfaces.
       elif startswith "$iface" wcli; then
         run-dhclient "$iface"
       fi
     fi
 
-    # Update ipv4 address on $iface
-    ipapply "$iface"
     QUIET=1 restart dnsmasq
     ;;
   down)
+    # Update ipv4 address on $iface
+    ipapply "$iface"
+
     if [ "$iface" = pon0 ]; then
       ethtool -r eth0
     fi
@@ -59,12 +64,10 @@ case "$action" in
     if [ "$iface" = "wan0" -a -e /sys/class/net/br0 ]; then
       # Run dhclient for bridge mode, ipapply will select the
       # appropriate configuration (static vs dynamic).
-      run-dhclient br0
       ipapply br0
+      run-dhclient br0
     fi
 
-    # Update ipv4 address on $iface
-    ipapply "$iface"
     QUIET=1 restart dnsmasq
     ;;
   *)

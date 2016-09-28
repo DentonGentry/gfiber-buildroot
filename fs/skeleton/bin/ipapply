@@ -40,6 +40,13 @@ DYNAMIC_IP_CONFIGS_DIR = base_path + '/tmp/ip/dynamic'
 TMP_CONMAN_DIR = base_path + '/tmp/conman'
 
 
+def AtomicWrite(filename, data):
+  tmp_filename = filename + '.tmp'
+  with open(tmp_filename, 'w') as tmp:
+    tmp.write(data)
+  os.rename(tmp_filename, filename)
+
+
 def Log(s, *args):
   sys.stdout.flush()
   ss = 'ipapply: %s\n' % (s,)
@@ -141,17 +148,16 @@ def RouteAdd(iface_name, routers=None, subnet=None):
   # arbitrarily select the first route if multiple provided.
   subnet_path = os.path.join(TMP_CONMAN_DIR, 'subnet.%s' % iface_name)
   gateway_path = os.path.join(TMP_CONMAN_DIR, 'gateway.%s' % iface_name)
+
+  if subnet:
+    Log('add subnet route: %r on dev %r', subnet, iface_name)
+    AtomicWrite(subnet_path, subnet)
+
   if routers:
     first_route = routers.split()[0]
     Log('add default route on dev %r with routers: %r',
         iface_name, first_route)
-    with open(gateway_path, 'w') as f:
-      f.write(first_route)
-
-  if subnet:
-    Log('add subnet route: %r on dev %r', subnet, iface_name)
-    with open(subnet_path, 'w') as f:
-      f.write(subnet)
+    AtomicWrite(gateway_path, first_route)
 
 
 def SelectAndApply(iface_name):

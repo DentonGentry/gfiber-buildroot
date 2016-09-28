@@ -23,7 +23,7 @@ fi
 start()
 {
   for IFNAME in $INTERFACES; do
-    if interface_exists $IFNAME; then
+    if interface_exists $IFNAME && ! is_quantenna_interface $IFNAME; then
       babysit 60 ifplugd $APIMODE -i $IFNAME -n -s -f -I -q -d0 2>&1 | logos "ifplugd-$IFNAME" &
     fi
   done
