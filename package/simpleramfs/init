@@ -22,10 +22,12 @@ for d in /lib/modules/*.ko /lib/modules/*/*.ko; do
   [ -e "$d" ] && insmod $d
 done
 
-# Mount /rootfs
+# Mount /rootfs and possibly set INIT
 . /mounts-root || die "couldn't mount root filesystems"
 
-# read_cmdline was run by /mounts-root, possibly setting INIT
+# Run anything that needs to finish before init
+# Pass in paths for $PLATFORM and $DEBUG
+/preinit "/rootfs/etc/platform" "/rootfs/tmp/DEBUG"
 
 log 'Looking for init in rootfs.  To bypass this, use init=/bin/sh'
 for init in "$INIT" /sbin/init /linuxrc /bin/sh; do

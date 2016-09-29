@@ -61,7 +61,15 @@ define SIMPLERAMFS_BUILD_CMDS
 		package/simpleramfs/mounts-sys \
 		package/simpleramfs/mounts-root \
 		package/simpleramfs/helpers.sh \
+		fs/skeleton/sbin/preinit \
 		$(@D)/fs/
+
+	# needed to run pre-init
+	ln -f \
+		fs/skeleton/bin/update-mtd-links \
+		$(@D)/../google_platform-HEAD/hnvram/hnvram \
+		$(@D)/fs/sbin
+
 	ln -f package/simpleramfs/fstab $(@D)/fs/etc
 	ln -s lib $(@D)/fs/lib64
 

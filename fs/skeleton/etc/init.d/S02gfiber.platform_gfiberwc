@@ -2,12 +2,6 @@
 
 case "$1" in
   start)
-    PLATFORM=$(hnvram -qr PLATFORM_NAME)
-    if [ -z "$PLATFORM" ]; then
-      PLATFORM="GFMN100"
-    fi
-    echo "$PLATFORM" >/etc/platform && chmod 444 /etc/platform
-
     # Populate the serial number file.
     SERIAL=$(hnvram -qr 1ST_SERIAL_NUMBER)
     [ -n "$SERIAL" ] &&

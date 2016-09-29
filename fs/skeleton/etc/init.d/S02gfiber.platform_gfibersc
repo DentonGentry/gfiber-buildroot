@@ -1,10 +1,5 @@
 #!/bin/sh
 
-PLATFORM=$(hnvram -qr PLATFORM_NAME)
-[ -n "$PLATFORM" ] &&
-echo "$PLATFORM" >/etc/platform &&
-chmod 444 /etc/platform
-
 hostname Accelerator
 
 # Populate the serial number file.

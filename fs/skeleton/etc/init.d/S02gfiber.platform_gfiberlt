@@ -1,13 +1,6 @@
 #!/bin/sh
 case "$1" in
   start)
-    PLATFORM=$(hnvram -qr PLATFORM_NAME)
-    if [ -z "$PLATFORM" ]; then
-      PLATFORM=$(cat /proc/board_type)
-    fi
-    echo "$PLATFORM" > /etc/platform
-    chmod 444 /etc/platform
-
     # GFLT300 and beyond will use hnvram with 1ST_SERIAL_NUMBER variable.
     # GFLT110 uses legacy sysvar_cmd with SERIAL_NO variable.
     if [ -e /dev/mtd/hnvram ]; then

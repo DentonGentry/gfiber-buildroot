@@ -17,12 +17,6 @@ start()
     mount -t tmpfs none /shared
   fi
 
-  # Populate the platform ID
-  PLATFORM=$(hnvram -qr PLATFORM_NAME)
-  [ -n "$PLATFORM" ] &&
-  echo "$PLATFORM" >/etc/platform &&
-  chmod 444 /etc/platform
-
   # Populate the hardware version
   HWVER=$(hnvram -qr HW_VER)
   # Chimera yellow board does not set HW_VER, it should be 1.

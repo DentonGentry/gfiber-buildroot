@@ -48,7 +48,6 @@ read_cmdline()
   NFSROOT=
   UBI_MTD=
   INIT=
-  DEBUG=
   IP=
 
   set $(cat /proc/cmdline)
@@ -61,7 +60,6 @@ read_cmdline()
       nfsroot) NFSROOT=$value ;;
       ubi.mtd) UBI_MTD=$value ;;
       init) INIT=$value ;;
-      debug|login) DEBUG=1 ;;
       ip) IP=$value ;;
     esac
   done

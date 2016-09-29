@@ -1,0 +1,30 @@
+#!/bin/sh
+# A place for very early initialization to be done before even init finishes
+# Takes two arguments: the path to save $PLATFORM and $DEBUG
+# typically /etc/platform and /tmp/DEBUG
+
+read_cmdline()
+{
+  DEBUG=
+  set $(cat /proc/cmdline)
+  for i in "$@"; do
+    key=${i%%=*}
+    value=${i#*=}
+    case "$key" in
+      debug) if [ "$value" != "0" ]; then DEBUG=1; fi;;
+    esac
+  done
+}
+
+# Need /dev/mtd/hnvram to read PLATFORM
+update-mtd-links
+
+PLATFORM=$(hnvram -qr PLATFORM_NAME)
+if [ -z "$PLATFORM" ]; then
+  PLATFORM=$(cat /proc/board_type)
+fi
+echo "$PLATFORM" >"$1"
+chmod 444 "$1"
+
+read_cmdline
+[ -n "$DEBUG" ] && echo DEBUG >"$2"

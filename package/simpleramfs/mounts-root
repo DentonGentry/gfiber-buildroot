@@ -289,6 +289,4 @@ mount -t tmpfs none /rootfs/tmp
 # set up.
 [ -n "$NFSROOT" ] && echo NFS >/rootfs/tmp/NFS
 
-[ -n "$DEBUG" ] && echo DEBUG >/rootfs/tmp/DEBUG
-
 true
