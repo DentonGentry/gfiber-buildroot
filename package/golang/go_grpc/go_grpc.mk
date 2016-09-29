@@ -3,10 +3,10 @@
 # go_grpc
 #
 #############################################################
-GO_GRPC_VERSION = 13edeeffdea7a41d5aad96c28deb4c7bd01a9397
+GO_GRPC_VERSION = 0032a855ba5c8a3c8e0d71c2deef354b70af1584
 GO_GRPC_SITE = https://github.com/grpc/grpc-go
 GO_GRPC_SITE_METHOD = git
-GO_GRPC_DEPENDENCIES = host-golang go_http2
+GO_GRPC_DEPENDENCIES = host-golang go_net
 
 define GO_GRPC_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/google.golang.org/"
