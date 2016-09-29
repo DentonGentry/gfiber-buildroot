@@ -372,6 +372,18 @@ add_firewall_rules_to_vlan_input() {
   fi
 }
 
+setup_tcp_congestion_control() {
+  # load all algorithms we may want to use
+  modprobe -a tcp_acubic tcp_turbulent tcp_transonic
+
+  # make all "available" algorithms "allowed" so any process can use it
+  cat /proc/sys/net/ipv4/tcp_available_congestion_control \
+      >/proc/sys/net/ipv4/tcp_allowed_congestion_control
+
+  # log
+  echo -n "tcp_allowed_congestion_control="
+  cat /proc/sys/net/ipv4/tcp_allowed_congestion_control
+}
 
 case "$1" in
   start)
@@ -393,12 +405,7 @@ case "$1" in
       load_wifi_drivers
     fi
 
-    # if the file exists and it isn't empty
-    if [ -s /config/tcp_congestion_control ]; then
-      algorithm=$(cat /config/tcp_congestion_control)
-      echo "Registering congestion control algorithm $algorithm"
-      sysctl net.ipv4.tcp_congestion_control=$algorithm
-    fi
+    setup_tcp_congestion_control
 
     echo 1 >/proc/sys/net/ipv4/conf/all/arp_ignore
 
