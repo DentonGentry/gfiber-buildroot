@@ -44,6 +44,7 @@ u,unsigned         Skip the image signing
 openbox            Use openbox bootloader (forces --no-production)
 no-build           Don't build, just configure
 no-source          Don't pre-extract sources
+no-ccache          Disable use of ccache for this build
 """
 
 
@@ -156,6 +157,7 @@ class BuildRootBuilder(object):
     print 'BUILD PATH     :', self.base_dir
     print 'KEY SUFFIX     :', self.opt.key_suffix
     print 'UNSIGNED       :', self.opt.unsigned
+    print 'NOCCACHE       :', self.opt.no_ccache
     print '=========================================================='
     sys.stdout.flush()
 
@@ -197,7 +199,7 @@ class BuildRootBuilder(object):
                 BR2_PACKAGE_GOOGLE_OPENBOX=self.opt.openbox,
                 BR2_PACKAGE_GOOGLE_UNSIGNED=self.opt.unsigned)
     # Disable ccache for production builds.
-    if self.opt.production:
+    if self.opt.production or self.opt.no_ccache:
       opts['BR2_CCACHE'] = 0
     opts.update(extra)
 
