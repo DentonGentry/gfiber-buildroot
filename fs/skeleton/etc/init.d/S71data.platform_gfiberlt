@@ -12,12 +12,16 @@ mkdir -p /tmp/xml_params
 if [ ! -z "$serial" ]; then
   # Replace the placeholder serial number with the real serial number.
   cat "$gpon_xml" | \
-    sed -e "s/SERIALXXYYZZ/$serial/" >/tmp/xml_params/pon_xml_cfg_file.xml
+    sed -e "s/AABBCCDDEEFF/$serial/" >/tmp/xml_params/pon_xml_cfg_file.xml
 else
   # SERIALXXYYZZ isn't going to be able to join the GPON network.
   # So turn the LED red for hardware failure.
   echo "serial number is blank; will be unable to join GPON network"
   touch /tmp/gpio/ledcontrol/hardware_failure
+  # We still need to copy the XML file as well since the first time the board
+  # boots in the factory it will have no hnvram variables, including no serial
+  # number.
+  cp -f "$gpon_xml" /tmp/xml_params/pon_xml_cfg_file.xml
 fi
 cp -f /etc/xml_params/pon_type_xml_cfg_file_gpon.xml \
   /tmp/xml_params/pon_type_xml_cfg_file.xml
