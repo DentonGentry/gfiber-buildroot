@@ -1,5 +1,5 @@
 config BR2_PACKAGE_GO_GRPC
 	bool "go_grpc"
-	select BR2_PACKAGE_GO_HTTP2
+	select BR2_PACKAGE_GO_NET
 	help
 		Go support for gRPC
