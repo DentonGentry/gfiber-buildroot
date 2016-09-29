@@ -8,7 +8,8 @@ start_gfcm() {
   fi
 
   babysit 60 /app/gcm/clientrouter \
-    --gcmIdsPath=${GCM_ID_DIR}/gcmIds 2>&1 | logos gfcm 0 20000000 &
+    --gcmIdsPath=${GCM_ID_DIR}/gcmIds --logtostderr 2>&1 \
+    | logos gfcm 0 20000000 &
 }
 
 stop_gfcm() {
