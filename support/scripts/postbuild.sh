@@ -49,6 +49,7 @@ else
   version="$PLATFORM_PREFIX-${tagname#*-}"
 fi
 echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
+echo -n "fiberos" >"$TARGET_DIR/etc/os" 2>/dev/null
 
 if [ "$PROD" != "y" ]; then
   echo -n "-$(whoami | cut -c1-2)" >>$TARGET_DIR/etc/version
