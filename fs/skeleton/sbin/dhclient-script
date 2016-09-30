@@ -357,11 +357,10 @@ if [ x$reason = xBOUND ] || [ x$reason = xRENEW ] || \
      [ x$reason = xBOUND ] || [ x$reason = xREBOOT ]; then
 
     make_v4_dynamic_config
+    ipapply ${interface}
 
     addr_added=1
   fi
-
-  ipapply ${interface}
 
   if [ "$addr_added" = 1 ]; then
     # Add a network route to the computed network address.
