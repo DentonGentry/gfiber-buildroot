@@ -6,8 +6,7 @@ start_dhcp() {
   echo "Starting DHCP on $iface"
   lock=/var/run/dhclient.${iface}.lock
   lockfile-create $lock
-  pidfile=/var/run/dhclient.${iface}.pid
-  pidfile=/var/run/dhclient-v6.${iface}.pid
+  pidfile=/var/run/dhclient6.${iface}.pid
   if [ -e $pidfile ]; then
     kill $(cat $pidfile) 2>&1 > /dev/null
     rm -f $pidfile
@@ -15,7 +14,7 @@ start_dhcp() {
   babysit 60 /usr/sbin/dhclient $iface -6 \
     -d \
     -pf $pidfile \
-    -lf /var/run/dhclient-v6.${iface}.lease \
+    -lf /var/run/dhclient6.${iface}.lease \
     -cf /etc/dhclient6.conf \
     --never-gonna-give-you-up 900 2>&1 | logos dhclient6 &
   lockfile-remove $lock

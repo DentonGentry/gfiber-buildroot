@@ -9,7 +9,7 @@ lockfile-create --use-pid $lock
 
 run_dhclient() {
   local suffix="$1" xargs="$2"
-  local pidfile="/var/run/dhclient$suffix.$iface"
+  local pidfile="/var/run/dhclient$suffix.$iface.pid"
   local leasefile="/var/run/dhclient$suffix.$iface.lease"
   local conffile="/etc/dhclient$suffix.conf"
 
