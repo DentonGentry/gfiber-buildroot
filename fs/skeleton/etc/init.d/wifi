@@ -2,14 +2,14 @@
 . /etc/utils.sh
 
 get_random_mac() {
-  echo -n "AA"
-  randomdata 0 5 | hexdump -e '5/1 ":%02X"'
+  echo -n $(get_mac_addr_for_interface "$1" | cut -c1-8)
+  randomdata 0 3 | hexdump -e '3/1 ":%02x"'
 }
 
 create_secondary_interface() {
   local interface="$1"
   local suffix="$2"
-  local mac=$(get_random_mac)
+  local mac=$(get_random_mac "$interface")
   local secondary_interface="${interface}${suffix}"
   if ! interface_exists "$secondary_interface"; then
     if is_quantenna_interface "$interface"; then
