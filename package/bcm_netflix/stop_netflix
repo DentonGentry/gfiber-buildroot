@@ -1,0 +1,24 @@
+#!/bin/sh
+
+exitNetflixStopped()
+{
+  for d in $(seq 20); do
+    if ! { pgrep GIBBON_MAIN; } >/dev/null; then
+      echo done >&2
+      exit 0
+    fi
+    usleep 100000
+    echo -n "." >&2
+  done
+}
+
+echo "Stopping Netflix" >&2
+# First try asking the app to stop
+rm -f /tmp/netflix-running
+exitNetflixStopped
+# Try to kill the Netflix process
+pkill GIBBON_MAIN
+exitNetflixStopped
+# Force kill the Netflix process
+pkill -9 GIBBON_MAIN
+exitNetflixStopped
