@@ -27,6 +27,8 @@ endef
 
 define BCM_NETFLIX_INSTALL_TARGET_CMDS
 	$(call BCM_COMMON_BUILD_EXTRACT_TARBALL, $(TARGET_DIR))
+	$(INSTALL) -D -m 0755 package/bcm_netflix/stop_netflix \
+		$(TARGET_DIR)/usr/local/bin/netflix/stop_netflix
 endef
 
 $(eval $(call GENTARGETS))
