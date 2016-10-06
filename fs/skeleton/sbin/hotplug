@@ -6,6 +6,11 @@ exec >/dev/kmsg 2>&1
 . /etc/utils.sh
 
 
+get_random_mac() {
+  echo -n $(get_mac_addr_for_interface "$1" | cut -c1-8)
+  randomdata 0 3 | hexdump -e '3/1 ":%02x"'
+}
+
 create_client_interface() {
   local interface="$1"
   local wlan_mac=$(cat /sys/class/net/"$interface"/address)
@@ -39,25 +44,64 @@ load_firmware() {
   echo "  ...loaded firmware '$1'"
 }
 
-print_ath10k_cal_hash() {
-  local checks=0
-  local ath10k_cal=/sys/kernel/debug/ieee80211/phy1/ath10k/cal_data
-  local ath10k_cal_tmp=/tmp/ath10k_cal_data
-  while :; do
-    cat "$ath10k_cal" >"$ath10k_cal_tmp" 2>/dev/null
-    if [ -s "$ath10k_cal_tmp" ]; then
-      break
+set_mac_address()
+{
+  local interface="$1"
+  # Set the mac address from values in hnvram.
+  if is-windcharger; then
+    case "$interface" in
+      wan0)
+        set_mac_from_hnvram wan0 MAC_ADDR1
+        ;;
+      lan0)
+        set_mac_from_hnvram lan0 MAC_ADDR2
+	;;
+    esac
+  fi
+  case "$interface" in
+    wlan0)
+      set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
+      ;;
+    wlan1)
+      set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
+      ;;
+  esac
+}
+
+create_secondary_interface() {
+  local interface="$1"
+  local suffix="$2"
+  local mac=$(get_random_mac "$interface")
+  local secondary_interface="${interface}${suffix}"
+
+  if ! interface_exists "$secondary_interface"; then
+    if is_quantenna_interface "$interface"; then
+      ip link add link quantenna name "$secondary_interface" type vlan id 4
+      mac=$(get_locally_administered_mac_addr "$mac")
+    else
+      local phy=$(find_phy_for_interface "$interface")
+      iw phy "$phy" interface add "$secondary_interface" type managed
     fi
-    checks=$((checks + 1))
-    if [ "$checks" -gt 100 ]; then
-       echo "Unable to fetch ath10k calibration data" >&2
-       return
+    ip link set dev "$secondary_interface" address "$mac"
+    brctl addif br1 "$secondary_interface"
+  fi
+}
+
+
+network_add() {
+  interface="$1"
+  # At boot or device reset, a net add event is delivered for the primary
+  # interface. Use this event to create a client interface, which is
+  # created in user space unlike the primary interface.
+  if startswith "$interface" "wlan"; then
+    if is-wireless-client; then
+      create_client_interface "$interface"
     fi
-    sleep 0.1
-  done
-  # Print ath10k cal_data sha1 to logs.
-  echo "ath10k cal_data sha1sum: $(sha1sum $ath10k_cal_tmp | cut -d " " -f1)"
-  rm -f "$ath10k_cal_tmp"
+  fi
+  set_mac_address "$interface"
+  if is-network-box && startswith "$interface" wlan && ! contains "$interface" _portal; then
+    create_secondary_interface "$interface" _portal
+  fi
 }
 
 case "$SUBSYSTEM-$ACTION" in
@@ -106,18 +150,8 @@ case "$SUBSYSTEM-$ACTION" in
     ;;
 
   net-add)
-    # At boot or device reset, a net add event is delivered for the primary
-    # interface. Use this event to create a client interface, which is
-    # created in user space unlike the primary interface.
-    if startswith "$INTERFACE" "wlan"; then
-      if is-wireless-client; then
-        create_client_interface "$INTERFACE"
-      fi
-      if contains "GFRG200 GFRG210" "$(cat /etc/platform)" &&
-        [ "$INTERFACE" = "wlan1" ]; then
-        print_ath10k_cal_hash &
-      fi
-    fi
+    echo "hotplug: net-add if=$INTERFACE act=$ACTION"
+    network_add "$INTERFACE"
     ;;
 esac
 

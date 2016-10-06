@@ -171,25 +171,6 @@ load_wifi_drivers() {
   fi
 }
 
-set_mac_from_hnvram() {
-  local DEV="$1"
-  local VAR_NAME="$2"
-  if [ -h /sys/class/net/$DEV ]; then
-    local addr="$(hnvram -qr "$VAR_NAME")"
-    if [ -n "$addr" ]; then
-      if is_quantenna_interface $DEV; then
-        addr="$(get_locally_administered_mac_addr "$addr")"
-      fi
-      echo "Setting $DEV mac address to $addr"
-      ip link set dev $DEV down
-      ip link set dev $DEV address "$addr"
-      ip link set dev $DEV up
-    else
-      echo "$DEV: sysvar $VAR_NAME not found"
-    fi
-  fi
-}
-
 create_br0() {
   echo -n "Creating bridge br0... "
   brctl setfd br0 1
@@ -444,14 +425,6 @@ case "$1" in
         i=$((i+1))
       done
     fi
-
-    # Set the mac address from values in hnvram.
-    if is-windcharger; then
-      set_mac_from_hnvram wan0 MAC_ADDR1
-      set_mac_from_hnvram lan0 MAC_ADDR2
-    fi
-    set_mac_from_hnvram wlan0 MAC_ADDR_WIFI
-    set_mac_from_hnvram wlan1 MAC_ADDR_WIFI2
 
     # GFRG2X0 sets lan0, wan0, and moca0 in pfe kernel module
     # from addrs passed on command line from barebox

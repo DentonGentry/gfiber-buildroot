@@ -329,3 +329,22 @@ num_sfp_ports() {
   fi
   return 1
 }
+
+set_mac_from_hnvram() {
+  local DEV="$1"
+  local VAR_NAME="$2"
+  if [ -h /sys/class/net/$DEV ]; then
+    local addr="$(hnvram -qr "$VAR_NAME")"
+    if [ -n "$addr" ]; then
+      if is_quantenna_interface $DEV; then
+        addr="$(get_locally_administered_mac_addr "$addr")"
+      fi
+      echo "Setting $DEV mac address to $addr"
+      ip link set dev $DEV down
+      ip link set dev $DEV address "$addr"
+      ip link set dev $DEV up
+    else
+      echo "$DEV: sysvar $VAR_NAME not found"
+    fi
+  fi
+}

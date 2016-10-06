@@ -1,42 +1,12 @@
 #!/bin/sh
 . /etc/utils.sh
 
-get_random_mac() {
-  echo -n $(get_mac_addr_for_interface "$1" | cut -c1-8)
-  randomdata 0 3 | hexdump -e '3/1 ":%02x"'
-}
-
-create_secondary_interface() {
-  local interface="$1"
-  local suffix="$2"
-  local mac=$(get_random_mac "$interface")
-  local secondary_interface="${interface}${suffix}"
-  if ! interface_exists "$secondary_interface"; then
-    if is_quantenna_interface "$interface"; then
-      ip link add link quantenna name "$secondary_interface" type vlan id 4
-      mac=$(get_locally_administered_mac_addr "$mac")
-    else
-      local phy=$(find_phy_for_interface "$interface")
-      iw phy "$phy" interface add "$secondary_interface" type managed
-    fi
-    ip link set dev "$secondary_interface" address "$mac"
-    brctl addif br1 "$secondary_interface"
-  fi
-}
-
 case "$1" in
   start)
     mkdir -p /tmp/wifi/fingerprints
     mkdir -p /tmp/wifi/wifiblaster
     mkdir -p /tmp/wifi/wifiinfo
     mkdir -p /tmp/stations
-    if is-network-box; then
-      for interface in wlan0 wlan1; do
-        if interface_exists $interface; then
-          create_secondary_interface $interface _portal
-        fi
-      done
-    fi
     if runnable wl && has_wifi && interface_exists eth2; then
       read wifimac </sys/class/net/eth2/address
       wl ap 1
@@ -53,6 +23,7 @@ case "$1" in
       babysit 30 quantenna-kmsgd 2>&1 | logos quantenna-kmsgd &
       babysit 30 quantenna-status 2>&1 | logos quantenna-status &
     fi
+    iw reg set US
     wifi restore
     exit 0
     ;;
