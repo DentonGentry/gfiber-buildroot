@@ -129,11 +129,6 @@ make_resolv_conf() {
     )"
     merge_resolv_conf
   fi
-
-  if [ ! -f /tmp/dhclient-logs-uploaded ]; then
-    upload-logs-now
-    atomic /tmp/dhclient-logs-uploaded "done"
-  fi
 }
 
 make_dnsmasq_ipv6() {
