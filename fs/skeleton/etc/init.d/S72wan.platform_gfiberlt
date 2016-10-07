@@ -3,10 +3,19 @@ wan_port=$(cat /etc/config/wanport)
 lan_port=$(cat /etc/config/lanport)
 mgmt_vlan=$(cat /etc/config/mgmtvlan)
 
-hostname GFiberONU
-
 case $1 in
   start)
+    hostname GFiberONU
+
+    echo "WAN port: $wan_port"
+    echo "LAN port: $lan_port"
+    echo "MGMT VLAN: $mgmt_vlan"
+    echo
+    echo "Disabling accepting RAs on pon0"
+    sysctl -w net.ipv6.conf.pon0.accept_ra=0
+    sysctl -w net.ipv6.conf.pon0.accept_ra_defrtr=0
+    sysctl -w net.ipv6.conf.pon0.accept_ra_pinfo=0
+
     echo "Starting WAN."
     # Configure dhclient with the right hostname etc.
     setup-dhclient
