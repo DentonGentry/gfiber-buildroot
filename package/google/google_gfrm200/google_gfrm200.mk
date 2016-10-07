@@ -10,7 +10,7 @@ GOOGLE_GFRM200_TDIR = $(TARGET_DIR)/etc/remote
 GOOGLE_GFRM200_LINKS = gfrm200.gp.bin gfrm200.ti.bin
 GOOGLE_GFRM210_SDIR = $(@D)/philips/gfrm210
 GOOGLE_GFRM210_TDIR = $(TARGET_DIR)/etc/remote
-GOOGLE_GFRM210_LINKS = gfrm210.ti.bin
+GOOGLE_GFRM210_LINKS = gfrm210.gp.bin gfrm210.ti.bin
 
 # sample remote GP firmware name: RC1534059_OAD_GP_V0011.bin
 # sample remote TI firmware name: RC1534059_OAD_TI_V0049.bin
