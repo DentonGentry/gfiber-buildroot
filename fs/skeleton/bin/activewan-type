@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# Print the type of interface for the uplink.
+# For example:
+#   Fiber Jack will print "GPON"
+#   Network Box will print "ETHERNET" because the WAN port is Ethernet
+#   TV Box will print "WIFI", "MOCA", or "ETHERNET" depending on how
+#     it is connected.
+
+. /etc/utils.sh
+
+# PROC_NET_ARP and BR_IF_PATH allow a gftest to pass in alternate
+# paths to test files.
+
+proc_net_arp=${PROC_NET_ARP:-"/proc/net/arp"}
+lookup_mac_for_ip() {
+  local nexthop="$1"
+  while read ip junk junk mac junk; do
+    if [ "$ip" = "$nexthop" ]; then
+      echo "$mac"
+      return
+    fi
+  done <"$proc_net_arp"
+}
+
+br_if_path=${BR_IF_PATH:-"/sys/devices/virtual/net/"}
+lookup_bridge_ifname_for_mac() {
+  bridge="$1"
+  mac="$2"
+  ifnum=$(brctl showmacs "$bridge" | grep "$mac" | cut -f1)
+  if [ -n "$ifnum" ]; then
+    echo $(ls -1 "${br_if_path}/${bridge}/brif" | head -n "$ifnum" | tail -n 1)
+  fi
+}
+
+lookup_bridge_ifname_for_nexthop() {
+  bridge="$1"
+  nexthop="$2"
+  mac=$(lookup_mac_for_ip "$nexthop")
+  if [ -n "$mac" ]; then
+    lookup_bridge_ifname_for_mac "$bridge" "$mac"
+  fi
+}
+
+linktype_for_ifname() {
+  ifname="$1"
+  if startswith "$ifname" "pon"; then
+    echo GPON
+  elif startswith "$ifname" "man"; then
+    echo GPON
+  elif startswith "$ifname" "wan"; then
+    echo ETHERNET
+  elif startswith "$ifname" "wcli"; then
+    echo WIFI
+  elif startswith "$ifname" "wlan"; then
+    echo WIFI
+  elif startswith "$ifname" "lan"; then
+    echo ETHERNET
+  elif startswith "$ifname" "eth0"; then
+    echo ETHERNET
+  elif startswith "$ifname" "eth1"; then
+    echo MOCA
+  elif startswith "$ifname" "moca"; then
+    echo MOCA
+  elif startswith "$ifname" "eth2"; then
+    echo WIFI
+  else
+    echo UNKNOWN_TYPE
+  fi
+}
+
+ifname="$(activewan)"
+if startswith "$ifname" "br" ; then
+  nexthop=$(ip -o route list 0/0 dev "$ifname" 2>/dev/null | head -n 1 | cut -d' ' -f3)
+  ifname=$(lookup_bridge_ifname_for_nexthop "$ifname" "$nexthop")
+fi
+
+if [ -n "$ifname" ]; then
+  linktype_for_ifname "$ifname"
+else
+  echo UNKNOWN_IF
+fi
+
+exit 0

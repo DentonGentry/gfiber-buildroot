@@ -1,0 +1,111 @@
+#!/bin/sh
+
+. /etc/utils.sh
+. /etc/wvtest.sh
+
+ip() {
+  echo "1.2.3.4"
+}
+
+brctl_port_val=1
+brctl() {
+  echo "port no	mac addr	is local?	ageing timer"
+  echo "  ${brctl_port_val}	01:02:03:04:05:06	yes	0.00"
+}
+
+activewan() {
+  echo "$activewan_val"
+}
+
+WVSTART "activewan-type"
+
+activewan_val="pon0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "GPON"
+
+activewan_val="man0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "GPON"
+
+activewan_val="wan0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "ETHERNET"
+
+activewan_val="wcli0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "WIFI"
+
+activewan_val="wlan0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "WIFI"
+
+activewan_val="eth2-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "WIFI"
+
+activewan_val="lan0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "ETHERNET"
+
+activewan_val="eth0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "ETHERNET"
+
+activewan_val="eth1-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "MOCA"
+
+activewan_val="moca0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "MOCA"
+
+activewan_val="zomg0-test"
+output=$(. activewan-type)
+WVPASSEQ "$output" "UNKNOWN_TYPE"
+
+activewan_val=""
+output=$(. activewan-type)
+WVPASSEQ "$output" "UNKNOWN_IF"
+
+
+# Set up for br0 test is somewhat extensive.
+BR_IF_PATH=/tmp/activewan-type-test.$$.br_if
+mkdir -p "$BR_IF_PATH"/br0-test/brif
+echo >"$BR_IF_PATH"/br0-test/brif/lan0-test
+echo >"$BR_IF_PATH"/br0-test/brif/moca0-test
+echo >"$BR_IF_PATH"/br0-test/brif/pon0-test
+echo >"$BR_IF_PATH"/br0-test/brif/wlan0-test
+echo >"$BR_IF_PATH"/br0-test/brif/zomg0-test
+
+PROC_NET_ARP=/tmp/activewan-type-test.$$.proc_net_arp
+echo "IP address   HW type   Flags   HW address   Mask   Device
+1.2.3.4   0x1  0x2  01:02:03:04:05:06   *   br0-test" >"$PROC_NET_ARP"
+
+activewan_val="br0-test"
+br_if_path=${BR_IF_PATH:-"/sys/devices/virtual/net/"}
+
+brctl_port_val=1
+output=$(. activewan-type)
+WVPASSEQ "$output" "ETHERNET"
+
+brctl_port_val=2
+output=$(. activewan-type)
+WVPASSEQ "$output" "MOCA"
+
+# GPON interfaces are not in a bridge in the real product, but
+# we can test for it anyway. It should work.
+brctl_port_val=3
+output=$(. activewan-type)
+WVPASSEQ "$output" "GPON"
+
+brctl_port_val=4
+output=$(. activewan-type)
+WVPASSEQ "$output" "WIFI"
+
+brctl_port_val=5
+output=$(. activewan-type)
+WVPASSEQ "$output" "UNKNOWN_TYPE"
+
+
+rm -f "$PROC_NET_ARP"
+rm -rf "$BR_IF_PATH"
