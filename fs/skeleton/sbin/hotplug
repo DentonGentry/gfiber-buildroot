@@ -90,6 +90,7 @@ create_secondary_interface() {
 
 network_add() {
   interface="$1"
+  set_mac_address "$interface"
   # At boot or device reset, a net add event is delivered for the primary
   # interface. Use this event to create a client interface, which is
   # created in user space unlike the primary interface.
@@ -98,7 +99,6 @@ network_add() {
       create_client_interface "$interface"
     fi
   fi
-  set_mac_address "$interface"
   if is-network-box && startswith "$interface" wlan && ! contains "$interface" _portal; then
     create_secondary_interface "$interface" _portal
   fi
