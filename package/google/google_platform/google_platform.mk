@@ -280,6 +280,9 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	#TODO(apenwarr): do we actually need this for anything?
 	mkdir -p $(TARGET_DIR)/home/test/
 	cp -rf $(@D)/registercheck $(TARGET_DIR)/home/test/
+
+	# copy buildroot config to target
+	$(INSTALL) -m 0755 -D $(TARGET_DIR)/../.config $(TARGET_DIR)/etc/buildroot_config
 endef
 
 $(eval $(call GENTARGETS))
