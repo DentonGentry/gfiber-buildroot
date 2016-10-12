@@ -1,0 +1,42 @@
+#!/bin/sh
+
+#
+# Only those TV platforms that do not have a simpleinitfs will execute
+# this script (ie gfrg240).  Platforms with simpleinitfs will do the
+# work contained here before searching for their root filesystem
+# (and pivot to that new root).
+#
+
+log()
+{
+  echo "$*" >&2
+}
+
+read_cmdline()
+{
+  DEBUG=
+  set $(cat /proc/cmdline)
+  for i in "$@"; do
+    key=${i%%=*}
+    value=${i#*=}
+    case "$key" in
+      debug) if [ "$value" != "0" ]; then DEBUG=1; fi;;
+    esac
+  done
+}
+
+mount -t devtmpfs none /dev
+exec >/dev/kmsg 2>&1
+
+echo "---- initramfs ('$0')"
+mount -t proc none /proc && log "mounted /proc"
+mount -t tmpfs none /tmp && log "mounted /tmp"
+mount -t sysfs none /sys && log "mounted /sys"
+mkdir /dev/pts /dev/shm
+mount -t devpts none /dev/pts && log "mounted /dev/pts"
+mount -t tmpfs none /dev/shm && log "mounted /dev/shm"
+
+read_cmdline
+[ -n "$DEBUG" ] && echo DEBUG >/tmp/DEBUG
+
+exec /sbin/init --init $* </dev/console >/dev/console 2>&1
