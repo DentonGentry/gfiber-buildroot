@@ -9,6 +9,7 @@ register_experiment TVBoxNoGigEthernet
 register_experiment TcpWmem1Meg
 register_experiment AggressiveTCP
 register_experiment BigSocketBuffers
+register_experiment MocaFlowControl
 
 
 irq_affinity() {
@@ -497,6 +498,9 @@ case "$1" in
     if is-moca-present; then
       echo "starting moca..."
       babysit 30 runmoca 2>&1 | logos mocad &
+      if experiment MocaFlowControl; then
+        moca-flowctl --enable
+      fi
     fi
 
     if [ -e /sys/class/net/wan0 ]; then

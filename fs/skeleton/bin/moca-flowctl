@@ -1,0 +1,42 @@
+#!/usr/bin/python
+
+"""Utility to control MoCa flow control (pause frames)."""
+
+import sys
+import options
+import py_moca2
+
+optspec = """
+moca-flowctl [options...]
+--
+e,enable      Enable MoCa flow control
+d,disable     Disable MoCa flow control
+i,interface=  MoCa interface [moca0]
+"""
+
+
+def main():
+  o = options.Options(optspec)
+  (opt, unused_flags, unused_extra) = o.parse(sys.argv[1:])
+
+  p = py_moca2.MocaIf(opt.interface)
+
+  if opt.enable:
+    action = True
+  elif opt.disable:
+    action = False
+  else:
+    action = None
+
+  if p.FlowControlEnable(action) is True:
+    result = 'enabled'
+    exit_val = 0
+  else:
+    result = 'disabled'
+    exit_val = 1
+
+  sys.stderr.write('MoCa flow control is {}\n'.format(result))
+  return exit_val
+
+if __name__ == '__main__':
+  sys.exit(main())
