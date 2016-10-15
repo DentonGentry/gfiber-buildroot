@@ -4,7 +4,7 @@
 #
 #############################################################
 
-TRACEROUTE_NEW_VERSION:=2.0.19
+TRACEROUTE_NEW_VERSION:=2.1.0
 TRACEROUTE_NEW_SOURCE:=traceroute-$(TRACEROUTE_NEW_VERSION).tar.gz
 TRACEROUTE_NEW_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/traceroute/
 TRACEROUTE_NEW_AUTORECONF:=NO
