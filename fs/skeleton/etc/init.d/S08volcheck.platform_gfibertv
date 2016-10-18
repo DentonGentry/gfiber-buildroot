@@ -31,7 +31,7 @@ DRM_FS_RECOVER_NAME="drmfs2"
 USER_NAME=user
 CONFIG_NAME=config
 
-CONFIG_SIZE=16MiB
+CONFIG_SIZE=$((16*1024*1024))	# 16MiB
 USER_SIZE=0
 BADBLOCK_FILE=/tmp/gpio/ledcontrol/flash_bad_blocks
 
@@ -46,6 +46,17 @@ check_mtd()
     [ $d = $1 ] && echo "${e#mtd}"
   done
 }
+
+get_mtd_size()
+{
+  local a b c d e
+  cat /proc/mtd |
+  while read a b c d; do
+    e=${a%:*}
+    [ "${e#mtd}" = "$1" ] && printf "%d" 0x${b}
+  done
+}
+
 
 check_mmc()
 {
@@ -116,11 +127,25 @@ mount_volumes()
   # $2 - UBI device number
 
   if [ $1 -eq ${DATA_MTD_NO} ]; then
-    # mount UBI 'config' volume
-    mount_volume ${CONFIG_NAME} $2 ${CONFIG_SIZE} || return 1
+    # For platforms with a single, small MTD partition;
+    # (ie gfrg240) create a single /user partition and
+    # have /config reside under /user.
 
-    # mount UBI 'user' volume
-    mount_volume ${USER_NAME} $2 ${USER_SIZE} || return 1
+    actual_size=$(get_mtd_size $1)
+    if [ "${actual_size}" -gt "${CONFIG_SIZE}" ]; then
+      # mount UBI 'config' volume
+      mount_volume "${CONFIG_NAME}" "$2" "${CONFIG_SIZE}" || return 1
+
+      # mount UBI 'user' volume
+      mount_volume "${USER_NAME}" "$2" "${USER_SIZE}" || return 1
+    else
+      # mount UBI 'user' volume
+      mount_volume "${USER_NAME}" "$2" "${USER_SIZE}" || return 1
+
+      # bring /config under /user
+      mkdir -p "/${USER_NAME}/${CONFIG_NAME}"
+      mount --bind "/${USER_NAME}/${CONFIG_NAME}" "/${CONFIG_NAME}" || return 1
+    fi
   fi
 }
 
