@@ -20,6 +20,10 @@ PROTOBUF_LICENSE_FILES = COPYING.txt
 PROTOBUF_DEPENDENCIES = host-protobuf
 HOST_PROTOBUF_DEPENDENCIES = host-automake
 PROTOBUF_CONF_OPT = --with-protoc=$(HOST_DIR)/usr/bin/protoc --enable-static --with-pic
+ifeq ($(ARCH), arc)
+PROTOBUF_CONF_OPT += LDFLAGS=-latomic
+endif
+
 
 PROTOBUF_INSTALL_STAGING = YES
 
