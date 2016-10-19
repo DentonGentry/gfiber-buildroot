@@ -132,9 +132,15 @@ def IpAddrUpdate(iface_name, new_ips):
     IpAddrDel(iface_name, old_ip)
 
 
-def IpAddrAdd(iface_name, ip):
-  Log('Adding address %r on interface %r', ip, iface_name)
-  subprocess.check_call(['ip', 'addr', 'add', ip, 'dev', iface_name])
+def IpAddrAdd(iface, ip):
+  Log('Adding address %r on interface %r', ip, iface)
+  subprocess.check_call(['ip', 'addr', 'add', ip, 'dev', iface])
+  # We don't want 'proto kernel' routes.
+  if '/' in ip:
+    ip, netmask = ip.split('/')
+    subnet = GetSubnet(ip, netmask)
+    subprocess.check_call(['ip', 'route', 'del', subnet, 'dev', iface,
+                           'proto', 'kernel'])
 
 
 def IpAddrDel(iface_name, ip):
@@ -201,8 +207,7 @@ def SelectAndApply(iface_name):
     if 'new_ip_address' in ip:
       ip_string = ip['new_ip_address']
       netmask = '32'
-      if ((selected_config_file == static_config_file or not IsWirelessClient())
-          and 'new_subnet_mask' in ip):
+      if 'new_subnet_mask' in ip:
         netmask = str(NormalizeNetmask(ip['new_subnet_mask']))
       ip_string = ip_string + '/' + netmask
       new_ips.add(ip_string)
@@ -213,12 +218,8 @@ def SelectAndApply(iface_name):
     subnet = None
     if 'new_ip_address' in ip and 'new_subnet_mask' in ip:
       mask = str(NormalizeNetmask(ip['new_subnet_mask']))
-      subnet = ''.join((ApplyNetmask(ip['new_ip_address'], mask), '/', mask))
+      subnet = GetSubnet(ip['new_ip_address'], mask)
     RouteAdd(iface_name, routers=ip.get('new_routers', None), subnet=subnet)
-
-
-def IsWirelessClient():
-  return subprocess.call(['is-wireless-client']) == 0
 
 
 def IpToInt(ip):
@@ -262,6 +263,10 @@ def ApplyNetmask(ip, netmask):
   netmask = int(NormalizeNetmask(netmask))
   int_netmask = (2**netmask - 1) << (32 - netmask)
   return IntToIp(int_ip & int_netmask)
+
+
+def GetSubnet(ip, netmask):
+  return ''.join((ApplyNetmask(ip, netmask), '/', netmask))
 
 
 def main():
