@@ -6,5 +6,7 @@ config BR2_PACKAGE_GOOGLE_MCASTCAPTURE
         select BR2_PACKAGE_PROTOBUF
         select BR2_PACKAGE_LIBEVENT
         select BR2_PACKAGE_LIBXML2
+        # For dashsrv sudu ingestion.
+        select BR2_PACKAGE_GOOGLE_DASHPLAYER
         help
           Builds the mcastcapture sagesrv binary and libptsindex.so library
