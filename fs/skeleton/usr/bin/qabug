@@ -8,6 +8,7 @@ run() {
   "$@"
 }
 
+# Generic device information.
 run date
 run grep . /etc/platform /etc/version /etc/softwaredate /etc/serial
 run sh -c 'grep . /tmp/gpio/* /tmp/gpio/*/*; cd /tmp/gpio/ledcontrol; echo $(pwd): *'
@@ -20,6 +21,28 @@ run ls -l /config/experiments
 run cat /rw/startupmods
 run hnvram -d
 
+# SSL certificate validation.
+echo ---------------------------------------------------------------
+http_response=$(curl -s -S "https://factory.cpe.gfsvc.com/check_certs" --data "$(serial)")
+cert_in_cars=$(echo "$http_response" | grep "resultCode='0'")
+if [ -n "$cert_in_cars" ]; then
+  echo "SSL certificate for $(serial) is available in CARS!"
+else
+  echo "Warning! SSL certificate for $(serial) was *NOT* uploaded to CARS yet!"
+fi
+echo
+device_cert=$(hnvram -qr GOOGLE_SSL_CRT)
+echo "SSL certificate from hnvram:"
+echo "$device_cert"
+echo
+
+http_response=$(curl -s -S "https://factory.cpe.gfsvc.com/fetch_certs" --data "$(serial)")
+cert=$(echo "$http_response" | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p')
+echo "SSL certificate from CARS:"
+echo "$cert"
+echo
+
+# Device-specific diagnostic information.
 if is-ptp; then
   run grep . /config/settings/*
   run cat /config/glaukus.properties
