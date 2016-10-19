@@ -95,6 +95,16 @@ config BR2_SOFT_FLOAT
 	  functions, then everything will need to be compiled with soft
 	  floating point support (-msoft-float).
 
+config BR2_SOFT_FLOAT_ABI
+	bool "Use software floating point ABI but with hardware FP"
+	depends on BR2_arm || BR2_armeb
+	default y
+	help
+	  If the target (ARM) CPU has hardware floating point support but the
+	  toolchain has been compiled with software floating point, this flag
+	  enables the use of the hardware FPU via the software floating point
+	  ABI.
+
 config BR2_TARGET_OPTIMIZATION
 	string "Target Optimizations"
 	default "-pipe"
