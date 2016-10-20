@@ -94,7 +94,7 @@ while read filename; do
         while read route junk; do
           # Ignore the RFC2365 multicast route.
           if ! startswith "$route" "239"; then
-            if contains "$route" "/"; then
+            if contains "$route" "/" && [ "$route" != "$subnet" ]; then
               iplog -4 route del "$route" dev "$interface"
             fi
           fi
@@ -104,8 +104,10 @@ while read filename; do
         gateway_filepath="$TMP_DIR/gateway.$interface"
         if [ -e "$gateway_filepath" ]; then
           gateway=$(cat "$gateway_filepath")
-          iplog -4 route del default dev "$interface"
-          iplog -4 route add default via "$gateway" dev "$interface" $initrwnd
+          if ! ip route dev "$interface" | grep default | grep "via $gateway"; then
+            iplog -4 route del default dev "$interface"
+            iplog -4 route add default via "$gateway" dev "$interface" $initrwnd
+          fi
         fi
       fi
     fi
