@@ -185,17 +185,81 @@ pings6()
 }
 
 
+# integration tests can set different files to read from
+extrapingfile()
+{
+  VER="$1"
+  if [ "$VER" = "6" ]; then
+    filename=${EXTRAPING6FILE:-"/tmp/extra_ping6_servers"}
+  else
+    filename=${EXTRAPINGFILE:-"/tmp/extra_ping_servers"}
+  fi
+  echo $filename
+}
+
+
 extrapings()
 {
-  LOG=$1
-  VER=$2
-  filename="/tmp/extra_ping${VER}_servers"
+  LOG="$1"
+  VER="$2"
+  filename=$(extrapingfile "$VER")
   if [ -f "$filename" ]; then
     out=
     for ip in $(cat "$filename" | sed -e 's/,/ /g'); do
       out="$out$ip($(do_ping "$VER" $ip)) "
     done
     echo "$LOG $out"
+  fi
+}
+
+
+get_list_length()
+{
+  filename="$1"
+  len=0
+  for x in $(cat "$filename" 2>/dev/null | sed -e 's/,/ /g'); do
+    len=$((len + 1))
+  done
+  echo $len
+}
+
+
+select_by_index()
+{
+  filename="$1"
+  index="$2"
+  i=0
+  for x in $(cat "$filename" 2>/dev/null | sed -e 's/,/ /g'); do
+    if [ "$i" -eq "$index" ]; then
+      echo "$x"
+      return
+    fi
+    i=$((i + 1))
+  done
+}
+
+
+# Traceroute to one destination in the extra ping servers
+extratraceroute()
+{
+  LOG="$1"
+  VER="$2"
+  TOTAL="$3"
+  filename=$(extrapingfile "$VER")
+  if [ "$VER" = "6" ]; then
+    ipver="-6"
+  else
+    ipver="-4"
+  fi
+  len=$(get_list_length "$filename")
+  if [ "$len" -gt 0 ]; then
+    index=$((TOTAL % len))
+    site=$(select_by_index "$filename" "$index")
+    echo -n "$LOG $site"
+    traceroute -n -N 1 -q 1 -w 1 "$ipver" "$site" | tail -n +2 | while read num ip tim unit; do
+      echo -n " $ip($tim$unit)"
+    done
+    echo
   fi
 }
 
@@ -230,7 +294,11 @@ if [ -n "$DELAY" ]; then
   # Stagger startup after a power outage
   sleep $(randint 1 "$DELAY")
 fi
-longping=$(randint 1 3600)
+
+# Setting LONGPING in the environment allows test cases to be constructed
+rand=$(randint 1 3600)
+longping=${LONGPING:-$rand}
+numtraceroutes=0
 
 while :; do
   # time used by each process, followed by cumulative time (which includes
@@ -263,6 +331,9 @@ while :; do
         extrapings "ping:" ""
         extrapings "ping6:" "6"
         echo "gstatic: $(gstatics)"
+        extratraceroute "traceroute:" "" "$numtraceroutes"
+        extratraceroute "traceroute6:" "6" "$numtraceroutes"
+        numtraceroutes=$((numtraceroutes + 1))
       fi
       longping=0
     fi

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# exit with a distinctive code, gftest can know that this
+# platform doesn't implement these tests.
+if ! is-network-box && ! is-storage-box; then
+  echo "test not applicable to device"
+  exit 242  # defined as SKIPPED_TEST_RET_CODE in gftest
+fi
+
+LONGPING=4000; export LONGPING
+EXTRAPINGFILE=/tmp/extra_ping.$$ ; export EXTRAPINGFILE
+EXTRAPING6FILE=/tmp/extra_ping6.$$ ; export EXTRAPING6FILE
+
+echo localhost >"$EXTRAPINGFILE"
+echo "::1" >"$EXTRAPING6FILE"
+
+psstat
+rc=$?
+
+rm -f "$EXTRAPINGFILE" "$EXTRAPING6FILE"
+exit $rc
