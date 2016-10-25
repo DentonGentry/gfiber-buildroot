@@ -40,7 +40,7 @@ endef
 define BCM_NEXUS_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/bcrypt install
 	if [ $(CPE_25) = y ]; then \
-		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai install && \
+		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/sage/srai prep_folder install && \
 		$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/security/common_drm install; \
 	fi
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/../BSEAV/lib/drmrootfs install
