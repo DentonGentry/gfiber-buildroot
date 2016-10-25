@@ -10,10 +10,7 @@ ulimit -s 1024
 
 APP="spacecast"
 BINARY="/app/spacecast/appliance"
-# TODO(b/30677133): disable cache skipping in 6.13 release.
-# Revert this change in 6.14 or 6.15 release when all the metadata gets
-# updated.
-FLAGS="-logtostderr -ring_buffer_size=64MB -puller_skip_cached=false"
+FLAGS="-logtostderr -ring_buffer_size=64MB"
 if [ -e /tmp/DEBUG ]; then
   FLAGS="$FLAGS -debug=true"
 fi
