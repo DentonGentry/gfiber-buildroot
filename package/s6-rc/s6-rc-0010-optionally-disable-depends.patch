@@ -1,0 +1,74 @@
+From 811cffec96efa1dfee57869d2d22677577b583a3 Mon Sep 17 00:00:00 2001
+From: Avery Pennarun <apenwarr@gmail.com>
+Date: Mon, 24 Oct 2016 22:35:16 -0400
+Subject: [PATCH] Add s6-rc -O (only) option to disable dependencies.
+
+We sometimes want to start/stop a service ignoring its dependencies.  For
+example, if we want to just cycle a service quickly off/on, there's rarely a
+reason to stop all the things that depend on it.
+---
+ src/s6-rc/s6-rc.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/src/s6-rc/s6-rc.c b/src/s6-rc/s6-rc.c
+index f8d634e..a505491 100644
+--- a/src/s6-rc/s6-rc.c
++++ b/src/s6-rc/s6-rc.c
+@@ -23,7 +23,7 @@
+ #include <s6-rc/config.h>
+ #include <s6-rc/s6rc.h>
+ 
+-#define USAGE "s6-rc [ -v verbosity ] [ -n dryrunthrottle ] [ -t timeout ] [ -l live ] [ -u | -d ] [ -p ] [ -a ] help|list|listall|change [ servicenames... ]"
++#define USAGE "s6-rc [ -v verbosity ] [ -n dryrunthrottle ] [ -t timeout ] [ -l live ] [ -u | -d ] [ -p ] [ -a ] [ -O ] help|list|listall|change [ servicenames... ]"
+ #define dieusage() strerr_dieusage(100, USAGE)
+ 
+ typedef struct pidindex_s pidindex_t ;
+@@ -44,6 +44,7 @@ static unsigned char *state ;
+ static unsigned int *pendingdeps ;
+ static tain_t deadline ;
+ static char dryrun[UINT_FMT] = "" ;
++static unsigned int only = 0 ;
+ 
+ static inline void announce (void)
+ {
+@@ -322,7 +323,7 @@ static int doit (int spfd, int h)
+   while (i--)
+   {
+     state[i] &= 251 ;
+-    pendingdeps[i] = db->services[i].ndeps[h] ;
++    pendingdeps[i] = only ? 0 : db->services[i].ndeps[h] ;
+   }
+   i = n ;
+   while (i--) examine(i, h) ;
+@@ -388,7 +389,7 @@ int main (int argc, char const *const *argv)
+     subgetopt_t l = SUBGETOPT_ZERO ;
+     for (;;)
+     {
+-      register int opt = subgetopt_r(argc, argv, "v:n:t:l:udpaX", &l) ;
++      register int opt = subgetopt_r(argc, argv, "v:n:t:l:udpaOX", &l) ;
+       if (opt == -1) break ;
+       switch (opt)
+       {
+@@ -406,6 +407,7 @@ int main (int argc, char const *const *argv)
+         case 'd' : up = 0 ; break ;
+         case 'p' : prune = 1 ; break ;
+         case 'a' : selectlive = 1 ; break ;
++        case 'O' : only = 1 ; break ;
+         case 'X' : takelocks = 0 ; break ;
+         default : dieusage() ;
+       }
+@@ -554,7 +556,10 @@ int main (int argc, char const *const *argv)
+         return 0 ;
+       }
+ 
+-      s6rc_graph_closure(db, state, 1, up) ;
++      if (!only)
++      {
++        s6rc_graph_closure(db, state, 1, up) ;
++      }
+ 
+ 
+      /* Print the selection after closure */
+-- 
+2.8.0.rc3.226.g39d4020
+

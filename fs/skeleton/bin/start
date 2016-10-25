@@ -63,12 +63,12 @@ for prog in "$@"; do
         ;;
       stop)
         log "Stopping /service/$prog..."
-        s6-rc -v2 -d change "$prog"
+        s6-rc -v2 -d -O change "$prog"
         ;;
       restart)
         log "Restarting /service/$prog..."
-        s6-rc -v2 -d change "$prog" &&
-        s6-rc -v2 -u change "$prog"
+        s6-rc -v2 -d -O change "$prog" &&
+        s6-rc -v2 -u -O change "$prog"
         ;;
       powerdown)
         log "Error: powerdown not supported for '/service/$prog'"
