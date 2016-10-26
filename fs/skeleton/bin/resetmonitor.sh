@@ -10,10 +10,22 @@
 
 # Processes the output of the reset click handler.
 # <1s click means: show provisioning info
-# 3-9s click means: reboot device
+# 3-9s click means: clobber /config and reboot
 # 10+s:  Remove PRODUCTION_MODE and reboot (factory reset)
 
 DISABLE_FILE="/tmp/gpio/disable"
+
+pulse_led() {
+  # 10 quick pulses indicates reset succeeded
+  echo 0 >/sys/class/leds/sys-red/brightness
+  echo 0 >/sys/class/leds/sys-blue/brightness
+  for n in $(seq 10); do
+    echo 0 >/sys/class/leds/sys-red/brightness
+    sleep .1
+    echo 100 >/sys/class/leds/sys-red/brightness
+    sleep .1
+  done
+}
 
 while read -r type timer
 do
@@ -39,23 +51,19 @@ do
       echo 1 >/sys/class/leds/sys-red/brightness
       ;;
     click[0-2])
+      echo "$0: ledtapcode activated."
       ledtapcode
       ;;
     click[3-9])
-      echo "$0: rebooting"
+      echo "$0: reset button activated."
+      pulse_led
+      rm -rf /config
+      echo "$0: rebooting..."
       reboot
       ;;
     click10 | click*)
-      echo "$0: click10 received."
-      # 10 quick pulses indicates reset succeeded
-      echo 0 >/sys/class/leds/sys-red/brightness
-      echo 0 >/sys/class/leds/sys-blue/brightness
-      for n in $(seq 10); do
-        echo 0 >/sys/class/leds/sys-red/brightness
-        sleep .1
-        echo 100 >/sys/class/leds/sys-red/brightness
-        sleep .1
-      done
+      echo "$0: factory reset mode."
+      pulse_led
       hnvram -w PRODUCTION_UNIT=""
       reboot
       ;;
