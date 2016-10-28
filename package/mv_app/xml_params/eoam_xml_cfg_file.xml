@@ -8,6 +8,7 @@
     <oam_softver_from_xml>0</oam_softver_from_xml>
   </ONU_SN>
 
+
   <!--  Management of loop detection  1 = disactivated, 2 = activated   -->
   <ONU_LOOPDETECT>
     <port id="1" loopdetect="1"/>
@@ -168,5 +169,10 @@
       <LLID id="7" num="0" />
     </OAM_TX_queue>
   </ONU_OAM_QUEUE>
+  <OAM_VLAN_MODE_AUXILIARY>
+    <!--  OAM downstream transparent vid which is used to distinguish untagged packets in switch -->
+    <!--  The vid will be added for untagged packets by PNC rule and be stripped in switch transparent mode port -->
+    <oam_downstream_transparent_vid>2999</oam_downstream_transparent_vid>
+  </OAM_VLAN_MODE_AUXILIARY>
 
 </cnfg>
