@@ -9,33 +9,8 @@ else
 GOOGLE_FFMPEG_CONF_OPT += --disable-zlib
 endif
 
-GOOGLE_FFMPEG_EXTRA_CFLAGS = -fPIC -DEM8622
-ifeq ($(BR2_arm),y)
-# The compiler version from Broadcom defaults to Thumb2, and hits a compiler
-# but in this package, so we are compiling straight arm for now, it's a bit
-# slow but at least compiles.
-GOOGLE_FFMPEG_EXTRA_CFLAGS += -marm
-endif
-
-# We only install the program for usage by the server side
-define GOOGLE_FFMPEG_INSTALL_TARGET_CMDS
-        mkdir -p $(TARGET_DIR)/app/sage/
-        $(INSTALL) -D -m 0755 $(@D)/ffmpeg $(TARGET_DIR)/app/sage/
-endef
-
-define GOOGLE_FFMPEG_CONFIGURE_CMDS
-        (cd $(GOOGLE_FFMPEG_SRCDIR) && rm -rf config.cache && \
-        $(TARGET_CONFIGURE_OPTS) \
-        $(TARGET_CONFIGURE_ARGS) \
-        $(GOOGLE_FFMPEG_CONF_ENV) \
-        $(LOGLINEAR) ./configure \
-                --enable-cross-compile  \
-                --cross-prefix=$(TARGET_CROSS) \
-                --sysroot=$(STAGING_DIR) \
-                --host-cc="$(HOSTCC)" \
-                --arch=$(BR2_ARCH) \
-                --target-os=linux \
-                --extra-cflags='$(GOOGLE_FFMPEG_EXTRA_CFLAGS)' \
+GOOGLE_FFMPEG_CONF_OPT += \
+                --disable-ffplay \
                 --disable-mmx \
                 --disable-mmx2 \
                 --disable-muxers \
@@ -117,7 +92,48 @@ define GOOGLE_FFMPEG_CONFIGURE_CMDS
                 --enable-decoder=vorbis \
                 --enable-decoder=wavpack \
                 --enable-decoder=wmv3 \
-                --enable-decoder=xsub \
+                --enable-decoder=xsub
+
+GOOGLE_FFMPEG_EXTRA_CFLAGS = -fPIC -DEM8622
+HOST_GOOGLE_FFMPEG_EXTRA_CFLAGS = -fPIC -DEM8622
+ifeq ($(BR2_arm),y)
+# The compiler version from Broadcom defaults to Thumb2, and hits a compiler
+# but in this package, so we are compiling straight arm for now, it's a bit
+# slow but at least compiles.
+GOOGLE_FFMPEG_EXTRA_CFLAGS += -marm
+endif
+
+# We only install the program for usage by the server side
+define GOOGLE_FFMPEG_INSTALL_TARGET_CMDS
+        mkdir -p $(TARGET_DIR)/app/sage/
+        $(INSTALL) -D -m 0755 $(@D)/ffmpeg $(TARGET_DIR)/app/sage/
+endef
+
+define GOOGLE_FFMPEG_CONFIGURE_CMDS
+        (cd $(GOOGLE_FFMPEG_SRCDIR) && rm -rf config.cache && \
+        $(TARGET_CONFIGURE_OPTS) \
+        $(TARGET_CONFIGURE_ARGS) \
+        $(GOOGLE_FFMPEG_CONF_ENV) \
+        $(LOGLINEAR) ./configure \
+                --enable-cross-compile  \
+                --cross-prefix=$(TARGET_CROSS) \
+                --sysroot=$(STAGING_DIR) \
+                --host-cc="$(HOSTCC)" \
+                --arch=$(BR2_ARCH) \
+                --target-os=linux \
+                --extra-cflags='$(GOOGLE_FFMPEG_EXTRA_CFLAGS)' \
+                $(GOOGLE_FFMPEG_CONF_OPT) \
+        )
+endef
+
+define HOST_GOOGLE_FFMPEG_CONFIGURE_CMDS
+        (cd $(HOST_GOOGLE_FFMPEG_SRCDIR) && rm -rf config.cache && \
+        $(HOST_CONFIGURE_OPTS) \
+        $(HOST_CONFIGURE_ARGS) \
+        $(GOOGLE_FFMPEG_CONF_ENV) \
+        $(LOGLINEAR) ./configure \
+                --prefix=$(HOST_DIR)/usr \
+                --extra-cflags='$(HOST_GOOGLE_FFMPEG_EXTRA_CFLAGS)' \
                 $(GOOGLE_FFMPEG_CONF_OPT) \
         )
 endef
@@ -131,3 +147,4 @@ endef
 GOOGLE_FFMPEG_POST_INSTALL_STAGING_HOOKS+=GOOGLE_FFMPEG_INSTALL_AUDIOCONVERT
 
 $(eval $(call AUTOTARGETS))
+$(eval $(call AUTOTARGETS,host))
