@@ -8,8 +8,7 @@ GOLANG_SITE = https://go.googlesource.com/go
 GOLANG_SITE_METHOD = git
 GOLANG_DEPENDENCIES = host-golang_bootstrap
 
-GOLANG_RELEASE = 1.6.2
-GOLANG_GOROOT = $(HOST_DIR)/usr/lib/golang-$(GOLANG_RELEASE)
+GOLANG_GOROOT = $(HOST_DIR)/usr/lib/golang
 
 ifeq ("arm",$(BR2_ARCH))
 GOLANG_GOARCH = arm
@@ -79,8 +78,8 @@ endef
 define HOST_GOLANG_INSTALL_CMDS
 	$(INSTALL) -d -m 0755 "$(GOLANG_GOROOT)"
 	cp -a "$(@D)"/* "$(GOLANG_GOROOT)/"
-	ln -sfT "../lib/golang-$(GOLANG_RELEASE)/bin/go" "$(HOST_DIR)/usr/bin/go"
-	ln -sfT "../lib/golang-$(GOLANG_RELEASE)/bin/gofmt" "$(HOST_DIR)/usr/bin/gofmt"
+	ln -sfT "../lib/golang/bin/go" "$(HOST_DIR)/usr/bin/go"
+	ln -sfT "../lib/golang/bin/gofmt" "$(HOST_DIR)/usr/bin/gofmt"
 endef
 
 define HOST_GOLANG_CLEAN_CMDS
