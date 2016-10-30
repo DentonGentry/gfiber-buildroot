@@ -80,15 +80,17 @@ define GOOGLE_SPACECAST_CLEAN_CMDS
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk clean \
 		TARGET_DIR="$(TARGET_DIR)"
 
+	rm -f $(TARGET_DIR)/etc/init.d/S80commandrunner
 	rm -f $(TARGET_DIR)/etc/init.d/S80statemanager
 	rm -f $(TARGET_DIR)/etc/init.d/S82scdaemon
 	rm -f $(TARGET_DIR)/etc/init.d/S84configmanager
 	rm -f $(TARGET_DIR)/etc/init.d/S88updateengine
 	rm -f $(TARGET_DIR)/etc/init.d/S90spacecast
 	rm -f $(TARGET_DIR)/etc/init.d/S92monlogpusher
-	rm -f $(TARGET_DIR)/etc/init.d/S95adb
-	rm -f $(TARGET_DIR)/etc/init.d/S99androidserver
+	rm -f $(TARGET_DIR)/etc/init.d/S42adb
+	rm -f $(TARGET_DIR)/etc/init.d/S42androidserver
 	rm -f $(TARGET_DIR)/sbin/reset_tuner
+	rm -f $(TARGET_DIR)/sbin/prodsysinfo
 endef
 
 $(eval $(call GENTARGETS))
