@@ -19,3 +19,14 @@ config BR2_PACKAGE_GOOGLE_SPACECAST
 	select BR2_PACKAGE_TROUSERS
 	help
 	  Google's Spacecast
+
+if BR2_PACKAGE_GOOGLE_SPACECAST
+
+config BR2_PACKAGE_GOOGLE_SPACECAST_TARGET
+	string "Target device (appliance or FDS)"
+	default "spacecast_appliance.mk"
+	help
+	 Target device to install.
+	  Either "spacecast_appliance.mk" or "spacecast_FDS.mk".
+
+endif

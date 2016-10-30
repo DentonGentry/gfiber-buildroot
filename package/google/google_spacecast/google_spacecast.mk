@@ -34,20 +34,22 @@ endef
 
 define GOOGLE_SPACECAST_BUILD_CMDS
 	export $(GOLANG_ENV) ; \
-	$(GOOGLE_SPACECAST_GOENV); \
-	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk all
+	$(GOOGLE_SPACECAST_GOENV) ; \
+	$(MAKE) -C $(@D) -f spacecast.mk all \
+		TOOLCHAIN="$(BR2_TOOLCHAIN_EXTERNAL_PREFIX)-"
 endef
 
 define GOOGLE_SPACECAST_TEST_CMDS
 	export $(HOST_GOLANG_ENV) ; \
-	$(GOOGLE_SPACECAST_GOENV); \
-	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk test
+	$(GOOGLE_SPACECAST_GOENV) ; \
+	$(MAKE) -C $(@D) -f spacecast.mk test
 endef
 
 define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
-	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk install_target \
+	$(MAKE) -C $(@D) -f $(BR2_PACKAGE_GOOGLE_SPACECAST_TARGET) install \
 		INSTALL="$(INSTALL)" \
 		TARGET_DIR="$(TARGET_DIR)" \
+		BINARIES_DIR="$(BINARIES_DIR)" \
 		STRIPCMD="$(STRIPCMD)"
 	$(INSTALL) -D -m 0755 package/google/google_spacecast/etc/init.d/S80commandrunner \
 		$(TARGET_DIR)/etc/init.d/
@@ -76,9 +78,10 @@ define GOOGLE_SPACECAST_INSTALL_TARGET_CMDS
 endef
 
 define GOOGLE_SPACECAST_CLEAN_CMDS
-	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk clean \
-		TARGET_DIR="$(TARGET_DIR)"
-
+	$(MAKE) -C $(@D) -f spacecast.mk clean
+	$(MAKE) -C $(@D) -f $(BR2_PACKAGE_GOOGLE_SPACECAST_TARGET) clean \
+		TARGET_DIR="$(TARGET_DIR)" \
+		BINARIES_DIR="$(BINARIES_DIR)"
 	rm -f $(TARGET_DIR)/etc/init.d/S80commandrunner
 	rm -f $(TARGET_DIR)/etc/init.d/S80statemanager
 	rm -f $(TARGET_DIR)/etc/init.d/S82scdaemon
