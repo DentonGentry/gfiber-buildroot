@@ -9,6 +9,7 @@ GOOGLE_SPACECAST_DEPENDENCIES = host-protobuf \
 				host-go_protobuf \
 				host-go_mock \
 				host-google_widevine_cenc \
+				host-trousers \
 				go_cron \
 				go_fsnotify \
 				go_glog \
@@ -40,8 +41,6 @@ endef
 define GOOGLE_SPACECAST_TEST_CMDS
 	export $(HOST_GOLANG_ENV) ; \
 	$(GOOGLE_SPACECAST_GOENV); \
-	export CGO_CXXFLAGS="$(HOST_CXXFLAGS)" ; \
-	export CGO_LDFLAGS="$(HOST_LDFLAGS)" ; \
 	$(MAKE) -C $(@D) OUTDIR=$(@D) -f spacecast.mk test
 endef
 
