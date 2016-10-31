@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -x
 set -e
 TARGET_DIR=$1
@@ -19,35 +19,20 @@ echo "!!!!!!!!!! DONE Stripping $TARGET_DIR "
 
 # Generate /etc/manifest, /etc/version, /etc/softwaredate
 rm -f "$TARGET_DIR/etc/manifest"
-if [ -d ../.repo ]; then
+
+if support/scripts/is-repo.sh; then
   repo --no-pager manifest -r -o "$TARGET_DIR/etc/manifest"
-  FORALL="repo forall -c"
-elif [ -d ../.git/modules ]; then
+elif support/scripts/is-git.sh; then
   ( cd .. &&
     echo -n 'commitid ' &&
     git describe --no-abbrev --always
   ) >"$TARGET_DIR/etc/manifest"
-  FORALL="git submodule --quiet foreach"
 else
-  echo "Can't find repo or git-submodules top.  Aborting." >&2
-  exit 99
+  echo "ERROR: No version control folder found" >&2
+  exit 1;
 fi
-# TODO(apenwarr): If we use git-submodules, we can just check the top level.
-#   The git-submodules superproject commit id is enough to identify
-#   everything about all included subprojects.  But for now, just do it
-#   the same with both repo and submodules.
-tagname=$(git describe)
-tagabbrev=$(git describe --abbrev=0)
-tree_state=$(git rev-list "$tagabbrev"..HEAD)
-if [ -n "$tree_state" ]; then
-  # Tree has commits since last tag, rebuild the image name
-  count=$(cd .. &&
-             $FORALL "git rev-list '$tagabbrev'..HEAD 2>/dev/null" |
-             wc -l)
-  version="$PLATFORM_PREFIX-${tagabbrev#*-}-$count-${tagname##*-}"
-else
-  version="$PLATFORM_PREFIX-${tagname#*-}"
-fi
+
+version="${PLATFORM_PREFIX}$(support/scripts/version.sh)"
 echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
 echo -n "fiberos" >"$TARGET_DIR/etc/os" 2>/dev/null
 

@@ -735,6 +735,9 @@ endif
 cross: $(BASE_TARGETS)
 compiler: $(filter cross_compiler,$(BASE_TARGETS))
 
+version:
+	./support/scripts/version.sh
+
 what-targets:
 	@echo $(TARGETS)
 
