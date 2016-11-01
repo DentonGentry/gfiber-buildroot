@@ -68,7 +68,7 @@ for mtdname in "data+ubi"; do
   fi
 done
 
-for mtdname in "data+ext4"; do
+for mtdname in "data+ext4" "userdata"; do
   mtd=$(check_mmc "$mtdname")
   if [ -n "$mtd" ]; then
     echo "Wiping $mtdname ($mtd)..."
