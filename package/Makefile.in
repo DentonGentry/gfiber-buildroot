@@ -131,7 +131,7 @@ STRIP_STRIP_UNNEEDED:=--strip-unneeded
 STRIP_STRIP_ALL:=--strip-all
 TARGET_STRIP=$(TARGET_CROSS)strip
 STRIPCMD=$(TARGET_CROSS)strip --remove-section=.comment --remove-section=.note
-KSTRIPCMD=$(STRIPCMD) $(STRIP_STRIP_UNNEEDED)
+KSTRIPCMD=$(STRIPCMD) --strip-debug
 endif
 ifeq ($(BR2_STRIP_sstrip),y)
 STRIP_DISCARD_ALL:=
