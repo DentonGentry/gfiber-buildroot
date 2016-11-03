@@ -42,6 +42,7 @@ case "$1" in
       SI=--scan-interval=300
     fi
     if [ -n "$YES" ]; then
+      mkdir -p /tmp/waveguide
       supernice babysit 60 alivemonitor /tmp/waveguide/alive 10 10 600 \
           waveguide "$HP" "$SI" "$TB" 2>&1 | logos waveguide &
     fi
