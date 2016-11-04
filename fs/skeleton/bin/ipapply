@@ -136,11 +136,12 @@ def IpAddrAdd(iface, ip):
   Log('Adding address %r on interface %r', ip, iface)
   subprocess.check_call(['ip', 'addr', 'add', ip, 'dev', iface])
   # We don't want 'proto kernel' routes.
-  if '/' in ip:
-    ip, netmask = ip.split('/')
-    subnet = GetSubnet(ip, netmask)
-    subprocess.check_call(['ip', 'route', 'del', subnet, 'dev', iface,
-                           'proto', 'kernel'])
+  ip_route_show = ['ip', 'route', 'show', 'dev', iface]
+  for line in subprocess.check_output(ip_route_show).splitlines():
+    if 'proto kernel' in line:
+      route = line.split()[0]
+      if subprocess.call(['ip', 'route', 'del', route, 'dev', iface]) != 0:
+        Log('Failed to delete route %s on interface %s', route, iface)
 
 
 def IpAddrDel(iface_name, ip):
