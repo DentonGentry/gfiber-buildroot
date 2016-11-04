@@ -46,6 +46,7 @@ endif
 define GOOGLE_CAST_BUILD_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
+		STAGING_DIR=$(STAGING_DIR) \
 		-C $(@D)/build \
                 -f Makefile.oemlibs \
 		$(GOOGLE_CAST_CCACHE) \
@@ -56,6 +57,7 @@ endef
 define GOOGLE_CAST_BUILD_TEST_CMDS
 	$(BCM_MAKE_ENV) $(MAKE) \
 		$(BCM_MAKEFLAGS) \
+		STAGING_DIR=$(STAGING_DIR) \
 		-C $(@D)/build \
 		$(GOOGLE_CAST_CCACHE) \
 		PYTHONDONTOPTIMIZE="0" \
