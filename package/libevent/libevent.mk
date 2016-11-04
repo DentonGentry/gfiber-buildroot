@@ -3,9 +3,9 @@
 # libevent
 #
 #############################################################
-LIBEVENT_VERSION = 2.0.22
-LIBEVENT_SOURCE = libevent-$(LIBEVENT_VERSION)-stable.tar.gz
-LIBEVENT_SITE = https://github.com/libevent/libevent/releases/download/release-$(LIBEVENT_VERSION)-stable
+LIBEVENT_VERSION = 2.1.5
+LIBEVENT_SOURCE = libevent-$(LIBEVENT_VERSION)-beta.tar.gz
+LIBEVENT_SITE = https://github.com/libevent/libevent/releases/download/release-$(LIBEVENT_VERSION)-beta
 
 LIBEVENT_AUTORECONF = NO
 LIBEVENT_INSTALL_STAGING = YES
