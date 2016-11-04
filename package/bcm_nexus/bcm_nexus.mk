@@ -92,6 +92,7 @@ define BCM_NEXUS_INSTALL_STAGING_CMDS
 	sed -i"" -e "s@$(@D)@/$(BCM_NEXUS_STAGING_PATH)@g" -e "s@std=c89@std=c99@g" $(@D)/bin/nexus.pc
 	$(INSTALL) -D $(@D)/bin/nexus.pc $(STAGING_DIR)/usr/lib/pkgconfig/nexus.pc
 	$(call BCM_NEXUS_INSTALL_LIBS,$(STAGING_DIR))
+	$(INSTALL) -D $(@D)/../BSEAV/lib/security/third_party/widevine/CENC21/oemcrypto/lib/$(BCM_ARCH)/nonsage/liboemcrypto.a $(STAGING_DIR)/usr/lib/liboemcrypto.a
 endef
 
 define BCM_NEXUS_INSTALL_TARGET_CMDS
