@@ -24,7 +24,10 @@ try_install()
   wait-scsi usb
   any=
   current_ver=$(cat /etc/version)
-  platform_prefix=${current_ver%%-*}
+  # ATV prefix is e.g. gftv254_atv. To support installing FiberOS on ATV and
+  # the reverse, split on the underscore followed by the dash.
+  platform_prefix=${current_ver%%_atv*}
+  platform_prefix=${platform_prefix%%-*}
   for path in $(findall /sys/block/sd*/device); do
     if realpath $path | grep -q -e "/usb[0-9]*/"; then
       any=1
@@ -56,7 +59,7 @@ try_install()
           lastimg=
           for img in $(findall /tmp/installsrc/*.gi); do
             imgbase=$(basename "$img")
-            if startswith "$imgbase" "$platform_prefix-"; then
+            if startswith "$imgbase" "$platform_prefix"; then
               log "  considering $imgbase"
               lastimg=$img
             else
