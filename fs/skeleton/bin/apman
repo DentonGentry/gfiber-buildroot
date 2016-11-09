@@ -104,7 +104,7 @@ while read filename; do
         gateway_filepath="$TMP_DIR/gateway.$interface"
         if [ -e "$gateway_filepath" ]; then
           gateway=$(cat "$gateway_filepath")
-          if ! ip route dev "$interface" | grep default | grep "via $gateway"; then
+          if ! ip route show dev "$interface" | grep default | grep "via $gateway"; then
             iplog -4 route del default dev "$interface"
             iplog -4 route add default via "$gateway" dev "$interface" $initrwnd
           fi
