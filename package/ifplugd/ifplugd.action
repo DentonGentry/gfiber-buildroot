@@ -35,6 +35,10 @@ case "$action" in
       fi
 
       if [ -e "/sys/class/net/br0" ]; then
+        # Stop any running dhclients on br0 now that the wan is up.
+        killpid /var/run/dhclient.br0.pid
+        killpid /var/run/dhclient6.br0.pid
+
         # Bridge mode might require br0 to switch address config.
         ipapply br0
       fi
