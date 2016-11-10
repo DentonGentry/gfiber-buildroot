@@ -28,7 +28,12 @@ try_install()
   # the reverse, split on the underscore followed by the dash.
   platform_prefix=${current_ver%%_atv*}
   platform_prefix=${platform_prefix%%-*}
-  for path in $(findall /sys/block/sd*/device); do
+  log_level=$(sysctl kernel.printk)
+  log_level=${log_level##*=}
+  allpaths=$(findall /sys/block/sd*/device)
+
+  [ -n "$allpaths" ] && sysctl kernel.printk="2 1 1 7"
+  for path in $allpaths; do
     if realpath $path | grep -q -e "/usb[0-9]*/"; then
       any=1
       dev=$(basename $(dirname $path))
@@ -92,6 +97,7 @@ try_install()
     fi
   done  # disk loop
   [ -z "$any" ] && log "no removable media found."
+  [ -n "$allpaths" ] && sysctl kernel.printk="$log_level"
 }
 
 
