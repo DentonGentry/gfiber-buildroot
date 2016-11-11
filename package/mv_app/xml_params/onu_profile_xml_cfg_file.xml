@@ -185,6 +185,14 @@
         <!--Battery backup support capability: BYTE.                    -->
         <!--0: do not support battery backup, 1: support battery backup -->
         <attrib name="Battery backup support capability" value="0" />
+
+        <!--Downstream multicast channel: UINT32.                    -->
+        <!--0: from multicast mac address channel, 1: from multicast gemport channel-->
+        <attrib name="Downstream multicast channel" value="1" />
+
+        <!--IGMPV1 messages discard: UINT32.                    -->
+        <!--0: forward igmpv1 messages, 1: discard igmpv1 messages-->
+        <attrib name="IGMPV1 messages discard" value="1" />
     </Capability>
 
     <Queue>
