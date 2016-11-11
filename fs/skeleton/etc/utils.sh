@@ -266,7 +266,8 @@ interface_exists() {
 }
 
 is_quantenna_interface() {
-  [ -e "/sys/class/net/quantenna/upper_$1" ]
+  # Check for "$1 " to prevent "wlanX" from matching "wlanX_portal".
+  filecontains "$1 " /sys/class/net/quantenna/vlan >/dev/null 2>&1
 }
 
 ip46tables() {
