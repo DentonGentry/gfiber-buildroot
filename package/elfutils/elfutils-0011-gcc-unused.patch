@@ -1,0 +1,34 @@
+--- elfutils-0.161-ori/libdwfl/fts.c	2016-10-05 14:32:44.588540207 -0400
++++ elfutils-0.161/libdwfl/fts.c	2016-10-05 14:33:51.080169836 -0400
+@@ -468,6 +468,7 @@
+ int
+ fts_set(FTS *sp, FTSENT *p, int instr)
+ {
++        (void)sp; /* Unused */
+ 	if (instr != 0 && instr != FTS_AGAIN && instr != FTS_FOLLOW &&
+ 	    instr != FTS_NOINSTR && instr != FTS_SKIP) {
+ 		errno = EINVAL;
+@@ -566,7 +567,7 @@
+ 	FTSENT *cur, *tail;
+ 	DIR *dirp;
+ 	void *oldaddr;
+-	int cderrno, descend, len, level, nlinks, saved_errno,
++	int descend, len, level, nlinks, saved_errno,
+ 	    nostat, doadjust;
+ 	size_t maxlen;
+ 	char *cp;
+@@ -631,14 +632,12 @@
+ 	 * needed sorted entries or stat information, they had better be
+ 	 * checking FTS_NS on the returned nodes.
+ 	 */
+-	cderrno = 0;
+ 	if (nlinks || type == BREAD) {
+ 		if (fts_safe_changedir(sp, cur, dirfd(dirp), NULL)) {
+ 			if (nlinks && type == BREAD)
+ 				cur->fts_errno = errno;
+ 			cur->fts_flags |= FTS_DONTCHDIR;
+ 			descend = 0;
+-			cderrno = errno;
+ 			(void)closedir(dirp);
+ 			dirp = NULL;
+ 		} else
