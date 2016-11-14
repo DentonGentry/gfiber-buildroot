@@ -77,9 +77,15 @@ endef
 
 define GOOGLE_CAST_INSTALL_BINARIES
 	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/cast_binaries/* $(TARGET_DIR)/chrome/
-	cp -af $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper
-	cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/chrome/* $(TARGET_DIR)/chrome/
-	cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/
+	if [ -e $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER) ]; then \
+		cp -af $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper ; \
+		cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/chrome/* $(TARGET_DIR)/chrome/ ; \
+		cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/ ; \
+	else \
+		cp -af $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper ; \
+		cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/chrome/* $(TARGET_DIR)/chrome/ ; \
+		cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/ ; \
+	fi
 
 	mv $(TARGET_DIR)/chrome/chrome_sandbox $(TARGET_DIR)/chrome/chrome-sandbox
 
