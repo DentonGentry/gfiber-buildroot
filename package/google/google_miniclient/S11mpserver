@@ -20,6 +20,9 @@ case "$1" in
         sleep 1
         mcnmp_retries=$((mcnmp_retries+1))
       done
+      # Before we let the world know we are ready, check and re-initialize
+      # PlayReady and Widevine if necessary.
+      /app/client/verify_playready_widevine | logos mcnmp_server
       touch /tmp/mcnmp_ready
       if is-secure-boot; then
         : >/tmp/gpio/ledcontrol/secure_boot
