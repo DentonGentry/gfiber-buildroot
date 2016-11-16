@@ -92,7 +92,6 @@ define GOOGLE_CAST_INSTALL_BINARIES
 	$(INSTALL) -D -m 0644 $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/scripts/process.json $(TARGET_DIR)/chrome/process.json
 	$(INSTALL) -D -m 0755 $(@D)/build/S99cast.process_manager $(TARGET_DIR)/etc/init.d/S99cast.process_manager
 	$(INSTALL) -D -m 0755 $(@D)/build/start_cast_process_manager $(TARGET_DIR)/chrome/start_cast_process_manager
-	$(INSTALL) -D -m 0755 $(@D)/build/start_cast_shell $(TARGET_DIR)/chrome/start_cast_shell
 	$(INSTALL) -D -m 0755 $(@D)/build/start_cert_fetcher $(TARGET_DIR)/chrome/start_cert_fetcher
 
 	chmod 4755 $(TARGET_DIR)/chrome/chrome-sandbox
