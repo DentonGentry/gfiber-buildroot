@@ -48,7 +48,7 @@ endef
 endif
 
 define BCM_ROCKFORD_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/driver -f V3DDriver.mk
+	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y WITH_DEFRAG=1 $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/driver -f V3DDriver.mk 
 	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/middleware/v3d/platform/nexus -f platform_nexus.mk
 	$(BCM_MAKE_ENV) $(BCM_ROCKFORD_DEBUG) NEXUS_CLIENT_SUPPORT=y NEXUS_MODE=client $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/applications/khronos/v3d/nexus/cube
 	$(BCM_MAKE_ENV) $(MAKE) $(BCM_MAKEFLAGS) -C $(@D)/lib/psip
