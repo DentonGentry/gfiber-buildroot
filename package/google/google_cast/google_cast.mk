@@ -4,71 +4,41 @@
 #
 #############################################################
 
-# TODO(nbegley): Investigate which of these definitions are no longer necessary.
-
 GOOGLE_CAST_SITE = repo://google_cast
 
+# TODO(smcgruer): At least some of these dependencies are not needed.
 GOOGLE_CAST_DEPENDENCIES=\
 	bcm_bseav bcm_nexus bcm_common bcm_rockford \
 	google_miniclient libpng jpeg zlib freetype expat \
 	libcurl libxml2 libxslt fontconfig boost cairo \
 	avahi libcap libnss host-gyp host-ninja google_widevine_cenc
 
-# This will result in defining a meaningful APPLIBS_TOP (which is required by
-# the local build).
-BCM_APPS_DIR=$(abspath $(@D))
-
 GOOGLE_CAST_INSTALL_STAGING=NO
 GOOGLE_CAST_INSTALL_TARGET=YES
 
-PLATFORM=$(BR2_PACKAGE_BCM_COMMON_PLATFORM)
-BCHP_VER_LOWER=$(shell echo $(BR2_PACKAGE_BCM_COMMON_PLATFORM_REV) | tr A-Z a-z)
-BUILD_TYPE_LOWER=$(shell echo $(BUILD_TYPE) | tr A-Z a-z)
-
-ifdef BR2_mipsel
-BCM_ARCH=mips
-B_REFSW_ARCH=mipsel-linux
-else
-BCM_ARCH=arm
-B_REFSW_ARCH=arm-linux
-endif
-
+# Rather than include all of BCM_MAKEFLAGS, we calculate the only necessary one
+# here, which is the rockford gl prefix.
 ifeq ($(BR2_PACKAGE_BCM_COMMON_PLATFORM),"97439")
 V3D_PREFIX=vc5
 else
 V3D_PREFIX=v3d
 endif
 
-define GOOGLE_CAST_CONFIGURE_CMDS
-	$(call BCM_COMMON_USE_BUILD_SYSTEM,$(@D))
-endef
-
-ifeq ($(BR2_CCACHE),y)
-    GOOGLE_CAST_CCACHE="WEBKITGL_CCACHE=y"
-else
-    GOOGLE_CAST_CCACHE="WEBKITGL_CCACHE=n"
-endif
+# The standard set of Make arguments that we need. In particular, BCM_MAKE_ENV
+# contains many necessary variables for working with NEXUS.
+GOOGLE_CAST_MAKEARGS=\
+	$(BCM_MAKE_ENV) \
+	BUILD_DIR=$(BUILD_DIR) \
+	PATH="${HOST_DIR}/usr/bin:${PATH}" \
+	TARGET_ARCH="$(BR2_ARCH)" \
+	TARGET_CROSS="$(TARGET_CROSS)" \
+	V3D_PREFIX="$(V3D_PREFIX)"
 
 define GOOGLE_CAST_BUILD_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
+	$(MAKE) \
 		-C $(@D)/build \
                 -f Makefile.oemlibs \
-		$(GOOGLE_CAST_CCACHE) \
-		PYTHONDONTOPTIMIZE="0" \
-		BUILD_DIR=$(BUILD_DIR) \
-		TARGET_ARCH="$(BR2_ARCH)" \
-		TARGET_CROSS="$(TARGET_CROSS)" \
-		V3D_PREFIX="$(V3D_PREFIX)"
-endef
-
-define GOOGLE_CAST_BUILD_TEST_CMDS
-	$(BCM_MAKE_ENV) $(MAKE) \
-		$(BCM_MAKEFLAGS) \
-		-C $(@D)/build \
-		$(GOOGLE_CAST_CCACHE) \
-		PYTHONDONTOPTIMIZE="0" \
-		unittests
+		$(GOOGLE_CAST_MAKEARGS)
 endef
 
 define GOOGLE_CAST_INSTALL_TARGET_CMDS
@@ -84,15 +54,9 @@ endef
 
 define GOOGLE_CAST_INSTALL_BINARIES
 	cp -afr $(@D)/bin/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/cast_binaries/* $(TARGET_DIR)/chrome/
-	if [ -e $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER) ]; then \
-		cp -af $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper ; \
-		cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/chrome/* $(TARGET_DIR)/chrome/ ; \
-		cp -afr $(@D)/target/$(PLATFORM)$(BCHP_VER_LOWER).$(B_REFSW_ARCH).$(BUILD_TYPE_LOWER)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/ ; \
-	else \
-		cp -af $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper ; \
-		cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/chrome/* $(TARGET_DIR)/chrome/ ; \
-		cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/ ; \
-	fi
+	cp -af $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/bin/logwrapper $(TARGET_DIR)/bin/logwrapper ; \
+	cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/chrome/* $(TARGET_DIR)/chrome/ ; \
+	cp -afr $(@D)/target/$(BR2_PACKAGE_BCM_COMMON_PLATFORM)/oem_cast_shlib/* $(TARGET_DIR)/oem_cast_shlib/ ; \
 
 	mv $(TARGET_DIR)/chrome/chrome_sandbox $(TARGET_DIR)/chrome/chrome-sandbox
 
