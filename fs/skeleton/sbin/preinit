@@ -11,7 +11,7 @@ read_cmdline()
     key=${i%%=*}
     value=${i#*=}
     case "$key" in
-      debug) if [ "$value" != "0" ]; then DEBUG=1; fi;;
+      debug|login) if [ "$value" != "0" ]; then DEBUG=1; fi;;
     esac
   done
 }
