@@ -32,6 +32,7 @@ define GOOGLE_MINICLIENT_INSTALL_TARGET_CMDS
         $(INSTALL) -D -m 0755 package/google/google_miniclient/run-vudu $(TARGET_DIR)/app/client/run-vudu
         $(INSTALL) -D -m 0755 package/google/google_miniclient/runminiclient $(TARGET_DIR)/app/client/runminiclient
         $(INSTALL) -D -m 0755 package/google/google_miniclient/idlesleep $(TARGET_DIR)/app/client/idlesleep
+        $(INSTALL) -D -m 0755 package/google/google_miniclient/verify_playready_widevine $(TARGET_DIR)/app/client/verify_playready_widevine
 endef
 
 $(eval $(call GENTARGETS))

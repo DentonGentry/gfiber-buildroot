@@ -1,0 +1,53 @@
+#!/bin/sh
+
+PLAYREADY_HASH_FILE=/user/drm/drmcert
+WIDEVINE_HASH_FILE=/user/widevine/drm.bin.sha1
+
+verify_playready_drm_state()
+{
+  echo "Verifying PlayReady status"
+
+  # /user/drm/drmcert is actually a hash of the PlayReady bin. The bin can only
+  # change during a platform update, as it is mounted read-only, however if it
+  # does change we need to invalidate (remove) the local read-write state.
+  local drmcert="invalid"
+  [ -e "$PLAYREADY_HASH_FILE" ] && read drmcert <$PLAYREADY_HASH_FILE
+
+  local fscert="$(sha1sum /usr/local/licenses/playready.bin)"
+  if [ "$drmcert" != "$fscert" ]; then
+    echo "The PlayReady bin appears to have changed; invalidating local state"
+    rm -rf /user/drm/*
+    echo "$fscert" > $PLAYREADY_HASH_FILE
+  fi
+
+  echo "PlayReady verified"
+}
+
+verify_widevine_drm_state()
+{
+  echo "Verifying non-SAGE Widevine CENC status"
+
+  # The non-SAGE Widevine CENC drm.bin is copied from a read-only mounted
+  # location to a read-write location, and individualized for each box. As such,
+  # it can become corrupt (e.g. if the flash fails), so we store a hash and
+  # invalidate it if the hash no longer matches.
+  local drmcert="invalid"
+  [ -e "$WIDEVINE_HASH_FILE" ] && read drmcert <$WIDEVINE_HASH_FILE
+
+  local fscert="$(sha1sum /user/widevine/drm.bin)"
+  if [ "$drmcert" != "$fscert" ]; then
+    echo "The Widevine bin appears to have changed; invalidating and recreating"
+    rm -rf /user/widevine/drm.bin*
+    cp -f /usr/local/licenses/drm.bin /user/widevine/drm.bin
+    # Waitpower has logic to trigger the initialization of the drm.bin
+    /app/client/waitpower --n
+    fscert="$(sha1sum /user/widevine/drm.bin)"
+    echo "$fscert" > $WIDEVINE_HASH_FILE
+  fi
+
+  echo "Widevine verified"
+}
+
+verify_playready_drm_state
+
+verify_widevine_drm_state
