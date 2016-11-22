@@ -4,7 +4,7 @@
 #
 #############################################################
 
-OPENSSL_VERSION = 1.0.2a
+OPENSSL_VERSION = 1.0.2j
 OPENSSL_SITE = http://www.openssl.org/source
 OPENSSL_INSTALL_STAGING = YES
 OPENSSL_DEPENDENCIES = zlib
@@ -38,6 +38,9 @@ endif
 ifeq ($(ARCH),x86_64)
 	OPENSSL_TARGET_ARCH = x86_64
 endif
+ifeq ($(ARCH),mipsel)
+       OPENSSL_TARGET_ARCH = mips32
+endif
 
 # Workaround for bug #3445
 ifeq ($(BR2_x86_i386),y)
@@ -55,7 +58,6 @@ define OPENSSL_CONFIGURE_CMDS
 			--libdir=lib \
 			threads \
 			shared \
-			no-idea \
 			no-rc5 \
 			enable-camellia \
 			enable-mdc2 \
