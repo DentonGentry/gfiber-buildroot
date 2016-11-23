@@ -4,9 +4,9 @@ config BR2_PACKAGE_GOOGLE_MCASTCAPTURE
         select BR2_PACKAGE_OPENSSL
         select BR2_PACKAGE_LIBCURL
         select BR2_PACKAGE_PROTOBUF
+        # Packages used by dashsrv
         select BR2_PACKAGE_LIBEVENT
         select BR2_PACKAGE_LIBXML2
-        # For dashsrv sudu ingestion.
-        select BR2_PACKAGE_GOOGLE_DASHPLAYER
+        select BR2_PACKAGE_GOOGLE_GFLAGS
         help
           Builds the mcastcapture sagesrv binary and libptsindex.so library
