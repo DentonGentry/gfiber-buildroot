@@ -20,7 +20,15 @@ define MV_APP_INSTALL_TARGET_CMDS
 		cp -f  $(@D)/tools/omci_tool $(TARGET_DIR)/usr/bin/; \
 	fi
 	mkdir -p $(TARGET_DIR)/etc/xml_params
-	cp -fpP package/mv_app/xml_params/* $(TARGET_DIR)/etc/xml_params/
+
+	# Copy over shared XML files
+	cp -fpP package/mv_app/xml_params/*.xml $(TARGET_DIR)/etc/xml_params/
+
+	# Copy over platform specific XML files
+	cp -fpP package/mv_app/xml_params/onu_profile_xml_cfg_file.xml.$(BR2_TARGET_GENERIC_PLATFORM_NAME) $(TARGET_DIR)/etc/xml_params/onu_profile_xml_cfg_file.xml
+	cp -fpP package/mv_app/xml_params/tpm_xml_cfg_file_epon.xml.$(BR2_TARGET_GENERIC_PLATFORM_NAME) $(TARGET_DIR)/etc/xml_params/tpm_xml_cfg_file_epon.xml
+	cp -fpP package/mv_app/xml_params/tpm_xml_cfg_file_gpon.xml.$(BR2_TARGET_GENERIC_PLATFORM_NAME) $(TARGET_DIR)/etc/xml_params/tpm_xml_cfg_file_gpon.xml
+
 endef
 
 $(eval $(call GENTARGETS))
