@@ -35,6 +35,9 @@ case $1 in
       start_sycl 2>&1 | \
         grep --line-buffered -v 'apm_avc_main_loop: type [7-9], param1 0, get state Failed' | logos sycl &
     fi
+
+    # Start the optical watchdog.
+    babysit 60 opticalwatchdog 2>&1 | logos opticalwatchdog &
     ;;
   stop)
     echo -n "Stopping WAN..."
