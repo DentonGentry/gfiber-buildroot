@@ -275,6 +275,8 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	$(if $(BR2_PACKAGE_GOOGLE_PLATFORM_SYSMGR),$(INSTALL) -m 0755 -D package/google/google_platform/S04sysmgr $(TARGET_DIR)/etc/init.d/)
 	$(if $(BR2_HAVE_EXTRA_CLEANUP),$(INSTALL) -m 0755 -D package/google/google_platform/S99xxemergency $(TARGET_DIR)/etc/init.d/)
 	$(INSTALL) -m 0755 -D -T package/google/google_platform/gfiber_public.der/$(PUB_KEY) $(TARGET_DIR)/etc/gfiber_public.der
+	$(if $(BR2_PACKAGE_GOOGLE_TV_BOX),mkdir -p -m 0755 $(TARGET_DIR)/usr/sv/)
+	$(if $(BR2_PACKAGE_GOOGLE_TV_BOX),$(INSTALL) -m 0555 -D package/google/google_platform/*.ts $(TARGET_DIR)/usr/sv/)
 
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?
