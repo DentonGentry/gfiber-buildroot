@@ -1,10 +1,10 @@
 GOOGLE_MCASTCAPTURE_SITE=repo://vendor/google/mcastcapture
 GOOGLE_MCASTCAPTURE_DEPENDENCIES=openssl libcurl protobuf zlib google_platform \
-	google_libgep libevent libxml2
+	google_libgep libevent libxml2 google_gflags
 GOOGLE_MCASTCAPTURE_INSTALL_STAGING = YES
 HOST_GOOGLE_MCASTCAPTURE_DEPENDENCIES += host-googletest host-openssl \
 	host-libcurl host-protobuf host-zlib host-google_platform \
-	host-libevent host-google_libgep host-libxml2
+	host-libevent host-google_libgep host-libxml2 host-google_gflags
 
 define GOOGLE_MCASTCAPTURE_BUILD_CMDS
 	TARGET=$(TARGET_CROSS) \
