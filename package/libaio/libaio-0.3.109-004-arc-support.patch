@@ -1,0 +1,184 @@
+From e51ee022b9ab670a6a3bc7f2dd3bf8b925c46b09 Mon Sep 17 00:00:00 2001
+From: Denton Gentry <dgentry@google.com>
+Date: Tue, 29 Nov 2016 11:56:09 -0800
+Subject: [PATCH] Add ARC support.
+
+---
+ src/libaio.h      |  12 ++++++
+ src/syscall-arc.h | 127 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/syscall.h     |   2 +
+ 3 files changed, 141 insertions(+)
+ create mode 100644 src/syscall-arc.h
+
+diff --git a/src/libaio.h b/src/libaio.h
+index 4fb9285..4aeb7c6 100644
+--- a/src/libaio.h
++++ b/src/libaio.h
+@@ -111,6 +111,18 @@ typedef enum io_iocb_cmd {
+ #define PADDED(x, y)	unsigned y; x
+ #define PADDEDptr(x, y)	unsigned y; x
+ #define PADDEDul(x, y)	unsigned y; unsigned long x;
++#elif defined(__arc__)
++#  if defined(__BIG_ENDIAN__)
++#define PADDED(x, y)	unsigned y; x
++#define PADDEDptr(x, y)	unsigned y; x
++#define PADDEDul(x, y)	unsigned y; unsigned long x;
++#  elif defined(__LITTLE_ENDIAN__)
++#define PADDED(x, y)	x; unsigned y
++#define PADDEDptr(x, y)	x; unsigned y
++#define PADDEDul(x, y)	unsigned long x; unsigned y
++#  else
++#    error "neither ARC BE nor LE?"
++#  endif
+ #else
+ #error	endian?
+ #endif
+diff --git a/src/syscall-arc.h b/src/syscall-arc.h
+new file mode 100644
+index 0000000..04befac
+--- /dev/null
++++ b/src/syscall-arc.h
+@@ -0,0 +1,127 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2016 Google, Inc.
++ */
++
++// from usr/include/bits/sysnum.h
++#define __NR_io_setup			0
++#define __NR_io_destroy			1
++#define __NR_io_getevents		4
++#define __NR_io_submit			2
++#define __NR_io_cancel			3
++
++/*
++ * syscall implementation derived from
++ * https://sourceware.org/ml/newlib/2015/msg00731.html
++ */
++
++#ifdef __ARC700__
++#define SYSCALL \
++            "trap0    \n\t"
++#else
++#define SYSCALL    \
++            "swi    \n\t"\
++            "nop    \n\t"\
++            "nop    \n\t"
++#endif /* __ARC700__ */
++
++#define io_syscall1(type,fname,sname,atype,a)                 \
++type fname(atype a)                                           \
++{                                                             \
++    long __res;                                               \
++    __asm__ __volatile__ ("mov    r0, %2\n\t"                 \
++            "mov    r8, %1\n\t"                               \
++            SYSCALL                                           \
++            "mov    %0, r0"                                   \
++            : "=r" (__res)                                    \
++            : "i" (SYS_##sname),                              \
++              "r" ((long)a)                                   \
++            : "cc", "r0", "r8");                              \
++    return (type)__res;                                       \
++}
++
++#define io_syscall2(type,fname,sname,atype,a,btype,b)         \
++type fname(atype a, btype b)                                  \
++{                                                             \
++    long __res;                                               \
++    __asm__ __volatile__ ("mov    r1, %3\n\t"                 \
++            "mov    r0, %2\n\t"                               \
++            "mov    r8, %1\n\t"                               \
++            SYSCALL                                           \
++            "mov    %0, r0"                                   \
++            : "=r" (__res)                                    \
++            : "i" (SYS_##sname),                              \
++              "r" ((long)a),                                  \
++              "r" ((long)b)                                   \
++            : "cc", "r0", "r1", "r8");                        \
++    return (type)__res;                                       \
++}
++
++#define io_syscall3(type,fname,sname,atype,a,btype,b,ctype,c) \
++type fname(atype a, btype b, ctype c)                         \
++{                                                             \
++    long __res;                                               \
++    __asm__ __volatile__ (                                    \
++            "mov    r2, %4\n\t"                               \
++            "mov    r1, %3\n\t"                               \
++            "mov    r0, %2\n\t"                               \
++            "mov    r8, %1\n\t"                               \
++            SYSCALL                                           \
++            "mov    %0, r0"                                   \
++            : "=r" (__res)                                    \
++            : "i" (SYS_##sname),                              \
++              "r" ((long)a),                                  \
++              "r" ((long)b),                                  \
++              "r" ((long)c)                                   \
++            : "cc", "r0", "r1", "r2", "r8");                  \
++    return (type)__res;                                       \
++}
++
++#define io_syscall4(type,fname,sname,atype,a,btype,b,ctype,c,dtype, d) \
++type fname(atype a, btype b, ctype c, dtype d)                \
++{                                                             \
++    long __res;                                               \
++    __asm__ __volatile__ (                                    \
++            "mov    r3, %5\n\t"                               \
++            "mov    r2, %4\n\t"                               \
++            "mov    r1, %3\n\t"                               \
++            "mov    r0, %2\n\t"                               \
++            "mov    r8, %1\n\t"                               \
++            SYSCALL                                           \
++            "mov    %0, r0"                                   \
++            : "=r" (__res)                                    \
++            : "i" (SYS_##sname),                              \
++              "r" ((long)a),                                  \
++              "r" ((long)b),                                  \
++              "r" ((long)c),                                  \
++              "r" ((long)d)                                   \
++            : "cc", "r0", "r1", "r2", "r3", "r8");            \
++    return (type)__res;                                       \
++}
++
++#define io_syscall5(type,fname,sname,atype,a,btype,b,ctype,c,dtype,d,etype,e) \
++type fname(atype a, btype b, ctype c, dtype d, etype e)       \
++{                                                             \
++    long __res;                                               \
++    __asm__ __volatile__ (                                    \
++            "mov    r4, %6\n\t"                               \
++            "mov    r3, %5\n\t"                               \
++            "mov    r2, %4\n\t"                               \
++            "mov    r1, %3\n\t"                               \
++            "mov    r0, %2\n\t"                               \
++            "mov    r8, %1\n\t"                               \
++            SYSCALL                                           \
++            "mov    %0, r0"                                   \
++            : "=r" (__res)                                    \
++            : "i" (SYS_##sname),                              \
++              "r" ((long)a),                                  \
++              "r" ((long)b),                                  \
++              "r" ((long)c),                                  \
++              "r" ((long)d),                                  \
++              "r" ((long)e)                                   \
++            : "cc", "r0", "r1", "r2", "r3", "r4", "r8");      \
++    return (type)__res;                                       \
++}
+diff --git a/src/syscall.h b/src/syscall.h
+index 19965a4..14de98b 100644
+--- a/src/syscall.h
++++ b/src/syscall.h
+@@ -34,6 +34,8 @@
+ #include "syscall-mips.h"
+ #elif defined(__avr32__)
+ #include "syscall-avr32.h"
++#elif defined(__arc__)
++#include "syscall-arc.h"
+ #else
+ #error "add syscall-arch.h"
+ #endif
+-- 
+2.8.0.rc3.226.g39d4020
+
