@@ -4,8 +4,8 @@
 #
 #############################################################
 
-STRACE_VERSION = 4.5.20
-STRACE_SOURCE = strace-$(STRACE_VERSION).tar.bz2
+STRACE_VERSION = 4.14
+STRACE_SOURCE = strace-$(STRACE_VERSION).tar.xz
 STRACE_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/strace
 
 ifneq ($(BR2_PACKAGE_LIBAIO),)
