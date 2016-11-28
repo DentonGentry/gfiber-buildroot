@@ -3,7 +3,7 @@ GOOGLE_MINICLIENT_DEPENDENCIES=\
 	linux \
 	bcm_nexus bcm_rockford \
 	google_pullreader google_dashplayer google_widevine google_hdcp bruno \
-	openssl libcurl zlib libpng libungif libprojectM libxml2 \
+	openssl libcurl zlib libpng libungif libxml2 \
 	google_platform protobuf jpeg google_widevine_cenc
 GOOGLE_MINICLIENT_INSTALL_STAGING=YES
 
