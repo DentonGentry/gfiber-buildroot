@@ -265,6 +265,18 @@ interface_exists() {
   [ -e "/sys/class/net/$1" ]
 }
 
+add_quantenna_interface() {
+  local interface=$1
+  local vlan=$2
+  echo "add $interface $vlan" >/sys/class/net/quantenna/vlan
+  for i in `seq 12`; do
+    if interface_exists "$interface"; then
+      break
+    fi
+    sleep 0.25
+  done
+}
+
 is_quantenna_interface() {
   # Check for "$1 " to prevent "wlanX" from matching "wlanX_portal".
   filecontains "$1 " /sys/class/net/quantenna/vlan >/dev/null 2>&1
