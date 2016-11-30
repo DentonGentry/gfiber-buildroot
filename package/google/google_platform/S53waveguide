@@ -48,7 +48,7 @@ case "$1" in
     fi
     ;;
   stop)
-    pkillwait -f "\bwaveguide"
+    pkillwait waveguide
     ;;
   restart)
     $0 stop; $0 start
