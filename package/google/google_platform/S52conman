@@ -19,8 +19,10 @@ case "$1" in
     fi
     ;;
   stop)
-    pkillwait -f "\bconman"
-    pkillwait -f "\bapman"
+    pkillwait apman
+    pkillwait -f "babysit.*deathrattle.*conman"
+    pkillwait -f "deathrattle.*conman"
+    pkillwait conman
     ;;
   restart)
     $0 stop; $0 start
