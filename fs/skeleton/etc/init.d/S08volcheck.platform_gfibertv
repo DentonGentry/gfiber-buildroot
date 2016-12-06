@@ -265,6 +265,12 @@ recover_ext4fs()
   mount_ext4fs $1
 }
 
+recover_atv_ext4fs()
+{
+  e2fsck $1 || mkfs.ext4 -E discard -m 2 -L ${ATV_DATA_MMC_NAME} $1
+  mount_atv_ext4fs $1
+}
+
 
 case "$1" in
   start)
@@ -302,7 +308,7 @@ case "$1" in
           echo "Found ATV partition table ${ATV_DATA_MMC_NAME} at ${ATV_DATA_BLK_NAME}!"
           if [ -b ${ATV_DATA_BLK_NAME} ]; then
             mount_atv_ext4fs ${ATV_DATA_BLK_NAME} || \
-              echo "failed mounting ${ATV_DATA_BLK_NAME}"
+              recover_atv_ext4fs ${ATV_DATA_BLK_NAME}
           fi
         else
           echo "Error-Could not find either ${DATA_MMC_NAME} or ${ATV_DATA_MMC_NAME}"
