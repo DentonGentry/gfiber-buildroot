@@ -1,9 +1,9 @@
 #############################################################
 #
-# golang 1.6.2 - https://go.googlesource.com/go/+/go1.6.2
+# golang 1.7.4 - https://go.googlesource.com/go/+/go1.7.4
 #
 #############################################################
-GOLANG_VERSION = 57e459e02b4b01567f92542f92cd9afde209e193
+GOLANG_VERSION = 6b36535cf382bce845dd2d272276e7ba350b0c6b
 GOLANG_SITE = https://go.googlesource.com/go
 GOLANG_SITE_METHOD = git
 GOLANG_DEPENDENCIES = host-golang_bootstrap
