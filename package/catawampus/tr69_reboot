@@ -1,9 +1,10 @@
 #!/bin/sh
 
-set -e
 
 # TODO pause until we think the user is not watching TV.
 
 # TODO signal the miniclient to display a message?
 
+# If we've updated the image, do a hard reboot.
+[ -e /tmp/ginstall_complete ] && hard_reboot
 /sbin/reboot
