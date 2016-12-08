@@ -5,7 +5,7 @@
 if support/scripts/is-repo.sh; then
   FORALL="repo forall -c"
 elif support/scripts/is-git.sh; then
-  FORALL="git submodule --quite foreach"
+  FORALL="git submodule --quiet foreach"
 else
   echo "ERROR: No version control folder found" >&2
   exit 1;
