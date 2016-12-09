@@ -10,6 +10,7 @@ WVSTART "ipapply"
 STATIC_PATH=/config/ip/static
 DYNAMIC_PATH=/tmp/ip/dynamic
 TMP_CONMAN=/tmp/conman
+DISABLED_FILE=/tmp/ipapply_disabled
 
 runnable mktemp &&
 tmpdir=$(mktemp -d ipapplyXXXXXXXXXX) ||
@@ -56,6 +57,8 @@ wipe_configs() {
   rm -rf $tmpdir/$STATIC_PATH
   rm -rf $tmpdir/$DYNAMIC_PATH
   rm -rf $tmpdir/$TMP_CONMAN
+  rm -f $tmpdir/$DISABLED_FILE
+
 
   mkdir -p $tmpdir/$STATIC_PATH
   mkdir -p $tmpdir/$DYNAMIC_PATH
@@ -82,7 +85,7 @@ echo "${output}" | grep "no available configuration.*nope" >/dev/null
 WVPASSEQ $? 0
 
 echo
-echo "TEST static config"
+echo "TEST static config and disable"
 export IIU_TEST_UP_INTERFACES="iface0"
 mkdir -p $tmpdir/$STATIC_PATH
 cat >$tmpdir/$STATIC_PATH/iface0 <<-EOF
@@ -93,6 +96,14 @@ EOF
 
 
 echo "1.1.1.0/24 dev br0  proto kernel  scope link  src 1.1.1.1" >"$tmpdir/ip_route_show"
+
+touch $tmpdir/$DISABLED_FILE
+output=$(ipapply iface0 2>&1 1>/dev/null)
+WVPASSEQ $? 0
+echo "${output}" | grep "Disabled for the next" >/dev/null
+WVPASSEQ $? 0
+
+rm $tmpdir/$DISABLED_FILE
 output=$(ipapply iface0 2>&1 1>/dev/null)
 WVPASSEQ $? 0
 echo "${output}" | grep "ip addr add 1.1.1.1/24 dev iface0" >/dev/null
