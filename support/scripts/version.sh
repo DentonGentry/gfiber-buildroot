@@ -2,6 +2,12 @@
 # Returns current version being built, without leading platform string
 # For ex. "-48-pre1-test-rel-739-gf1d6349"
 
+OUTPUT_DIR="$1"
+if [ -n "$OUTPUT_DIR" -a -r "$OUTPUT_DIR/force_version" ]; then
+  echo -n "-" && cat "$OUTPUT_DIR/force_version"
+  exit
+fi
+
 if support/scripts/is-repo.sh; then
   FORALL="repo forall -c"
 elif support/scripts/is-git.sh; then
