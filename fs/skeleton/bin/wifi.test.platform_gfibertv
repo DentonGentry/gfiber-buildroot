@@ -28,7 +28,7 @@ WVFAIL hostapd_running
 WVPASS wifi restore
 WVFAIL hostapd_running
 
-rm -f /tmp/*.wlan[0-9] /tmp/*.wlan[0-9] /tmp/*.wcli[0-9] /tmp/*.opts.2.4 /tmp/*.opts.5
+rm -f /tmp/*.wlan* /tmp/*.wcli* /tmp/*.opts.2.4 /tmp/*.opts.5
 
 WVPASS wifi set -b2.4 -e NONE
 WVPASS hostapd_running
