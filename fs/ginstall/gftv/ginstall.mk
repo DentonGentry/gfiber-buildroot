@@ -84,7 +84,7 @@ endif  # gfibertv gftv200
 ifneq ($(findstring $(PLAT_NAME),gftv254),)
 BOLT_DIR = $(call qstrip,$(BR2_TARGET_ROOTFS_GINSTALL_LOADER_DIR))
 ifeq ($(BR2_PACKAGE_GOOGLE_PROD),y)
-_BRUNO_LOADER = android_bolt_signed_release
+_BRUNO_LOADER = bolt_signed_release
 ifeq ($(BR2_PACKAGE_GOOGLE_UNSIGNED),y)
 ROOTFS_GINSTALL_TYPE=prod_unsigned
 else
@@ -94,7 +94,7 @@ else ifeq ($(BR2_PACKAGE_GOOGLE_OPENBOX),y)
 _BRUNO_LOADER = bolt_signed_openbox
 ROOTFS_GINSTALL_TYPE=openbox
 else
-_BRUNO_LOADER = android_bolt_signed_unlocked
+_BRUNO_LOADER = bolt_signed_unlocked
 ROOTFS_GINSTALL_TYPE=unlocked
 endif
 
