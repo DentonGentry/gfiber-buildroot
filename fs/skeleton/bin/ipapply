@@ -23,6 +23,8 @@ import socket
 import struct
 import subprocess
 import sys
+import time
+
 import options
 
 optspec = """
@@ -38,6 +40,7 @@ base_path = os.getenv('IPAPPLY_CONFIG_FILE_BASE', '')
 STATIC_IP_CONFIGS_DIR = base_path + '/config/ip/static'
 DYNAMIC_IP_CONFIGS_DIR = base_path + '/tmp/ip/dynamic'
 TMP_CONMAN_DIR = base_path + '/tmp/conman'
+DISABLED_FILE = base_path + '/tmp/ipapply_disabled'
 
 
 def AtomicWrite(filename, data):
@@ -270,7 +273,21 @@ def GetSubnet(ip, netmask):
   return ''.join((ApplyNetmask(ip, netmask), '/', netmask))
 
 
+def Disabled():
+  """Returns whether /tmp/ipapply_disabled has been written in the last hour."""
+  if os.path.exists(DISABLED_FILE):
+    disabled_s = (os.stat(DISABLED_FILE).st_mtime + 60 * 60) - time.time()
+    if disabled_s > 0:
+      Log('Disabled for the next %d seconds', disabled_s)
+      return True
+
+  return False
+
+
 def main():
+  if Disabled():
+    return
+
   o = options.Options(optspec)
   (_, _, extra) = o.parse(sys.argv[1:])
   if not extra:
