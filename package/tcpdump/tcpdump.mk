@@ -11,7 +11,8 @@ TCPDUMP_SITE = http://www.tcpdump.org/release
 TCPDUMP_SOURCE = tcpdump-$(TCPDUMP_VERSION).tar.gz
 TCPDUMP_CONF_ENV = ac_cv_linux_vers=2 cross_compiling=y td_cv_buggygetaddrinfo=cross
 TCPDUMP_CONF_OPT = --without-crypto \
-		$(if $(BR2_PACKAGE_TCPDUMP_SMB),--enable-smb,--disable-smb)
+		   --enable-ipv6 \
+		   $(if $(BR2_PACKAGE_TCPDUMP_SMB),--enable-smb,--disable-smb)
 
 TCPDUMP_DEPENDENCIES = zlib libpcap
 
