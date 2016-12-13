@@ -18,7 +18,7 @@ create_client_interface() {
   local client_interface=$(echo "$interface" | sed s/^wlan/wcli/)
   if ! interface_exists "$client_interface"; then
     if is_quantenna_interface "$interface"; then
-      add_quantenna_interface "$client_interface" 2
+      echo "add $client_interface 2" >/sys/class/net/quantenna/vlan
       mac=$(get_locally_administered_mac_addr "$mac")
     else
       local phy=$(find_phy_for_interface "$interface")
@@ -76,7 +76,7 @@ create_secondary_interface() {
 
   if ! interface_exists "$secondary_interface"; then
     if is_quantenna_interface "$interface"; then
-      add_quantenna_interface "$secondary_interface" 4
+      echo "add $secondary_interface 4" >/sys/class/net/quantenna/vlan
       mac=$(get_locally_administered_mac_addr "$mac")
     else
       local phy=$(find_phy_for_interface "$interface")

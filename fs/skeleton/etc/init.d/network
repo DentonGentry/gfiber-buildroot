@@ -229,6 +229,14 @@ add_interfaces_to_bridge() {
   for x in "$@"; do
     [ -e "$x" ] || continue
 
+    # Wait for MAC address.
+    for i in $(seq 1 12); do
+      if [ "$(get_mac_address_for_interface "$x")" != 00:00:00:00:00:00 ]; then
+        break
+      fi
+      sleep 0.25
+    done
+
     local x="${x#/sys/class/net/}"
     echo "Adding interface $x..."
 
@@ -420,7 +428,7 @@ case "$1" in
       i=0
       while true; do
         if ! interface_exists wlan"$i"; then
-          add_quantenna_interface "wlan$i" 3
+          echo "add wlan$i 3" >/sys/class/net/quantenna/vlan
           break
         fi
         i=$((i+1))
