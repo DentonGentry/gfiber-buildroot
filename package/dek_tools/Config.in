@@ -1,0 +1,4 @@
+config BR2_PACKAGE_DEK_TOOLS
+	bool "dek_tools"
+	help
+	  Adds Marvell's Device Embedding Kit applications

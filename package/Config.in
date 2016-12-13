@@ -704,6 +704,7 @@ menu "Marvell custom build"
 source "package/mv_physdk/Config.in"
 source "package/mv_app/Config.in"
 source "package/mv_cpss/Config.in"
+source "package/dek_tools/Config.in"
 endmenu
 
 menu "Quantenna custom build"
