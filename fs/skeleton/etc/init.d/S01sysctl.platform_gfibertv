@@ -11,6 +11,10 @@ case "$1" in
     # blocksize from the streamer.
     # wmem_max defines the maximum send socket buffer size in bytes.
     sysctl net.core.wmem_max=1572864
+    # Don't delete secondary addresses on an interface when deleting primary
+    # addresses. Fixes b/33548012.
+    sysctl net.ipv4.conf.default.promote_secondaries=1
+    sysctl net.ipv4.conf.all.promote_secondaries=1
     # Panic everytime there is a kernel oops
     sysctl -q kernel.panic_on_oops=1
     ;;
