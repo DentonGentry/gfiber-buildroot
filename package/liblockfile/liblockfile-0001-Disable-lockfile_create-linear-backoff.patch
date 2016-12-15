@@ -1,0 +1,43 @@
+From 97f0b8fdbebac3fd3398079d3db3cccb853eb0e7 Mon Sep 17 00:00:00 2001
+From: Richard Frankel <rofrankel@google.com>
+Date: Fri, 2 Dec 2016 13:46:40 -0500
+Subject: [PATCH] Disable lockfile_create linear backoff.
+
+Linear backoff causes very unfair behavior, in which the longer a
+process has been waiting, the less likely it is to grab a contested
+lock.
+
+Remove the backoff and check once per second instead.
+---
+ lockfile.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/lockfile.c b/lockfile.c
+index f571a67..e52f3e4 100644
+--- a/lockfile.c
++++ b/lockfile.c
+@@ -177,7 +177,7 @@ int lockfile_create(const char *lockfile, int retries, int flags)
+ 	char		sysname[256];
+ 	char		buf[8];
+ 	char		*p;
+-	int		sleeptime = 0;
++	int		sleeptime = 1;
+ 	int		statfailed = 0;
+ 	int		fd;
+ 	int		i, e, len;
+@@ -253,8 +253,10 @@ int lockfile_create(const char *lockfile, int retries, int flags)
+ 	for (i = 0; i < tries && tries > 0; i++) {
+ 
+ 		if (!dontsleep) {
+-			sleeptime += 5;
+-			if (sleeptime > 60) sleeptime = 60;
++			// GFiber modification:  Disable linear backoff, which causes very unfair
++			// behavior.
++			// sleeptime += 5;
++			// if (sleeptime > 60) sleeptime = 60;
+ #ifdef LIB
+ 			sleep(sleeptime);
+ #else
+-- 
+2.8.0.rc3.226.g39d4020
+

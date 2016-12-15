@@ -1,0 +1,27 @@
+From cec6d0a707f2497165f71cfd41f505667bbd1593 Mon Sep 17 00:00:00 2001
+From: Richard Frankel <rofrankel@google.com>
+Date: Wed, 14 Dec 2016 18:23:30 -0500
+Subject: [PATCH] Change the default retry-count to 180.
+
+This maintains the default timeout of 180 seconds, now that GFiber's
+liblockfile uses constant 1s retries rather than linear backoff.
+---
+ lockfile-progs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lockfile-progs.c b/lockfile-progs.c
+index b8f9586..d675b4e 100644
+--- a/lockfile-progs.c
++++ b/lockfile-progs.c
+@@ -30,7 +30,7 @@
+ static const char *action = NULL;
+ static char *target_file = NULL;
+ static int retry_count_specified = 0;
+-static int retry_count = 9; /* This will be a maximum of 3 minutes */
++static int retry_count = 180; /* This will be a maximum of 3 minutes */
+ static int touchlock_oneshot = 0;
+ static int use_pid = 0;
+ 
+-- 
+2.8.0.rc3.226.g39d4020
+
