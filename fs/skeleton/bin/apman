@@ -13,6 +13,10 @@ else
   initrwnd=
 fi
 
+if experiment ConmanDebug; then
+  set -x
+fi
+
 TMP_DIR="/tmp/conman"
 CONFIG_DIR="/config/conman"
 
