@@ -420,7 +420,7 @@ case "$1" in
       i=0
       while true; do
         if ! interface_exists wlan"$i"; then
-          add_quantenna_interface "wlan$i" 3
+          echo "add wlan$i 3" >/sys/class/net/quantenna/vlan
           break
         fi
         i=$((i+1))
