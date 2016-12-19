@@ -8,5 +8,7 @@ config BR2_PACKAGE_GOOGLE_MCASTCAPTURE
         select BR2_PACKAGE_LIBEVENT
         select BR2_PACKAGE_LIBXML2
         select BR2_PACKAGE_GOOGLE_GFLAGS
+        select BR2_PACKAGE_GOOGLE_GLOG
         help
-          Builds the mcastcapture sagesrv binary and libptsindex.so library
+          Builds the mcastcapture sagesrv binary, libptsindex.so library,
+          and dashsrv binary.
