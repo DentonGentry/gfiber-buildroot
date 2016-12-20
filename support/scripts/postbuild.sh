@@ -32,8 +32,8 @@ else
   exit 1;
 fi
 
-version="${PLATFORM_PREFIX}$(support/scripts/version.sh)"
-echo -n "$version" >"$TARGET_DIR/etc/version" 2>/dev/null
+version=$(support/scripts/version.sh "$TARGET_DIR/..")
+echo -n "$PLATFORM_PREFIX$version" >"$TARGET_DIR/etc/version" 2>/dev/null
 echo -n "fiberos" >"$TARGET_DIR/etc/os" 2>/dev/null
 
 if [ "$PROD" != "y" ]; then
