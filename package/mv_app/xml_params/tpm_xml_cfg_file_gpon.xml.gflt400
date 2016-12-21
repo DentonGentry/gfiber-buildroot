@@ -181,13 +181,13 @@
                 <!--  Undefined queues will not be created in hardware -->
                 <queue_map>
                     <queue id="0" sched_method="0" owner="0" owner_q_num="0" size="0256" weight="0" />
-                    <queue id="1" sched_method="0" owner="3" owner_q_num="0" size="0256" weight="0" />
+                    <queue id="1" sched_method="0" owner="2" owner_q_num="0" size="0256" weight="0" />
                     <queue id="2" sched_method="0" owner="0" owner_q_num="1" size="0256" weight="0" />
-                    <queue id="3" sched_method="0" owner="3" owner_q_num="1" size="0256" weight="0" />
+                    <queue id="3" sched_method="0" owner="2" owner_q_num="1" size="0256" weight="0" />
                     <queue id="4" sched_method="0" owner="0" owner_q_num="2" size="0256" weight="0" />
-                    <queue id="5" sched_method="0" owner="3" owner_q_num="2" size="0256" weight="0" />
+                    <queue id="5" sched_method="0" owner="2" owner_q_num="2" size="0256" weight="0" />
                     <queue id="6" sched_method="0" owner="0" owner_q_num="3" size="0256" weight="0" />
-                    <queue id="7" sched_method="0" owner="3" owner_q_num="3" size="0256" weight="0" />
+                    <queue id="7" sched_method="0" owner="2" owner_q_num="3" size="0256" weight="0" />
                 </queue_map>
             </tx_mod>
             <!-- id  : 0 = GMAC0, 1 = GMAC1, 2 = PMAC_0, 3 = PMAC_1, 4 = PMAC_2, 5 = PMAC_3,  -->
@@ -200,8 +200,14 @@
                 <!--  size : queue size must be >0   -->
                 <!--  Undefined queues will not be created in hardware -->
                 <queue_map>
-                    <queue id="0" sched_method="0" owner="0" owner_q_num="0" size="1024" weight="0" />
-                    <queue id="1" sched_method="0" owner="1" owner_q_num="0" size="1024" weight="0" />
+                    <queue id="0" sched_method="0" owner="0" owner_q_num="0" size="0256" weight="0" />
+                    <queue id="1" sched_method="0" owner="1" owner_q_num="0" size="0256" weight="0" />
+                    <queue id="2" sched_method="0" owner="0" owner_q_num="1" size="0256" weight="0" />
+                    <queue id="3" sched_method="0" owner="1" owner_q_num="1" size="0256" weight="0" />
+                    <queue id="4" sched_method="0" owner="0" owner_q_num="2" size="0256" weight="0" />
+                    <queue id="5" sched_method="0" owner="1" owner_q_num="2" size="0256" weight="0" />
+                    <queue id="6" sched_method="0" owner="0" owner_q_num="3" size="0256" weight="0" />
+                    <queue id="7" sched_method="0" owner="1" owner_q_num="3" size="0256" weight="0" />
                 </queue_map>
             </tx_mod>
             <!-- id  : 0 = GMAC0, 1 = GMAC1, 2 = PMAC_0, 3 = PMAC_1, 4 = PMAC_2, 5 = PMAC_3,  -->
@@ -488,9 +494,9 @@
                     <chain id="4" type="5" num="6" />
                     <chain id="5" type="6" num="170" />
                     <chain id="6" type="7" num="4096" />
-                    <chain id="7" type="8" num="24" />
+                    <chain id="7" type="8" num="16" />
                     <chain id="8" type="9" num="64" />
-                    <chain id="9" type="10" num="24" />
+                    <chain id="9" type="10" num="16" />
             </chain_parameters>
             <udp_checksum_use_init>0</udp_checksum_use_init>
             <udp_checksum_calc>0</udp_checksum_calc>
@@ -534,21 +540,21 @@
                 <!--  TPM_PNC_MAC_LEARN -->
                 <range num="01" type="0" size="0"   cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CPU_WAN_LPBK_US -->
-                <range num="02" type="0" size="08"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="02" type="0" size="5"   cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_NUM_VLAN_TAGS -->
                 <range num="03" type="0" size="09"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_DS_LOAD_BALANCE -->
                 <range num="04" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_MULTI_LPBK -->
-                <range num="05" type="0" size="10"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="05" type="0" size="20"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_VIRT_UNI -->
-                <range num="06" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="06" type="0" size="13"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_LOOP_DET_US -->
                 <range num="07" type="0" size="03"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_DROP_PRECEDENCE -->
                 <range num="08" type="0" size="04"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_L2_MAIN -->
-                <range num="09" type="0" size="196" cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
+                <range num="09" type="0" size="154" cntr_grp="1"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_ETH_TYPE -->
                 <range num="10" type="0" size="16"  cntr_grp="2"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_IGMP -->

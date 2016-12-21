@@ -61,8 +61,8 @@
 
     <Capability>
         <!--ONU type: UINT32.     -->
-        <!--0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU -->
-        <attrib name="ONU type" value="0" />
+        <!--0:SFU, 1:HGU, 2:SBU, 3:CBU, 4:MDU, 5:MTU, 6:1FE+1POTS SFU, 7:Mixed HGU, 8:1GE+1SGMII Bridge -->
+        <attrib name="ONU type" value="8" />
 
         <!--  1=MV_PON_WAN_DUAL_MAC_INT_SWITCH   2=MV_PON_WAN_G0_INT_SWITCH      3=MV_PON_WAN_G1_LAN_G0_INT_SWITCH  4=MV_G0_WAN_G1_INT_SWITCH
               5=MV_G1_WAN_G0_INT_SWITCH          6=MV_PON_G1_WAN_G0_INT_SWITCH   7=MV_PON_G0_WAN_G1_INT_SWITCH      8=MV_PON_WAN_DUAL_MAC_EXT_SWITCH
@@ -189,7 +189,7 @@
 
         <!--Downstream multicast channel: UINT32.                    -->
         <!--0: from multicast mac address channel, 1: from multicast gemport channel-->
-        <attrib name="Downstream multicast channel" value="1" />
+        <attrib name="Downstream multicast channel" value="0" />
 
         <!--IGMPV1 messages discard: UINT32.                    -->
         <!--0: forward igmpv1 messages, 1: discard igmpv1 messages-->
