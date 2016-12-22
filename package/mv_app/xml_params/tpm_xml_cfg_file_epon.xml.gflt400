@@ -393,9 +393,9 @@
                 <!--  TPM_PNC_MNGMT_DS -->
                 <range num="00" type="0" size="01"  cntr_grp="0"  lu_mask="1" min_reset_level = "1" />
                 <!--  TPM_PNC_MAC_LEARN -->
-                <range num="01" type="0" size="00"  cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
+                <range num="01" type="0" size="5"  cntr_grp="3"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_CPU_WAN_LPBK_US -->
-                <range num="02" type="0" size="00"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
+                <range num="02" type="0" size="5"   cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_NUM_VLAN_TAGS -->
                 <range num="03" type="0" size="09"  cntr_grp="0"  lu_mask="1" min_reset_level = "0" />
                 <!--  TPM_PNC_DS_LOAD_BALANCE -->
