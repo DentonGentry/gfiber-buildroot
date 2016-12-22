@@ -81,6 +81,8 @@ wifi stop
 pkill "apman$"
 rm -f /config/conman/command*
 rm -f /config/conman/access_point*
+rm -f /tmp/conman/command*
+rm -f /tmp/conman/access_point*
 # Creating wlan0_apmantest sometimes fails if we don't reset wlan0.
 wlan0mac=$(cat /sys/class/net/wlan0/address)
 mac=$(mac_addr_increment $wlan0mac 100)
@@ -101,29 +103,50 @@ touch /config/conman/access_point.5
 WVFAIL hostapd_running
 
 echo "Enable 5 GHz access point"
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n5\n-s\nssid" > /tmp/conman/command.5
+echo "Waiting to make sure hostapd doesn't start (wrong location)"
+hostapd_wait_check_running false
+
+echo "Enable 5 GHz access point"
 echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n5\n-s\nssid" > /config/conman/command.5
 hostapd_wait_check_running true
 
 echo "Disable 5 GHz access point"
 rm /config/conman/access_point.5
+touch /tmp/conman/access_point.5
 hostapd_wait_check_running false
 
-touch /config/conman/access_point._apmantest.2.4
+touch /tmp/conman/access_point._apmantest.2.4
 echo "Waiting to make sure hostapd doesn't start"
 hostapd_wait_check_running false
 
 echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid" > /config/conman/command.2.4
-echo "Waiting to make sure hostapd doesn't start"
+echo "Waiting to make sure hostapd doesn't start (wrong suffix)"
 hostapd_wait_check_running false
 
-echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /config/conman/command._apmantest.2.4
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid" > /config/conman/command._apmantest.2.4
+echo "Waiting to make sure hostapd doesn't start (wrong location)"
+hostapd_wait_check_running false
+
+echo "env\nWIFI_PSK=password\nwifi\nset\n-b\n2.4\n-s\nssid\n-S\n_apmantest" > /tmp/conman/command._apmantest.2.4
 hostapd_wait_check_running true
+
+rm /tmp/conman/access_point._apmantest.2.4
+touch /config/conman/access_point._apmantest.2.4
+echo "Waiting to make sure hostapd doesn't start (wrong location)"
+hostapd_wait_check_running false
 
 WVSTART "route management"
 echo "192.168.1.1" > /tmp/conman/gateway.wlan0_apmantest
 echo "192.168.1.0/24" > /tmp/conman/subnet.wlan0_apmantest
 WVPASS wait_route_changed "add" "default via 192.168.1.1" "wlan0_apmantest"
 WVPASS wait_route_changed "add" "192.168.1.0/24" "wlan0_apmantest"
+
+# Make sure non-interfaces are ignored.
+echo "192.168.2.1" > /tmp/conman/gateway.wlan0_apmantest.tmp
+echo "192.168.2.0/16" > /tmp/conman/subnet.wlan0_apmantest.tmp
+echo "192.168.3.1" > /tmp/conman/gateway.wlan0_apmantest_tmp
+echo "192.168.3.0/16" > /tmp/conman/subnet.wlan0_apmantest_tmp
 
 echo "default via 192.168.1.1 dev wlan0_apmantest" > $tmpdir/ip_route_show
 echo "192.168.1.0/24 dev wlan0_apmantest" >> $tmpdir/ip_route_show
@@ -134,6 +157,9 @@ WVPASS wait_route_changed "add" "default via 192.168.1.1" "wlan0_apmantest"
 WVPASS wait_route_changed "del" "192.168.1.0/24" "wlan0_apmantest"
 WVPASS wait_route_changed "add" "192.168.1.0/16" "wlan0_apmantest"
 
+WVPASS grep "192\.168\.1\." "$ip_out"
+WVFAIL grep "192\.168\.2\." "$ip_out"
+WVFAIL grep "192\.168\.3\." "$ip_out"
 
 echo "Cleaning up"
 WVPASS iw dev wlan0_apmantest del
@@ -141,5 +167,7 @@ pkill "apman$"
 wifi off
 rm -f /config/conman/command*
 rm -f /config/conman/access_point*
+rm -f /tmp/conman/command*
+rm -f /tmp/conman/access_point*
 rm -f /tmp/conman/gateway.br0
 rm -rf $tmpdir

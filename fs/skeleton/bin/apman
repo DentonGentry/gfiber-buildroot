@@ -28,34 +28,30 @@ iplog() {
   ip "$@"
 }
 
-# extension is either "interface_suffix.band" or just "band"
-stopap() {
-  local extension="$1"
+valid_word() {
+  case "$1" in
+    access_point|command) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
-  bands="2.4 5"
-  for band in $bands; do
-    if [ "$extension" = "$band" ]; then
-      break
-    else
-      if endswith "$extension" "$band"; then
-        interface_suffix=${extension%.$band}
-        break
-      else
-        interface_suffix=
-        band=
-      fi
-    fi
-  done
-  if [ -z "$band" ]; then
-    echo "Failed to parse extension '$extension'"
-    return
-  fi
+valid_band() {
+  case "$1" in
+    2.4|5) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+stopap() {
+  local interface_suffix="$1"
+  local band="$2"
+
   flags="--band $band"
   if [ -n "$interface_suffix" ]; then
     flags="$flags --interface-suffix "$interface_suffix""
   fi
   if ! $(wifi stopap $flags); then
-    echo "Failed to stop access point for '$extension'"
+    echo "Failed to stop access point for $suffix $band"
     false
   fi
 }
@@ -77,6 +73,12 @@ while read filename; do
     filepath="$TMP_DIR/$filename"
     if [ -e "$filepath" ]; then
       interface=${filename#${route_type}.}
+
+      # make sure interface is actually an interface, and not a .tmp file
+      if [ ! -e "/sys/class/net/$interface" ]; then
+        continue
+      fi
+
       # Trying to add a default route without a subnet route fails, because
       # there is no route to the gateway.  So just always update the subnet
       # route first, and then update the default route if we know the gateway.
@@ -118,28 +120,34 @@ while read filename; do
     continue
   fi
 
-  command=
-  access_point=
   # This assumes command files in /tmp (for provisioning networks) will have an
-  # interface suffix, and those in /config (the user's WLAN) will not.  Or, more
-  # generally, that for any given filename, files of that filename can only
-  # appear in one of ($TMP_DIR, $CONFIG_DIR).
-  if [ -e "$CONFIG_DIR/$filename" ]; then
-    which_dir="$CONFIG_DIR"
+  # interface suffix, and those in /config (the user's WLAN) will not.
+  word=
+  suffix=
+  band=
+
+  IFS='.' read word band <<EOF
+$filename
+EOF
+  if valid_word "$word" && valid_band "$band"; then
+    expect_dir="$CONFIG_DIR"
   else
-    which_dir="$TMP_DIR"
+    IFS='.' read word suffix band <<EOF
+$filename
+EOF
+    if valid_word "$word" && valid_band "$band"; then
+      expect_dir="$TMP_DIR"
+    else
+      continue
+    fi
   fi
 
-  if startswith "$filename" "command."; then
-    extension=${filename#command.}
-    command="$which_dir/$filename"
-    access_point="$which_dir/access_point.$extension"
+  if [ -z "$suffix" ]; then
+    command="$expect_dir/command.$band"
+    access_point="$expect_dir/access_point.$band"
   else
-    if startswith "$filename" "access_point."; then
-      extension=${filename#access_point.}
-      command="$which_dir/command.$extension"
-      access_point="$which_dir/$filename"
-    fi
+    command="$expect_dir/command.$suffix.$band"
+    access_point="$expect_dir/access_point.$suffix.$band"
   fi
 
   if [ -e "$command" ] && [ -e "$access_point" ]; then
@@ -147,6 +155,6 @@ while read filename; do
       echo "Failed to start access point for '$extension'"
     fi
   else
-    stopap "$extension"
+    stopap "$suffix" "$band"
   fi
 done
