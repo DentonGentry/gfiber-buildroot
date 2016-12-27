@@ -84,6 +84,9 @@ sys.stdout.write(hexstring[:8].decode(\"hex\"))
     hostname GFiberStorage
   elif is-tv-box; then
     hostname GFiberTV
+    if is-android-box; then
+      setprop net.hostname GFiberTV
+    fi
   elif is-network-box; then
     hostname GFiberRouter
   elif is-ptp; then
