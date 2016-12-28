@@ -5,7 +5,5 @@ if [ "$platform" = "GFHD254" ]; then
   gfhd254_reboot
   sleep 5
   echo "Hard reboot failed, soft rebooting."
-else
-  echo "$platform hard_reboot not supported, soft rebooting.."
 fi
 reboot
