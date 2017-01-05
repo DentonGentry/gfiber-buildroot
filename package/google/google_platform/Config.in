@@ -101,6 +101,12 @@ config BR2_PACKAGE_GOOGLE_PLATFORM_LEDPATTERN
 	help
 	  Include the ledpattern tool.
 
+config BR2_PACKAGE_GOOGLE_PLATFORM_SYSLOG
+	bool "include syslogd"
+	default n
+	help
+	  Simple syslog daemon with strong filtering support.
+
 config BR2_PACKAGE_GOOGLE_OPENBOX
 	bool "Openbox Release"
 	default n
