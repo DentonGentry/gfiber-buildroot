@@ -17,6 +17,9 @@ case "$1" in
     sysctl net.ipv4.conf.all.promote_secondaries=1
     # Panic everytime there is a kernel oops
     sysctl -q kernel.panic_on_oops=1
+    # Allow 120 seconds to write a core file out to flash.
+    # /bin/coredump gives up after 100 seconds.
+    sysctl -w kernel.hung_task_timeout_secs=120
     ;;
   stop)
     ;;
