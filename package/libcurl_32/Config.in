@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBCURL_32
+	bool "libcurl_32"
+	help
+	  cURL is a tool for getting files from FTP, HTTP, Gopher, Telnet,
+	  and Dict servers, using any of the supported protocols.
+
+	  http://curl.haxx.nu/
+	  This package version is only meant for usage with Netflix
