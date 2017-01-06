@@ -25,6 +25,8 @@ endif
 define HOST_GOLANG_BOOTSTRAP_BUILD_CMDS
 	export PATH=$(TARGET_PATH) ; \
 	cd "$(@D)/src" && \
+	GOBIN= \
+	GOEXE= \
 	GOPATH= \
 	GOROOT= \
 	GOROOT_FINAL="$(GOLANG_BOOTSTRAP_GOROOT)" \
