@@ -2,6 +2,6 @@
 <cnfg>
     <I2C_CONFIG>
         <!--  Whether the transceiver can use i2c block read or character read 0-automatic, 1-read byte, 2-read block -->
-        <i2c_xvr_read_mode>0</i2c_xvr_read_mode>
+        <i2c_xvr_read_mode>2</i2c_xvr_read_mode>
     </I2C_CONFIG>
 </cnfg>
