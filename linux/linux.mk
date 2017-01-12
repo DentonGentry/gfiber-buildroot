@@ -45,10 +45,6 @@ LINUX_MAKE_FLAGS = \
 	INSTALL_MOD_PATH=$(TARGET_DIR) \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
 	DEPMOD=$(HOST_DIR)/usr/sbin/depmod
-	initramfs=true
-# (initramfs=true replaces the $(initramfs) build command with 'true',
-# effectively making the kernel build scripts never replace the initramfs
-# with a different one; making the initramfs is our job in buildroot.)
 
 # Get the real Linux version, which tells us where kernel modules are
 # going to be installed in the target filesystem.
