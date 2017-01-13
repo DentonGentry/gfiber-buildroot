@@ -1,0 +1,29 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+GHN_DIR="/tmp/ghn"
+
+usage() {
+  echo "Usage:"
+  echo
+  echo "  $0 $1"
+  echo
+  echo "  A wrapper for 'read-ghn-node' when querying the local G.hn node "
+  echo "  Grabs a single paramater and prints the value. "
+  echo
+  exit 99
+}
+
+platform=$(cat /etc/platform)
+if ! startswith "$platform" "GFLT4"; then
+  # Only GFLT400 has G.hn chip (Marvell's 88x5153)
+  exit 0
+fi
+
+if [ "$#" -ne "1" ]; then
+  usage "$1"
+fi
+
+GHN_MAC_ADDR=$(cat "$GHN_DIR"/mac_addr)
+read-ghn-node "$GHN_MAC_ADDR" "$1"
