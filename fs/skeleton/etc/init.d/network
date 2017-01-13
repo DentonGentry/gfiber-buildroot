@@ -152,10 +152,10 @@ load_wifi_drivers() {
     # On GFRG250, the Quantenna PCIe module has not initialized by the time the
     # kernel enumerates PCIe devices. For development, also include GFRG200 and
     # GFRG210.
-    if contains "GFRG200 GFRG210 GFRG250" "$(cat /etc/platform)"; then
+    if contains ",GFRG200,GFRG210,GFRG250," ",$(cat /etc/platform),"; then
       echo 1 > /sys/bus/pci/rescan
     fi
-    if contains "GFHD254" "$(cat /etc/platform)" && ! startswith "$(uname -r)" "3"; then
+    if contains ",GFHD254," ",$(cat /etc/platform)," && ! startswith "$(uname -r)" "3"; then
       echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove
       sleep 1
       echo 1 > /sys/bus/pci/rescan
