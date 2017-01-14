@@ -143,6 +143,10 @@ ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_LEDPATTERN),y)
 BUILD_LEDPATTERN=y
 endif
 
+ifeq ($(BR2_PACKAGE_GOOGLE_PLATFORM_SYSLOG),y)
+BUILD_SYSLOG=y
+endif
+
 ifneq ($(BR2_PACKAGE_GOOGLE_FIBER_JACK),y)
 # fiber jack kernel is too old for the new-style loguploader for now
 BUILD_LOGUPLOAD=y
@@ -277,6 +281,11 @@ define GOOGLE_PLATFORM_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 0755 -D -T package/google/google_platform/gfiber_public.der/$(PUB_KEY) $(TARGET_DIR)/etc/gfiber_public.der
 	$(if $(BR2_PACKAGE_GOOGLE_TV_BOX),mkdir -p -m 0755 $(TARGET_DIR)/usr/sv/)
 	$(if $(BR2_PACKAGE_GOOGLE_TV_BOX),$(INSTALL) -m 0555 -D package/google/google_platform/*.ts $(TARGET_DIR)/usr/sv/)
+	$(INSTALL) -m 0644 -D package/google/google_platform/syslog.conf $(TARGET_DIR)/etc/
+
+	# Avahi service files
+	$(INSTALL) -m 0644 -D package/google/google_platform/services/isoping.service $(TARGET_DIR)/etc/avahi/services
+	$(if $(BUILD_SYSLOG),$(INSTALL) -m 0644 -D package/google/google_platform/services/syslog.service $(TARGET_DIR)/etc/avahi/services)
 
 	# registercheck
 	#TODO(apenwarr): do we actually need this for anything?

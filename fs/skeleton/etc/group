@@ -13,6 +13,7 @@ utmp:x:22:
 rpcuser:x:29:
 _ntp:x:30:
 avahi::40:
+syslog::41:
 ftp::50:
 lock::54:
 nobody::98:
