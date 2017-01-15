@@ -53,6 +53,7 @@ define QUALCOMM_SWITCH_INSTALL_TARGET_CMDS
 		$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr && \
         $(TOPDIR)/support/scripts/simple_lock remove $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/easy-install.pth
 	$(INSTALL) -m 0755 package/qualcomm_switch/S42switch $(TARGET_DIR)/etc/init.d
+	$(INSTALL) -D -m 0555 $(@D)/google/qca83XXd/qca83XXd $(TARGET_DIR)/usr/bin/qca83XXd
 endef
 
 $(eval $(call GENTARGETS))

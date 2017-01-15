@@ -63,6 +63,10 @@ case "$1" in
         echo quit
       } | ssdk_sh 2>&1 | logos switch
     fi
+
+    if runnable qca83XXd; then
+      babysit 60 qca83XXd 2>&1 | logos qca83XXd &
+    fi
     ;;
   stop)
     if runnable ssdk_sh; then
@@ -72,6 +76,8 @@ case "$1" in
         echo quit
       } | ssdk_sh 2>&1 | logos switch
     fi
+
+    pkillwait qca83XXd
     ;;
   restart|reload)
     "$0" stop
