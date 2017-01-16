@@ -10,6 +10,7 @@ case "$1" in
       # mcnmp_server playback code needs widevine and pullreader .so
       export LD_LIBRARY_PATH=/app/client
       export SAGEBIN_PATH=/usr/lib/sage_firmware
+      export DRM_BIN_FILE=/user/widevine/drm.bin
       rm -f /tmp/nexus_multiprocess
       babysit 10 mcnmp_server 2>&1 | logos mcnmp_server 0 20000000 &
       wait-until-created /tmp/nexus_multiprocess

@@ -33,6 +33,7 @@ update_server()
 }
 
 export LD_LIBRARY_PATH=/app/client:/usr/local/lib:$LD_LIBRARY_PATH
+export DRM_BIN_FILE=/user/widevine/drm.bin
 export SERIALNUMBER=$(cat /etc/serial)
 
 ulimit -c 49152
