@@ -167,9 +167,14 @@ case "$1" in
       iptables -t nat -N MINIUPNPD
       ip46tables -t nat -N wan-nat
 
-      ip46tables -A INPUT -i wan0+ -j wan-input
-      ip46tables -A FORWARD -i wan0+ -j wan-forward
-      ip46tables -A FORWARD -i br0 -o wan0+ -j ACCEPT
+      for ifc in "wan0+" "frob+"; do
+        ip46tables -A INPUT -i "$ifc" -j wan-input
+        ip46tables -A FORWARD -i "$ifc" -j wan-forward
+        ip46tables -t nat -A PREROUTING -i "$ifc" -j wan-nat
+
+        ip46tables -A FORWARD -i br0 -o "$ifc" -j ACCEPT
+      done
+
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-guests
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-filter
 
@@ -180,8 +185,6 @@ case "$1" in
       ip46tables -A INPUT -i br1 -j captive-portal-input
       ip46tables -A INPUT -i br1 -j acs-captive-portal-input
       ip46tables -A INPUT -i br1 -j sniproxy-input
-
-      ip46tables -t nat -A PREROUTING -i wan0+ -j wan-nat
 
       # multicast (fiber TV, EAS)
       ip46tables -A wan-input -m pkttype --pkt-type multicast -j ACCEPT
