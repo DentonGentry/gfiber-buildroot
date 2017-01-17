@@ -167,10 +167,8 @@ case "$1" in
       iptables -t nat -N MINIUPNPD
       ip46tables -t nat -N wan-nat
 
-      iptables -A INPUT -i wan0+ -j wan-input
-
-      iptables -A FORWARD -i wan0+ -j wan-forward
-      ip46tables -A FORWARD -i br0 -o br0 -j ACCEPT
+      ip46tables -A INPUT -i wan0+ -j wan-input
+      ip46tables -A FORWARD -i wan0+ -j wan-forward
       ip46tables -A FORWARD -i br0 -o wan0+ -j ACCEPT
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-guests
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-filter
@@ -188,7 +186,7 @@ case "$1" in
       # multicast (fiber TV, EAS)
       ip46tables -A wan-input -m pkttype --pkt-type multicast -j ACCEPT
       ip46tables -A wan-forward -m pkttype --pkt-type multicast -j ACCEPT
-      iptables -t nat -A wan-nat -m pkttype --pkt-type multicast -j ACCEPT
+      ip46tables -t nat -A wan-nat -m pkttype --pkt-type multicast -j ACCEPT
 
       # Forwarding
       ip46tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -234,7 +232,7 @@ case "$1" in
       # cwmpd ACS kick
       ip46tables -A wan-input -p tcp --dport 7547 -j ACCEPT    # cwmpd
       ip6tables -A wan-forward -p tcp --dport 7547 -j ACCEPT  # cwmpd
-      iptables -t nat -A wan-nat -p tcp --dport 7547 -j ACCEPT  # cwmpd
+      ip46tables -t nat -A wan-nat -p tcp --dport 7547 -j ACCEPT  # cwmpd
 
       if [ -e /tmp/factory_status ]; then
         ip46tables -A wan-input -p tcp --dport 8883 -j ACCEPT  # factory web server
@@ -262,7 +260,7 @@ case "$1" in
       iptables -t nat -A PREROUTING -i wan0+ -j MINIUPNPD
 
       # nat
-      iptables -t nat -A POSTROUTING -o wan0+ -j MASQUERADE
+      ip46tables -t nat -A POSTROUTING -o wan0+ -j MASQUERADE
 
       # ipv6 addressing
       ip6tables -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
