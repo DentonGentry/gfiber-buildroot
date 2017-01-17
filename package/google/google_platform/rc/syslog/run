@@ -2,4 +2,4 @@
 fdmove -c 2 1
 if { runnable syslogd }
 # run with CAP_NET_BIND_SERVICE
-minijail0 -u syslog -g syslog -c 0x400 /bin/syslogd -l 0.0.0.0:514
+minijail0 -u syslog -g syslog -c 0x400 /bin/syslogd -p 514
