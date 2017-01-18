@@ -4,17 +4,17 @@
 # Servers used by CPE on the other side of the captive portal.
 IP4_DNS="8.8.8.8 8.8.4.4"
 IP6_DNS="2001:4860:4860::8888 2001:4860:4860::8844"
-# TODO(b/29131559): allow NTP servers to be dynamically updated
-NTP="216.239.32.15 216.239.34.15 216.239.36.15 216.239.38.15"
+NTP_SERVERS="time1.google.com time2.google.com time3.google.com time4.google.com"
 
 has_iptables() {
   runnable iptables && iptables -L 2>/dev/null
 }
 
 flush() {
-  ip46tables -F captive-portal-input
-  ip46tables -F captive-portal-filter
   ip46tables -F captive-portal-guests
+  ip46tables -F captive-portal-filter
+  ip46tables -F captive-portal-ntp
+  ip46tables -F captive-portal-input
 }
 
 case "$1" in
@@ -59,13 +59,12 @@ case "$1" in
         ip6tables -A captive-portal-filter -p icmpv6 -d $dst --icmpv6-type echo-request -j ACCEPT
       done
 
-      for dst in $NTP; do
-        iptables -A captive-portal-filter -p udp -d $dst --dport ntp -j ACCEPT
-      done
+      nice babysit 60 update-ntp-filters $NTP_SERVERS 2>&1 | logos update-ntp-filters &
     fi
     ;;
   stop)
     if has_iptables && is-network-box; then
+      pkillwait -x update-ntp-filters
       flush
     fi
     ;;
