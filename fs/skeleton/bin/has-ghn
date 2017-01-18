@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Returns 0 (true) if this device has a local G.hn node
+# By checking for marvell's DEK tool: configlayer
+#
+. /etc/utils.sh
+if runnable configlayer; then
+  exit 0
+else
+  exit 1
+fi

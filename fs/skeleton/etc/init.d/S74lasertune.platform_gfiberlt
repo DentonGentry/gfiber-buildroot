@@ -1,11 +1,10 @@
 #!/bin/sh
 
 . /etc/utils.sh
-platform=$(cat /etc/platform)
 
 case "$1" in
   start)
-    if startswith "$platform" "GFLT3"; then
+    if has-tuneable-laser; then
       echo "Starting lasertune."
       babysit 5 lasertune 2>&1 | logos lasertune &
     fi
