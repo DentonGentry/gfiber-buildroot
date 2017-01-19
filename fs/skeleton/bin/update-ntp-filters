@@ -1,0 +1,25 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+FAILURE_DELAY="30"
+SUCCESS_DELAY="900"
+
+while :; do
+  ip46tables -F captive-portal-ntp
+
+  code="0"
+  for dst in $@; do
+    echo "Updating ntp server: $dst"
+    ip46tables -A captive-portal-ntp -p udp -d "$dst" --dport ntp -j ACCEPT
+    code=$(( $code | $? ))
+  done
+
+  if [ "$code" -eq "0" ]; then
+    echo "Success. Next update in $SUCCESS_DELAY s."
+    sleep "$SUCCESS_DELAY"
+  else
+    echo "Failure! Trying again in $FAILURE_DELAY s."
+    sleep "$FAILURE_DELAY"
+  fi
+done

@@ -149,6 +149,7 @@ case "$1" in
       # what services we're trying to provide with it.
       ip46tables -N captive-portal-guests
       ip46tables -N captive-portal-filter
+      ip46tables -N captive-portal-ntp
       ip46tables -N captive-portal-input
       ip46tables -N acs-captive-portal-input
       ip46tables -N sniproxy-input
@@ -177,6 +178,7 @@ case "$1" in
 
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-guests
       ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-filter
+      ip46tables -A FORWARD -i br1 -o wan0+ -j captive-portal-ntp
 
       for ifc in lo br0; do
         ip46tables -A INPUT -i "$ifc" -j ACCEPT
