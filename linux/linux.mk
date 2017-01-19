@@ -221,6 +221,8 @@ define LINUX_APPEND_DTB
 endef
 endif
 
+LINUX_MAKE_MODULES_EXTRA_FLAGS += $(if LINUX_KBUILD_EXTRA_SYMBOLS,KBUILD_EXTRA_SYMBOLS="$(LINUX_KBUILD_EXTRA_SYMBOLS)")
+
 # Compilation. We make sure the kernel gets rebuilt when the
 # configuration has changed.
 define LINUX_BUILD_CMDS
@@ -230,7 +232,7 @@ define LINUX_BUILD_CMDS
 		cp $(call qstrip,$(BR2_LINUX_KERNEL_CUSTOM_DTS_PATH)) $(KERNEL_ARCH_PATH)/boot/dts/)
 	$(TARGET_MAKE_ENV) $(MAKE) $(LINUX_MAKE_FLAGS) -C $(@D) $(LINUX_IMAGE_NAME)
 	@if grep -q "CONFIG_MODULES=y" $(@D)/.config; then 	\
-		$(TARGET_MAKE_ENV) $(MAKE) $(LINUX_MAKE_FLAGS) -C $(@D) modules ;	\
+		$(TARGET_MAKE_ENV) $(MAKE) $(LINUX_MAKE_FLAGS) $(LINUX_MAKE_MODULES_EXTRA_FLAGS) -C $(@D) modules ;	\
 	fi
 	$(LINUX_BUILD_DTB)
 	$(LINUX_APPEND_DTB)
