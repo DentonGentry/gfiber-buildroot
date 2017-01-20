@@ -1,0 +1,11 @@
+--- a/sntpclock.c	2017-01-19 12:08:54.003237871 -0800
++++ b/sntpclock.c	2017-01-19 12:27:31.212751112 -0800
+@@ -202,7 +202,7 @@
+       strerr_die2sys(111,FATAL,"unable to send request: ");
+     FD_ZERO(&rfds);
+     FD_SET(s,&rfds);
+-    tvselect.tv_sec = 1;
++    tvselect.tv_sec = 5;
+     tvselect.tv_usec = 0;
+     if (select(s + 1,&rfds,(fd_set *) 0,(fd_set *) 0,&tvselect) != 1) {
+       strerr_warn2(WARNING,"unable to read clock: timed out",0);
