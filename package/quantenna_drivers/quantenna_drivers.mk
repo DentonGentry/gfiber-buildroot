@@ -21,8 +21,15 @@ define QUANTENNA_DRIVERS_BUILD_CMDS
 	$(QUANTENNA_DRIVERS_MAKE_ENV) $(MAKE) -C $(@D) $(QUANTENNA_DRIVERS_TARGET)
 endef
 
+# We need to re-run modules_install for depmod to discover the
+# binary kernel modules that we just installed
 define QUANTENNA_DRIVERS_INSTALL_TARGET_CMDS
 	$(QUANTENNA_DRIVERS_MAKE_ENV) $(MAKE) -C $(@D) $(QUANTENNA_DRIVERS_TARGET)_install
+
+	$(TARGET_MAKE_ENV) $(MAKE1) $(LINUX_MAKE_FLAGS) -C $(LINUX_DIR)		\
+		DEPMOD="$(HOST_DIR)/usr/sbin/depmod" modules_install ;		\
+	rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/build ;		\
+	rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/source
 endef
 
 ifeq ($(BR2_PACKAGE_QUANTENNA_DRIVERS),y)
