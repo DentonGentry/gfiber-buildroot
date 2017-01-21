@@ -40,6 +40,8 @@ all:
 
 Makefile:;
 
+menuconfig linux-menuconfig backports-menuconfig: LOGLINEAR=
+
 \$(all): all
 	@:
 
