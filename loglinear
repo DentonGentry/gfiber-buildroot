@@ -249,8 +249,12 @@ def RunClient(conn, cmdline):
       _Write(conn.fileno(), '%s %s\nPWD: %s\nStarting: %s (%s)\n'
              % (parent, nice_cmdline or '',
                 os.getcwd(), cmdline, nice_cmdline))
-      os.dup2(conn.fileno(), 1)
-      os.dup2(conn.fileno(), 2)
+      if os.environ.get('LOGLINEAR_LEAVE_STDOUT'):
+        _Write(conn.fileno(), 'Not redirecting stdout or stderr ' \
+            'because LOGLINEAR_LEAVE_STDOUT is set')
+      else:
+        os.dup2(conn.fileno(), 1)
+        os.dup2(conn.fileno(), 2)
       conn.close()
       os.environ['LOGLINEAR_PARENT'] = str(myid)
       os.execvp(cmdline[0], cmdline)
