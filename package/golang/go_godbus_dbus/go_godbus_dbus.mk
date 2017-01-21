@@ -10,7 +10,7 @@ GO_GODBUS_DBUS_DEPENDENCIES = host-golang
 
 define GO_GODBUS_DBUS_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/godbus/"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/godbus/dbus"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/godbus/dbus"
 endef
 
 GO_GODBUS_DBUS_POST_PATCH_HOOKS += GO_GODBUS_DBUS_FIX_PATH

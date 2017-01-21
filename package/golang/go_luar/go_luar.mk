@@ -10,7 +10,7 @@ GO_LUAR_DEPENDENCIES = host-golang go_golua
 
 define GO_LUAR_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/stevedonovan/"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/stevedonovan/luar"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/stevedonovan/luar"
 endef
 
 GO_LUAR_POST_PATCH_HOOKS += GO_LUAR_FIX_PATH

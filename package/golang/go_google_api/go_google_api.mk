@@ -10,7 +10,7 @@ GO_GOOGLE_API_DEPENDENCIES = host-golang
 
 define GO_GOOGLE_API_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/google.golang.org"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/google.golang.org/api"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/google.golang.org/api"
 endef
 
 GO_GOOGLE_API_POST_PATCH_HOOKS += GO_GOOGLE_API_FIX_PATH

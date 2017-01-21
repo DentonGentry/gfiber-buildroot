@@ -10,7 +10,7 @@ GO_GONZOJIVE_MDNS_DEPENDENCIES = host-golang
 
 define GO_GONZOJIVE_MDNS_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/gonzojive"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/gonzojive/mdns"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/gonzojive/mdns"
 endef
 
 GO_GONZOJIVE_MDNS_POST_PATCH_HOOKS += GO_GONZOJIVE_MDNS_FIX_PATH

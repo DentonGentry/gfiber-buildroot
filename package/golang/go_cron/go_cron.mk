@@ -10,7 +10,7 @@ GO_CRON_DEPENDENCIES = host-golang
 
 define GO_CRON_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/robfig/"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/robfig/cron"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/robfig/cron"
 endef
 
 GO_CRON_POST_PATCH_HOOKS += GO_CRON_FIX_PATH

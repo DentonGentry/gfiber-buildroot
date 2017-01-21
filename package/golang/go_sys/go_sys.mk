@@ -10,7 +10,7 @@ GO_SYS_DEPENDENCIES = host-golang
 
 define GO_SYS_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/golang.org/x"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/golang.org/x/sys"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/golang.org/x/sys"
 endef
 
 GO_SYS_POST_PATCH_HOOKS += GO_SYS_FIX_PATH

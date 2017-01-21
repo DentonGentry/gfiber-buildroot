@@ -10,7 +10,7 @@ GO_GOCZMQ_DEPENDENCIES = host-golang czmq libsodium host-czmq host-libsodium
 
 define GO_GOCZMQ_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/zeromq"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/zeromq/goczmq"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/zeromq/goczmq"
 endef
 
 GO_GOCZMQ_POST_PATCH_HOOKS += GO_GOCZMQ_FIX_PATH
