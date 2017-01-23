@@ -245,14 +245,17 @@ recover_drmfs()
 
 mount_ext4fs()
 {
-  mount -t ext4 -o defaults,noatime,discard,data=writeback $1 /user || return 1
+  # Use ordered mode & disable delayed allocation to enable metadata journaling
+  # and ensure data blocks are always written before metadata. Avoids issues
+  # with power loss or crashes resulting in zero length files.
+  mount -t ext4 -o defaults,noatime,discard,nodelalloc,data=ordered $1 /user || return 1
   [ ! -d /user/config ] && mkdir -p /user/config
   mount --bind /user/config /config || return 1
 }
 
 mount_atv_ext4fs()
 {
-  mount -t ext4 -o defaults,noatime,discard,data=writeback $1 /atv_userdata || return 1
+  mount -t ext4 -o defaults,noatime,discard,nodelalloc,data=ordered $1 /atv_userdata || return 1
   mkdir -p /atv_userdata/gfiber/user
   mount --bind /atv_userdata/gfiber/user /user || return 1
   mkdir -p /user/config
