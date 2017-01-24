@@ -10,7 +10,7 @@ GO_CLOUD_DEPENDENCIES = host-golang
 
 define GO_CLOUD_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/google.golang.org/"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/google.golang.org/cloud"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/google.golang.org/cloud"
 endef
 
 GO_CLOUD_POST_PATCH_HOOKS += GO_CLOUD_FIX_PATH

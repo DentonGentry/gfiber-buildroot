@@ -10,7 +10,7 @@ GO_OAUTH2_DEPENDENCIES = host-golang
 
 define GO_OAUTH2_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/golang.org/x"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/golang.org/x/oauth2"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/golang.org/x/oauth2"
 endef
 
 GO_OAUTH2_POST_PATCH_HOOKS += GO_OAUTH2_FIX_PATH

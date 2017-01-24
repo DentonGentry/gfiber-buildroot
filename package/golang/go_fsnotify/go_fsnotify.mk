@@ -10,7 +10,7 @@ GO_FSNOTIFY_DEPENDENCIES = host-golang
 
 define GO_FSNOTIFY_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/go-fsnotify/"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/go-fsnotify/fsnotify"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/go-fsnotify/fsnotify"
 endef
 
 GO_FSNOTIFY_POST_PATCH_HOOKS += GO_FSNOTIFY_FIX_PATH

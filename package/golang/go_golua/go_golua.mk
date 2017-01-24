@@ -10,7 +10,7 @@ GO_GOLUA_DEPENDENCIES = host-golang
 
 define GO_GOLUA_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/aarzilli"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/aarzilli/golua"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/aarzilli/golua"
 endef
 
 GO_GOLUA_POST_PATCH_HOOKS += GO_GOLUA_FIX_PATH

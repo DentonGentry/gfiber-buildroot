@@ -10,7 +10,7 @@ GO_GLOG_DEPENDENCIES = host-golang
 
 define GO_GLOG_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/golang"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/golang/glog"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/golang/glog"
 endef
 
 GO_GLOG_POST_PATCH_HOOKS += GO_GLOG_FIX_PATH

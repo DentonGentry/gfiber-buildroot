@@ -10,7 +10,7 @@ GO_MIEKG_DNS_DEPENDENCIES = host-golang
 
 define GO_MIEKG_DNS_FIX_PATH
 	mkdir -p "$(BUILD_DIR)/go_pkgs/src/github.com/miekg"
-	ln -sT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/miekg/dns"
+	ln -sfT "$(@D)" "$(BUILD_DIR)/go_pkgs/src/github.com/miekg/dns"
 endef
 
 GO_MIEKG_DNS_POST_PATCH_HOOKS += GO_MIEKG_DNS_FIX_PATH
