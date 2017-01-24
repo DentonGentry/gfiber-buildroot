@@ -16,9 +16,7 @@ usage() {
   exit 99
 }
 
-platform=$(cat /etc/platform)
-if ! startswith "$platform" "GFLT4"; then
-  # Only GFLT400 has G.hn chip (Marvell's 88x5153)
+if ! has-ghn; then
   exit 0
 fi
 

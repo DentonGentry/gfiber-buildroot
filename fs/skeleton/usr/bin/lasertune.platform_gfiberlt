@@ -3,7 +3,6 @@
 . /etc/utils.sh
 
 laser_channel_file="/sys/devices/platform/gpon/misc/laserChannel"
-platform=$(cat /etc/platform)
 prev_laser_channel=-1
 
 # Initially be very aggressive about acquiring a channel, then back off once
@@ -15,7 +14,7 @@ log()
   echo "$@" >&2
 }
 
-if ! startswith "$platform" "GFLT3"; then
+if ! has-tuneable-laser; then
   # not all fiberjacks have a tunable laser.
   exit 0
 fi

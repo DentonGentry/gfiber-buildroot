@@ -2,8 +2,6 @@
 
 . /etc/utils.sh
 
-platform=$(cat /etc/platform)
-
 usage() {
   echo "Usage:"
   echo
@@ -15,7 +13,7 @@ usage() {
   exit 99
 }
 
-if ! startswith "$platform" "GFLT3"; then
+if ! has-tuneable-laser; then
   # not all fiberjacks have tuneable optics.
   exit 0
 fi
