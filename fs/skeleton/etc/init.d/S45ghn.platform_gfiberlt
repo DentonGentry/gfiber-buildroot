@@ -1,0 +1,51 @@
+#! /bin/sh
+
+. /etc/utils.sh
+
+GHN_DIR="/tmp/ghn"
+GHN_MAC_ADDR_FILE="${GHN_DIR}/mac_addr"
+
+case "$1" in
+  start|"")
+    platform=$(cat /etc/platform)
+    if ! startswith "$platform" "GFLT4"; then
+      exit 0
+    fi
+
+    # Create Ghn directory and mac_addr file
+    mkdir -p "$GHN_DIR"
+
+    HNVRAM_MAC=$(hnvram -q -r MAC_ADDR_PON)
+    if [ -z "$HNVRAM_MAC" ]; then
+      echo "S45ghn: hnvram G.hn mac_addr is empty!"
+      exit 1
+    fi
+    echo "$HNVRAM_MAC" >"$GHN_MAC_ADDR_FILE"
+
+    # Bring up eth1 interface to ghn
+    ip link set up dev eth1
+    # ghn defaults to 10.10.1.69, we want to be on the same subnet
+    ip addr add 10.10.1.2/24 dev eth1
+
+    if ! read-ghn-local "NODE.GENERAL.ENABLE" 1>/dev/null; then
+      echo "S45ghn: Failed to read stats from G.hn: $HNVRAM_MAC"
+      exit 1
+    fi
+
+    # Periodically grab GHN stats and write to file
+    babysit 60 ghn-periodic-stats 2>&1 | logos ghn-periodic-stats &
+    ;;
+  stop)
+    pkillwait -f ghn-periodic-stats
+    ip addr del 10.10.1.2/24 dev eth1
+    ip link set down dev eth1
+    rm -rf "$GHN_DIR"
+    ;;
+  restart)
+    $0 stop; $0 start
+    ;;
+  *)
+    echo "Usage: S45ghn {start|stop|restart}" >&2
+    exit 1
+    ;;
+esac

@@ -1,0 +1,63 @@
+#!/bin/sh
+
+. /etc/utils.sh
+
+GHN_DIR="/tmp/ghn"
+GHN_STATS_FILE="${GHN_DIR}/config"
+
+usage() {
+  echo "Usage:"
+  echo
+  echo "  $0"
+  echo
+  echo "  Repeatedly grabs up to date stats from G.hn chip using 'configlayer' "
+  echo "  These stats are eventually used in catawampus' periodic statistics. "
+  echo
+  exit 99
+}
+
+platform=$(cat /etc/platform)
+if ! startswith "$platform" "GFLT4"; then
+  # Only GFLT400 has G.hn chip (Marvell's 88x5153)
+  exit 0
+fi
+
+if [ "$#" -ne "0" ]; then
+  usage
+fi
+
+GHN_MAC_ADDR=$(cat "$GHN_DIR"/mac_addr)
+while true; do
+  if configlayer -o GET -i eth1 -m "$GHN_MAC_ADDR" -w paterna \
+    -p NODE.GENERAL.ENABLE \
+    -p NTP.GENERAL.STATUS \
+    -p NODE.GENERAL.DEVICE_ALIAS \
+    -p NODE.GENERAL.DEVICE_NAME \
+    -p SYSTEM.PRODUCTION.DEVICE_NAME \
+    -p NODE.GENERAL.LAST_CHANGE \
+    -p SYSTEM.PRODUCTION.MAC_ADDR \
+    -p SYSTEM.GENERAL.API_VERSION \
+    -p SYSTEM.GENERAL.FW_VERSION \
+    -p SYSTEM.GENERAL.FW_VERSION_CORE \
+    -p NODE.GENERAL.DOMAIN_NAME \
+    -p NODE.GENERAL.DNI \
+    -p NODE.GENERAL.DOMAIN_ID \
+    -p NODE.GENERAL.DEVICE_ID \
+    -p NODE.GENERAL.NODE_TYPE \
+    -p SYSTEM.GENERAL.DOMAIN_MASTER_CAPABLE \
+    -p SYSTEM.GENERAL.SEC_CONTROLLER_CAPABLE \
+    -p SYSTEM.GENERAL.SEC_CONTROLLER_STATUS \
+    -p DIDMNG.GENERAL.NUM_DIDS \
+    -p DIDMNG.GENERAL.DIDS \
+    -p DIDMNG.GENERAL.MACS \
+    -p DIDMNG.GENERAL.TX_BPS \
+    -p DIDMNG.GENERAL.RX_BPS \
+    -p DIDMNG.GENERAL.ACTIVE \
+    > "${GHN_STATS_FILE}.tmp"; then
+    # Do write in two stages to preserve atomicity
+    mv "${GHN_STATS_FILE}.tmp" "$GHN_STATS_FILE"
+  else
+    echo "$0 failed to grab config from G.hn: $GHN_MAC_ADDR"
+  fi
+  sleep 60
+done
