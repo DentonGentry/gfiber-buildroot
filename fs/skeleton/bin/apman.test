@@ -1,5 +1,12 @@
 #!/bin/sh
 # Test script for /bin/apman
+
+# b/28915040
+if [ "$(cat /etc/platform)" = "GFHD100" ]; then
+  echo "Not running apman.test on GFHD100"
+  exit 0
+fi
+
 mydir=$(dirname "$0")
 cd "$mydir"
 . ../etc/wvtest.sh
