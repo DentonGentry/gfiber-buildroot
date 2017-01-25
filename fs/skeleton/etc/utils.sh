@@ -8,14 +8,14 @@ atomic() {
   local filename="$1" newval="$2"
   shift
 
-  if [ ! -e $filename ] || [ "$(cat $filename)" != "$newval" ]; then
+  if [ ! -e "$filename" ] || [ "$(cat "$filename")" != "$newval" ]; then
     # fsync after writing the temp file to avoid the potential for ending up
     # with a zero length file at $filename on ext4 partitions due to ext4's
     # delayed allocation.
-    rm -f $filename.new
-    echo "$@" >$filename.new
-    fsync $filename.new
-    mv $filename.new $filename
+    rm -f "$filename.new"
+    echo "$@" >"$filename.new"
+    fsync "$filename.new"
+    mv "$filename.new" "$filename"
   fi
 }
 
