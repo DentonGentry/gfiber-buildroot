@@ -1,5 +1,7 @@
 config BR2_PACKAGE_GOOGLE_OREGANO_NATIVE
 	bool "google_oregano_native"
 	select BR2_PACKAGE_GOOGLE_DART_VM
+	select BR2_PACKAGE_GOOGLE_GL_DART if BR2_mipsel
+	select BR2_PACKAGE_GOOGLE_GLFW_DART if BR2_mipsel
 	help
 	  Native extensions for Oregano projects.
