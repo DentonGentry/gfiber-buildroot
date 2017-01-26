@@ -6,6 +6,10 @@ exec >/dev/kmsg 2>&1
 . /etc/utils.sh
 
 
+INTERFACE_RESET_PATH=/tmp/interface
+mkdir -p "$INTERFACE_RESET_PATH"
+
+
 get_random_mac() {
   echo -n $(get_mac_addr_for_interface "$1" | cut -c1-8)
   randomdata 0 3 | hexdump -e '3/1 ":%02x"'
@@ -32,7 +36,7 @@ create_client_interface() {
   # autoconfiguration of routes.
   # TODO(rofrankel):  Find a way not to need to disable this, e.g. by making it
   # so that autoconfigured br0 routes have a lower metric than wcli* routes.
-  echo 0 >/proc/sys/net/ipv6/conf/wcli0/accept_ra
+  echo 0 >"/proc/sys/net/ipv6/conf/$client_interface/accept_ra"
 }
 
 load_firmware() {
@@ -91,6 +95,7 @@ create_secondary_interface() {
 network_add() {
   interface="$1"
   set_mac_address "$interface"
+  touch "$INTERFACE_RESET_PATH/$interface"
   # At boot or device reset, a net add event is delivered for the primary
   # interface. Use this event to create a client interface, which is
   # created in user space unlike the primary interface.
