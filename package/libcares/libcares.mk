@@ -4,7 +4,7 @@
 #
 #############################################################
 
-LIBCARES_VERSION = 1.10.0
+LIBCARES_VERSION = 1.12.0
 LIBCARES_SOURCE = c-ares-$(LIBCARES_VERSION).tar.gz
 LIBCARES_SITE = http://c-ares.haxx.se/download/
 LIBCARES_INSTALL_STAGING = YES
