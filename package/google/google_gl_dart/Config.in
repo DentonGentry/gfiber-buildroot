@@ -2,5 +2,6 @@ config BR2_PACKAGE_GOOGLE_GL_DART
         bool "google_gl_dart"
   depends on BR2_PACKAGE_BCM_ROCKFORD
   depends on BR2_PACKAGE_GOOGLE_DART_VM
+  depends on BR2_PACKAGE_GOOGLE_MINICLIENT
 	help
           Builds the Dart GL bindings

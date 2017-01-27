@@ -1,7 +1,7 @@
 GOOGLE_GLFW_DART_SITE=repo://vendor/google/glfw_dart
 GOOGLE_GLFW_DART_DEPENDENCIES=\
 	bcm_common \
-	google_glfw_nexus google_dart_vm
+	google_glfw_nexus google_dart_vm google_miniclient
 GOOGLE_GLFW_DART_INSTALL_STAGING=YES
 
 define GOOGLE_GLFW_DART_BUILD_CMDS
