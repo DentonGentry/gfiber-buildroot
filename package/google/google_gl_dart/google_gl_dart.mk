@@ -1,7 +1,8 @@
 GOOGLE_GL_DART_SITE=repo://vendor/google/gl_dart
 GOOGLE_GL_DART_DEPENDENCIES=\
 	bcm_rockford \
-	google_dart_vm
+	google_dart_vm \
+	google_miniclient
 GOOGLE_GL_DART_INSTALL_STAGING=YES
 
 define GOOGLE_GL_DART_BUILD_CMDS
