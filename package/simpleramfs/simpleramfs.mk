@@ -104,6 +104,7 @@ define SIMPLERAMFS_BUILD_CMDS
 		$(@D)/fs/bin/
 
 	# driver firmware and modules
+	ln -f	fs/skeleton/sbin/hotplug $(@D)/fs/sbin/
 	ln -f	fs/skeleton/etc/utils.sh $(@D)/fs/etc/
 	if [ "$(BR2_PACKAGE_MINDSPEED_DRIVERS)" = "y" ]; then \
 		mkdir -p $(@D)/fs/lib/modules $(@D)/fs/lib/firmware && \
